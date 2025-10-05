@@ -23,18 +23,129 @@
 -->
 
 <template>
-  <!-- TODO: Implement page with MainLayout -->
-  <!-- TODO: Display ClosetGrid component -->
-  <!-- TODO: Add floating action button to open AddItemForm -->
-  <!-- TODO: Handle add item modal (open/close) -->
+  <div class="closet-page">
+    <div class="closet-header">
+      <h1>My Closet</h1>
+      <p class="quota-text">{{ quotaUsed }} / 200 items</p>
+    </div>
+    
+    <div class="closet-content">
+      <p v-if="items.length === 0" class="empty-message">
+        Your closet is empty. Add your first item!
+      </p>
+      
+      <div v-else class="items-grid">
+        <div v-for="item in items" :key="item.id" class="item-card">
+          <div class="item-image-placeholder">
+            {{ item.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="fab" @click="handleAddItem">
+      <span class="plus-icon">+</span>
+    </button>
+  </div>
 </template>
 
 <script setup>
-// TODO: Import ClosetGrid and AddItemForm
-// TODO: Manage modal state for AddItemForm
-// TODO: Handle successful item addition (close modal, refresh grid)
+import { computed, onMounted } from 'vue'
+import { useClosetStore } from '../stores/closet-store'
+
+const closetStore = useClosetStore()
+
+const items = computed(() => closetStore.filteredItems)
+const quotaUsed = computed(() => closetStore.quota.used)
+
+onMounted(() => {
+  closetStore.fetchItems()
+})
+
+function handleAddItem() {
+  alert('Add item functionality coming soon!')
+}
 </script>
 
 <style scoped>
-/* TODO: Add page-specific styles */
+.closet-page {
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f9fafb;
+}
+
+.closet-header {
+  margin-bottom: 1.5rem;
+}
+
+.closet-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.quota-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+  font-size: 1rem;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.item-card {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.item-image-placeholder {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.fab:hover {
+  background-color: #2563eb;
+  transform: scale(1.05);
+}
+
+.plus-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
 </style>

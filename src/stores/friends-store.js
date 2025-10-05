@@ -43,22 +43,27 @@ import { defineStore } from 'pinia'
 
 export const useFriendsStore = defineStore('friends', {
   state: () => ({
-    // TODO: Define state
+    friends: [],
+    pendingRequests: [],
+    isLoading: false
   }),
   
   getters: {
-    // TODO: Define getters
+    friendCount: (state) => state.friends.length,
+    pendingCount: (state) => state.pendingRequests.length
   },
   
   actions: {
-    // TODO: Implement fetchFriends action
-    // TODO: Implement fetchPendingRequests action
-    // TODO: Implement sendFriendRequest action
-    // TODO: Implement acceptRequest action
-    // TODO: Implement rejectRequest action
-    // TODO: Implement cancelRequest action
-    // TODO: Implement unfriend action
-    // TODO: Implement searchUsers action
-    // TODO: Implement fetchFriendProfile action
+    async fetchFriends() {
+      this.isLoading = true
+      // TODO: Implement API call
+      this.isLoading = false
+    },
+    async fetchPendingRequests() {
+      // TODO: Implement
+    },
+    async sendFriendRequest(userId) {
+      // TODO: Implement
+    }
   }
 })

@@ -9,33 +9,27 @@
   - Loading state overlay (optional)
   - Error boundary (optional)
   
-  Structure:
-  <div id="app">
-    <RouterView />
-    <!-- Global notification container -->
-  </div>
-  
-  Global Styles:
-  - Import base, components, and mobile CSS
-  - Set up app-level styling
-  
   Reference:
   - This is the entry point component mounted in main.js
-  - All pages render inside <RouterView />
+  - All pages render inside RouterView
 -->
 
 <template>
   <div id="app">
-    <!-- TODO: Add RouterView for page rendering -->
-    <!-- TODO: Add global notification container -->
-    <!-- TODO: Add loading overlay if needed -->
+    <RouterView />
   </div>
 </template>
 
 <script setup>
-// TODO: Import any global components
-// TODO: Set up global error handling
-// TODO: Initialize app-level state
+import { onMounted } from 'vue'
+import { useAuthStore } from './stores/auth-store'
+
+const authStore = useAuthStore()
+
+// Initialize auth state on app mount
+onMounted(async () => {
+  await authStore.initializeAuth()
+})
 </script>
 
 <style>
@@ -44,5 +38,10 @@
 @import './assets/styles/components.css';
 @import './assets/styles/mobile.css';
 
-/* TODO: Add app-level styles */
+/* App-level styles */
+#app {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary, #ffffff);
+}
 </style>

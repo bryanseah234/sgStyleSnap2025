@@ -23,11 +23,14 @@
 
 import { createPinia } from 'pinia'
 
-// TODO: Create Pinia instance
-// TODO: Add plugins if needed (e.g., persistence, devtools)
-// TODO: Export pinia instance
-
+// Create Pinia instance
 export const pinia = createPinia()
+
+// Export all stores for easy access
+export { useAuthStore } from './auth-store'
+export { useClosetStore } from './closet-store'
+export { useFriendsStore } from './friends-store'
+export { useSuggestionsStore } from './suggestions-store'
 
 // TODO: Import and export individual stores for direct access
 // export { useAuthStore } from './auth-store'

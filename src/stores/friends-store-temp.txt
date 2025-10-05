@@ -1,0 +1,18 @@
+  state: () => ({
+    friends: [],
+    pendingRequests: [],
+    isLoading: false
+  }),
+  
+  getters: {
+    friendCount: (state) => state.friends.length
+  },
+  
+  actions: {
+    async fetchFriends() {
+      this.isLoading = true
+      // TODO: Implement
+      this.isLoading = false
+    }
+  }
+})

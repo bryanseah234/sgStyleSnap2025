@@ -42,19 +42,27 @@ import { defineStore } from 'pinia'
 
 export const useSuggestionsStore = defineStore('suggestions', {
   state: () => ({
-    // TODO: Define state
+    receivedSuggestions: [],
+    sentSuggestions: [],
+    isLoading: false
   }),
   
   getters: {
-    // TODO: Define getters
+    receivedCount: (state) => state.receivedSuggestions.length,
+    sentCount: (state) => state.sentSuggestions.length
   },
   
   actions: {
-    // TODO: Implement fetchReceivedSuggestions action
-    // TODO: Implement fetchSentSuggestions action
-    // TODO: Implement createSuggestion action
-    // TODO: Implement deleteSuggestion action
-    // TODO: Implement markAsViewed action
-    // TODO: Implement likeSuggestion action (optional)
+    async fetchReceivedSuggestions() {
+      this.isLoading = true
+      // TODO: Implement API call
+      this.isLoading = false
+    },
+    async fetchSentSuggestions() {
+      // TODO: Implement
+    },
+    async createSuggestion(suggestionData) {
+      // TODO: Implement
+    }
   }
 })

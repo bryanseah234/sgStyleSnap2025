@@ -40,17 +40,98 @@
  * - Supabase Auth docs: https://supabase.com/docs/guides/auth
  */
 
-// TODO: Import Supabase client
 import { createClient } from '@supabase/supabase-js'
 
-// TODO: Initialize Supabase client
-// const supabase = createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// TODO: Implement signInWithGoogle function
-// TODO: Implement signOut function
-// TODO: Implement getCurrentUser function
-// TODO: Implement getSession function
-// TODO: Implement refreshSession function
-// TODO: Implement onAuthStateChange function
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase credentials. Please check your .env file.')
+}
 
-// TODO: Export all functions
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
+
+/**
+ * Sign in with Google OAuth
+ * @returns {Promise<void>}
+ */
+export async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/closet`
+    }
+  })
+  
+  if (error) {
+    throw new Error(`Google sign-in failed: ${error.message}`)
+  }
+}
+
+/**
+ * Sign out current user
+ * @returns {Promise<void>}
+ */
+export async function signOut() {
+  const { error } = await supabase.auth.signOut()
+  
+  if (error) {
+    throw new Error(`Sign out failed: ${error.message}`)
+  }
+}
+
+/**
+ * Get current authenticated user
+ * @returns {Promise<Object|null>}
+ */
+export async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  
+  if (error) {
+    throw new Error(`Failed to get user: ${error.message}`)
+  }
+  
+  return user
+}
+
+/**
+ * Get current session
+ * @returns {Promise<Object|null>}
+ */
+export async function getSession() {
+  const { data: { session }, error } = await supabase.auth.getSession()
+  
+  if (error) {
+    throw new Error(`Failed to get session: ${error.message}`)
+  }
+  
+  return session
+}
+
+/**
+ * Refresh current session
+ * @returns {Promise<Object|null>}
+ */
+export async function refreshSession() {
+  const { data: { session }, error } = await supabase.auth.refreshSession()
+  
+  if (error) {
+    throw new Error(`Failed to refresh session: ${error.message}`)
+  }
+  
+  return session
+}
+
+/**
+ * Subscribe to auth state changes
+ * @param {Function} callback - Callback function to handle auth state changes
+ * @returns {Object} - Subscription object with unsubscribe method
+ */
+export function onAuthStateChange(callback) {
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session)
+  })
+  
+  return data
+}

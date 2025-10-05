@@ -41,22 +41,62 @@
  */
 
 import { defineStore } from 'pinia'
-// TODO: Import clothes service
 
 export const useClosetStore = defineStore('closet', {
   state: () => ({
-    // TODO: Define state
+    items: [],
+    currentItem: null,
+    isLoading: false,
+    filters: {
+      category: 'all',
+      search: '',
+      sort: 'recent'
+    },
+    quota: {
+      used: 0,
+      max: 200
+    }
   }),
   
   getters: {
-    // TODO: Define getters (filteredItems, quotaPercentage, etc.)
+    filteredItems: (state) => {
+      let items = state.items
+      
+      // Filter by category
+      if (state.filters.category && state.filters.category !== 'all') {
+        items = items.filter(item => item.category === state.filters.category)
+      }
+      
+      // Filter by search
+      if (state.filters.search) {
+        const search = state.filters.search.toLowerCase()
+        items = items.filter(item => 
+          item.name?.toLowerCase().includes(search) ||
+          item.brand?.toLowerCase().includes(search)
+        )
+      }
+      
+      return items
+    },
+    quotaPercentage: (state) => (state.quota.used / state.quota.max) * 100,
+    isQuotaFull: (state) => state.quota.used >= state.quota.max,
+    canAddItem: (state) => state.quota.used < state.quota.max
   },
   
   actions: {
-    // TODO: Implement fetchItems action
-    // TODO: Implement addItem action (with Cloudinary upload)
-    // TODO: Implement updateItem action
-    // TODO: Implement deleteItem action (delete from Cloudinary too)
-    // TODO: Implement quota management actions
+    async fetchItems() {
+      this.isLoading = true
+      // TODO: Implement API call
+      this.isLoading = false
+    },
+    async addItem(itemData) {
+      // TODO: Implement with Cloudinary upload
+    },
+    async deleteItem(id) {
+      // TODO: Implement with Cloudinary cleanup
+    },
+    setFilters(filters) {
+      this.filters = { ...this.filters, ...filters }
+    }
   }
 })
