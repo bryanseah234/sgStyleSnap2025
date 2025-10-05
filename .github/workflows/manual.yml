@@ -1,32 +1,75 @@
-# This is a basic workflow that is manually triggered
+# StyleSnap - Manual Deployment Workflow
+# Manually trigger builds, tests, or maintenance tasks
 
-name: Manual workflow
+name: Manual Operations
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
     inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        default: 'World'
-        # Input has to be provided for the workflow to run
+      operation:
+        description: 'Operation to perform'
         required: true
-        # The data type of the input
-        type: string
+        type: choice
+        options:
+          - 'build-only'
+          - 'test-only'
+          - 'full-ci'
+          - 'purge-old-items'
+          - 'cloudinary-cleanup'
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        default: 'staging'
+        options:
+          - 'staging'
+          - 'production'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "greet"
-  greet:
-    # The type of runner that the job will run on
+  manual-operation:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ inputs.name }}"
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run selected operation
+      run: |
+        case "${{ inputs.operation }}" in
+          "build-only")
+            echo "Building for ${{ inputs.environment }}..."
+            npm run build
+            ;;
+          "test-only")
+            echo "Running tests..."
+            npm test
+            ;;
+          "full-ci")
+            echo "Running full CI pipeline..."
+            npm run lint
+            npm run build
+            npm test
+            ;;
+          "purge-old-items")
+            echo "⚠️  Running purge-old-items script (DRY RUN)..."
+            npm run purge-old-items -- --dry-run
+            ;;
+          "cloudinary-cleanup")
+            echo "⚠️  Running cloudinary-cleanup script (DRY RUN)..."
+            npm run cloudinary-cleanup -- --dry-run
+            ;;
+        esac
+      env:
+        NODE_ENV: ${{ inputs.environment }}
+    
+    - name: Operation completed
+      run: echo "✅ Operation '${{ inputs.operation }}' completed for ${{ inputs.environment }}"
