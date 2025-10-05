@@ -1,0 +1,239 @@
+# StyleSnap - Git Ignore File
+# Vue 3 + Vite + Node.js project
+
+# ============================================
+# Dependencies
+# ============================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ============================================
+# Build Output
+# ============================================
+dist/
+dist-ssr/
+build/
+.output/
+.vercel/
+.netlify/
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Keep example files
+!.env.example
+
+# ============================================
+# Logs
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================
+# Editor & IDE
+# ============================================
+# VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+
+# IntelliJ / WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.#*
+
+# ============================================
+# Operating System
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+
+# ============================================
+# Testing
+# ============================================
+coverage/
+.nyc_output/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Vitest
+.vitest/
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+.cache/
+.temp/
+tmp/
+
+# ============================================
+# Cloudinary
+# ============================================
+# Don't commit Cloudinary credentials
+cloudinary_config.json
+
+# ============================================
+# Supabase
+# ============================================
+# Local Supabase development
+.supabase/
+
+# ============================================
+# PWA / Service Worker
+# ============================================
+# Generated service worker files (if using workbox)
+sw.js
+sw.js.map
+workbox-*.js
+workbox-*.js.map
+
+# ============================================
+# Vite Specific
+# ============================================
+.vite/
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# ============================================
+# TypeScript (if you add it later)
+# ============================================
+*.tsbuildinfo
+
+# ============================================
+# Vue Specific
+# ============================================
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ============================================
+# Package Manager Locks (Keep One)
+# ============================================
+# If using npm, keep package-lock.json and ignore others
+yarn.lock
+pnpm-lock.yaml
+
+# If using yarn, keep yarn.lock and ignore others
+# package-lock.json
+# pnpm-lock.yaml
+
+# If using pnpm, keep pnpm-lock.yaml and ignore others
+# package-lock.json
+# yarn.lock
+
+# ============================================
+# Database
+# ============================================
+*.sqlite
+*.sqlite3
+*.db
+
+# ============================================
+# Miscellaneous
+# ============================================
+# Sentry
+.sentryclirc
+
+# Turbo
+.turbo
+
+# Vercel
+.vercel
+
+# Local Netlify folder
+.netlify
+
+# ============================================
+# Project-Specific
+# ============================================
+# Ignore uploaded images in development (if storing locally)
+uploads/
+public/uploads/
+
+# Ignore generated docs (if using doc generators)
+docs-generated/
+
+# Ignore maintenance script outputs
+scripts/output/
+scripts/logs/
+
+# ============================================
+# Keep These Files
+# ============================================
+# Documentation
+!README.md
+!LICENSE
+!CONTRIBUTING.md
+
+# Config examples
+!.env.example
+!config.example.js
+
+# GitHub workflows
+!.github/
+
+# Important configs
+!package.json
+!vite.config.js
+!tailwind.config.js
+!postcss.config.js
