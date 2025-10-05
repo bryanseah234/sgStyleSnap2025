@@ -84,19 +84,148 @@ export const useClosetStore = defineStore('closet', {
   },
   
   actions: {
+    /**
+     * Fetch all items from API
+     */
     async fetchItems() {
       this.isLoading = true
-      // TODO: Implement API call
-      this.isLoading = false
+      try {
+        const clothesService = await import('../services/clothes-service')
+        const items = await clothesService.getItems(this.filters)
+        this.items = items
+        this.quota.used = items.length
+      } catch (error) {
+        console.error('Failed to fetch items:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
     },
+    
+    /**
+     * Add new item (with image upload)
+     * @param {Object} itemData - Item data including file
+     */
     async addItem(itemData) {
-      // TODO: Implement with Cloudinary upload
+      // Check quota before upload
+      if (!this.canAddItem) {
+        throw new Error('You have reached your 200 item limit. Please remove some items to add new ones.')
+      }
+      
+      this.isLoading = true
+      try {
+        const clothesService = await import('../services/clothes-service')
+        
+        // Upload image to Cloudinary first
+        let imageUrl = null
+        if (itemData.file) {
+          imageUrl = await clothesService.uploadImage(itemData.file)
+        } else if (itemData.image_url) {
+          imageUrl = itemData.image_url
+        } else {
+          throw new Error('Image file or URL is required')
+        }
+        
+        // Create item with image URL
+        const newItem = await clothesService.createItem({
+          name: itemData.name,
+          category: itemData.category,
+          image_url: imageUrl,
+          style_tags: itemData.style_tags,
+          privacy: itemData.privacy,
+          size: itemData.size,
+          brand: itemData.brand
+        })
+        
+        // Add to local state
+        this.items.unshift(newItem)
+        this.quota.used = this.items.length
+        
+        return newItem
+      } catch (error) {
+        console.error('Failed to add item:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
     },
+    
+    /**
+     * Update existing item
+     */
+    async updateItem(id, itemData) {
+      this.isLoading = true
+      try {
+        const clothesService = await import('../services/clothes-service')
+        
+        // If new image provided, upload it first
+        if (itemData.file) {
+          itemData.image_url = await clothesService.uploadImage(itemData.file)
+          delete itemData.file
+        }
+        
+        const updatedItem = await clothesService.updateItem(id, itemData)
+        
+        // Update local state
+        const index = this.items.findIndex(item => item.id === id)
+        if (index !== -1) {
+          this.items[index] = updatedItem
+        }
+        
+        return updatedItem
+      } catch (error) {
+        console.error('Failed to update item:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
+    /**
+     * Delete item
+     */
     async deleteItem(id) {
-      // TODO: Implement with Cloudinary cleanup
+      this.isLoading = true
+      try {
+        const clothesService = await import('../services/clothes-service')
+        await clothesService.deleteItem(id)
+        
+        // Remove from local state
+        this.items = this.items.filter(item => item.id !== id)
+        this.quota.used = this.items.length
+      } catch (error) {
+        console.error('Failed to delete item:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
     },
+    
+    /**
+     * Set current item for viewing/editing
+     */
+    setCurrentItem(item) {
+      this.currentItem = item
+    },
+    
+    /**
+     * Update filters
+     */
     setFilters(filters) {
       this.filters = { ...this.filters, ...filters }
+    },
+    
+    /**
+     * Fetch quota information
+     */
+    async fetchQuota() {
+      try {
+        const clothesService = await import('../services/clothes-service')
+        const count = await clothesService.getItemCount()
+        this.quota.used = count
+      } catch (error) {
+        console.error('Failed to fetch quota:', error)
+      }
     }
   }
 })

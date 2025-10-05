@@ -73,10 +73,24 @@ const DEFAULT_OPTIONS = {
  * @returns {Object} { valid: boolean, error?: string }
  */
 export function validateImage(file) {
-  // TODO: Check if file exists
-  // TODO: Check file type (jpg, jpeg, png, webp)
-  // TODO: Check file size (max 5MB)
-  // TODO: Return validation result
+  if (!file) {
+    return { valid: false, error: 'No file provided' }
+  }
+  
+  // Check file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  if (!validTypes.includes(file.type)) {
+    return { valid: false, error: 'Invalid file type. Please upload JPG, PNG, or WebP image.' }
+  }
+  
+  // Check file size (max 5MB)
+  const maxSizeMB = DEFAULT_OPTIONS.maxSizeMB
+  const maxSizeBytes = maxSizeMB * 1024 * 1024
+  if (file.size > maxSizeBytes) {
+    return { valid: false, error: `File too large. Maximum size is ${maxSizeMB}MB.` }
+  }
+  
+  return { valid: true }
 }
 
 /**
@@ -86,15 +100,78 @@ export function validateImage(file) {
  * @returns {Promise<File>} Compressed file
  */
 export async function compressImage(file, options = {}) {
-  // TODO: Merge options with defaults
-  // TODO: Validate image first
-  // TODO: Read file as data URL
-  // TODO: Create image element
-  // TODO: Calculate new dimensions (maintain aspect ratio)
-  // TODO: Draw to canvas with new dimensions
-  // TODO: Convert canvas to Blob with quality setting
-  // TODO: Convert Blob to File
-  // TODO: Return compressed File
+  const opts = { ...DEFAULT_OPTIONS, ...options }
+  
+  // Validate image first
+  const validation = validateImage(file)
+  if (!validation.valid) {
+    throw new Error(validation.error)
+  }
+  
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    
+    reader.onload = (e) => {
+      const img = new Image()
+      
+      img.onload = () => {
+        // Calculate new dimensions maintaining aspect ratio
+        let { width, height } = img
+        
+        if (width > opts.maxWidth) {
+          height = (height * opts.maxWidth) / width
+          width = opts.maxWidth
+        }
+        
+        if (height > opts.maxHeight) {
+          width = (width * opts.maxHeight) / height
+          height = opts.maxHeight
+        }
+        
+        // Create canvas and draw image
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        // Convert canvas to blob
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Image compression failed'))
+              return
+            }
+            
+            // Convert blob to file
+            const compressedFile = new File([blob], file.name, {
+              type: file.type,
+              lastModified: Date.now()
+            })
+            
+            console.log(`Original: ${(file.size / 1024).toFixed(2)}KB, Compressed: ${(compressedFile.size / 1024).toFixed(2)}KB`)
+            
+            resolve(compressedFile)
+          },
+          file.type,
+          opts.quality
+        )
+      }
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image'))
+      }
+      
+      img.src = e.target.result
+    }
+    
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'))
+    }
+    
+    reader.readAsDataURL(file)
+  })
 }
 
 /**
@@ -103,6 +180,17 @@ export async function compressImage(file, options = {}) {
  * @returns {Promise<string>} Data URL
  */
 export function createImagePreview(file) {
-  // TODO: Return promise that reads file as data URL
-  // TODO: Use FileReader API
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    
+    reader.onload = (e) => {
+      resolve(e.target.result)
+    }
+    
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'))
+    }
+    
+    reader.readAsDataURL(file)
+  })
 }
