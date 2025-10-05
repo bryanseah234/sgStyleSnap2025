@@ -1,0 +1,23 @@
+/**
+ * Base Styles - StyleSnap
+ * 
+ * Purpose: Global base styles, CSS resets, and foundational styling for the entire application.
+ * 
+ * Should include:
+ * - CSS reset/normalize
+ * - Root CSS variables (colors, spacing, typography)
+ * - Global typography styles (h1-h6, p, a)
+ * - Body and html base styles
+ * - Global utility classes
+ * 
+ * Tech Stack: Tailwind CSS (this file extends Tailwind with custom base styles)
+ * Reference: See docs/CODE_STANDARDS.md for CSS naming conventions (kebab-case)
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TODO: Add CSS custom properties for theme colors, spacing, and typography */
+/* TODO: Add global typography styles */
+/* TODO: Add any global resets or normalizations */

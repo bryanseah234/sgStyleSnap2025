@@ -1,0 +1,66 @@
+# Supabase Keep-Alive Workflow - StyleSnap
+#
+# Purpose: Prevents Supabase free tier project from pausing due to inactivity
+#
+# Supabase Free Tier Policy:
+# - Projects pause after 7 days of inactivity
+# - This workflow pings the database weekly to keep it active
+#
+# Schedule: Runs every 5 days (well within the 7-day limit)
+#
+# How it Works:
+# 1. Makes a simple SELECT query to Supabase
+# 2. Keeps the project active
+# 3. Logs the result
+#
+# Reference:
+# - tasks/06-quotas-maintenance.md for maintenance automation
+# - Supabase docs: https://supabase.com/docs/guides/platform/pause
+
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Run every 5 days at 2 AM UTC
+    - cron: '0 2 */5 * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
+      
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          node -e "
+          const { createClient } = require('@supabase/supabase-js');
+          const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+          supabase.from('closet_items').select('count').limit(1).then(({ data, error }) => {
+            if (error) {
+              console.error('Keep-alive failed:', error);
+              process.exit(1);
+            }
+            console.log('Keep-alive successful!');
+          });
+          "
+      
+      - name: Log result
+        run: echo "Supabase keep-alive completed at $(date)"
+
+# TODO: Add GitHub secrets in repository settings:
+# - SUPABASE_URL
+# - SUPABASE_ANON_KEY
