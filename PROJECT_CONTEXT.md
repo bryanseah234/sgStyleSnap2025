@@ -32,7 +32,8 @@ stylesnap/
 │ ├── 04-social-features-privacy.md
 │ ├── 05-suggestion-system.md
 │ ├── 06-quotas-maintenance.md
-│ └── 07-qa-security-launch.md
+│ ├── 07-qa-security-launch.md
+│ └── 08-mobile-mockups.md            # Design reference (optional)
 ├── sql/
 │ ├── 001_initial_schema.sql
 │ ├── 002_rls_policies.sql
