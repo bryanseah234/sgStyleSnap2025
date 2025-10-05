@@ -218,12 +218,26 @@ scripts/output/
 scripts/logs/
 
 # ============================================
-# Keep These Files
+# Keep These Files & Folders
 # ============================================
-# Documentation
+# CRITICAL: Project documentation and requirements
 !README.md
 !LICENSE
 !CONTRIBUTING.md
+!*.md
+!**/*.md
+
+# CRITICAL: Task management and requirements
+!tasks/
+!tasks/**
+!requirements/
+!requirements/**
+
+# CRITICAL: SQL schema and migrations
+!sql/
+!sql/**
+!*.sql
+!**/*.sql
 
 # Config examples
 !.env.example
@@ -231,6 +245,7 @@ scripts/logs/
 
 # GitHub workflows
 !.github/
+!.github/**
 
 # Important configs
 !package.json
