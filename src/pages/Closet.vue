@@ -23,35 +23,38 @@
 -->
 
 <template>
-  <div class="closet-page">
-    <div class="closet-header">
-      <h1>My Closet</h1>
-      <p class="quota-text">{{ quotaUsed }} / 200 items</p>
-    </div>
-    
-    <div class="closet-content">
-      <p v-if="items.length === 0" class="empty-message">
-        Your closet is empty. Add your first item!
-      </p>
+  <MainLayout>
+    <div class="closet-page">
+      <div class="closet-header">
+        <h1>My Closet</h1>
+        <p class="quota-text">{{ quotaUsed }} / 200 items</p>
+      </div>
       
-      <div v-else class="items-grid">
-        <div v-for="item in items" :key="item.id" class="item-card">
-          <div class="item-image-placeholder">
-            {{ item.name }}
+      <div class="closet-content">
+        <p v-if="items.length === 0" class="empty-message">
+          Your closet is empty. Add your first item!
+        </p>
+        
+        <div v-else class="items-grid">
+          <div v-for="item in items" :key="item.id" class="item-card">
+            <div class="item-image-placeholder">
+              {{ item.name }}
+            </div>
           </div>
         </div>
       </div>
+      
+      <button class="fab" @click="handleAddItem">
+        <span class="plus-icon">+</span>
+      </button>
     </div>
-    
-    <button class="fab" @click="handleAddItem">
-      <span class="plus-icon">+</span>
-    </button>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useClosetStore } from '../stores/closet-store'
+import MainLayout from '../components/layouts/MainLayout.vue'
 
 const closetStore = useClosetStore()
 

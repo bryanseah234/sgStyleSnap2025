@@ -26,27 +26,30 @@
 -->
 
 <template>
-  <div class="suggestions-page">
-    <div class="suggestions-header">
-      <h1>Outfit Suggestions</h1>
-      <p class="subtitle">Get inspired by AI-powered outfit recommendations</p>
+  <MainLayout>
+    <div class="suggestions-page">
+      <div class="suggestions-header">
+        <h1>Outfit Suggestions</h1>
+        <p class="subtitle">Get inspired by AI-powered outfit recommendations</p>
+      </div>
+      
+      <div class="suggestions-content">
+        <p class="placeholder-text">Suggestions feature coming soon!</p>
+        <p class="detail-text">You'll receive:</p>
+        <ul class="feature-list">
+          <li>Weather-based outfit suggestions</li>
+          <li>AI-powered recommendations</li>
+          <li>Outfit ideas from friends</li>
+        </ul>
+      </div>
     </div>
-    
-    <div class="suggestions-content">
-      <p class="placeholder-text">Suggestions feature coming soon!</p>
-      <p class="detail-text">You'll receive:</p>
-      <ul class="feature-list">
-        <li>Weather-based outfit suggestions</li>
-        <li>AI-powered recommendations</li>
-        <li>Outfit ideas from friends</li>
-      </ul>
-    </div>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useSuggestionsStore } from '../stores/suggestions-store'
+import MainLayout from '../components/layouts/MainLayout.vue'
 
 const suggestionsStore = useSuggestionsStore()
 

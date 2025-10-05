@@ -30,41 +30,44 @@
 -->
 
 <template>
-  <div class="profile-page">
-    <div class="profile-header">
-      <h1>Profile</h1>
-    </div>
-    
-    <div class="profile-content">
-      <div class="profile-card">
-        <div class="profile-info">
-          <div class="avatar-placeholder">
-            {{ userInitial }}
+  <MainLayout>
+    <div class="profile-page">
+      <div class="profile-header">
+        <h1>Profile</h1>
+      </div>
+      
+      <div class="profile-content">
+        <div class="profile-card">
+          <div class="profile-info">
+            <div class="avatar-placeholder">
+              {{ userInitial }}
+            </div>
+            <div class="user-details">
+              <h2 class="user-name">{{ userName }}</h2>
+              <p class="user-email">{{ userEmail }}</p>
+            </div>
           </div>
-          <div class="user-details">
-            <h2 class="user-name">{{ userName }}</h2>
-            <p class="user-email">{{ userEmail }}</p>
+          
+          <div class="profile-actions">
+            <Button
+              variant="danger"
+              @click="handleLogout"
+              :loading="isLoggingOut"
+            >
+              Logout
+            </Button>
           </div>
-        </div>
-        
-        <div class="profile-actions">
-          <Button
-            variant="danger"
-            @click="handleLogout"
-            :loading="isLoggingOut"
-          >
-            Logout
-          </Button>
         </div>
       </div>
     </div>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
+import MainLayout from '../components/layouts/MainLayout.vue'
 import Button from '../components/ui/Button.vue'
 
 const router = useRouter()

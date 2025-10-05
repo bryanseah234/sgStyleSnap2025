@@ -24,27 +24,30 @@
 -->
 
 <template>
-  <div class="friends-page">
-    <div class="friends-header">
-      <h1>Friends</h1>
-      <p class="subtitle">Connect with friends and share outfits</p>
+  <MainLayout>
+    <div class="friends-page">
+      <div class="friends-header">
+        <h1>Friends</h1>
+        <p class="subtitle">Connect with friends and share outfits</p>
+      </div>
+      
+      <div class="friends-content">
+        <p class="placeholder-text">Friends feature coming soon!</p>
+        <p class="detail-text">You'll be able to:</p>
+        <ul class="feature-list">
+          <li>Connect with friends</li>
+          <li>Share outfit suggestions</li>
+          <li>View friend's closets</li>
+        </ul>
+      </div>
     </div>
-    
-    <div class="friends-content">
-      <p class="placeholder-text">Friends feature coming soon!</p>
-      <p class="detail-text">You'll be able to:</p>
-      <ul class="feature-list">
-        <li>Connect with friends</li>
-        <li>Share outfit suggestions</li>
-        <li>View friend's closets</li>
-      </ul>
-    </div>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useFriendsStore } from '../stores/friends-store'
+import MainLayout from '../components/layouts/MainLayout.vue'
 
 const friendsStore = useFriendsStore()
 
