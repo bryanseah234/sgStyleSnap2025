@@ -1,6 +1,12 @@
-# StyleSnap - Project Context
-
-## Project Overview
+# StyleSnap - Project Conte├── tasks/
+│ ├── 01-infrastructure-setup.md
+│ ├── 02-authentication-database.md
+│ ├── 03-closet-crud-image-management.md
+│ ├── 04-social-features-privacy.md
+│ ├── 05-suggestion-system.md
+│ ├── 06-quotas-maintenance.md
+│ ├── 07-qa-security-launch.md
+│ └── 08-mobile-mockups.md            # Design reference (optional)roject Overview
 Digital closet app for outfit suggestions from friends.
 
 ## Technology Stack
