@@ -38,31 +38,163 @@
  */
 
 import { defineStore } from 'pinia'
-// TODO: Import suggestions service
 
 export const useSuggestionsStore = defineStore('suggestions', {
   state: () => ({
     receivedSuggestions: [],
     sentSuggestions: [],
+    currentSuggestion: null,
+    unreadCount: 0,
     isLoading: false
   }),
   
   getters: {
     receivedCount: (state) => state.receivedSuggestions.length,
-    sentCount: (state) => state.sentSuggestions.length
+    sentCount: (state) => state.sentSuggestions.length,
+    newSuggestionsCount: (state) => 
+      state.receivedSuggestions.filter(s => !s.is_read).length
   },
   
   actions: {
-    async fetchReceivedSuggestions() {
+    /**
+     * Fetch received suggestions
+     */
+    async fetchReceivedSuggestions(filters = {}) {
       this.isLoading = true
-      // TODO: Implement API call
-      this.isLoading = false
+      try {
+        const suggestionsService = await import('../services/suggestions-service')
+        const suggestions = await suggestionsService.getReceivedSuggestions(filters)
+        this.receivedSuggestions = suggestions
+        this.unreadCount = suggestions.filter(s => !s.is_read).length
+      } catch (error) {
+        console.error('Failed to fetch received suggestions:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
     },
+    
+    /**
+     * Fetch sent suggestions
+     */
     async fetchSentSuggestions() {
-      // TODO: Implement
+      this.isLoading = true
+      try {
+        const suggestionsService = await import('../services/suggestions-service')
+        const suggestions = await suggestionsService.getSentSuggestions()
+        this.sentSuggestions = suggestions
+      } catch (error) {
+        console.error('Failed to fetch sent suggestions:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
     },
+    
+    /**
+     * Fetch single suggestion details
+     */
+    async fetchSuggestion(id) {
+      this.isLoading = true
+      try {
+        const suggestionsService = await import('../services/suggestions-service')
+        const suggestion = await suggestionsService.getSuggestion(id)
+        this.currentSuggestion = suggestion
+        return suggestion
+      } catch (error) {
+        console.error('Failed to fetch suggestion:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
+    /**
+     * Create new suggestion
+     */
     async createSuggestion(suggestionData) {
-      // TODO: Implement
+      this.isLoading = true
+      try {
+        const suggestionsService = await import('../services/suggestions-service')
+        const newSuggestion = await suggestionsService.createSuggestion(suggestionData)
+        
+        // Add to sent suggestions
+        this.sentSuggestions.unshift(newSuggestion)
+        
+        return newSuggestion
+      } catch (error) {
+        console.error('Failed to create suggestion:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
+    /**
+     * Delete suggestion
+     */
+    async deleteSuggestion(id) {
+      this.isLoading = true
+      try {
+        const suggestionsService = await import('../services/suggestions-service')
+        await suggestionsService.deleteSuggestion(id)
+        
+        // Remove from sent suggestions
+        this.sentSuggestions = this.sentSuggestions.filter(s => s.id !== id)
+      } catch (error) {
+        console.error('Failed to delete suggestion:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
+    /**
+     * Mark suggestion as read
+     */
+    async markAsRead(id) {
+      try {
+        const suggestionsService = await import('../services/suggestions-service')
+        const updated = await suggestionsService.markAsRead(id)
+        
+        // Update in received suggestions
+        const index = this.receivedSuggestions.findIndex(s => s.id === id)
+        if (index !== -1) {
+          this.receivedSuggestions[index] = {
+            ...this.receivedSuggestions[index],
+            is_read: true,
+            viewed_at: updated.viewed_at
+          }
+        }
+        
+        // Update unread count
+        this.unreadCount = this.receivedSuggestions.filter(s => !s.is_read).length
+        
+        return updated
+      } catch (error) {
+        console.error('Failed to mark as read:', error)
+        throw error
+      }
+    },
+    
+    /**
+     * Fetch unread count
+     */
+    async fetchUnreadCount() {
+      try {
+        const suggestionsService = await import('../services/suggestions-service')
+        const count = await suggestionsService.getUnreadCount()
+        this.unreadCount = count
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error)
+      }
+    },
+    
+    /**
+     * Clear current suggestion
+     */
+    clearCurrentSuggestion() {
+      this.currentSuggestion = null
     }
   }
 })

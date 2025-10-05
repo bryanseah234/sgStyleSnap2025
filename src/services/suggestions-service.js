@@ -62,14 +62,293 @@
  * - components/social/SuggestionCanvas.vue for items_data format
  */
 
-// TODO: Import API client
+import { supabase } from './auth-service'
 
-// TODO: Implement getReceivedSuggestions function
-// TODO: Implement getSentSuggestions function
-// TODO: Implement getSuggestion function
-// TODO: Implement createSuggestion function
-// TODO: Implement deleteSuggestion function
-// TODO: Implement markAsViewed function
-// TODO: Implement likeSuggestion function (optional)
+/**
+ * Get suggestions received by current user
+ * @param {Object} filters - Optional filters { unread_only }
+ * @returns {Promise<Array>} Array of suggestions
+ */
+export async function getReceivedSuggestions(filters = {}) {
+  try {
+    let query = supabase
+      .from('suggestions')
+      .select(`
+        id,
+        from_user_id,
+        to_user_id,
+        suggested_item_ids,
+        message,
+        is_read,
+        viewed_at,
+        created_at,
+        from_user:users!suggestions_from_user_id_fkey(id, name, email, avatar_url)
+      `)
+      .order('created_at', { ascending: false })
+    
+    // Apply unread filter if requested
+    if (filters.unread_only) {
+      query = query.eq('is_read', false)
+    }
+    
+    const { data, error } = await query
+    
+    if (error) throw error
+    
+    // For each suggestion, fetch the actual item details
+    const suggestionsWithItems = await Promise.all(
+      (data || []).map(async (suggestion) => {
+        // Fetch items for this suggestion
+        const { data: items } = await supabase
+          .from('clothes')
+          .select('*')
+          .in('id', suggestion.suggested_item_ids)
+        
+        return {
+          ...suggestion,
+          items: items || [],
+          itemsCount: suggestion.suggested_item_ids.length
+        }
+      })
+    )
+    
+    return suggestionsWithItems
+  } catch (error) {
+    console.error('Failed to fetch received suggestions:', error)
+    throw new Error(`Failed to fetch received suggestions: ${error.message}`)
+  }
+}
 
-// TODO: Export all functions
+/**
+ * Get suggestions sent by current user
+ * @returns {Promise<Array>} Array of suggestions
+ */
+export async function getSentSuggestions() {
+  try {
+    const { data, error } = await supabase
+      .from('suggestions')
+      .select(`
+        id,
+        from_user_id,
+        to_user_id,
+        suggested_item_ids,
+        message,
+        is_read,
+        viewed_at,
+        created_at,
+        to_user:users!suggestions_to_user_id_fkey(id, name, email, avatar_url)
+      `)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    
+    // Fetch item details for each suggestion
+    const suggestionsWithItems = await Promise.all(
+      (data || []).map(async (suggestion) => {
+        const { data: items } = await supabase
+          .from('clothes')
+          .select('*')
+          .in('id', suggestion.suggested_item_ids)
+        
+        return {
+          ...suggestion,
+          items: items || [],
+          itemsCount: suggestion.suggested_item_ids.length
+        }
+      })
+    )
+    
+    return suggestionsWithItems
+  } catch (error) {
+    console.error('Failed to fetch sent suggestions:', error)
+    throw new Error(`Failed to fetch sent suggestions: ${error.message}`)
+  }
+}
+
+/**
+ * Get single suggestion by ID
+ * @param {string} id - Suggestion ID
+ * @returns {Promise<Object>} Suggestion object
+ */
+export async function getSuggestion(id) {
+  try {
+    const { data, error } = await supabase
+      .from('suggestions')
+      .select(`
+        id,
+        from_user_id,
+        to_user_id,
+        suggested_item_ids,
+        message,
+        is_read,
+        viewed_at,
+        created_at,
+        from_user:users!suggestions_from_user_id_fkey(id, name, email, avatar_url),
+        to_user:users!suggestions_to_user_id_fkey(id, name, email, avatar_url)
+      `)
+      .eq('id', id)
+      .single()
+    
+    if (error) throw error
+    
+    // Fetch items
+    const { data: items } = await supabase
+      .from('clothes')
+      .select('*')
+      .in('id', data.suggested_item_ids)
+    
+    return {
+      ...data,
+      items: items || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch suggestion:', error)
+    throw new Error(`Failed to fetch suggestion: ${error.message}`)
+  }
+}
+
+/**
+ * Create new suggestion
+ * @param {Object} suggestionData - { to_user_id, suggested_item_ids, message }
+ * @returns {Promise<Object>} Created suggestion
+ */
+export async function createSuggestion(suggestionData) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+    
+    // Validate item count (1-10 items)
+    if (!suggestionData.suggested_item_ids || suggestionData.suggested_item_ids.length === 0) {
+      throw new Error('At least one item is required')
+    }
+    if (suggestionData.suggested_item_ids.length > 10) {
+      throw new Error('Maximum 10 items per suggestion')
+    }
+    
+    // Validate message length (max 100 chars)
+    if (suggestionData.message && suggestionData.message.length > 100) {
+      throw new Error('Message must be 100 characters or less')
+    }
+    
+    // Verify friendship exists
+    const requesterId = user.id < suggestionData.to_user_id ? user.id : suggestionData.to_user_id
+    const receiverId = user.id < suggestionData.to_user_id ? suggestionData.to_user_id : user.id
+    
+    const { data: friendship } = await supabase
+      .from('friends')
+      .select('status')
+      .eq('requester_id', requesterId)
+      .eq('receiver_id', receiverId)
+      .eq('status', 'accepted')
+      .single()
+    
+    if (!friendship) {
+      throw new Error('You can only send suggestions to friends')
+    }
+    
+    // Verify all items belong to the target user and have friends privacy
+    const { data: items, error: itemsError } = await supabase
+      .from('clothes')
+      .select('id, owner_id, privacy')
+      .in('id', suggestionData.suggested_item_ids)
+    
+    if (itemsError) throw itemsError
+    
+    if (!items || items.length !== suggestionData.suggested_item_ids.length) {
+      throw new Error('Some items were not found')
+    }
+    
+    const invalidItems = items.filter(
+      item => item.owner_id !== suggestionData.to_user_id || item.privacy !== 'friends'
+    )
+    
+    if (invalidItems.length > 0) {
+      throw new Error('All items must belong to the target user and have friends privacy')
+    }
+    
+    // Create suggestion
+    const { data, error } = await supabase
+      .from('suggestions')
+      .insert({
+        from_user_id: user.id,
+        to_user_id: suggestionData.to_user_id,
+        suggested_item_ids: suggestionData.suggested_item_ids,
+        message: suggestionData.message || null,
+        is_read: false
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    
+    return data
+  } catch (error) {
+    console.error('Failed to create suggestion:', error)
+    throw new Error(`Failed to create suggestion: ${error.message}`)
+  }
+}
+
+/**
+ * Delete suggestion
+ * @param {string} id - Suggestion ID
+ * @returns {Promise<void>}
+ */
+export async function deleteSuggestion(id) {
+  try {
+    const { error } = await supabase
+      .from('suggestions')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+  } catch (error) {
+    console.error('Failed to delete suggestion:', error)
+    throw new Error(`Failed to delete suggestion: ${error.message}`)
+  }
+}
+
+/**
+ * Mark suggestion as read
+ * @param {string} id - Suggestion ID
+ * @returns {Promise<Object>} Updated suggestion
+ */
+export async function markAsRead(id) {
+  try {
+    const { data, error } = await supabase
+      .from('suggestions')
+      .update({
+        is_read: true,
+        viewed_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    
+    return data
+  } catch (error) {
+    console.error('Failed to mark suggestion as read:', error)
+    throw new Error(`Failed to mark suggestion as read: ${error.message}`)
+  }
+}
+
+/**
+ * Get unread count
+ * @returns {Promise<number>} Unread count
+ */
+export async function getUnreadCount() {
+  try {
+    const { count, error } = await supabase
+      .from('suggestions')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_read', false)
+    
+    if (error) throw error
+    
+    return count || 0
+  } catch (error) {
+    console.error('Failed to get unread count:', error)
+    return 0
+  }
+}
