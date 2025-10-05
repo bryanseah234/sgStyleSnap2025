@@ -8,22 +8,116 @@ Frontend: Vue.js 3 + Vite + Tailwind CSS
 Backend: Supabase (PostgreSQL) + Cloudinary
 Authentication: Google OAuth
 
-## File Structure
-src/
-├── components/
-│ ├── ui/ # Base components (Button, Modal, Input)
-│ ├── closet/ # Closet-specific components
-│ └── social/ # Social features components
-├── pages/ # Route components
-├── stores/ # Pinia stores
-├── services/ # API services
-├── utils/ # Helper functions
-├── assets/
-│ ├── styles/
-│ │ ├── base.css # CSS variables and base styles
-│ │ └── components.css # Component-specific styles
-│ └── images/
-└── config/ # Configuration files
+## Complete File Structure
+stylesnap/
+├── docs/
+│ ├── CONTRIBUTING.md
+│ ├── DEPLOYMENT.md
+│ └── API_REFERENCE.md
+├── requirements/
+│ ├── database-schema.md
+│ ├── api-endpoints.md
+│ ├── frontend-components.md
+│ ├── security.md
+│ ├── error-handling.md
+│ └── performance.md
+├── tasks/
+│ ├── 01-infrastructure-setup.md
+│ ├── 02-authentication-database.md
+│ ├── 03-closet-crud-image-management.md
+│ ├── 04-social-features-privacy.md
+│ ├── 05-suggestion-system.md
+│ ├── 06-quotas-maintenance.md
+│ └── 07-qa-security-launch.md
+├── sql/
+│ ├── 001_initial_schema.sql
+│ ├── 002_rls_policies.sql
+│ └── 003_indexes_functions.sql
+├── src/
+│ ├── assets/
+│ │ ├── styles/
+│ │ │ ├── base.css
+│ │ │ └── components.css
+│ │ └── images/
+│ ├── components/
+│ │ ├── ui/
+│ │ │ ├── Button.vue
+│ │ │ ├── Modal.vue
+│ │ │ ├── FormInput.vue
+│ │ │ ├── Select.vue
+│ │ │ ├── Notification.vue
+│ │ │ ├── Badge.vue
+│ │ │ ├── Skeleton.vue
+│ │ │ ├── ProgressBar.vue
+│ │ │ └── QuotaIndicator.vue
+│ │ ├── layouts/
+│ │ │ ├── MainLayout.vue
+│ │ │ └── AuthLayout.vue
+│ │ ├── closet/
+│ │ │ ├── ClosetGrid.vue
+│ │ │ └── AddItemForm.vue
+│ │ └── social/
+│ │ ├── FriendsList.vue
+│ │ ├── FriendProfile.vue
+│ │ ├── FriendRequest.vue
+│ │ ├── SuggestionCanvas.vue
+│ │ ├── SuggestionList.vue
+│ │ ├── SuggestionItem.vue
+│ │ └── NotificationBell.vue
+│ ├── pages/
+│ │ ├── Login.vue
+│ │ ├── Closet.vue
+│ │ ├── Friends.vue
+│ │ ├── Profile.vue
+│ │ └── Suggestions.vue
+│ ├── stores/
+│ │ ├── index.js
+│ │ ├── auth-store.js
+│ │ ├── closet-store.js
+│ │ ├── friends-store.js
+│ │ └── suggestions-store.js
+│ ├── services/
+│ │ ├── api.js
+│ │ ├── auth-service.js
+│ │ ├── clothes-service.js
+│ │ ├── friends-service.js
+│ │ └── suggestions-service.js
+│ ├── utils/
+│ │ ├── auth-guard.js
+│ │ ├── image-compression.js
+│ │ ├── quota-calculator.js
+│ │ ├── maintenance-helpers.js
+│ │ └── drag-drop-helpers.js
+│ ├── config/
+│ │ ├── theme.js
+│ │ └── icons.js
+│ ├── App.vue
+│ └── main.js
+├── tests/
+│ ├── unit/
+│ │ ├── image-compression.test.js
+│ │ └── quota-calculator.test.js
+│ ├── integration/
+│ │ └── api-endpoints.test.js
+│ └── e2e/
+│ └── user-journeys.test.js
+├── scripts/
+│ ├── purge-old-items.js
+│ └── cloudinary-cleanup.js
+├── .github/
+│ └── workflows/
+│     └── supabase-keepalive.yml
+├── templates/
+│ ├── component-template.md
+│ └── api-template.md
+├── REQUIREMENTS.md
+├── TASKS.md
+├── PROJECT_CONTEXT.md
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+├── .env.example
+└── .gitignore
 
 ## Code Conventions
 - **SQL**: snake_case for tables and columns
@@ -37,7 +131,22 @@ src/
 - `requirements/` - Detailed requirement files
 - `tasks/` - Detailed task files
 - `sql/` - SQL migration files
+- `docs/` - Project documentation
 
 ## Cross-Reference Notation
 When tasks reference requirements: `[REQ: database-schema#2.1]`
 When requirements reference tasks: `[TASK: 01-infrastructure-setup#1.1]`
+
+## Critical Files for Development
+- **Database Setup**: `sql/001_initial_schema.sql`
+- **API Specifications**: `requirements/api-endpoints.md`
+- **Component Guidelines**: `requirements/frontend-components.md`
+- **Security Requirements**: `requirements/security.md`
+- **Development Tasks**: Start with `tasks/01-infrastructure-setup.md`
+
+## Development Workflow
+1. Start with infrastructure setup (Task 1)
+2. Follow sequential task order (1 → 2 → 3 → ...)
+3. Reference requirements for each task
+4. Use SQL files for database setup
+5. Follow file structure for new components
