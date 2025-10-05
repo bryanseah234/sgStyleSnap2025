@@ -24,22 +24,85 @@
 -->
 
 <template>
-  <!-- TODO: Implement page with MainLayout -->
-  <!-- TODO: Add tabs/sections for Friends, Requests, Search -->
-  <!-- TODO: Display FriendsList component -->
-  <!-- TODO: Display FriendRequest component -->
-  <!-- TODO: Add search functionality for finding new friends -->
-  <!-- TODO: Handle send friend request action -->
+  <div class="friends-page">
+    <div class="friends-header">
+      <h1>Friends</h1>
+      <p class="subtitle">Connect with friends and share outfits</p>
+    </div>
+    
+    <div class="friends-content">
+      <p class="placeholder-text">Friends feature coming soon!</p>
+      <p class="detail-text">You'll be able to:</p>
+      <ul class="feature-list">
+        <li>Connect with friends</li>
+        <li>Share outfit suggestions</li>
+        <li>View friend's closets</li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <script setup>
-// TODO: Import FriendsList and FriendRequest components
-// TODO: Import friends store
-// TODO: Implement friend search logic
-// TODO: Handle tab switching
-// TODO: Handle send friend request
+import { onMounted } from 'vue'
+import { useFriendsStore } from '../stores/friends-store'
+
+const friendsStore = useFriendsStore()
+
+onMounted(() => {
+  friendsStore.fetchFriends()
+})
 </script>
 
 <style scoped>
-/* TODO: Add page-specific styles */
+.friends-page {
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f9fafb;
+}
+
+.friends-header {
+  margin-bottom: 1.5rem;
+}
+
+.friends-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.placeholder-text {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  color: #374151;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.detail-text {
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  max-width: 300px;
+  margin: 1rem auto;
+}
+
+.feature-list li {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: #374151;
+}
 </style>

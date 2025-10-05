@@ -33,25 +33,30 @@
 
 import { createApp } from 'vue'
 import App from './App.vue'
-// TODO: Import router
-// TODO: Import pinia store
-// TODO: Import any global styles
+import router from './router'
+import { pinia } from './stores'
 
-// TODO: Create app instance
+// Create app instance
 const app = createApp(App)
 
-// TODO: Use Pinia
-// app.use(pinia)
+// Use Pinia for state management
+app.use(pinia)
 
-// TODO: Use Router
-// app.use(router)
+// Use Vue Router for navigation
+app.use(router)
 
-// TODO: Register global components if needed
+// Mount app to DOM
+app.mount('#app')
 
-// TODO: Mount app
-// app.mount('#app')
-
-// TODO: Register service worker for PWA (if in production)
-// if ('serviceWorker' in navigator && import.meta.env.PROD) {
-//   navigator.serviceWorker.register('/service-worker.js')
-// }
+// Register service worker for PWA (if in production)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('SW registered:', registration)
+      })
+      .catch(error => {
+        console.log('SW registration failed:', error)
+      })
+  })
+}
