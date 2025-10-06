@@ -1,3 +1,25 @@
+-- Migration 003: Indexes and Functions
+-- This file is re-runnable - safe to execute multiple times
+
+-- ============================================
+-- DROP EXISTING INDEXES
+-- ============================================
+DROP INDEX IF EXISTS idx_clothes_owner_id;
+DROP INDEX IF EXISTS idx_clothes_removed_at;
+DROP INDEX IF EXISTS idx_clothes_owner_privacy;
+DROP INDEX IF EXISTS idx_clothes_category;
+DROP INDEX IF EXISTS idx_friends_status;
+DROP INDEX IF EXISTS idx_friends_requester_id;
+DROP INDEX IF EXISTS idx_friends_receiver_id;
+DROP INDEX IF EXISTS idx_friends_requester_status;
+DROP INDEX IF EXISTS idx_friends_receiver_status;
+DROP INDEX IF EXISTS idx_suggestions_to_user_id;
+DROP INDEX IF EXISTS idx_suggestions_from_user_id;
+DROP INDEX IF EXISTS idx_suggestions_created_at;
+DROP INDEX IF EXISTS idx_suggestions_is_read;
+DROP INDEX IF EXISTS idx_users_email;
+DROP INDEX IF EXISTS idx_users_google_id;
+
 -- ============================================
 -- PERFORMANCE INDEXES
 -- ============================================

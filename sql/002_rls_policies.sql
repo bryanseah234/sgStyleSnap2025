@@ -1,3 +1,29 @@
+-- Migration 002: Row Level Security Policies
+-- This file is re-runnable - safe to execute multiple times
+
+-- ============================================
+-- DROP EXISTING POLICIES
+-- ============================================
+DROP POLICY IF EXISTS "Users can view own data" ON users;
+DROP POLICY IF EXISTS "Users can update own data" ON users;
+
+DROP POLICY IF EXISTS "Users can view own clothes" ON clothes;
+DROP POLICY IF EXISTS "Users can insert own clothes" ON clothes;
+DROP POLICY IF EXISTS "Users can update own clothes" ON clothes;
+DROP POLICY IF EXISTS "Users can delete own clothes" ON clothes;
+DROP POLICY IF EXISTS "Friends can view friends clothes" ON clothes;
+
+DROP POLICY IF EXISTS "Users can view own friend requests" ON friends;
+DROP POLICY IF EXISTS "Users can send friend requests" ON friends;
+DROP POLICY IF EXISTS "Users can update own friend requests" ON friends;
+DROP POLICY IF EXISTS "Users can delete own friendships" ON friends;
+
+DROP POLICY IF EXISTS "Users can view received suggestions" ON suggestions;
+DROP POLICY IF EXISTS "Users can view sent suggestions" ON suggestions;
+DROP POLICY IF EXISTS "Users can create suggestions" ON suggestions;
+DROP POLICY IF EXISTS "Users can update received suggestions" ON suggestions;
+DROP POLICY IF EXISTS "Users can delete own suggestions" ON suggestions;
+
 -- ============================================
 -- ROW LEVEL SECURITY POLICIES
 -- ============================================

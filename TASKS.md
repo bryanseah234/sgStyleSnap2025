@@ -1,6 +1,8 @@
 # StyleSnap - Development Tasks
 
 ## Task Order
+
+### Core Features (MVP)
 1. [Infrastructure Setup](tasks/01-infrastructure-setup.md)
 2. [Authentication & Database](tasks/02-authentication-database.md)
 3. [Closet CRUD & Image Management](tasks/03-closet-crud-image-management.md)
@@ -9,6 +11,12 @@
 6. [Quotas & Maintenance](tasks/06-quotas-maintenance.md)
 7. [QA, Security & Launch](tasks/07-qa-security-launch.md)
 8. [Mobile UI Mockups](tasks/08-mobile-mockups.md) - Design reference (optional)
+
+### Enhanced Features (Extended MVP)
+9. [Item Catalog System](tasks/09-item-catalog-system.md) - Browse pre-populated clothing
+10. [Color Detection AI](tasks/10-color-detection-ai.md) - Automatic color recognition
+11. [Outfit Generation](tasks/11-outfit-generation.md) - Smart outfit combinations from permutations
+12. [Likes Feature](tasks/12-likes-feature.md) - Like/unlike clothing items
 
 ## Task Dependencies
 Each task may depend on the previous ones. Check individual task files for detailed dependencies.
@@ -22,5 +30,42 @@ Each task may depend on the previous ones. Check individual task files for detai
 - ✅ 200-item quota system
 
 ## Implementation Status
-- **Tasks 1-7:** ✅ Complete (See BATCH_1_FIXES.md through BATCH_10_FIXES.md)
-- **Task 8:** ⏳ Optional design documentation (mockup placement pending)
+- **Tasks 1-7:** ✅ Complete (Core MVP features)
+- **Task 8:** ⏳ Optional (Mobile mockup documentation)
+- **Task 9:** ✅ Complete (Item Catalog System - SQL + documentation)
+- **Task 10:** ✅ Complete (Color Detection AI - SQL + documentation)
+- **Task 11:** ✅ Complete (AI Outfit Generation - SQL + documentation)
+- **Task 12:** ✅ Backend Complete (Likes Feature - SQL + service + store + LikeButton)
+  - ⏳ Frontend Integration (Additional components and integration pending)
+
+## Feature Summary
+
+### ✅ Fully Implemented
+- Digital closet with CRUD operations
+- Image upload with Cloudinary integration
+- Google OAuth authentication
+- Friend system with privacy controls
+- Outfit suggestions and sharing
+- Weather-based recommendations
+- PWA with offline support
+- Push notifications
+- Item catalog browsing
+- Color detection (18 colors)
+- Outfit generation from permutations
+- Likes backend (API + state management)
+
+### ⏳ Partially Implemented
+- **Likes Feature:** Backend complete, frontend components pending
+  - ✅ SQL migration (008_likes_feature.sql)
+  - ✅ Service layer (likes-service.js)
+  - ✅ State management (likes-store.js)
+  - ✅ LikeButton component
+  - ⏳ LikersList, LikedItemsGrid, PopularItemsCarousel components
+  - ⏳ Integration with existing components
+  - ⏳ Testing
+
+### 📋 Documentation Files
+- **Tasks:** `tasks/01-*.md` through `tasks/12-*.md`
+- **Requirements:** `requirements/*.md` (including item-catalog, color-detection, outfit-generation)
+- **SQL Migrations:** `sql/001-008_*.sql` (008 = likes feature)
+- **Implementation Guides:** `LIKES_FEATURE_SUMMARY.md`, `tasks/11-outfit-generation.md`

@@ -1,3 +1,24 @@
+-- Migration 001: Initial Schema
+-- This file is re-runnable - safe to execute multiple times
+
+-- ============================================
+-- DROP EXISTING OBJECTS (in reverse dependency order)
+-- ============================================
+DROP TRIGGER IF EXISTS update_users_updated_at ON users CASCADE;
+DROP TRIGGER IF EXISTS update_clothes_updated_at ON clothes CASCADE;
+DROP TRIGGER IF EXISTS update_friends_updated_at ON friends CASCADE;
+DROP TRIGGER IF EXISTS update_suggestions_updated_at ON suggestions CASCADE;
+
+DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
+
+DROP TABLE IF EXISTS suggestions CASCADE;
+DROP TABLE IF EXISTS friends CASCADE;
+DROP TABLE IF EXISTS clothes CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- ============================================
+-- EXTENSIONS
+-- ============================================
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";

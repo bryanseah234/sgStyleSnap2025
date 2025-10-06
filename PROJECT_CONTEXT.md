@@ -30,7 +30,10 @@ stylesnap/
 │ ├── frontend-components.md
 │ ├── security.md
 │ ├── error-handling.md
-│ └── performance.md
+│ ├── performance.md
+│ ├── item-catalog.md                  # Task 9: Item catalog specs
+│ ├── color-detection.md               # Task 10: Color detection specs
+│ └── outfit-generation.md             # Task 11: AI outfit generation specs
 ├── tasks/
 │ ├── 01-infrastructure-setup.md
 │ ├── 02-authentication-database.md
@@ -39,12 +42,20 @@ stylesnap/
 │ ├── 05-suggestion-system.md
 │ ├── 06-quotas-maintenance.md
 │ ├── 07-qa-security-launch.md
-│ └── 08-mobile-mockups.md            # Design reference (optional)
+│ ├── 08-mobile-mockups.md             # Design reference (optional)
+│ ├── 09-item-catalog-system.md        # Item catalog implementation
+│ ├── 10-color-detection-ai.md         # Color detection AI implementation
+│ ├── 11-outfit-generation.md          # Outfit generation from permutations
+│ └── 12-likes-feature.md              # Likes feature implementation
 ├── sql/
 │ ├── 001_initial_schema.sql
 │ ├── 002_rls_policies.sql
 │ ├── 003_indexes_functions.sql
-│ └── 004_advanced_features.sql        # Batch 9 features
+│ ├── 004_advanced_features.sql        # Batch 9 features
+│ ├── 005_catalog_system.sql           # Task 9: Catalog database
+│ ├── 006_color_detection.sql          # Task 10: Color fields and functions
+│ ├── 007_outfit_generation.sql        # Task 11: Outfit generation (permutation-based)
+│ └── 008_likes_feature.sql            # Task 12: Likes system
 ├── src/
 │ ├── assets/
 │ │ ├── styles/
@@ -62,13 +73,15 @@ stylesnap/
 │ │ │ ├── Badge.vue
 │ │ │ ├── Skeleton.vue
 │ │ │ ├── ProgressBar.vue
-│ │ │ └── QuotaIndicator.vue
+│ │ │ ├── QuotaIndicator.vue
+│ │ │ └── LikeButton.vue               # Task 12: Like/unlike button
 │ │ ├── layouts/
 │ │ │ ├── MainLayout.vue
 │ │ │ └── AuthLayout.vue
 │ │ ├── closet/
 │ │ │ ├── ClosetGrid.vue
-│ │ │ └── AddItemForm.vue
+│ │ │ ├── AddItemForm.vue
+│ │ │ └── LikedItemsGrid.vue           # Task 12: Grid of liked items
 │ │ └── social/
 │ │ ├── FriendsList.vue
 │ │ ├── FriendProfile.vue
@@ -76,7 +89,9 @@ stylesnap/
 │ │ ├── SuggestionCanvas.vue
 │ │ ├── SuggestionList.vue
 │ │ ├── SuggestionItem.vue
-│ │ └── NotificationBell.vue
+│ │ ├── NotificationBell.vue
+│ │ ├── LikersList.vue                 # Task 12: Modal showing likers
+│ │ └── PopularItemsCarousel.vue       # Task 12: Trending items carousel
 │ ├── pages/
 │ │ ├── Login.vue
 │ │ ├── Closet.vue
@@ -88,13 +103,15 @@ stylesnap/
 │ │ ├── auth-store.js
 │ │ ├── closet-store.js
 │ │ ├── friends-store.js
-│ │ └── suggestions-store.js
+│ │ ├── suggestions-store.js
+│ │ └── likes-store.js                 # Task 12: Likes state management
 │ ├── services/
 │ │ ├── api.js
 │ │ ├── auth-service.js
 │ │ ├── clothes-service.js
 │ │ ├── friends-service.js
 │ │ ├── suggestions-service.js
+│ │ ├── likes-service.js               # Task 12: Likes API integration
 │ │ ├── weather-service.js             # Batch 9: Weather integration
 │ │ ├── push-notifications.js          # Batch 10: Push notifications
 │ │ └── offline-sync.js                # Batch 10: Offline sync
@@ -131,7 +148,7 @@ stylesnap/
 │ ├── component-template.md
 │ └── api-template.md
 ├── REQUIREMENTS.md                    # Requirements index
-├── TASKS.md                           # Tasks index (includes Task 8: Mobile Mockups)
+├── TASKS.md                           # Tasks index (includes Tasks 8-12)
 ├── PROJECT_CONTEXT.md                 # This file - Project overview
 ├── package.json
 ├── vite.config.js

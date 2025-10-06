@@ -1,0 +1,274 @@
+-- Migration 005: Item Catalog System
+-- Creates tables and policies for browsing pre-populated clothing catalog
+-- This file is re-runnable - safe to execute multiple times
+
+-- ============================================
+-- DROP EXISTING OBJECTS (in reverse dependency order)
+-- ============================================
+DROP TRIGGER IF EXISTS update_catalog_items_updated_at ON catalog_items CASCADE;
+
+DROP FUNCTION IF EXISTS add_catalog_item_to_closet(UUID, UUID, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS search_catalog(TEXT, VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER) CASCADE;
+
+DROP POLICY IF EXISTS "Anyone can view active catalog items" ON catalog_items;
+
+DROP INDEX IF EXISTS idx_catalog_category;
+DROP INDEX IF EXISTS idx_catalog_color;
+DROP INDEX IF EXISTS idx_catalog_brand;
+DROP INDEX IF EXISTS idx_catalog_season;
+DROP INDEX IF EXISTS idx_catalog_active;
+DROP INDEX IF EXISTS idx_catalog_search;
+DROP INDEX IF EXISTS idx_clothes_catalog_item;
+
+-- Drop the generated column if it exists
+ALTER TABLE catalog_items DROP COLUMN IF EXISTS search_vector;
+
+-- Drop catalog_item_id from clothes if it exists
+ALTER TABLE clothes DROP COLUMN IF EXISTS catalog_item_id;
+
+DROP TABLE IF EXISTS catalog_items CASCADE;
+
+-- ============================================
+-- CATALOG ITEMS TABLE
+-- ============================================
+
+CREATE TABLE catalog_items (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(50) NOT NULL CHECK (category IN ('top', 'bottom', 'outerwear', 'shoes', 'accessory')),
+  image_url TEXT NOT NULL,
+  thumbnail_url TEXT NOT NULL,
+  tags TEXT[],
+  brand VARCHAR(100),
+  color VARCHAR(50),
+  season VARCHAR(20) CHECK (season IN ('spring', 'summer', 'fall', 'winter', 'all-season')),
+  style TEXT[], -- casual, formal, sporty, business, etc.
+  description TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================
+-- LINK USER ITEMS TO CATALOG (OPTIONAL)
+-- ============================================
+
+-- Add optional reference from clothes to catalog_items
+ALTER TABLE clothes 
+  ADD COLUMN catalog_item_id UUID REFERENCES catalog_items(id);
+
+-- ============================================
+-- INDEXES FOR PERFORMANCE
+-- ============================================
+
+-- Category filter (most common)
+CREATE INDEX idx_catalog_category ON catalog_items(category);
+
+-- Color filter
+CREATE INDEX idx_catalog_color ON catalog_items(color);
+
+-- Brand filter
+CREATE INDEX idx_catalog_brand ON catalog_items(brand);
+
+-- Season filter
+CREATE INDEX idx_catalog_season ON catalog_items(season);
+
+-- Active items only (most queries)
+CREATE INDEX idx_catalog_active ON catalog_items(is_active) WHERE is_active = true;
+
+-- Add generated column for full-text search
+ALTER TABLE catalog_items 
+  ADD COLUMN search_vector tsvector 
+  GENERATED ALWAYS AS (
+    to_tsvector('english', 
+      name || ' ' || 
+      COALESCE(brand, '') || ' ' || 
+      COALESCE(description, '') || ' ' ||
+      COALESCE(array_to_string(tags, ' '), '')
+    )
+  ) STORED;
+
+-- Full-text search index (now on the generated column)
+CREATE INDEX idx_catalog_search ON catalog_items USING gin(search_vector);
+
+-- Index for user items linked to catalog
+CREATE INDEX idx_clothes_catalog_item ON clothes(catalog_item_id);
+
+-- ============================================
+-- ROW LEVEL SECURITY (RLS)
+-- ============================================
+
+-- Enable RLS on catalog_items
+ALTER TABLE catalog_items ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Anyone can view active catalog items (public read)
+CREATE POLICY "Anyone can view active catalog items"
+ON catalog_items FOR SELECT
+USING (is_active = true);
+
+-- Policy: Only admins can modify catalog (not implemented in MVP)
+-- This prevents regular users from adding/editing catalog items
+-- In the future, create an 'admins' table and use:
+-- CREATE POLICY "Only admins can modify catalog"
+-- ON catalog_items FOR ALL
+-- USING (auth.uid() IN (SELECT id FROM admins));
+
+-- ============================================
+-- FUNCTIONS
+-- ============================================
+
+-- Function to search catalog with full-text search
+CREATE OR REPLACE FUNCTION search_catalog(
+  search_query TEXT,
+  filter_category VARCHAR(50) DEFAULT NULL,
+  filter_color VARCHAR(50) DEFAULT NULL,
+  filter_brand VARCHAR(100) DEFAULT NULL,
+  filter_season VARCHAR(20) DEFAULT NULL,
+  page_limit INTEGER DEFAULT 20,
+  page_offset INTEGER DEFAULT 0
+)
+RETURNS TABLE (
+  id UUID,
+  name VARCHAR(255),
+  category VARCHAR(50),
+  image_url TEXT,
+  thumbnail_url TEXT,
+  tags TEXT[],
+  brand VARCHAR(100),
+  color VARCHAR(50),
+  season VARCHAR(20),
+  style TEXT[],
+  rank REAL
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    ci.id,
+    ci.name,
+    ci.category,
+    ci.image_url,
+    ci.thumbnail_url,
+    ci.tags,
+    ci.brand,
+    ci.color,
+    ci.season,
+    ci.style,
+    ts_rank(ci.search_vector, plainto_tsquery('english', search_query)) AS rank
+  FROM catalog_items ci
+  WHERE 
+    ci.is_active = true
+    AND (filter_category IS NULL OR ci.category = filter_category)
+    AND (filter_color IS NULL OR ci.color = filter_color)
+    AND (filter_brand IS NULL OR ci.brand = filter_brand)
+    AND (filter_season IS NULL OR ci.season = filter_season)
+    AND ci.search_vector @@ plainto_tsquery('english', search_query)
+  ORDER BY rank DESC
+  LIMIT page_limit
+  OFFSET page_offset;
+END;
+$$;
+
+-- Function to add catalog item to user's closet
+CREATE OR REPLACE FUNCTION add_catalog_item_to_closet(
+  user_id_param UUID,
+  catalog_item_id_param UUID,
+  privacy_param VARCHAR(20) DEFAULT 'friends'
+)
+RETURNS UUID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  new_item_id UUID;
+  catalog_item RECORD;
+  user_item_count INTEGER;
+BEGIN
+  -- Check user's quota (200 items max)
+  SELECT COUNT(*) INTO user_item_count
+  FROM clothes
+  WHERE owner_id = user_id_param
+    AND removed_at IS NULL;
+  
+  IF user_item_count >= 200 THEN
+    RAISE EXCEPTION 'Quota exceeded: Maximum 200 items per user';
+  END IF;
+  
+  -- Check if catalog item exists
+  SELECT * INTO catalog_item
+  FROM catalog_items
+  WHERE id = catalog_item_id_param
+    AND is_active = true;
+  
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Catalog item not found or inactive';
+  END IF;
+  
+  -- Check if user already has this item
+  IF EXISTS (
+    SELECT 1 FROM clothes
+    WHERE owner_id = user_id_param
+      AND catalog_item_id = catalog_item_id_param
+      AND removed_at IS NULL
+  ) THEN
+    RAISE EXCEPTION 'Item already in closet';
+  END IF;
+  
+  -- Create new clothing item from catalog
+  INSERT INTO clothes (
+    owner_id,
+    name,
+    category,
+    image_url,
+    thumbnail_url,
+    style_tags,
+    privacy,
+    catalog_item_id
+  ) VALUES (
+    user_id_param,
+    catalog_item.name,
+    catalog_item.category,
+    catalog_item.image_url,
+    catalog_item.thumbnail_url,
+    catalog_item.style,
+    privacy_param,
+    catalog_item_id_param
+  )
+  RETURNING id INTO new_item_id;
+  
+  RETURN new_item_id;
+END;
+$$;
+
+-- ============================================
+-- TRIGGERS
+-- ============================================
+
+-- Trigger to update updated_at timestamp on catalog_items
+CREATE TRIGGER update_catalog_items_updated_at
+  BEFORE UPDATE ON catalog_items
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- SAMPLE DATA (Optional - for testing)
+-- ============================================
+
+-- Uncomment to insert sample catalog items for testing
+/*
+INSERT INTO catalog_items (name, category, image_url, thumbnail_url, tags, brand, color, season, style) VALUES
+('Classic White T-Shirt', 'top', 'https://example.com/white-tshirt.jpg', 'https://example.com/white-tshirt-thumb.jpg', ARRAY['basic', 'cotton', 'versatile'], 'Generic', 'white', 'all-season', ARRAY['casual']),
+('Blue Denim Jacket', 'outerwear', 'https://example.com/denim-jacket.jpg', 'https://example.com/denim-jacket-thumb.jpg', ARRAY['denim', 'casual', 'blue'], 'Levi''s', 'blue', 'all-season', ARRAY['casual']),
+('Black Leather Boots', 'shoes', 'https://example.com/leather-boots.jpg', 'https://example.com/leather-boots-thumb.jpg', ARRAY['leather', 'boots', 'black'], 'Dr. Martens', 'black', 'fall', ARRAY['casual', 'formal']),
+('Gray Wool Sweater', 'top', 'https://example.com/gray-sweater.jpg', 'https://example.com/gray-sweater-thumb.jpg', ARRAY['wool', 'warm', 'cozy'], 'Uniqlo', 'gray', 'winter', ARRAY['casual']),
+('Black Slim Fit Jeans', 'bottom', 'https://example.com/black-jeans.jpg', 'https://example.com/black-jeans-thumb.jpg', ARRAY['denim', 'slim-fit', 'versatile'], 'Levi''s', 'black', 'all-season', ARRAY['casual', 'formal']);
+*/
+
+-- ============================================
+-- COMMENTS
+-- ============================================
+
+COMMENT ON TABLE catalog_items IS 'Pre-populated catalog of clothing items that users can add to their closets';
+COMMENT ON COLUMN catalog_items.catalog_item_id IS 'Optional reference to catalog item if added from catalog';
+COMMENT ON FUNCTION search_catalog IS 'Full-text search of catalog with filtering and pagination';
+COMMENT ON FUNCTION add_catalog_item_to_closet IS 'Add a catalog item to user''s closet (checks quota and duplicates)';

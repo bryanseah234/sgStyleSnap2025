@@ -301,8 +301,12 @@ See `requirements/security.md` for complete security requirements.
 ### Implementation Status
 - **Tasks 1-7:** ✅ Complete (Core features implemented)
 - **Task 8:** ⏳ Optional (Mobile mockup documentation)
-- **Database:** ✅ Complete (4 migrations: schema, RLS, indexes, advanced features)
-- **API Endpoints:** ✅ Complete (60+ endpoints documented)
+- **Task 9:** ✅ Complete (Item Catalog System - browse pre-populated items)
+- **Task 10:** ✅ Complete (Color Detection AI - automatic color recognition)
+- **Task 11:** ✅ Complete (Outfit Generation from Permutations - smart outfit combinations)
+- **Task 12:** ✅ Backend Complete (Likes Feature - like/unlike clothing items)
+- **Database:** ✅ Complete (8 migrations: schema, RLS, indexes, advanced features, catalog, colors, outfits, likes)
+- **API Endpoints:** ✅ Complete (80+ endpoints documented)
 - **Frontend:** ✅ Complete (Vue 3 + mobile-first design)
 - **PWA:** ✅ Complete (Offline, push notifications, installable)
 - **Security:** ✅ Complete (RLS, OAuth, input validation)
@@ -310,9 +314,13 @@ See `requirements/security.md` for complete security requirements.
 
 ### Database Tables
 - `users` - User accounts (Google OAuth)
-- `clothes` - Clothing items (max 200 per user)
+- `clothes` - Clothing items (max 200 per user, with color detection)
 - `friends` - Friend relationships
 - `suggestions` - Outfit suggestions between friends
+- `likes` - User likes on individual clothing items
+- `catalog_items` - Pre-populated clothing database for browsing
+- `generated_outfits` - AI-generated outfit combinations
+- `outfit_generation_history` - Audit log for AI generation
 - `outfit_history` - Wear tracking and analytics
 - `outfit_collections` - Curated outfit collections
 - `user_preferences` - Style and AI learning data
@@ -322,6 +330,10 @@ See `requirements/security.md` for complete security requirements.
 ### Current Capabilities
 - ✅ User authentication with Google OAuth
 - ✅ Clothing item CRUD with image upload (Cloudinary)
+- ✅ Automatic color detection (18 standardized colors)
+- ✅ Item catalog system (browse pre-populated clothing)
+- ✅ Outfit generation from permutations (color harmony + style compatibility)
+- ✅ Likes feature (like/unlike items, popular items)
 - ✅ Friend system with privacy controls
 - ✅ Outfit suggestion creation and management
 - ✅ Weather-based AI suggestions
@@ -358,12 +370,24 @@ VITE_OPENWEATHER_API_KEY=your_weather_api_key
 ```
 
 ### Database Setup
+
+**📖 See detailed guides:**
+- **[DATABASE_QUICK_START.md](DATABASE_QUICK_START.md)** - Quick reference (3 methods)
+- **[DATABASE_SETUP.md](DATABASE_SETUP.md)** - Complete step-by-step guide
+
+**⚡ Fastest method (Supabase SQL Editor):**
+1. Create project at https://supabase.com/dashboard
+2. Go to SQL Editor
+3. Copy/paste and run each file in order:
+   - `sql/001_initial_schema.sql`
+   - `sql/002_rls_policies.sql`
+   - `sql/003_indexes_functions.sql`
+   - `sql/004_advanced_features.sql`
+
+**🛠️ Or use the automated script:**
 ```bash
-# Run migrations in order
-psql -d your_database -f sql/001_initial_schema.sql
-psql -d your_database -f sql/002_rls_policies.sql
-psql -d your_database -f sql/003_indexes_functions.sql
-psql -d your_database -f sql/004_advanced_features.sql
+export DATABASE_URL="postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres"
+./scripts/setup-database.sh
 ```
 
 ### Installation
@@ -455,101 +479,104 @@ stylesnap/
 
 ## ⚠️ Known Limitations
 
-### Current Scope (MVP Features Only)
-- ❌ No item catalog/database of suggested items (see "Missing Features" below)
-- ❌ No color detection/recognition AI
-- ❌ No outfit generation from scratch
+### Current Scope (MVP Features)
+- ✅ **Item Catalog System** - Browse and add pre-populated clothing items (Task 9)
+- ✅ **Color Detection AI** - Automatic color recognition when uploading items (Task 10)
+- ✅ **Outfit Generation** - Generate outfit combinations from user's items (Task 11)
+- ✅ **Likes Feature** - Like/unlike clothing items, see popular items (Task 12 - Backend Complete)
+- ✅ Digital closet with 200-item quota
+- ✅ Friend system and outfit sharing
+- ✅ Weather-based suggestions
+- ✅ PWA with offline support
 - ❌ No shopping/e-commerce integration
 - ❌ No user-generated tags (predefined only)
-- ❌ No outfit rating system (planned for future)
+- ⏳ Outfit rating system (likes implemented, ratings planned for future)
 
 ### Intentional Design Decisions
 - **200-item quota:** Prevents database bloat, Cloudinary limits
 - **Friends-only privacy:** No public profiles (privacy-first)
-- **Manual item upload:** Users photograph/upload their own clothes
+- **Hybrid item sources:** Users can upload their own or add from catalog
+- **18 standardized colors:** Consistent color matching for outfit algorithms
 - **Simple categories:** 5 categories only (extensible in future)
+- **Algorithm-based suggestions:** Outfit generation using permutations and rules (no external AI APIs)
 
 ---
 
-## 🆕 Missing Features (Potential Future Additions)
+## � Recently Added Features
 
-### 1. **Item Catalog / Suggested Items Database**
+### ✅ Item Catalog System (Task 9)
+**Status:** Complete  
+**What It Does:**
+- Pre-populated database of clothing items
+- Browse and search catalog with filters
+- Add catalog items to closet with one click
+- Full-text search across name, brand, tags
+- Respect 200-item quota
 
-**Current State:** ❌ **NOT IMPLEMENTED**
+**Files:**
+- `sql/005_catalog_system.sql` - Database schema
+- `tasks/09-item-catalog-system.md` - Implementation guide
+- `requirements/item-catalog.md` - Full specifications
 
-**What's Missing:**
-- No pre-populated database of clothing items
-- No way to browse/add items without uploading photos
-- No stock photos or template items
-- Users MUST upload their own clothing photos
+### ✅ Color Detection AI (Task 10)
+**Status:** Complete  
+**What It Does:**
+- Automatic color detection on image upload
+- 18 standardized color palette
+- Primary + up to 3 secondary colors
+- Color-based search and filtering
+- Color harmony suggestions (complementary, analogous, triadic)
 
-**Why It's Missing:**
-- Not part of original MVP scope
-- Focuses on personal wardrobe digitization
-- Avoids legal issues with stock photos
-- Simplifies initial database design
+**Files:**
+- `sql/006_color_detection.sql` - Color fields and functions
+- `tasks/10-color-detection-ai.md` - Implementation guide
+- `requirements/color-detection.md` - Full specifications
 
-**To Implement This Feature (Instructions for Future LLM):**
+### ✅ Outfit Generation from Permutations (Task 11)
+**Status:** Complete  
+**What It Does:**
+- Generate outfit combinations from user's closet items
+- Color harmony algorithms (monochromatic, complementary, etc.)
+- Style compatibility matrix (casual+casual, formal+formal, etc.)
+- Weather and occasion filtering
+- Outfit scoring (0-100) based on color harmony + completeness
+- User ratings and preference learning
+- **No external AI APIs** - all logic runs locally
 
-1. **Create New Task File:**
-   ```
-   tasks/09-item-catalog-system.md
-   ```
+**Files:**
+- `sql/007_outfit_generation.sql` - Outfit tables and scoring functions
+- `tasks/11-outfit-generation.md` - Implementation guide
+- `requirements/outfit-generation.md` - Full specifications
 
-2. **Create New Requirement File:**
-   ```
-   requirements/item-catalog.md
-   ```
+### ✅ Likes Feature (Task 12)
+**Status:** Backend Complete (Frontend in Progress)  
+**What It Does:**
+- Like/unlike individual clothing items
+- View popular items from friends
+- See who liked your items
+- Like statistics and analytics
+- Optimistic UI updates
+- Privacy: can't like own items or private items
 
-3. **Database Changes Needed:**
-   ```sql
-   -- New table for catalog items
-   CREATE TABLE catalog_items (
-     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-     name VARCHAR(255) NOT NULL,
-     category VARCHAR(50) NOT NULL,
-     image_url TEXT NOT NULL,
-     thumbnail_url TEXT NOT NULL,
-     tags TEXT[],
-     brand VARCHAR(100),
-     color VARCHAR(50),
-     season VARCHAR(20),
-     is_active BOOLEAN DEFAULT true,
-     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-   );
-   
-   -- Link user items to catalog (optional)
-   ALTER TABLE clothes ADD COLUMN catalog_item_id UUID REFERENCES catalog_items(id);
-   ```
+**Files:**
+- `sql/008_likes_feature.sql` - Likes table and functions
+- `src/services/likes-service.js` - API integration
+- `src/stores/likes-store.js` - State management
+- `src/components/ui/LikeButton.vue` - Heart button component
+- `src/components/social/LikersList.vue` - Modal showing likers ✅
+- `src/components/closet/LikedItemsGrid.vue` - Grid of liked items ✅
+- `src/components/social/PopularItemsCarousel.vue` - Trending items carousel ✅
+- `tasks/12-likes-feature.md` - Implementation guide with troubleshooting
+- `docs/API_REFERENCE.md` - Complete API documentation (includes Likes endpoints)
+- `requirements/api-endpoints.md` - API requirements (includes Likes endpoints)
 
-4. **API Endpoints Needed:**
-   - `GET /api/catalog` - Browse catalog with pagination, filtering
-   - `GET /api/catalog/:id` - Get catalog item details
-   - `POST /api/catalog/:id/add-to-closet` - Add catalog item to user's closet
+**Status:** ✅ All components created - Ready for integration
 
-5. **Frontend Components Needed:**
-   - `src/pages/CatalogBrowse.vue` - Browse catalog page
-   - `src/components/catalog/CatalogGrid.vue` - Catalog item grid
-   - `src/components/catalog/CatalogFilter.vue` - Filter sidebar
-   - `src/components/catalog/CatalogItemCard.vue` - Individual item card
-
-6. **Implementation Considerations:**
-   - **Pagination:** Essential (could be thousands of items)
-   - **Filtering:** Category, color, brand, season, tags
-   - **Search:** Full-text search on name, tags, brand
-   - **Quota:** Adding from catalog still counts toward 200-item limit
-   - **Image Licensing:** Must use properly licensed stock photos
-   - **Performance:** Implement lazy loading, virtual scrolling
-
-7. **Mobile Mockup Needed:**
-   - `36-catalog-browse.png` - Catalog browsing screen
-   - Add to `tasks/08-mobile-mockups.md`
-
-**Reference Documentation:**
-- Follow patterns in `requirements/api-endpoints.md`
-- Follow component patterns in `requirements/frontend-components.md`
-- Check security requirements in `requirements/security.md`
-- Follow task structure in `tasks/01-infrastructure-setup.md`
+**Remaining Work:**
+- Add LikeButton to existing components (ClosetItemCard, SuggestionItem, Profile, Friends)
+- Initialize likes store in App.vue
+- Run SQL migration
+- Write tests
 
 ---
 

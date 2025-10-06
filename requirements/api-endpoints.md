@@ -896,6 +896,152 @@ Unlike a friend's clothing item.
 
 ---
 
+### 3.15 `GET /likes/my-items`
+
+Get items the current user has liked.
+
+**Query Parameters:**
+
+- `limit` (optional) - Items per page, default: 20, max: 100
+- `offset` (optional) - Number of items to skip, default: 0
+
+**Response:**
+
+```json
+{
+  "items": [
+    {
+      "id": "string",
+      "name": "string",
+      "owner": {
+        "id": "string",
+        "display_name": "string",
+        "avatar_url": "string"
+      },
+      "image_url": "string",
+      "thumbnail_url": "string",
+      "likes_count": 15,
+      "liked_at": "2025-10-05T12:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 42,
+    "limit": 20,
+    "offset": 0,
+    "has_more": true
+  }
+}
+```
+
+**Business Logic:**
+
+- Return items user has liked, ordered by `liked_at DESC`
+- Include owner information for each item
+- Support pagination
+- Only include items user still has permission to view
+
+---
+
+### 3.16 `GET /clothes/:id/likers`
+
+Get users who liked a specific item.
+
+**Query Parameters:**
+
+- `limit` (optional) - Users per page, default: 20, max: 100
+
+**Response:**
+
+```json
+{
+  "likers": [
+    {
+      "user_id": "string",
+      "display_name": "string",
+      "avatar_url": "string",
+      "liked_at": "2025-10-05T14:30:00Z"
+    }
+  ],
+  "total_likes": 15
+}
+```
+
+**Business Logic:**
+
+- Return users who liked the item
+- Order by `liked_at DESC`
+- Include user profile information
+- Only accessible if user owns item or can view it (friends)
+
+---
+
+### 3.17 `GET /likes/popular`
+
+Get popular items from friends (trending).
+
+**Query Parameters:**
+
+- `limit` (optional) - Items to return, default: 10, max: 50
+
+**Response:**
+
+```json
+{
+  "items": [
+    {
+      "id": "string",
+      "name": "string",
+      "owner": {
+        "id": "string",
+        "display_name": "string",
+        "avatar_url": "string"
+      },
+      "image_url": "string",
+      "thumbnail_url": "string",
+      "likes_count": 42,
+      "category": "string"
+    }
+  ],
+  "count": 10
+}
+```
+
+**Business Logic:**
+
+- Return items with most likes from user's friends
+- Only include items from accepted friends
+- Order by likes_count DESC, then created_at DESC
+- Use database function `get_popular_items_from_friends()`
+
+---
+
+### 3.18 `GET /likes/stats`
+
+Get current user's like statistics.
+
+**Response:**
+
+```json
+{
+  "items_liked_by_me": 25,
+  "likes_received_on_my_items": 142,
+  "most_liked_item": {
+    "id": "string",
+    "name": "string",
+    "likes_count": 38
+  }
+}
+```
+
+**Business Logic:**
+
+- Calculate total items user has liked
+- Calculate total likes received on user's items
+- Find user's most liked item
+- Use database function `get_user_likes_stats()`
+
+---
+
 ## 4. Scheduled Maintenance & Cleanup
 
 ### 4.1 Automated 30-Day Purge Script

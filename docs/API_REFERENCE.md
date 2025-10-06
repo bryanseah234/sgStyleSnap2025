@@ -13,8 +13,9 @@
 3. [Social Features](#social-features)
 4. [Suggestions](#suggestions)
 5. [User Management](#user-management)
-6. [Error Codes](#error-codes)
-7. [Rate Limits](#rate-limits)
+6. [Likes](#likes)
+7. [Error Codes](#error-codes)
+8. [Rate Limits](#rate-limits)
 
 ---
 
@@ -806,6 +807,224 @@ Authorization: Bearer <token>
 ```
 
 **Note:** Returns 404 if item doesn't exist, is deleted, or user lacks permission (privacy enforcement).
+
+---
+
+## Likes
+
+### POST /clothes/:id/like
+
+Like a clothing item.
+
+**Request:**
+
+```http
+POST /api/clothes/item-uuid/like
+Authorization: Bearer <token>
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "message": "Item liked successfully",
+  "likes_count": 15
+}
+```
+
+**Error Responses:**
+
+```json
+// 403 Forbidden - Cannot like own items
+{
+  "error": "You cannot like your own items",
+  "code": "SELF_LIKE_NOT_ALLOWED"
+}
+
+// 409 Conflict - Already liked
+{
+  "message": "Item already liked",
+  "likes_count": 15
+}
+```
+
+**Note:** Attempting to like your own items is prevented at the database level.
+
+---
+
+### DELETE /clothes/:id/like
+
+Unlike a clothing item.
+
+**Request:**
+
+```http
+DELETE /api/clothes/item-uuid/like
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "Like removed successfully",
+  "likes_count": 14
+}
+```
+
+**Note:** Idempotent - returns success even if like didn't exist.
+
+---
+
+### GET /likes/my-items
+
+Get items the current user has liked.
+
+**Request:**
+
+```http
+GET /api/likes/my-items?limit=20&offset=0
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | 20 | Items per page (max: 100) |
+| `offset` | number | 0 | Number of items to skip |
+
+**Response (200 OK):**
+
+```json
+{
+  "items": [
+    {
+      "id": "item-uuid",
+      "name": "Blue Denim Jacket",
+      "owner": {
+        "id": "user-uuid",
+        "display_name": "Jane Doe",
+        "avatar_url": "https://..."
+      },
+      "image_url": "https://...",
+      "likes_count": 15,
+      "liked_at": "2025-10-05T12:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 42,
+    "limit": 20,
+    "offset": 0,
+    "has_more": true
+  }
+}
+```
+
+---
+
+### GET /clothes/:id/likers
+
+Get users who liked a specific item.
+
+**Request:**
+
+```http
+GET /api/clothes/item-uuid/likers?limit=20
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | 20 | Users per page (max: 100) |
+
+**Response (200 OK):**
+
+```json
+{
+  "likers": [
+    {
+      "user_id": "user-uuid",
+      "display_name": "John Doe",
+      "avatar_url": "https://...",
+      "liked_at": "2025-10-05T14:30:00Z"
+    }
+  ],
+  "total_likes": 15
+}
+```
+
+---
+
+### GET /likes/popular
+
+Get popular items from friends (trending).
+
+**Request:**
+
+```http
+GET /api/likes/popular?limit=10
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | 10 | Items to return (max: 50) |
+
+**Response (200 OK):**
+
+```json
+{
+  "items": [
+    {
+      "id": "item-uuid",
+      "name": "Vintage Leather Jacket",
+      "owner": {
+        "id": "user-uuid",
+        "display_name": "Jane Doe",
+        "avatar_url": "https://..."
+      },
+      "image_url": "https://...",
+      "likes_count": 42,
+      "category": "outerwear"
+    }
+  ],
+  "count": 10
+}
+```
+
+**Note:** Only returns items from users in your friends list.
+
+---
+
+### GET /likes/stats
+
+Get current user's like statistics.
+
+**Request:**
+
+```http
+GET /api/likes/stats
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "items_liked_by_me": 25,
+  "likes_received_on_my_items": 142,
+  "most_liked_item": {
+    "id": "item-uuid",
+    "name": "Blue Denim Jacket",
+    "likes_count": 38
+  }
+}
+```
 
 ---
 

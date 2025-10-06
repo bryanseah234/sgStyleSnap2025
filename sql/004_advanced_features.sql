@@ -1,6 +1,34 @@
 -- Batch 9: Advanced Features - Database Schema
 -- Migration: 004_advanced_features.sql
 -- Date: October 5, 2025
+-- This file is re-runnable - safe to execute multiple times
+
+-- =============================================================================
+-- DROP EXISTING OBJECTS (in reverse dependency order)
+-- =============================================================================
+DROP TRIGGER IF EXISTS auto_delete_old_notifications ON notifications CASCADE;
+DROP TRIGGER IF EXISTS update_outfit_collections_updated_at ON outfit_collections CASCADE;
+DROP TRIGGER IF EXISTS update_outfit_history_updated_at ON outfit_history CASCADE;
+DROP TRIGGER IF EXISTS trigger_new_friend_request ON friends CASCADE;
+DROP TRIGGER IF EXISTS trigger_friend_request_accepted ON friends CASCADE;
+DROP TRIGGER IF EXISTS trigger_new_suggestion_received ON suggestions CASCADE;
+DROP TRIGGER IF EXISTS trigger_outfit_shared ON outfit_shared_event CASCADE;
+
+DROP FUNCTION IF EXISTS notify_new_friend_request() CASCADE;
+DROP FUNCTION IF EXISTS notify_friend_request_accepted() CASCADE;
+DROP FUNCTION IF EXISTS notify_new_suggestion() CASCADE;
+DROP FUNCTION IF EXISTS notify_outfit_shared() CASCADE;
+DROP FUNCTION IF EXISTS delete_old_notifications() CASCADE;
+DROP FUNCTION IF EXISTS get_user_statistics(UUID) CASCADE;
+DROP FUNCTION IF EXISTS extract_cloth_ids_from_outfit(JSONB) CASCADE;
+DROP FUNCTION IF EXISTS get_most_worn_items(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS get_least_worn_items(UUID, INTEGER) CASCADE;
+
+DROP VIEW IF EXISTS user_statistics_view CASCADE;
+
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS outfit_collections CASCADE;
+DROP TABLE IF EXISTS outfit_history CASCADE;
 
 -- =============================================================================
 -- 1. OUTFIT HISTORY & ANALYTICS
