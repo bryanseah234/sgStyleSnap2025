@@ -4,6 +4,18 @@ This guide will walk you through setting up your Supabase PostgreSQL database fo
 
 ---
 
+## ⚠️ Important: Recent SQL Fixes (October 6, 2025)
+
+**Issue Fixed:** The `004_advanced_features.sql` file had references to non-existent tables:
+- ❌ **Removed**: `notifications` table references (planned but never implemented)
+- ❌ **Removed**: Notification-related triggers and functions
+- ✅ **Fixed**: Changed `friendships` → `friends` (correct table name from 001_initial_schema.sql)
+- ✅ **Fixed**: Changed `user1_id/user2_id` → `requester_id/receiver_id` (correct column names)
+
+**All SQL files are now re-runnable and error-free!** Each file has `DROP IF EXISTS` statements.
+
+---
+
 ## 📋 Prerequisites
 
 - ✅ Supabase account (sign up at https://supabase.com)

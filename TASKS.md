@@ -17,6 +17,7 @@
 10. [Color Detection AI](tasks/10-color-detection-ai.md) - Automatic color recognition
 11. [Outfit Generation](tasks/11-outfit-generation.md) - Smart outfit combinations from permutations
 12. [Likes Feature](tasks/12-likes-feature.md) - Like/unlike clothing items
+13. [Advanced Outfit Features](tasks/13-advanced-outfit-features.md) - Outfit history, social sharing, collections
 
 ## Task Dependencies
 Each task may depend on the previous ones. Check individual task files for detailed dependencies.
@@ -40,6 +41,13 @@ Each task may depend on the previous ones. Check individual task files for detai
   - ✅ Components: LikeButton, LikersList, LikedItemsGrid, PopularItemsCarousel
   - ✅ Integration: Profile.vue (liked items tab), Friends.vue (popular items)
   - ⏳ Testing: Unit/integration/E2E tests pending
+- **Task 13:** 🔄 In Progress (Advanced Outfit Features)
+  - ✅ SQL Migration: 004_advanced_features.sql (8 tables, RLS policies, analytics functions)
+  - ✅ Services: outfit-history, shared-outfits, collections, style-preferences, analytics (5 files)
+  - ✅ Stores: Pinia state management (5 files: outfit-history, shared-outfits, collections, style-preferences, analytics)
+  - ⏳ Components: UI components for all features (15+ components pending)
+  - ⏳ Integration: Profile tabs, Analytics page, Social feed
+  - ⏳ Documentation: API endpoints, PROJECT_CONTEXT.md updates
 
 ## Feature Summary
 

@@ -6,28 +6,25 @@
 -- =============================================================================
 -- DROP EXISTING OBJECTS (in reverse dependency order)
 -- =============================================================================
-DROP TRIGGER IF EXISTS auto_delete_old_notifications ON notifications CASCADE;
 DROP TRIGGER IF EXISTS update_outfit_collections_updated_at ON outfit_collections CASCADE;
 DROP TRIGGER IF EXISTS update_outfit_history_updated_at ON outfit_history CASCADE;
-DROP TRIGGER IF EXISTS trigger_new_friend_request ON friends CASCADE;
-DROP TRIGGER IF EXISTS trigger_friend_request_accepted ON friends CASCADE;
-DROP TRIGGER IF EXISTS trigger_new_suggestion_received ON suggestions CASCADE;
-DROP TRIGGER IF EXISTS trigger_outfit_shared ON outfit_shared_event CASCADE;
 
-DROP FUNCTION IF EXISTS notify_new_friend_request() CASCADE;
-DROP FUNCTION IF EXISTS notify_friend_request_accepted() CASCADE;
-DROP FUNCTION IF EXISTS notify_new_suggestion() CASCADE;
-DROP FUNCTION IF EXISTS notify_outfit_shared() CASCADE;
-DROP FUNCTION IF EXISTS delete_old_notifications() CASCADE;
-DROP FUNCTION IF EXISTS get_user_statistics(UUID) CASCADE;
 DROP FUNCTION IF EXISTS extract_cloth_ids_from_outfit(JSONB) CASCADE;
+DROP FUNCTION IF EXISTS get_user_outfit_stats(UUID) CASCADE;
 DROP FUNCTION IF EXISTS get_most_worn_items(UUID, INTEGER) CASCADE;
-DROP FUNCTION IF EXISTS get_least_worn_items(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS get_unworn_combinations(UUID) CASCADE;
+DROP FUNCTION IF EXISTS update_outfit_likes_count() CASCADE;
+DROP FUNCTION IF EXISTS update_outfit_comments_count() CASCADE;
+DROP FUNCTION IF EXISTS update_collection_outfits_count() CASCADE;
+DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 
-DROP VIEW IF EXISTS user_statistics_view CASCADE;
-
-DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS collection_outfits CASCADE;
 DROP TABLE IF EXISTS outfit_collections CASCADE;
+DROP TABLE IF EXISTS suggestion_feedback CASCADE;
+DROP TABLE IF EXISTS style_preferences CASCADE;
+DROP TABLE IF EXISTS outfit_comments CASCADE;
+DROP TABLE IF EXISTS outfit_likes CASCADE;
+DROP TABLE IF EXISTS shared_outfits CASCADE;
 DROP TABLE IF EXISTS outfit_history CASCADE;
 
 -- =============================================================================
@@ -502,12 +499,12 @@ CREATE POLICY "Users can view friends-only outfits from friends"
       user_id = auth.uid() OR
       user_id IN (
         SELECT CASE
-          WHEN user1_id = auth.uid() THEN user2_id
-          WHEN user2_id = auth.uid() THEN user1_id
+          WHEN requester_id = auth.uid() THEN receiver_id
+          WHEN receiver_id = auth.uid() THEN requester_id
         END
-        FROM friendships
+        FROM friends
         WHERE status = 'accepted'
-          AND (user1_id = auth.uid() OR user2_id = auth.uid())
+          AND (requester_id = auth.uid() OR receiver_id = auth.uid())
       )
     )
   );
@@ -540,12 +537,12 @@ CREATE POLICY "Users can view likes on visible outfits"
           visibility = 'friends' AND
           user_id IN (
             SELECT CASE
-              WHEN user1_id = auth.uid() THEN user2_id
-              WHEN user2_id = auth.uid() THEN user1_id
+              WHEN requester_id = auth.uid() THEN receiver_id
+              WHEN receiver_id = auth.uid() THEN requester_id
             END
-            FROM friendships
+            FROM friends
             WHERE status = 'accepted'
-              AND (user1_id = auth.uid() OR user2_id = auth.uid())
+              AND (requester_id = auth.uid() OR receiver_id = auth.uid())
           )
         )
     )
@@ -577,12 +574,12 @@ CREATE POLICY "Users can view comments on visible outfits"
           visibility = 'friends' AND
           user_id IN (
             SELECT CASE
-              WHEN user1_id = auth.uid() THEN user2_id
-              WHEN user2_id = auth.uid() THEN user1_id
+              WHEN requester_id = auth.uid() THEN receiver_id
+              WHEN receiver_id = auth.uid() THEN requester_id
             END
-            FROM friendships
+            FROM friends
             WHERE status = 'accepted'
-              AND (user1_id = auth.uid() OR user2_id = auth.uid())
+              AND (requester_id = auth.uid() OR receiver_id = auth.uid())
           )
         )
     )
@@ -647,12 +644,12 @@ CREATE POLICY "Users can view friends' collections"
     visibility = 'friends' AND
     user_id IN (
       SELECT CASE
-        WHEN user1_id = auth.uid() THEN user2_id
-        WHEN user2_id = auth.uid() THEN user1_id
+        WHEN requester_id = auth.uid() THEN receiver_id
+        WHEN receiver_id = auth.uid() THEN requester_id
       END
-      FROM friendships
+      FROM friends
       WHERE status = 'accepted'
-        AND (user1_id = auth.uid() OR user2_id = auth.uid())
+        AND (requester_id = auth.uid() OR receiver_id = auth.uid())
     )
   );
 
@@ -684,12 +681,12 @@ CREATE POLICY "Users can view outfits in visible collections"
           visibility = 'friends' AND
           user_id IN (
             SELECT CASE
-              WHEN user1_id = auth.uid() THEN user2_id
-              WHEN user2_id = auth.uid() THEN user1_id
+              WHEN requester_id = auth.uid() THEN receiver_id
+              WHEN receiver_id = auth.uid() THEN requester_id
             END
-            FROM friendships
+            FROM friends
             WHERE status = 'accepted'
-              AND (user1_id = auth.uid() OR user2_id = auth.uid())
+              AND (requester_id = auth.uid() OR receiver_id = auth.uid())
           )
         )
     )

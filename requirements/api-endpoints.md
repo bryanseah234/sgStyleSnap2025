@@ -2017,4 +2017,889 @@ Delete a collection.
 - `200 OK` - Collection deleted
 - `404 Not Found` - Collection not found
 
+---
+
+## 13. Advanced Outfit Features API
+
+### 13.1 Outfit History Endpoints
+
+#### 13.1.1 `POST /api/outfit-history`
+
+Record a worn outfit.
+
+**Request:**
+
+```json
+{
+  "outfit_items": [1, 2, 3],      // Required: Array of clothing_item IDs
+  "occasion": "string",            // Optional: work/casual/formal/party/date/sport/travel/other
+  "date_worn": "2025-10-06",      // Optional: ISO date (defaults to today)
+  "rating": 5,                     // Optional: 1-5 stars
+  "notes": "string",               // Optional: User notes
+  "weather_temp": 72,              // Optional: Temperature in Fahrenheit
+  "weather_condition": "sunny"     // Optional: sunny/cloudy/rainy/snowy/windy
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "outfit_items": [1, 2, 3],
+  "occasion": "casual",
+  "date_worn": "2025-10-06",
+  "rating": 5,
+  "notes": "Felt great!",
+  "weather_temp": 72,
+  "weather_condition": "sunny",
+  "created_at": "2025-10-06T10:00:00Z"
+}
+```
+
+**Status Codes:**
+- `201 Created` - Outfit recorded
+- `400 Bad Request` - Invalid outfit_items or validation error
+- `404 Not Found` - One or more clothing items not found
+
+#### 13.1.2 `GET /api/outfit-history`
+
+Get user's outfit history with pagination and filters.
+
+**Query Parameters:**
+- `page` (number, default: 1)
+- `limit` (number, default: 20, max: 100)
+- `occasion` (string) - Filter by occasion
+- `min_rating` (number, 1-5) - Filter by minimum rating
+- `start_date` (ISO date) - Filter from date
+- `end_date` (ISO date) - Filter to date
+- `order` (string) - Sort order: 'date_desc' (default), 'date_asc', 'rating_desc', 'rating_asc'
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": "uuid",
+      "outfit_items": [1, 2, 3],
+      "occasion": "casual",
+      "date_worn": "2025-10-06",
+      "rating": 5,
+      "notes": "Felt great!",
+      "weather_temp": 72,
+      "weather_condition": "sunny",
+      "created_at": "2025-10-06T10:00:00Z",
+      "items": [
+        {
+          "id": 1,
+          "name": "Blue Shirt",
+          "category": "top",
+          "image_url": "https://..."
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "pages": 3
+  }
+}
+```
+
+#### 13.1.3 `GET /api/outfit-history/:id`
+
+Get a specific outfit history entry.
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "outfit_items": [1, 2, 3],
+  "occasion": "casual",
+  "date_worn": "2025-10-06",
+  "rating": 5,
+  "notes": "Felt great!",
+  "weather_temp": 72,
+  "weather_condition": "sunny",
+  "created_at": "2025-10-06T10:00:00Z",
+  "items": [
+    {
+      "id": 1,
+      "name": "Blue Shirt",
+      "category": "top",
+      "image_url": "https://...",
+      "style_tags": ["casual", "summer"]
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `200 OK` - Entry found
+- `404 Not Found` - Entry not found
+
+#### 13.1.4 `PUT /api/outfit-history/:id`
+
+Update an outfit history entry.
+
+**Request:**
+
+```json
+{
+  "occasion": "string",        // Optional
+  "rating": 5,                 // Optional: 1-5 stars
+  "notes": "string"            // Optional
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "outfit_items": [1, 2, 3],
+  "occasion": "work",
+  "date_worn": "2025-10-06",
+  "rating": 4,
+  "notes": "Updated notes",
+  "weather_temp": 72,
+  "weather_condition": "sunny",
+  "created_at": "2025-10-06T10:00:00Z",
+  "updated_at": "2025-10-06T15:30:00Z"
+}
+```
+
+#### 13.1.5 `DELETE /api/outfit-history/:id`
+
+Delete an outfit history entry.
+
+**Response:**
+
+```json
+{
+  "message": "Outfit history entry deleted"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Entry deleted
+- `404 Not Found` - Entry not found
+
+#### 13.1.6 `GET /api/outfit-history/stats`
+
+Get outfit statistics for the user.
+
+**Response:**
+
+```json
+{
+  "total_outfits_worn": 45,
+  "avg_rating": 4.2,
+  "most_worn_occasion": "casual",
+  "favorite_season": "summer",
+  "total_items_used": 32,
+  "most_worn_item_id": 5,
+  "most_worn_item_count": 12
+}
+```
+
+#### 13.1.7 `GET /api/outfit-history/most-worn`
+
+Get most worn items.
+
+**Query Parameters:**
+- `limit` (number, default: 10, max: 50)
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "item_id": 5,
+      "item_name": "Black Jeans",
+      "category": "bottom",
+      "image_url": "https://...",
+      "times_worn": 12
+    }
+  ]
+}
+```
+
+---
+
+### 13.2 Shared Outfits Endpoints
+
+#### 13.2.1 `POST /api/shared-outfits`
+
+Share an outfit to social feed.
+
+**Request:**
+
+```json
+{
+  "outfit_items": [1, 2, 3],      // Required: Array of clothing_item IDs
+  "caption": "string",             // Optional: Caption for the outfit
+  "occasion": "string",            // Optional: work/casual/formal/party/date/sport/travel/other
+  "visibility": "public"           // Optional: public/friends (default: friends)
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "username": "johndoe",
+  "profile_picture": "https://...",
+  "outfit_items": [1, 2, 3],
+  "caption": "Love this combo!",
+  "occasion": "casual",
+  "visibility": "public",
+  "likes_count": 0,
+  "comments_count": 0,
+  "created_at": "2025-10-06T10:00:00Z",
+  "items": [
+    {
+      "id": 1,
+      "name": "Blue Shirt",
+      "category": "top",
+      "image_url": "https://..."
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `201 Created` - Outfit shared
+- `400 Bad Request` - Invalid outfit_items
+- `404 Not Found` - One or more clothing items not found
+
+#### 13.2.2 `GET /api/shared-outfits/feed`
+
+Get social feed of shared outfits.
+
+**Query Parameters:**
+- `page` (number, default: 1)
+- `limit` (number, default: 20, max: 100)
+- `visibility` (string) - Filter by visibility: 'public', 'friends', 'all' (default: 'all')
+- `user_id` (uuid) - Filter by specific user
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": "uuid",
+      "username": "johndoe",
+      "profile_picture": "https://...",
+      "outfit_items": [1, 2, 3],
+      "caption": "Love this combo!",
+      "occasion": "casual",
+      "visibility": "public",
+      "likes_count": 15,
+      "comments_count": 3,
+      "created_at": "2025-10-06T10:00:00Z",
+      "is_liked": false,
+      "items": [
+        {
+          "id": 1,
+          "name": "Blue Shirt",
+          "category": "top",
+          "image_url": "https://..."
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "pages": 5
+  }
+}
+```
+
+**Privacy Rules:**
+- Public outfits: Visible to all users
+- Friends outfits: Visible only to friends (mutual friendship required)
+- Users see their own outfits regardless of visibility
+
+#### 13.2.3 `GET /api/shared-outfits/:id`
+
+Get a specific shared outfit.
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "username": "johndoe",
+  "profile_picture": "https://...",
+  "outfit_items": [1, 2, 3],
+  "caption": "Love this combo!",
+  "occasion": "casual",
+  "visibility": "public",
+  "likes_count": 15,
+  "comments_count": 3,
+  "created_at": "2025-10-06T10:00:00Z",
+  "is_liked": false,
+  "items": [
+    {
+      "id": 1,
+      "name": "Blue Shirt",
+      "category": "top",
+      "image_url": "https://...",
+      "style_tags": ["casual", "summer"]
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `200 OK` - Outfit found
+- `403 Forbidden` - No permission to view (friends-only outfit from non-friend)
+- `404 Not Found` - Outfit not found
+
+#### 13.2.4 `PUT /api/shared-outfits/:id`
+
+Update a shared outfit (owner only).
+
+**Request:**
+
+```json
+{
+  "caption": "string",         // Optional
+  "visibility": "public"       // Optional: public/friends
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "username": "johndoe",
+  "outfit_items": [1, 2, 3],
+  "caption": "Updated caption",
+  "occasion": "casual",
+  "visibility": "public",
+  "likes_count": 15,
+  "comments_count": 3,
+  "created_at": "2025-10-06T10:00:00Z",
+  "updated_at": "2025-10-06T15:30:00Z"
+}
+```
+
+#### 13.2.5 `DELETE /api/shared-outfits/:id`
+
+Delete a shared outfit (owner only).
+
+**Response:**
+
+```json
+{
+  "message": "Shared outfit deleted"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Outfit deleted
+- `403 Forbidden` - Not the owner
+- `404 Not Found` - Outfit not found
+
+#### 13.2.6 `POST /api/shared-outfits/:id/like`
+
+Like a shared outfit.
+
+**Response:**
+
+```json
+{
+  "message": "Outfit liked",
+  "likes_count": 16
+}
+```
+
+**Status Codes:**
+- `200 OK` - Outfit liked
+- `409 Conflict` - Already liked
+- `404 Not Found` - Outfit not found
+
+#### 13.2.7 `DELETE /api/shared-outfits/:id/like`
+
+Unlike a shared outfit.
+
+**Response:**
+
+```json
+{
+  "message": "Outfit unliked",
+  "likes_count": 15
+}
+```
+
+**Status Codes:**
+- `200 OK` - Outfit unliked
+- `404 Not Found` - Outfit not found or not liked
+
+#### 13.2.8 `GET /api/shared-outfits/:id/has-liked`
+
+Check if user has liked an outfit.
+
+**Response:**
+
+```json
+{
+  "has_liked": true
+}
+```
+
+#### 13.2.9 `GET /api/shared-outfits/:id/comments`
+
+Get comments on a shared outfit.
+
+**Query Parameters:**
+- `page` (number, default: 1)
+- `limit` (number, default: 20, max: 100)
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "outfit_id": 1,
+      "user_id": "uuid",
+      "username": "janedoe",
+      "profile_picture": "https://...",
+      "comment_text": "Love this outfit!",
+      "created_at": "2025-10-06T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 3,
+    "pages": 1
+  }
+}
+```
+
+#### 13.2.10 `POST /api/shared-outfits/:id/comments`
+
+Add a comment to a shared outfit.
+
+**Request:**
+
+```json
+{
+  "comment_text": "string"    // Required, max 500 chars
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "outfit_id": 1,
+  "user_id": "uuid",
+  "username": "janedoe",
+  "profile_picture": "https://...",
+  "comment_text": "Love this outfit!",
+  "created_at": "2025-10-06T10:30:00Z"
+}
+```
+
+**Status Codes:**
+- `201 Created` - Comment added
+- `400 Bad Request` - Invalid comment_text
+- `404 Not Found` - Outfit not found
+
+#### 13.2.11 `PUT /api/shared-outfits/:id/comments/:commentId`
+
+Update a comment (owner only).
+
+**Request:**
+
+```json
+{
+  "comment_text": "string"    // Required, max 500 chars
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "outfit_id": 1,
+  "user_id": "uuid",
+  "comment_text": "Updated comment",
+  "created_at": "2025-10-06T10:30:00Z",
+  "updated_at": "2025-10-06T11:00:00Z"
+}
+```
+
+#### 13.2.12 `DELETE /api/shared-outfits/:id/comments/:commentId`
+
+Delete a comment (owner or outfit owner can delete).
+
+**Response:**
+
+```json
+{
+  "message": "Comment deleted"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Comment deleted
+- `403 Forbidden` - Not the comment owner or outfit owner
+- `404 Not Found` - Comment not found
+
+---
+
+### 13.3 Style Preferences Endpoints
+
+#### 13.3.1 `GET /api/style-preferences`
+
+Get user's style preferences.
+
+**Response:**
+
+```json
+{
+  "user_id": "uuid",
+  "favorite_colors": ["blue", "black", "white"],
+  "avoid_colors": ["yellow"],
+  "preferred_styles": ["casual", "minimalist"],
+  "preferred_brands": ["Nike", "Adidas"],
+  "fit_preference": "regular",
+  "common_occasions": ["work", "casual"],
+  "created_at": "2025-10-01T10:00:00Z",
+  "updated_at": "2025-10-06T15:00:00Z"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Preferences found
+- `404 Not Found` - No preferences set (returns empty object)
+
+#### 13.3.2 `PUT /api/style-preferences`
+
+Update style preferences (creates if not exists).
+
+**Request:**
+
+```json
+{
+  "favorite_colors": ["string"],      // Optional: Array of color names
+  "avoid_colors": ["string"],         // Optional: Array of color names
+  "preferred_styles": ["string"],     // Optional: casual/formal/minimalist/bohemian/streetwear/vintage/athletic/preppy/edgy
+  "preferred_brands": ["string"],     // Optional: Array of brand names
+  "fit_preference": "string",         // Optional: slim/regular/loose/oversized
+  "common_occasions": ["string"]      // Optional: Array of occasions
+}
+```
+
+**Response:**
+
+```json
+{
+  "user_id": "uuid",
+  "favorite_colors": ["blue", "black", "white"],
+  "avoid_colors": ["yellow"],
+  "preferred_styles": ["casual", "minimalist"],
+  "preferred_brands": ["Nike", "Adidas"],
+  "fit_preference": "regular",
+  "common_occasions": ["work", "casual"],
+  "created_at": "2025-10-01T10:00:00Z",
+  "updated_at": "2025-10-06T15:30:00Z"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Preferences updated
+- `400 Bad Request` - Invalid values
+
+#### 13.3.3 `POST /api/style-preferences/feedback`
+
+Submit feedback on a suggestion.
+
+**Request:**
+
+```json
+{
+  "suggestion_id": 1,              // Required: ID of the suggestion
+  "feedback_type": "positive",     // Required: positive/negative
+  "feedback_text": "string"        // Optional: User comment
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "suggestion_id": 1,
+  "feedback_type": "positive",
+  "feedback_text": "Love this combination!",
+  "created_at": "2025-10-06T10:00:00Z"
+}
+```
+
+**Status Codes:**
+- `201 Created` - Feedback submitted
+- `400 Bad Request` - Invalid feedback_type
+- `404 Not Found` - Suggestion not found
+
+#### 13.3.4 `GET /api/style-preferences/feedback`
+
+Get all feedback for the user.
+
+**Query Parameters:**
+- `page` (number, default: 1)
+- `limit` (number, default: 20, max: 100)
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": "uuid",
+      "suggestion_id": 1,
+      "feedback_type": "positive",
+      "feedback_text": "Love this combination!",
+      "created_at": "2025-10-06T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 15,
+    "pages": 1
+  }
+}
+```
+
+#### 13.3.5 `GET /api/style-preferences/feedback/:suggestionId`
+
+Get feedback for a specific suggestion.
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "user_id": "uuid",
+  "suggestion_id": 1,
+  "feedback_type": "positive",
+  "feedback_text": "Love this combination!",
+  "created_at": "2025-10-06T10:00:00Z"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Feedback found
+- `404 Not Found` - No feedback for this suggestion
+
+#### 13.3.6 `DELETE /api/style-preferences/feedback/:id`
+
+Delete feedback.
+
+**Response:**
+
+```json
+{
+  "message": "Feedback deleted"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Feedback deleted
+- `404 Not Found` - Feedback not found
+
+---
+
+### 13.4 Analytics Endpoints
+
+#### 13.4.1 `GET /api/analytics/stats`
+
+Get overall wardrobe statistics.
+
+**Response:**
+
+```json
+{
+  "total_outfits_worn": 45,
+  "avg_rating": 4.2,
+  "most_worn_occasion": "casual",
+  "favorite_season": "summer",
+  "total_items_used": 32,
+  "most_worn_item_id": 5,
+  "most_worn_item_count": 12
+}
+```
+
+#### 13.4.2 `GET /api/analytics/most-worn`
+
+Get most worn items.
+
+**Query Parameters:**
+- `limit` (number, default: 10, max: 50)
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "item_id": 5,
+      "item_name": "Black Jeans",
+      "category": "bottom",
+      "image_url": "https://...",
+      "times_worn": 12,
+      "last_worn": "2025-10-05"
+    }
+  ]
+}
+```
+
+#### 13.4.3 `GET /api/analytics/unworn`
+
+Get items that are rarely/never worn.
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "item_id": 15,
+      "item_name": "Red Dress",
+      "category": "top",
+      "image_url": "https://...",
+      "times_worn": 0,
+      "last_worn": null,
+      "last_worn_days_ago": 999
+    },
+    {
+      "item_id": 20,
+      "item_name": "White Sneakers",
+      "category": "shoes",
+      "image_url": "https://...",
+      "times_worn": 1,
+      "last_worn": "2025-08-15",
+      "last_worn_days_ago": 52
+    }
+  ]
+}
+```
+
+#### 13.4.4 `GET /api/analytics/category-breakdown`
+
+Get usage breakdown by category.
+
+**Response:**
+
+```json
+{
+  "top": 25,
+  "bottom": 20,
+  "shoes": 15,
+  "outerwear": 8,
+  "accessory": 5
+}
+```
+
+#### 13.4.5 `GET /api/analytics/occasion-breakdown`
+
+Get outfit breakdown by occasion.
+
+**Response:**
+
+```json
+{
+  "casual": 20,
+  "work": 15,
+  "formal": 5,
+  "party": 3,
+  "date": 2
+}
+```
+
+#### 13.4.6 `GET /api/analytics/rating-distribution`
+
+Get rating distribution.
+
+**Response:**
+
+```json
+{
+  "1": 2,
+  "2": 3,
+  "3": 8,
+  "4": 15,
+  "5": 17
+}
+```
+
+#### 13.4.7 `GET /api/analytics/weather-preferences`
+
+Get weather-related preferences.
+
+**Response:**
+
+```json
+{
+  "avg_temp": 72.5,
+  "conditions": {
+    "sunny": 25,
+    "cloudy": 15,
+    "rainy": 5
+  }
+}
+```
+
+---
+
+## 14. Error Handling
+
+All endpoints follow consistent error response format:
+
+```json
+{
+  "error": "Error message",
+  "code": "ERROR_CODE",
+  "details": {}
+}
+```
+
+**Common Status Codes:**
+- `400 Bad Request` - Invalid input
+- `401 Unauthorized` - Missing/invalid auth token
+- `403 Forbidden` - No permission (quota, privacy, ownership)
+- `404 Not Found` - Resource not found
+- `409 Conflict` - Duplicate action (e.g., already liked)
+- `500 Internal Server Error` - Server error
+
 ````
