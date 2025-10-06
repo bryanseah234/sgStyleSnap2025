@@ -11,20 +11,21 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 
 // Mock Supabase for now - in real integration tests, you'd use a test database
-const mockSupabase = {
-  auth: {
-    getUser: vi.fn(),
-    signInWithPassword: vi.fn()
-  },
-  from: vi.fn(),
-  rpc: vi.fn()
-}
-
 vi.mock('../../src/services/auth-service', () => ({
-  supabase: mockSupabase
+  supabase: {
+    auth: {
+      getUser: vi.fn(),
+      signInWithPassword: vi.fn()
+    },
+    from: vi.fn(),
+    rpc: vi.fn()
+  }
 }))
 
 import { likesService } from '../../src/services/likes-service'
+
+// Get mock instance
+import { supabase as mockSupabase } from '../../src/services/auth-service'
 
 describe('Likes API Integration Tests', () => {
   let testUser1, testUser2, testItem1, testItem2

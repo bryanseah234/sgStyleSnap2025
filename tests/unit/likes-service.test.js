@@ -7,22 +7,22 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-// Mock Supabase
-const mockSupabase = {
-  auth: {
-    getUser: vi.fn()
-  },
-  from: vi.fn(),
-  rpc: vi.fn()
-}
-
 // Mock the auth-service module
 vi.mock('../../src/services/auth-service', () => ({
-  supabase: mockSupabase
+  supabase: {
+    auth: {
+      getUser: vi.fn()
+    },
+    from: vi.fn(),
+    rpc: vi.fn()
+  }
 }))
 
 // Import after mocking
 import { likesService } from '../../src/services/likes-service'
+
+// Get mock instance
+import { supabase as mockSupabase } from '../../src/services/auth-service'
 
 describe('Likes Service', () => {
   beforeEach(() => {
