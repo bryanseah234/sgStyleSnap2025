@@ -6,8 +6,11 @@
 -- =============================================================================
 -- DROP EXISTING OBJECTS (in reverse dependency order)
 -- =============================================================================
-DROP TRIGGER IF EXISTS update_outfit_collections_updated_at ON outfit_collections CASCADE;
-DROP TRIGGER IF EXISTS update_outfit_history_updated_at ON outfit_history CASCADE;
+DROP TRIGGER IF EXISTS trigger_outfit_collections_updated_at ON outfit_collections CASCADE;
+DROP TRIGGER IF EXISTS trigger_outfit_history_updated_at ON outfit_history CASCADE;
+DROP TRIGGER IF EXISTS trigger_shared_outfits_updated_at ON shared_outfits CASCADE;
+DROP TRIGGER IF EXISTS trigger_outfit_comments_updated_at ON outfit_comments CASCADE;
+DROP TRIGGER IF EXISTS trigger_style_preferences_updated_at ON style_preferences CASCADE;
 
 DROP FUNCTION IF EXISTS extract_cloth_ids_from_outfit(JSONB) CASCADE;
 DROP FUNCTION IF EXISTS get_user_outfit_stats(UUID) CASCADE;
@@ -75,7 +78,8 @@ CREATE INDEX idx_outfit_history_rating ON outfit_history(rating);
 CREATE OR REPLACE FUNCTION extract_cloth_ids_from_outfit(outfit_items JSONB)
 RETURNS UUID[] AS $$
   SELECT ARRAY_AGG((item->>'cloth_id')::UUID)
-  FROM jsonb_array_elements(outfit_items) AS item;
+  FROM jsonb_array_elements(outfit_items) AS item
+  WHERE item->>'cloth_id' IS NOT NULL;
 $$ LANGUAGE SQL IMMUTABLE;
 
 -- =============================================================================

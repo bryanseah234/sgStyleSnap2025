@@ -65,7 +65,7 @@ CREATE TABLE catalog_items (
 
 -- Add optional reference from clothes to catalog_items
 ALTER TABLE clothes 
-  ADD COLUMN catalog_item_id UUID REFERENCES catalog_items(id);
+  ADD COLUMN IF NOT EXISTS catalog_item_id UUID REFERENCES catalog_items(id);
 
 -- ============================================
 -- INDEXES FOR PERFORMANCE
@@ -279,6 +279,6 @@ INSERT INTO catalog_items (name, category, image_url, thumbnail_url, tags, brand
 -- ============================================
 
 COMMENT ON TABLE catalog_items IS 'Pre-populated catalog of clothing items that users can add to their closets';
-COMMENT ON COLUMN catalog_items.catalog_item_id IS 'Optional reference to catalog item if added from catalog';
+COMMENT ON COLUMN clothes.catalog_item_id IS 'Optional reference to catalog item if added from catalog';
 COMMENT ON FUNCTION search_catalog IS 'Full-text search of catalog with filtering and pagination';
 COMMENT ON FUNCTION add_catalog_item_to_closet IS 'Add a catalog item to user''s closet (checks quota and duplicates)';

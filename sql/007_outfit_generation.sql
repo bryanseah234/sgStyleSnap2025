@@ -23,8 +23,6 @@ DROP POLICY IF EXISTS "Users can view friends generated outfits" ON generated_ou
 DROP POLICY IF EXISTS "Users can create own outfits" ON generated_outfits;
 DROP POLICY IF EXISTS "Users can update own outfits" ON generated_outfits;
 DROP POLICY IF EXISTS "Users can delete own outfits" ON generated_outfits;
-DROP POLICY IF EXISTS "Anyone can view outfit collections" ON outfit_collections;
-DROP POLICY IF EXISTS "Users can manage own collections" ON outfit_collections;
 DROP POLICY IF EXISTS "Users can like any outfit" ON outfit_likes;
 DROP POLICY IF EXISTS "Users can unlike own likes" ON outfit_likes;
 DROP POLICY IF EXISTS "Users can view outfit likes" ON outfit_likes;
@@ -90,6 +88,21 @@ CREATE TABLE outfit_generation_history (
 );
 
 -- ============================================
+-- OUTFIT LIKES TABLE
+-- ============================================
+
+-- Likes on AI-generated outfits (different from shared_outfit_likes in Task 13)
+CREATE TABLE outfit_likes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  outfit_id UUID NOT NULL REFERENCES generated_outfits(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  -- One like per user per outfit
+  UNIQUE(user_id, outfit_id)
+);
+
+-- ============================================
 -- INDEXES
 -- ============================================
 
@@ -106,6 +119,11 @@ CREATE INDEX idx_generated_outfits_created ON generated_outfits(created_at DESC)
 CREATE INDEX idx_outfit_gen_history_user ON outfit_generation_history(user_id);
 CREATE INDEX idx_outfit_gen_history_created ON outfit_generation_history(created_at DESC);
 CREATE INDEX idx_outfit_gen_history_success ON outfit_generation_history(success) WHERE success = false;
+
+-- Outfit likes indexes
+CREATE INDEX idx_outfit_likes_outfit_id ON outfit_likes(outfit_id);
+CREATE INDEX idx_outfit_likes_user_id ON outfit_likes(user_id);
+CREATE INDEX idx_outfit_likes_user_outfit ON outfit_likes(user_id, outfit_id);
 
 -- ============================================
 -- VALIDATION FUNCTIONS
@@ -426,6 +444,24 @@ USING (auth.uid() = user_id);
 CREATE POLICY "Users can create own generation history"
 ON outfit_generation_history FOR INSERT
 WITH CHECK (auth.uid() = user_id);
+
+-- Enable RLS on outfit_likes
+ALTER TABLE outfit_likes ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can view likes on any outfit
+CREATE POLICY "Users can view outfit likes"
+ON outfit_likes FOR SELECT
+USING (true);
+
+-- Policy: Users can like any generated outfit
+CREATE POLICY "Users can like any outfit"
+ON outfit_likes FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy: Users can only unlike their own likes
+CREATE POLICY "Users can unlike own likes"
+ON outfit_likes FOR DELETE
+USING (auth.uid() = user_id);
 
 -- ============================================
 -- TRIGGERS

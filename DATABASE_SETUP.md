@@ -11,6 +11,7 @@ This guide will walk you through setting up your Supabase PostgreSQL database fo
 ### 004_advanced_features.sql (Task 13)
 - ✅ **Renamed**: `outfit_likes` → `shared_outfit_likes` (to avoid conflict with Task 11)
 - ✅ **Fixed**: All indexes, triggers, RLS policies updated to use new name
+- ✅ **Fixed**: Removed duplicate `ON outfit_likes FOR DELETE` syntax error
 - ❌ **Removed**: `notifications` table references (planned but never implemented)
 - ✅ **Fixed**: Changed `friendships` → `friends` (correct table name)
 - ✅ **Fixed**: Changed `user1_id/user2_id` → `requester_id/receiver_id` (correct columns)
@@ -21,13 +22,17 @@ This guide will walk you through setting up your Supabase PostgreSQL database fo
 
 ### 007_outfit_generation.sql (Task 11)
 - ✅ **Fixed**: Added missing `outfit_generation_history` table drop
+- ✅ **Fixed**: Removed incorrect DROP POLICY statements for `outfit_collections` (belongs to 004)
 - ✅ **Clarified**: `outfit_likes` in this file is for generated outfits (different from Task 13)
 
 **All SQL files are now re-runnable and error-free!** Each file has proper `DROP IF EXISTS` statements.
 
 **Service Updates:** `shared-outfits-service.js` updated to use `shared_outfit_likes` table.
 
-For detailed fix information, see: `SQL_MIGRATION_FIXES.md`
+For detailed fix information, see:
+- `SQL_MIGRATION_FIXES.md` - Previous fixes (table renames, existence checks)
+- `SQL_DEPENDENCIES_FIX.md` - outfit_collections dependency fix
+- `SQL_SYNTAX_CHECK_RESULTS.md` - Comprehensive syntax validation
 
 ---
 
