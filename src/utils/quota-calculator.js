@@ -68,11 +68,21 @@ const WARNING_THRESHOLD = 0.9 // 90%
  * @returns {Object} Quota information
  */
 export function calculateQuota(currentCount, maxCount = DEFAULT_MAX_QUOTA) {
-  // TODO: Calculate percentage
-  // TODO: Calculate remaining
-  // TODO: Determine if near limit (>= 90%)
-  // TODO: Determine if full (>= 100%)
-  // TODO: Return quota object
+  const used = currentCount
+  const max = maxCount
+  const remaining = Math.max(0, max - used)
+  const percentage = (used / max) * 100
+  const isNearLimit = percentage >= (WARNING_THRESHOLD * 100)
+  const isFull = used >= max
+  
+  return {
+    used,
+    max,
+    remaining,
+    percentage: Math.round(percentage * 10) / 10,
+    isNearLimit,
+    isFull
+  }
 }
 
 /**
@@ -83,8 +93,17 @@ export function calculateQuota(currentCount, maxCount = DEFAULT_MAX_QUOTA) {
  * @returns {Object} { allowed: boolean, reason?: string }
  */
 export function canAddItems(currentCount, itemsToAdd = 1, maxCount = DEFAULT_MAX_QUOTA) {
-  // TODO: Check if adding items would exceed quota
-  // TODO: Return result with reason if not allowed
+  const wouldExceed = (currentCount + itemsToAdd) > maxCount
+  
+  if (wouldExceed) {
+    const remaining = maxCount - currentCount
+    return {
+      allowed: false,
+      reason: `Cannot add ${itemsToAdd} ${itemsToAdd === 1 ? 'item' : 'items'}. You have ${remaining} ${remaining === 1 ? 'spot' : 'spots'} remaining.`
+    }
+  }
+  
+  return { allowed: true }
 }
 
 /**
@@ -93,10 +112,9 @@ export function canAddItems(currentCount, itemsToAdd = 1, maxCount = DEFAULT_MAX
  * @returns {string} Color variant ('success', 'warning', 'danger')
  */
 export function getQuotaColor(percentage) {
-  // TODO: Return color based on thresholds
-  // 0-80%: 'success'
-  // 80-90%: 'warning'
-  // 90-100%: 'danger'
+  if (percentage >= 90) return 'danger'
+  if (percentage >= 80) return 'warning'
+  return 'success'
 }
 
 /**
@@ -105,5 +123,13 @@ export function getQuotaColor(percentage) {
  * @returns {string} User-friendly message
  */
 export function getQuotaMessage(quota) {
-  // TODO: Return appropriate message based on quota status
+  if (quota.isFull) {
+    return "You've reached your 200-item limit. Delete some items to add more."
+  }
+  
+  if (quota.isNearLimit) {
+    return `You're almost at your limit! Only ${quota.remaining} ${quota.remaining === 1 ? 'spot' : 'spots'} left.`
+  }
+  
+  return `You have ${quota.used} ${quota.used === 1 ? 'item' : 'items'}. ${quota.remaining} ${quota.remaining === 1 ? 'spot' : 'spots'} remaining.`
 }
