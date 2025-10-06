@@ -84,7 +84,9 @@ Each task may depend on the previous ones. Check individual task files for detai
   - ⏳ E2E tests (user journeys)
 
 ### 📋 Documentation Files
-- **Tasks:** `tasks/01-*.md` through `tasks/12-*.md`
+- **Tasks:** `tasks/01-*.md` through `tasks/13-*.md`
 - **Requirements:** `requirements/*.md` (including item-catalog, color-detection, outfit-generation)
 - **SQL Migrations:** `sql/001-008_*.sql` (008 = likes feature)
+- **Migration Guide:** `docs/SQL_MIGRATION_GUIDE.md` - Comprehensive migration documentation
+- **Testing Guide:** `docs/TESTING.md` - Unit, integration, and E2E testing setup
 - **Implementation Guides:** `LIKES_FEATURE_SUMMARY.md`, `tasks/11-outfit-generation.md`

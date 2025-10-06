@@ -59,6 +59,8 @@ StyleSnap is a production-ready PWA that helps users digitize their wardrobe, re
 ### 4. **Technical Documentation**
    - `docs/CODE_STANDARDS.md` - Coding conventions and best practices
    - `docs/API_REFERENCE.md` - Complete API endpoint documentation
+   - `docs/SQL_MIGRATION_GUIDE.md` - **NEW:** Database migration guide & troubleshooting
+   - `docs/TESTING.md` - **NEW:** Testing guide (unit, integration, E2E)
    - `docs/CONTRIBUTING.md` - How to contribute
    - `docs/DEPLOYMENT.md` - Production deployment guide
    - `docs/design/DESIGN_REFERENCE.md` - Mobile UI mockup documentation

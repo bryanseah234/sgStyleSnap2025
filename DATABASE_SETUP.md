@@ -262,6 +262,48 @@ ORDER BY indexname;
 
 **Expected:** Should see 40+ indexes (for performance optimization)
 
+4. Verify functions exist:
+```sql
+SELECT routine_name
+FROM information_schema.routines
+WHERE routine_schema = 'public'
+ORDER BY routine_name;
+```
+
+**Expected:** Should see 20+ functions including:
+- `check_user_quota()`
+- `is_friends_with()`
+- `get_friend_closet()`
+- `increment_likes_count()`
+- `get_complementary_color()`
+- And more...
+
+5. Test basic connectivity:
+```sql
+-- Should return current timestamp
+SELECT NOW();
+
+-- Should return 0 rows (empty database)
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM clothes;
+```
+
+**✅ If all checks pass, your database is ready!**
+
+### Step 5: Validate Migrations (Optional)
+
+You can run the validation script to verify all migrations:
+
+```bash
+npm run validate-migrations
+```
+
+This script checks:
+- ✅ All 8 migration files exist
+- ✅ DROP IF EXISTS statements present (re-runnable)
+- ✅ Expected tables are created
+- ✅ Dependencies are correct
+
 ---
 
 ## 📝 Option 2: Supabase CLI
