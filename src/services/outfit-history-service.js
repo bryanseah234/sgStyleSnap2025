@@ -3,7 +3,7 @@
  * Handles API calls for outfit history tracking
  */
 
-import { supabase } from './api'
+import { supabase } from './auth-service'
 
 export default {
   /**

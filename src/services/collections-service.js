@@ -3,7 +3,7 @@
  * Handles outfit collections/lookbooks
  */
 
-import { supabase } from './api'
+import { supabase } from './auth-service'
 
 export default {
   /**
