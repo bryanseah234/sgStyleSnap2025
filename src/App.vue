@@ -21,14 +21,25 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useAuthStore } from './stores/auth-store'
+import { useLikesStore } from './stores/likes-store'
 
 const authStore = useAuthStore()
+const likesStore = useLikesStore()
 
 // Initialize auth state on app mount
 onMounted(async () => {
   await authStore.initializeAuth()
+})
+
+// Initialize likes when user logs in
+watch(() => authStore.isLoggedIn, async (isLoggedIn) => {
+  if (isLoggedIn) {
+    await likesStore.initializeLikes()
+  } else {
+    likesStore.resetStore()
+  }
 })
 </script>
 

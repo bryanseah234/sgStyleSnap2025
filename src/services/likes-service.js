@@ -16,7 +16,7 @@
  * - Likes respect item privacy settings
  */
 
-import { supabase } from './api'
+import { supabase } from './auth-service'
 
 export const likesService = {
   /**
