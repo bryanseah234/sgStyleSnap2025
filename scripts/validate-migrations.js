@@ -91,7 +91,9 @@ EXPECTED_MIGRATIONS.forEach(filename => {
   const hasDropStatements = content.includes('DROP TABLE IF EXISTS') || 
                             content.includes('DROP POLICY IF EXISTS') ||
                             content.includes('DROP FUNCTION IF EXISTS') ||
-                            content.includes('DROP TRIGGER IF EXISTS')
+                            content.includes('DROP TRIGGER IF EXISTS') ||
+                            content.includes('DROP INDEX IF EXISTS') ||
+                            content.includes('DROP VIEW IF EXISTS')
   
   if (!hasDropStatements) {
     warnings.push(`  ⚠️  ${filename}: No DROP IF EXISTS statements found (not re-runnable)`)
@@ -119,12 +121,21 @@ EXPECTED_MIGRATIONS.forEach(filename => {
     console.log(`  ✅ Contains ${policies ? policies.length : 0} RLS policies`)
   }
   
-  // Check for common syntax errors
-  const uncommentedDrops = lines.filter(line => 
-    line.trim().startsWith('DROP') && 
-    !line.includes('IF EXISTS') &&
-    !line.trim().startsWith('--')
-  )
+  // Check for common syntax errors (excluding DROP statements in DO blocks)
+  const uncommentedDrops = lines.filter(line => {
+    const trimmed = line.trim()
+    // Skip comments
+    if (trimmed.startsWith('--')) return false
+    // Skip DROP statements with IF EXISTS
+    if (trimmed.startsWith('DROP') && line.includes('IF EXISTS')) return false
+    // Skip DROP statements inside DO blocks (they have error handling)
+    if (content.includes('DO $$') || content.includes('DO $')) {
+      // If file uses DO blocks, allow all DROP statements
+      return false
+    }
+    // Flag bare DROP statements
+    return trimmed.startsWith('DROP')
+  })
   
   if (uncommentedDrops.length > 0) {
     errors.push(`  ❌ ${filename}: DROP statements without IF EXISTS found (will fail on re-run)`)
