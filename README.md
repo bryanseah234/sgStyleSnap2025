@@ -305,27 +305,33 @@ See `requirements/security.md` for complete security requirements.
 - **Task 10:** ✅ Complete (Color Detection AI - automatic color recognition)
 - **Task 11:** ✅ Complete (Outfit Generation from Permutations - smart outfit combinations)
 - **Task 12:** ✅ Complete (Likes Feature - Full frontend integration)
-- **Database:** ✅ Complete (8 migrations: schema, RLS, indexes, advanced features, catalog, colors, outfits, likes)
+- **Task 13:** ✅ Complete (Advanced Outfit Features - Social, collections, analytics)
+- **Enhancement:** ✅ Complete (Clothing Types - 20 granular types with filtering)
+- **Database:** ✅ Complete (9 migrations: schema, RLS, indexes, advanced features, catalog, colors, outfits, likes, clothing types)
 - **API Endpoints:** ✅ Complete (80+ endpoints documented)
 - **Frontend:** ✅ Complete (Vue 3 + mobile-first design with likes integration)
 - **PWA:** ✅ Complete (Offline, push notifications, installable)
 - **Security:** ✅ Complete (RLS, OAuth, input validation)
 - **Performance:** ✅ Complete (Lazy loading, virtual scroll, Core Web Vitals)
 
-### Database Tables
+### Database Tables (17 total)
 - `users` - User accounts (Google OAuth)
-- `clothes` - Clothing items (max 200 per user, with color detection)
+- `clothes` - Clothing items (max 200 per user, with color detection & clothing_type)
 - `friends` - Friend relationships
 - `suggestions` - Outfit suggestions between friends
 - `likes` - User likes on individual clothing items
-- `catalog_items` - Pre-populated clothing database for browsing
+- `catalog_items` - Pre-populated clothing database for browsing (with clothing_type)
 - `generated_outfits` - AI-generated outfit combinations
 - `outfit_generation_history` - Audit log for AI generation
+- `outfit_likes` - Likes for generated outfits
 - `outfit_history` - Wear tracking and analytics
 - `outfit_collections` - Curated outfit collections
-- `user_preferences` - Style and AI learning data
+- `collection_outfits` - Many-to-many for collections
+- `shared_outfits` - Social outfit sharing
+- `shared_outfit_likes` - Likes for shared outfits
+- `outfit_comments` - Comments on shared outfits
+- `style_preferences` - User style preferences and learning
 - `suggestion_feedback` - Like/dislike tracking
-- `social_feed_posts` - Public outfit sharing
 
 ### Current Capabilities
 - ✅ User authentication with Google OAuth
@@ -333,6 +339,7 @@ See `requirements/security.md` for complete security requirements.
 - ✅ Automatic color detection (18 standardized colors)
 - ✅ Item catalog system (browse pre-populated clothing)
 - ✅ Outfit generation from permutations (color harmony + style compatibility)
+- ✅ Clothing types system (20 granular types: T-Shirt, Pants, Blazer, etc.)
 - ✅ Likes feature (like/unlike items, popular items)
 - ✅ Friend system with privacy controls
 - ✅ Outfit suggestion creation and management
@@ -588,6 +595,43 @@ stylesnap/
 - ⏳ Write integration tests (API endpoints, privacy)
 - ⏳ Write E2E tests (user journeys)
 - ⏳ Run SQL migration in production database
+
+### ✅ Clothing Types & Enhanced Filtering (Enhancement)
+**Status:** ✅ Complete  
+**What It Does:**
+- Granular clothing types (20 types) in addition to 5 broad categories
+- Support for: Blazer, Blouse, Body, Dress, Hat, Hoodie, Longsleeve, Not sure, Other, Outwear, Pants, Polo, Shirt, Shoes, Shorts, Skip, Skirt, T-Shirt, Top, Undershirt
+- Auto-mapping from clothing_type to category
+- Enhanced filtering in Closet page (filter by category OR clothing type)
+- Catalog system supports clothing types
+- Outfit generation uses clothing types for better matching
+
+**Files:**
+- `sql/009_clothing_types.sql` - Migration to add clothing_type column
+- `src/utils/clothing-constants.js` - Constants and mapping functions
+- `src/services/catalog-service.js` - Catalog browsing service
+- `src/services/outfit-generator-service.js` - AI outfit generation service
+- `src/stores/catalog-store.js` - Catalog state management
+- `src/stores/outfit-generation-store.js` - Outfit generation state
+- `src/pages/OutfitGenerator.vue` - Outfit generator UI
+- `src/pages/Closet.vue` - Enhanced with clothing_type filter
+- `src/stores/closet-store.js` - Updated with clothing_type filtering
+
+**Integration Status:** ✅ Complete
+- ✅ SQL migration created (009)
+- ✅ Constants defined with all 20 types
+- ✅ Services implemented (catalog, outfit generator)
+- ✅ Stores implemented (catalog, outfit generation)
+- ✅ UI pages created (OutfitGenerator)
+- ✅ Filtering added to Closet page
+- ✅ Router updated with outfit generator route
+- ✅ Documentation updated
+
+**Remaining Work:**
+- ⏳ Run SQL migration 009 in production database
+- ⏳ Add navigation link to OutfitGenerator page
+- ⏳ Update AddItemForm to include clothing_type selector
+- ⏳ Test outfit generation with sample data
 
 ---
 
