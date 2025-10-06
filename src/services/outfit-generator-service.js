@@ -134,7 +134,7 @@ class OutfitGeneratorService {
     // Step 4: Score each combination
     const scoredOutfits = combinations.map((combo) => ({
       items: combo,
-      score: this.scoreOutfit(combo, { occasion, weather, style }),
+      score: this.scoreOutfit(combo),
     }))
 
     // Step 5: Sort by score and get best outfit
@@ -329,7 +329,7 @@ class OutfitGeneratorService {
    * Score an outfit combination (0-100)
    * @private
    */
-  scoreOutfit(items, params) {
+  scoreOutfit(items) {
     let score = 0
 
     // Color harmony score (0-40 points)
@@ -444,7 +444,7 @@ class OutfitGeneratorService {
    * Score based on user preferences (0-1)
    * @private
    */
-  scoreUserPreference(items) {
+  scoreUserPreference() {
     // TODO: Implement based on user's wear history and ratings
     // For now, return neutral score
     return 0.5

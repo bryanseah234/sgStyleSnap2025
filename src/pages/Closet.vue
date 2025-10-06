@@ -29,6 +29,53 @@
         <h1>My Closet</h1>
         <p class="quota-text">{{ quotaUsed }} / 200 items</p>
       </div>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filter-group">
+          <label class="filter-label">Category</label>
+          <select
+            v-model="closetStore.filters.category"
+            @change="closetStore.fetchItems()"
+            class="filter-select"
+          >
+            <option value="all">All Categories</option>
+            <option value="top">Tops</option>
+            <option value="bottom">Bottoms</option>
+            <option value="outerwear">Outerwear</option>
+            <option value="shoes">Shoes</option>
+            <option value="accessory">Accessories</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Clothing Type</label>
+          <select
+            v-model="closetStore.filters.clothing_type"
+            @change="closetStore.fetchItems()"
+            class="filter-select"
+          >
+            <option value="all">All Types</option>
+            <option
+              v-for="type in clothingTypes"
+              :key="type"
+              :value="type"
+            >
+              {{ type }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Search</label>
+          <input
+            v-model="closetStore.filters.search"
+            type="text"
+            placeholder="Search items..."
+            class="filter-input"
+          />
+        </div>
+      </div>
       
       <div class="closet-content">
         <p v-if="items.length === 0" class="empty-message">
@@ -55,11 +102,13 @@
 import { computed, onMounted } from 'vue'
 import { useClosetStore } from '../stores/closet-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
+import { CLOTHING_TYPES } from '@/utils/clothing-constants'
 
 const closetStore = useClosetStore()
 
 const items = computed(() => closetStore.filteredItems)
 const quotaUsed = computed(() => closetStore.quota.used)
+const clothingTypes = CLOTHING_TYPES
 
 onMounted(() => {
   closetStore.fetchItems()
@@ -150,5 +199,44 @@ function handleAddItem() {
 .plus-icon {
   font-size: 2rem;
   line-height: 1;
+}
+
+.filters-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.filter-select,
+.filter-input {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  background: white;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 </style>

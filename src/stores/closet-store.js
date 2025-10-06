@@ -49,6 +49,7 @@ export const useClosetStore = defineStore('closet', {
     isLoading: false,
     filters: {
       category: 'all',
+      clothing_type: 'all',
       search: '',
       sort: 'recent'
     },
@@ -65,6 +66,11 @@ export const useClosetStore = defineStore('closet', {
       // Filter by category
       if (state.filters.category && state.filters.category !== 'all') {
         items = items.filter(item => item.category === state.filters.category)
+      }
+      
+      // Filter by clothing_type
+      if (state.filters.clothing_type && state.filters.clothing_type !== 'all') {
+        items = items.filter(item => item.clothing_type === state.filters.clothing_type)
       }
       
       // Filter by search
