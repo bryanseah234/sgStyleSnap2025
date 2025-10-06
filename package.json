@@ -14,7 +14,8 @@
     "lint": "eslint src --ext .js,.vue",
     "format": "prettier --write src/**/*.{js,vue,css}",
     "purge-old-items": "node scripts/purge-old-items.js",
-    "cloudinary-cleanup": "node scripts/cloudinary-cleanup.js"
+    "cloudinary-cleanup": "node scripts/cloudinary-cleanup.js",
+    "validate-migrations": "node scripts/validate-migrations.js"
   },
   "dependencies": {
     "vue": "^3.4.0",
