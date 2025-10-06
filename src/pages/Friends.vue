@@ -32,28 +32,81 @@
       </div>
       
       <div class="friends-content">
-        <p class="placeholder-text">Friends feature coming soon!</p>
-        <p class="detail-text">You'll be able to:</p>
-        <ul class="feature-list">
-          <li>Connect with friends</li>
-          <li>Share outfit suggestions</li>
-          <li>View friend's closets</li>
-        </ul>
+        <!-- Popular Items Carousel -->
+        <div class="carousel-section">
+          <PopularItemsCarousel
+            :items="popularItems"
+            :loading="loadingPopular"
+            title="Trending in Your Circle"
+            empty-message="No popular items yet. Start liking items from your friends!"
+            @item-click="handleItemClick"
+            @view-all="viewAllPopular"
+            @refresh="refreshPopularItems"
+          />
+        </div>
+
+        <!-- Friends List Placeholder -->
+        <div class="friends-list-section">
+          <p class="placeholder-text">Friends feature coming soon!</p>
+          <p class="detail-text">You'll be able to:</p>
+          <ul class="feature-list">
+            <li>Connect with friends</li>
+            <li>Share outfit suggestions</li>
+            <li>View friend's closets</li>
+          </ul>
+        </div>
       </div>
     </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useFriendsStore } from '../stores/friends-store'
+import { useLikesStore } from '../stores/likes-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
+import PopularItemsCarousel from '../components/social/PopularItemsCarousel.vue'
 
+const router = useRouter()
 const friendsStore = useFriendsStore()
+const likesStore = useLikesStore()
 
-onMounted(() => {
+const popularItems = ref([])
+const loadingPopular = ref(false)
+
+onMounted(async () => {
   friendsStore.fetchFriends()
+  await loadPopularItems()
 })
+
+async function loadPopularItems() {
+  loadingPopular.value = true
+  try {
+    const items = await likesStore.fetchPopularItems(20)
+    popularItems.value = items
+  } catch (error) {
+    console.error('Error loading popular items:', error)
+  } finally {
+    loadingPopular.value = false
+  }
+}
+
+async function refreshPopularItems() {
+  await loadPopularItems()
+}
+
+function handleItemClick(item) {
+  // Navigate to item detail or owner's profile
+  console.log('Item clicked:', item)
+  // TODO: Implement item detail view or navigation to owner's closet
+}
+
+function viewAllPopular() {
+  // Navigate to a page showing all popular items
+  console.log('View all popular items')
+  // TODO: Create dedicated popular items page
+}
 </script>
 
 <style scoped>
@@ -77,6 +130,28 @@ onMounted(() => {
 .subtitle {
   font-size: 0.875rem;
   color: #6b7280;
+}
+
+.friends-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Popular Items Carousel Section */
+.carousel-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Friends List Section */
+.friends-list-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .placeholder-text {
@@ -103,9 +178,41 @@ onMounted(() => {
 .feature-list li {
   padding: 0.5rem;
   margin-bottom: 0.5rem;
-  background-color: white;
+  background-color: #f9fafb;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   color: #374151;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .friends-page {
+    background-color: #111827;
+  }
+  
+  .carousel-section,
+  .friends-list-section {
+    background: #1f2937;
+  }
+  
+  .friends-header h1 {
+    color: white;
+  }
+  
+  .subtitle {
+    color: #9ca3af;
+  }
+  
+  .placeholder-text {
+    color: #d1d5db;
+  }
+  
+  .detail-text {
+    color: #9ca3af;
+  }
+  
+  .feature-list li {
+    background-color: #374151;
+    color: #d1d5db;
+  }
 }
 </style>
