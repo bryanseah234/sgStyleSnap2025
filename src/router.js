@@ -30,6 +30,7 @@ import Friends from './pages/Friends.vue'
 import Suggestions from './pages/Suggestions.vue'
 import Profile from './pages/Profile.vue'
 import Analytics from './pages/Analytics.vue'
+import OutfitGenerator from './pages/OutfitGenerator.vue'
 
 const routes = [
   {
@@ -73,6 +74,12 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: Profile,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/outfit-generator',
+    name: 'OutfitGenerator',
+    component: OutfitGenerator,
     meta: { requiresAuth: true }
   },
   // Catch-all 404 route

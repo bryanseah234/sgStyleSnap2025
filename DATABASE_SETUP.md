@@ -152,6 +152,14 @@ For each migration below:
 - Functions: `toggle_like()`, `get_popular_items()`
 - Expected: ✅ "Success. No rows returned"
 
+**Migration 009: Clothing Types** (`sql/009_clothing_types.sql`)
+- **Modifies tables:** Adds `clothing_type` column to `clothes` and `catalog_items`
+- **Supports 20 clothing types:** Blazer, Blouse, Body, Dress, Hat, Hoodie, Longsleeve, Not sure, Other, Outwear, Pants, Polo, Shirt, Shoes, Shorts, Skip, Skirt, T-Shirt, Top, Undershirt
+- Helper function: `get_category_from_clothing_type()` to auto-map types to categories
+- Auto-trigger to set category based on clothing_type
+- Enables granular filtering by specific clothing types
+- Expected: ✅ "Success. No rows returned" + verification messages
+
 **What this does:**
 - Enables Row Level Security on all tables
 - Creates policies so users can only see their own data
