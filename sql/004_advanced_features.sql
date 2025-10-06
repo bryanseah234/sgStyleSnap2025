@@ -6,31 +6,102 @@
 -- =============================================================================
 -- DROP EXISTING OBJECTS (in reverse dependency order)
 -- =============================================================================
-DROP TRIGGER IF EXISTS trigger_outfit_collections_updated_at ON outfit_collections CASCADE;
-DROP TRIGGER IF EXISTS trigger_outfit_history_updated_at ON outfit_history CASCADE;
-DROP TRIGGER IF EXISTS trigger_shared_outfits_updated_at ON shared_outfits CASCADE;
-DROP TRIGGER IF EXISTS trigger_outfit_comments_updated_at ON outfit_comments CASCADE;
-DROP TRIGGER IF EXISTS trigger_style_preferences_updated_at ON style_preferences CASCADE;
 
-DROP FUNCTION IF EXISTS extract_cloth_ids_from_outfit(JSONB) CASCADE;
-DROP FUNCTION IF EXISTS get_user_outfit_stats(UUID) CASCADE;
-DROP FUNCTION IF EXISTS get_most_worn_items(UUID, INTEGER) CASCADE;
-DROP FUNCTION IF EXISTS get_unworn_combinations(UUID) CASCADE;
-DROP FUNCTION IF EXISTS update_outfit_likes_count() CASCADE;
-DROP FUNCTION IF EXISTS update_outfit_comments_count() CASCADE;
+-- Drop triggers first
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_outfit_collections_updated_at ON outfit_collections;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_outfit_history_updated_at ON outfit_history;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_shared_outfits_updated_at ON shared_outfits;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_outfit_comments_updated_at ON outfit_comments;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_style_preferences_updated_at ON style_preferences;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_update_collection_outfits_count ON collection_outfits;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_update_outfit_comments_count ON outfit_comments;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TRIGGER IF EXISTS trigger_update_outfit_likes_count ON shared_outfit_likes;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+
+-- Drop functions
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS extract_cloth_ids_from_outfit(JSONB) CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS get_user_outfit_stats(UUID) CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS get_most_worn_items(UUID, INTEGER) CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS get_unworn_combinations(UUID) CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS update_outfit_likes_count() CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS update_outfit_comments_count() CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
 DROP FUNCTION IF EXISTS update_collection_outfits_count() CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 
-DROP TABLE IF EXISTS collection_outfits CASCADE;
-DROP TABLE IF EXISTS outfit_collections CASCADE;
-DROP TABLE IF EXISTS suggestion_feedback CASCADE;
-DROP TABLE IF EXISTS style_preferences CASCADE;
-DROP TABLE IF EXISTS outfit_comments CASCADE;
--- Note: outfit_likes for shared_outfits is separate from outfit_likes in 007_outfit_generation.sql
--- This table is for likes on shared outfit posts
-DROP TABLE IF EXISTS shared_outfit_likes CASCADE;
-DROP TABLE IF EXISTS shared_outfits CASCADE;
-DROP TABLE IF EXISTS outfit_history CASCADE;
+-- Drop tables in correct order
+DO $$ BEGIN
+  DROP TABLE IF EXISTS outfit_history CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TABLE IF EXISTS outfit_collections CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TABLE IF EXISTS suggestion_feedback CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TABLE IF EXISTS style_preferences CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TABLE IF EXISTS outfit_comments CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TABLE IF EXISTS shared_outfit_likes CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TABLE IF EXISTS shared_outfits CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP TABLE IF EXISTS outfit_history CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
 
 -- =============================================================================
 -- 1. OUTFIT HISTORY & ANALYTICS
@@ -73,14 +144,7 @@ CREATE INDEX idx_outfit_history_worn_date ON outfit_history(worn_date DESC);
 CREATE INDEX idx_outfit_history_occasion ON outfit_history(occasion);
 CREATE INDEX idx_outfit_history_suggestion_id ON outfit_history(suggestion_id);
 CREATE INDEX idx_outfit_history_rating ON outfit_history(rating);
-
--- Function to extract clothing item IDs from outfit_items JSONB
-CREATE OR REPLACE FUNCTION extract_cloth_ids_from_outfit(outfit_items JSONB)
-RETURNS UUID[] AS $$
-  SELECT ARRAY_AGG((item->>'cloth_id')::UUID)
-  FROM jsonb_array_elements(outfit_items) AS item
-  WHERE item->>'cloth_id' IS NOT NULL;
-$$ LANGUAGE SQL IMMUTABLE;
+CREATE INDEX idx_outfit_history_items_gin ON outfit_history USING GIN (outfit_items);
 
 -- =============================================================================
 -- 2. OUTFIT SHARING & SOCIAL FEED
@@ -118,6 +182,7 @@ CREATE INDEX idx_shared_outfits_user_id ON shared_outfits(user_id);
 CREATE INDEX idx_shared_outfits_created_at ON shared_outfits(created_at DESC);
 CREATE INDEX idx_shared_outfits_visibility ON shared_outfits(visibility);
 CREATE INDEX idx_shared_outfits_share_token ON shared_outfits(share_token);
+CREATE INDEX idx_shared_outfits_items_gin ON shared_outfits USING GIN (outfit_items);
 
 -- Likes on shared outfits (separate from generated outfit likes in 007)
 CREATE TABLE shared_outfit_likes (
@@ -255,10 +320,79 @@ CREATE TABLE collection_outfits (
 CREATE INDEX idx_collection_outfits_collection_id ON collection_outfits(collection_id);
 CREATE INDEX idx_collection_outfits_suggestion_id ON collection_outfits(suggestion_id);
 CREATE INDEX idx_collection_outfits_position ON collection_outfits(position);
+CREATE INDEX idx_collection_outfits_items_gin ON collection_outfits USING GIN (outfit_items);
 
 -- =============================================================================
--- 5. ANALYTICS FUNCTIONS
+-- 5. FUNCTIONS
 -- =============================================================================
+
+-- Function to extract clothing item IDs from outfit_items JSONB
+CREATE OR REPLACE FUNCTION extract_cloth_ids_from_outfit(outfit_items JSONB)
+RETURNS UUID[] AS $$
+  SELECT ARRAY_AGG((item->>'cloth_id')::UUID)
+  FROM jsonb_array_elements(outfit_items) AS item
+  WHERE item->>'cloth_id' IS NOT NULL;
+$$ LANGUAGE SQL IMMUTABLE;
+
+-- Update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update likes count on shared_outfits
+CREATE OR REPLACE FUNCTION update_outfit_likes_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE shared_outfits
+    SET likes_count = likes_count + 1
+    WHERE id = NEW.outfit_id;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE shared_outfits
+    SET likes_count = GREATEST(0, likes_count - 1)
+    WHERE id = OLD.outfit_id;
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update comments count on shared_outfits
+CREATE OR REPLACE FUNCTION update_outfit_comments_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE shared_outfits
+    SET comments_count = comments_count + 1
+    WHERE id = NEW.outfit_id;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE shared_outfits
+    SET comments_count = GREATEST(0, comments_count - 1)
+    WHERE id = OLD.outfit_id;
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update outfits count in collections
+CREATE OR REPLACE FUNCTION update_collection_outfits_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE outfit_collections
+    SET outfits_count = outfits_count + 1
+    WHERE id = NEW.collection_id;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE outfit_collections
+    SET outfits_count = GREATEST(0, outfits_count - 1)
+    WHERE id = OLD.collection_id;
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Get user's outfit statistics
 CREATE OR REPLACE FUNCTION get_user_outfit_stats(p_user_id UUID)
@@ -367,81 +501,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- =============================================================================
--- 6. TRIGGERS FOR MAINTAINING COUNTS
+-- 6. TRIGGERS
 -- =============================================================================
 
--- Update likes count on shared_outfits
-CREATE OR REPLACE FUNCTION update_outfit_likes_count()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    UPDATE shared_outfits
-    SET likes_count = likes_count + 1
-    WHERE id = NEW.outfit_id;
-  ELSIF TG_OP = 'DELETE' THEN
-    UPDATE shared_outfits
-    SET likes_count = GREATEST(0, likes_count - 1)
-    WHERE id = OLD.outfit_id;
-  END IF;
-  RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_outfit_likes_count
-AFTER INSERT OR DELETE ON shared_outfit_likes
-FOR EACH ROW EXECUTE FUNCTION update_outfit_likes_count();
-
--- Update comments count on shared_outfits
-CREATE OR REPLACE FUNCTION update_outfit_comments_count()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    UPDATE shared_outfits
-    SET comments_count = comments_count + 1
-    WHERE id = NEW.outfit_id;
-  ELSIF TG_OP = 'DELETE' THEN
-    UPDATE shared_outfits
-    SET comments_count = GREATEST(0, comments_count - 1)
-    WHERE id = OLD.outfit_id;
-  END IF;
-  RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_outfit_comments_count
-AFTER INSERT OR DELETE ON outfit_comments
-FOR EACH ROW EXECUTE FUNCTION update_outfit_comments_count();
-
--- Update outfits count in collections
-CREATE OR REPLACE FUNCTION update_collection_outfits_count()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    UPDATE outfit_collections
-    SET outfits_count = outfits_count + 1
-    WHERE id = NEW.collection_id;
-  ELSIF TG_OP = 'DELETE' THEN
-    UPDATE outfit_collections
-    SET outfits_count = GREATEST(0, outfits_count - 1)
-    WHERE id = OLD.collection_id;
-  END IF;
-  RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_collection_outfits_count
-AFTER INSERT OR DELETE ON collection_outfits
-FOR EACH ROW EXECUTE FUNCTION update_collection_outfits_count();
-
--- Update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
+-- Triggers for updated_at columns
 CREATE TRIGGER trigger_outfit_history_updated_at
 BEFORE UPDATE ON outfit_history
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -461,6 +524,19 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER trigger_outfit_collections_updated_at
 BEFORE UPDATE ON outfit_collections
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Triggers for maintaining counts
+CREATE TRIGGER trigger_update_outfit_likes_count
+AFTER INSERT OR DELETE ON shared_outfit_likes
+FOR EACH ROW EXECUTE FUNCTION update_outfit_likes_count();
+
+CREATE TRIGGER trigger_update_outfit_comments_count
+AFTER INSERT OR DELETE ON outfit_comments
+FOR EACH ROW EXECUTE FUNCTION update_outfit_comments_count();
+
+CREATE TRIGGER trigger_update_collection_outfits_count
+AFTER INSERT OR DELETE ON collection_outfits
+FOR EACH ROW EXECUTE FUNCTION update_collection_outfits_count();
 
 -- =============================================================================
 -- 7. ROW LEVEL SECURITY (RLS) POLICIES
@@ -568,7 +644,7 @@ CREATE POLICY "Users can unlike outfits they liked"
   ON shared_outfit_likes FOR DELETE
   USING (user_id = auth.uid());
 
--- Outfit Comments Policies (similar to likes)
+-- Outfit Comments Policies
 CREATE POLICY "Users can view comments on visible outfits"
   ON outfit_comments FOR SELECT
   USING (
@@ -723,13 +799,8 @@ CREATE POLICY "Users can delete outfits from their own collections"
   );
 
 -- =============================================================================
--- 8. INITIAL DATA & INDEXES
+-- 8. DOCUMENTATION
 -- =============================================================================
-
--- Create indexes for performance
-CREATE INDEX idx_outfit_history_items_gin ON outfit_history USING GIN (outfit_items);
-CREATE INDEX idx_shared_outfits_items_gin ON shared_outfits USING GIN (outfit_items);
-CREATE INDEX idx_collection_outfits_items_gin ON collection_outfits USING GIN (outfit_items);
 
 -- Add comments for documentation
 COMMENT ON TABLE outfit_history IS 'Tracks outfits that users actually wore';

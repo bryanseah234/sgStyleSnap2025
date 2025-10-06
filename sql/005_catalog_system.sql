@@ -5,20 +5,59 @@
 -- ============================================
 -- DROP EXISTING OBJECTS (in reverse dependency order)
 -- ============================================
-DROP TRIGGER IF EXISTS update_catalog_items_updated_at ON catalog_items CASCADE;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_catalog_items_updated_at') THEN
+    DROP TRIGGER update_catalog_items_updated_at ON catalog_items CASCADE;
+  END IF;
+END $$;
 
-DROP FUNCTION IF EXISTS add_catalog_item_to_closet(UUID, UUID, VARCHAR) CASCADE;
-DROP FUNCTION IF EXISTS search_catalog(TEXT, VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER) CASCADE;
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS add_catalog_item_to_closet(UUID, UUID, VARCHAR) CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
 
-DROP POLICY IF EXISTS "Anyone can view active catalog items" ON catalog_items;
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS search_catalog(TEXT, VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER) CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
 
-DROP INDEX IF EXISTS idx_catalog_category;
-DROP INDEX IF EXISTS idx_catalog_color;
-DROP INDEX IF EXISTS idx_catalog_brand;
-DROP INDEX IF EXISTS idx_catalog_season;
-DROP INDEX IF EXISTS idx_catalog_active;
-DROP INDEX IF EXISTS idx_catalog_search;
-DROP INDEX IF EXISTS idx_clothes_catalog_item;
+DO $$ BEGIN
+  DROP POLICY IF EXISTS "Anyone can view active catalog items" ON catalog_items;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  DROP TABLE IF EXISTS catalog_items CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_catalog_color CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_catalog_category CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_catalog_brand CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_catalog_season CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_catalog_active CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_catalog_search CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_clothes_catalog_item CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
 
 -- Drop the generated column if it exists (only if table exists)
 DO $$ 
