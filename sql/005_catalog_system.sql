@@ -20,11 +20,21 @@ DROP INDEX IF EXISTS idx_catalog_active;
 DROP INDEX IF EXISTS idx_catalog_search;
 DROP INDEX IF EXISTS idx_clothes_catalog_item;
 
--- Drop the generated column if it exists
-ALTER TABLE catalog_items DROP COLUMN IF EXISTS search_vector;
+-- Drop the generated column if it exists (only if table exists)
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'catalog_items') THEN
+    ALTER TABLE catalog_items DROP COLUMN IF EXISTS search_vector;
+  END IF;
+END $$;
 
 -- Drop catalog_item_id from clothes if it exists
-ALTER TABLE clothes DROP COLUMN IF EXISTS catalog_item_id;
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'clothes') THEN
+    ALTER TABLE clothes DROP COLUMN IF EXISTS catalog_item_id;
+  END IF;
+END $$;
 
 DROP TABLE IF EXISTS catalog_items CASCADE;
 

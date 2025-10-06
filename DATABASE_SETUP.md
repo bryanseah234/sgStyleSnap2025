@@ -6,13 +6,28 @@ This guide will walk you through setting up your Supabase PostgreSQL database fo
 
 ## ⚠️ Important: Recent SQL Fixes (October 6, 2025)
 
-**Issue Fixed:** The `004_advanced_features.sql` file had references to non-existent tables:
-- ❌ **Removed**: `notifications` table references (planned but never implemented)
-- ❌ **Removed**: Notification-related triggers and functions
-- ✅ **Fixed**: Changed `friendships` → `friends` (correct table name from 001_initial_schema.sql)
-- ✅ **Fixed**: Changed `user1_id/user2_id` → `requester_id/receiver_id` (correct column names)
+**Issues Fixed:** Multiple SQL files had relation errors and table naming conflicts:
 
-**All SQL files are now re-runnable and error-free!** Each file has `DROP IF EXISTS` statements.
+### 004_advanced_features.sql (Task 13)
+- ✅ **Renamed**: `outfit_likes` → `shared_outfit_likes` (to avoid conflict with Task 11)
+- ✅ **Fixed**: All indexes, triggers, RLS policies updated to use new name
+- ❌ **Removed**: `notifications` table references (planned but never implemented)
+- ✅ **Fixed**: Changed `friendships` → `friends` (correct table name)
+- ✅ **Fixed**: Changed `user1_id/user2_id` → `requester_id/receiver_id` (correct columns)
+
+### 005_catalog_system.sql (Task 9)
+- ✅ **Fixed**: Added existence checks before altering tables
+- ✅ **Fixed**: Wrapped ALTER TABLE in DO blocks to prevent errors
+
+### 007_outfit_generation.sql (Task 11)
+- ✅ **Fixed**: Added missing `outfit_generation_history` table drop
+- ✅ **Clarified**: `outfit_likes` in this file is for generated outfits (different from Task 13)
+
+**All SQL files are now re-runnable and error-free!** Each file has proper `DROP IF EXISTS` statements.
+
+**Service Updates:** `shared-outfits-service.js` updated to use `shared_outfit_likes` table.
+
+For detailed fix information, see: `SQL_MIGRATION_FIXES.md`
 
 ---
 

@@ -113,7 +113,7 @@ export default {
     const { data: user } = await supabase.auth.getUser()
     
     const { data, error } = await supabase
-      .from('outfit_likes')
+      .from('shared_outfit_likes')
       .insert([{ 
         outfit_id: outfitId,
         user_id: user.user.id
@@ -134,7 +134,7 @@ export default {
     const { data: user } = await supabase.auth.getUser()
     
     const { error } = await supabase
-      .from('outfit_likes')
+      .from('shared_outfit_likes')
       .delete()
       .eq('outfit_id', outfitId)
       .eq('user_id', user.user.id)
@@ -151,7 +151,7 @@ export default {
     const { data: user } = await supabase.auth.getUser()
     
     const { data, error } = await supabase
-      .from('outfit_likes')
+      .from('shared_outfit_likes')
       .select('id')
       .eq('outfit_id', outfitId)
       .eq('user_id', user.user.id)

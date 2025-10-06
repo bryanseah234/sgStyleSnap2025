@@ -78,6 +78,30 @@
                 {{ likesStore.totalLikedItems }}
               </span>
             </button>
+            <button
+              :class="['tab', { active: activeTab === 'history' }]"
+              @click="activeTab = 'history'"
+            >
+              Outfit History
+              <span v-if="outfitHistoryStore.totalOutfits > 0" class="badge">
+                {{ outfitHistoryStore.totalOutfits }}
+              </span>
+            </button>
+            <button
+              :class="['tab', { active: activeTab === 'collections' }]"
+              @click="activeTab = 'collections'"
+            >
+              Collections
+              <span v-if="collectionsStore.collections.length > 0" class="badge">
+                {{ collectionsStore.collections.length }}
+              </span>
+            </button>
+            <button
+              :class="['tab', { active: activeTab === 'preferences' }]"
+              @click="activeTab = 'preferences'"
+            >
+              Preferences
+            </button>
           </div>
         </div>
 
@@ -101,6 +125,29 @@
               @load-more="loadMoreLikedItems"
             />
           </div>
+
+          <!-- Outfit History Tab -->
+          <div v-if="activeTab === 'history'" class="tab-panel">
+            <OutfitHistoryList />
+          </div>
+
+          <!-- Collections Tab -->
+          <div v-if="activeTab === 'collections'" class="tab-panel">
+            <CollectionsList
+              v-if="!selectedCollection"
+              @view-collection="handleViewCollection"
+            />
+            <CollectionDetailView
+              v-else
+              :collection-id="selectedCollection"
+              @back="selectedCollection = null"
+            />
+          </div>
+
+          <!-- Preferences Tab -->
+          <div v-if="activeTab === 'preferences'" class="tab-panel">
+            <StylePreferencesEditor />
+          </div>
         </div>
       </div>
     </div>
@@ -112,13 +159,21 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
 import { useLikesStore } from '../stores/likes-store'
+import { useOutfitHistoryStore } from '../stores/outfit-history-store'
+import { useCollectionsStore } from '../stores/collections-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import Button from '../components/ui/Button.vue'
 import LikedItemsGrid from '../components/closet/LikedItemsGrid.vue'
+import OutfitHistoryList from '../components/outfits/OutfitHistoryList.vue'
+import CollectionsList from '../components/collections/CollectionsList.vue'
+import CollectionDetailView from '../components/collections/CollectionDetailView.vue'
+import StylePreferencesEditor from '../components/preferences/StylePreferencesEditor.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const likesStore = useLikesStore()
+const outfitHistoryStore = useOutfitHistoryStore()
+const collectionsStore = useCollectionsStore()
 
 const isLoggingOut = ref(false)
 const activeTab = ref('closet')
@@ -127,6 +182,7 @@ const loadingMore = ref(false)
 const likedItems = ref([])
 const currentPage = ref(0)
 const itemsPerPage = 20
+const selectedCollection = ref(null)
 
 const userName = computed(() => authStore.userName)
 const userEmail = computed(() => authStore.userEmail)
@@ -192,6 +248,10 @@ function handleItemClick(item) {
   // Navigate to item detail page or open modal
   console.log('Item clicked:', item)
   // TODO: Implement item detail view
+}
+
+function handleViewCollection(collectionId) {
+  selectedCollection.value = collectionId
 }
 
 async function handleLogout() {

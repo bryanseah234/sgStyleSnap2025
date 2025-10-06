@@ -41,7 +41,10 @@ DROP INDEX IF EXISTS idx_outfit_likes_outfit_id;
 DROP INDEX IF EXISTS idx_outfit_likes_user_id;
 DROP INDEX IF EXISTS idx_outfit_likes_user_outfit;
 
+-- Note: This outfit_likes is for generated outfits (Task 11)
+-- Different from shared_outfit_likes in 004 (Task 13)
 DROP TABLE IF EXISTS outfit_likes CASCADE;
+DROP TABLE IF EXISTS outfit_generation_history CASCADE;
 DROP TABLE IF EXISTS generated_outfits CASCADE;
 
 -- ============================================
@@ -466,6 +469,7 @@ CREATE TRIGGER update_outfit_rated_at_trigger
 
 COMMENT ON TABLE generated_outfits IS 'AI-generated outfit combinations with scoring and user feedback';
 COMMENT ON TABLE outfit_generation_history IS 'Audit log of all outfit generation requests for analytics and learning';
+COMMENT ON TABLE outfit_likes IS 'Likes on AI-generated outfits (different from shared_outfit_likes in Task 13)';
 COMMENT ON COLUMN generated_outfits.ai_score IS 'Algorithm-generated score (0-100) based on color harmony, completeness, style';
 COMMENT ON COLUMN generated_outfits.user_rating IS 'User feedback rating (1-5 stars) to improve future recommendations';
 COMMENT ON FUNCTION calculate_color_harmony_score IS 'Score color compatibility of outfit items (0-1)';

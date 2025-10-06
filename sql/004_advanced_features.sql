@@ -23,7 +23,9 @@ DROP TABLE IF EXISTS outfit_collections CASCADE;
 DROP TABLE IF EXISTS suggestion_feedback CASCADE;
 DROP TABLE IF EXISTS style_preferences CASCADE;
 DROP TABLE IF EXISTS outfit_comments CASCADE;
-DROP TABLE IF EXISTS outfit_likes CASCADE;
+-- Note: outfit_likes for shared_outfits is separate from outfit_likes in 007_outfit_generation.sql
+-- This table is for likes on shared outfit posts
+DROP TABLE IF EXISTS shared_outfit_likes CASCADE;
 DROP TABLE IF EXISTS shared_outfits CASCADE;
 DROP TABLE IF EXISTS outfit_history CASCADE;
 
@@ -113,8 +115,8 @@ CREATE INDEX idx_shared_outfits_created_at ON shared_outfits(created_at DESC);
 CREATE INDEX idx_shared_outfits_visibility ON shared_outfits(visibility);
 CREATE INDEX idx_shared_outfits_share_token ON shared_outfits(share_token);
 
--- Likes on shared outfits
-CREATE TABLE outfit_likes (
+-- Likes on shared outfits (separate from generated outfit likes in 007)
+CREATE TABLE shared_outfit_likes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   outfit_id UUID NOT NULL REFERENCES shared_outfits(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -124,8 +126,8 @@ CREATE TABLE outfit_likes (
   UNIQUE(outfit_id, user_id)
 );
 
-CREATE INDEX idx_outfit_likes_outfit_id ON outfit_likes(outfit_id);
-CREATE INDEX idx_outfit_likes_user_id ON outfit_likes(user_id);
+CREATE INDEX idx_shared_outfit_likes_outfit_id ON shared_outfit_likes(outfit_id);
+CREATE INDEX idx_shared_outfit_likes_user_id ON shared_outfit_likes(user_id);
 
 -- Comments on shared outfits
 CREATE TABLE outfit_comments (
@@ -382,7 +384,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_update_outfit_likes_count
-AFTER INSERT OR DELETE ON outfit_likes
+AFTER INSERT OR DELETE ON shared_outfit_likes
 FOR EACH ROW EXECUTE FUNCTION update_outfit_likes_count();
 
 -- Update comments count on shared_outfits
@@ -463,7 +465,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 -- Enable RLS on all new tables
 ALTER TABLE outfit_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shared_outfits ENABLE ROW LEVEL SECURITY;
-ALTER TABLE outfit_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shared_outfit_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outfit_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE style_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE suggestion_feedback ENABLE ROW LEVEL SECURITY;
@@ -525,9 +527,9 @@ CREATE POLICY "Users can delete their own shared outfits"
   ON shared_outfits FOR DELETE
   USING (user_id = auth.uid());
 
--- Outfit Likes Policies
+-- Shared Outfit Likes Policies
 CREATE POLICY "Users can view likes on visible outfits"
-  ON outfit_likes FOR SELECT
+  ON shared_outfit_likes FOR SELECT
   USING (
     outfit_id IN (
       SELECT id FROM shared_outfits
@@ -549,7 +551,7 @@ CREATE POLICY "Users can view likes on visible outfits"
   );
 
 CREATE POLICY "Users can like visible outfits"
-  ON outfit_likes FOR INSERT
+  ON shared_outfit_likes FOR INSERT
   WITH CHECK (
     user_id = auth.uid() AND
     outfit_id IN (
@@ -559,7 +561,7 @@ CREATE POLICY "Users can like visible outfits"
   );
 
 CREATE POLICY "Users can unlike outfits they liked"
-  ON outfit_likes FOR DELETE
+  ON shared_outfit_likes FOR DELETE
   USING (user_id = auth.uid());
 
 -- Outfit Comments Policies (similar to likes)
@@ -728,7 +730,7 @@ CREATE INDEX idx_collection_outfits_items_gin ON collection_outfits USING GIN (o
 -- Add comments for documentation
 COMMENT ON TABLE outfit_history IS 'Tracks outfits that users actually wore';
 COMMENT ON TABLE shared_outfits IS 'Outfits shared to social feed';
-COMMENT ON TABLE outfit_likes IS 'Likes on shared outfits';
+COMMENT ON TABLE shared_outfit_likes IS 'Likes on shared outfits (social feed posts)';
 COMMENT ON TABLE outfit_comments IS 'Comments on shared outfits';
 COMMENT ON TABLE style_preferences IS 'User style preferences for AI suggestions';
 COMMENT ON TABLE suggestion_feedback IS 'User feedback on outfit suggestions';

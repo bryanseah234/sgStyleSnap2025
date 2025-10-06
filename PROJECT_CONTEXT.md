@@ -110,22 +110,44 @@ stylesnap/
 │ │ │ ├── ClosetGrid.vue
 │ │ │ ├── AddItemForm.vue
 │ │ │ └── LikedItemsGrid.vue           # Task 12: Grid of liked items
-│ │ └── social/
-│ │ ├── FriendsList.vue
-│ │ ├── FriendProfile.vue
-│ │ ├── FriendRequest.vue
-│ │ ├── SuggestionCanvas.vue
-│ │ ├── SuggestionList.vue
-│ │ ├── SuggestionItem.vue
-│ │ ├── NotificationBell.vue
-│ │ ├── LikersList.vue                 # Task 12: Modal showing likers
-│ │ └── PopularItemsCarousel.vue       # Task 12: Trending items carousel
+│ │ ├── social/
+│ │ │ ├── FriendsList.vue
+│ │ │ ├── FriendProfile.vue
+│ │ │ ├── FriendRequest.vue
+│ │ │ ├── SuggestionCanvas.vue
+│ │ │ ├── SuggestionList.vue
+│ │ │ ├── SuggestionItem.vue
+│ │ │ ├── NotificationBell.vue
+│ │ │ ├── LikersList.vue                 # Task 12: Modal showing likers
+│ │ │ ├── PopularItemsCarousel.vue       # Task 12: Trending items carousel
+│ │ │ ├── SharedOutfitCard.vue           # Task 13: Instagram-style post card
+│ │ │ ├── SharedOutfitsFeed.vue          # Task 13: Social feed with filters
+│ │ │ ├── ShareOutfitModal.vue           # Task 13: Share outfit form
+│ │ │ └── OutfitCommentsList.vue         # Task 13: Comments with add/delete
+│ │ ├── outfits/
+│ │ │ ├── OutfitHistoryCard.vue          # Task 13: Single outfit entry card
+│ │ │ ├── OutfitHistoryList.vue          # Task 13: History with filters
+│ │ │ └── RecordOutfitModal.vue          # Task 13: Record/edit outfit form
+│ │ ├── collections/
+│ │ │ ├── CollectionCard.vue             # Task 13: Collection grid card
+│ │ │ ├── CollectionsList.vue            # Task 13: Collections grid view
+│ │ │ ├── CollectionDetailView.vue       # Task 13: Detail with drag-drop
+│ │ │ └── CreateCollectionModal.vue      # Task 13: Create/edit collection
+│ │ ├── preferences/
+│ │ │ ├── ColorPicker.vue                # Task 13: Multi-color selector
+│ │ │ ├── StyleSelector.vue              # Task 13: Style cards selector
+│ │ │ └── StylePreferencesEditor.vue     # Task 13: Complete preferences form
+│ │ └── analytics/
+│ │     ├── WardrobeAnalytics.vue        # Task 13: Main analytics dashboard
+│ │     ├── MostWornChart.vue            # Task 13: Ranked items chart
+│ │     └── SeasonalBreakdown.vue        # Task 13: Category/occasion/rating stats
 │ ├── pages/
 │ │ ├── Login.vue
 │ │ ├── Closet.vue
 │ │ ├── Friends.vue
-│ │ ├── Profile.vue
-│ │ └── Suggestions.vue
+│ │ ├── Profile.vue                    # Updated: Added tabs for History, Collections, Preferences
+│ │ ├── Suggestions.vue
+│ │ └── Analytics.vue                  # Task 13: Wardrobe analytics page
 │ ├── stores/
 │ │ ├── index.js
 │ │ ├── auth-store.js

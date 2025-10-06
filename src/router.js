@@ -29,6 +29,7 @@ import Closet from './pages/Closet.vue'
 import Friends from './pages/Friends.vue'
 import Suggestions from './pages/Suggestions.vue'
 import Profile from './pages/Profile.vue'
+import Analytics from './pages/Analytics.vue'
 
 const routes = [
   {
@@ -60,6 +61,12 @@ const routes = [
     path: '/suggestions',
     name: 'Suggestions',
     component: Suggestions,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/analytics',
+    name: 'Analytics',
+    component: Analytics,
     meta: { requiresAuth: true }
   },
   {
