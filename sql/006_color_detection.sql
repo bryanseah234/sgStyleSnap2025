@@ -5,13 +5,48 @@
 -- ============================================
 -- DROP EXISTING OBJECTS
 -- ============================================
-DROP FUNCTION IF EXISTS get_complementary_color(VARCHAR) CASCADE;
-DROP FUNCTION IF EXISTS get_analogous_colors(VARCHAR) CASCADE;
-DROP FUNCTION IF EXISTS get_triadic_colors(VARCHAR) CASCADE;
-DROP FUNCTION IF EXISTS suggest_matching_colors(VARCHAR, VARCHAR) CASCADE;
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS get_complementary_color(VARCHAR) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
 
-DROP INDEX IF EXISTS idx_clothes_primary_color;
-DROP INDEX IF EXISTS idx_clothes_secondary_colors;
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS get_analogous_colors(VARCHAR) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS get_triadic_colors(VARCHAR) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS suggest_matching_colors(VARCHAR, VARCHAR) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_clothes_primary_color;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_clothes_secondary_colors;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
 
 -- Drop constraints
 ALTER TABLE clothes DROP CONSTRAINT IF EXISTS check_primary_color;

@@ -19,6 +19,7 @@ This guide will walk you through setting up your Supabase PostgreSQL database fo
 ### 005_catalog_system.sql (Task 9)
 - ✅ **Fixed**: Added existence checks before altering tables
 - ✅ **Fixed**: Wrapped ALTER TABLE in DO blocks to prevent errors
+- ✅ **Fixed**: Changed from GENERATED column to trigger-based approach for `search_vector` (immutability issue)
 
 ### 007_outfit_generation.sql (Task 11)
 - ✅ **Fixed**: Added missing `outfit_generation_history` table drop
@@ -82,21 +83,9 @@ For detailed fix information, see:
 
 **✨ NEW: All migrations are now re-runnable!** You can safely run them multiple times without errors.
 
-#### Option A: Run All Migrations at Once (Fastest)
-
-1. Click **SQL Editor** (in left sidebar)
-2. Click **"+ New query"**
-3. Copy and paste the **ENTIRE contents** of `sql/run_all_migrations.sql`
-4. Click **"Run"** or press `Ctrl+Enter`
-5. ✅ Done! All 8 migrations will run in order
-
-**Expected result:** You'll see 8 success messages, one for each migration.
-
----
-
-#### Option B: Run Migrations One-by-One (Recommended for Learning)
-
 **⚠️ IMPORTANT: Run these IN ORDER (001 → 008)!**
+
+Run migrations one-by-one:
 
 For each migration below:
 1. Click **SQL Editor** (in left sidebar)
@@ -108,45 +97,59 @@ For each migration below:
 ---
 
 **Migration 001: Initial Schema** (`sql/001_initial_schema.sql`)
-- Creates all core tables (users, clothes, friends, suggestions)
+- **Creates tables:** `users`, `clothes`, `friends`, `suggestions` (4 tables)
 - Sets up UUID extensions and timestamps
+- Implements soft delete support
+- 200-item quota per user, 5 categories (top/bottom/outerwear/shoes/accessory)
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 002: RLS Policies** (`sql/002_rls_policies.sql`)
-- Enables Row Level Security
-- Users can only see their own data + friends' items
+- Enables Row Level Security on all tables
+- Users can only see their own data + friends' items (based on privacy settings)
+- Implements privacy controls (public/friends/private)
+- Protects against unauthorized access
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 003: Indexes & Functions** (`sql/003_indexes_functions.sql`)
 - Performance indexes for fast queries
-- Helper functions (quota check, friend closet)
+- Helper functions: `check_user_quota()`, `is_friends_with()`, `get_friend_closet()`
+- Optimizes common lookups (10-100x faster)
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 004: Advanced Features** (`sql/004_advanced_features.sql`)
-- Outfit history, collections, notifications
-- User statistics view
+- **Creates tables:** `outfit_history`, `shared_outfits`, `shared_outfit_likes`, `outfit_comments`, `style_preferences`, `suggestion_feedback`, `outfit_collections`, `collection_outfits` (8 tables)
+- Social sharing and outfit collections
+- AI learning (user preferences, feedback tracking)
+- Analytics (wear history, statistics)
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 005: Catalog System** (`sql/005_catalog_system.sql`)
-- Pre-populated clothing catalog with full-text search
-- Function to add catalog items to closet
+- **Creates table:** `catalog_items` (1 table)
+- Pre-populated clothing catalog browsing
+- Full-text search with filters (category, color, brand, season)
+- Function to add catalog items to user's closet
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 006: Color Detection** (`sql/006_color_detection.sql`)
-- Color fields (primary_color, secondary_colors)
-- Color harmony functions (complementary, analogous, triadic)
+- **Modifies table:** Adds `primary_color` and `secondary_colors` columns to `clothes`
+- Color harmony functions: `get_complementary_color()`, `get_analogous_colors()`, `get_triadic_colors()`
+- AI-powered color matching for outfit suggestions
+- Supports 30+ color names (black, white, red, blue, etc.)
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 007: Outfit Generation** (`sql/007_outfit_generation.sql`)
+- **Creates tables:** `generated_outfits`, `outfit_generation_history`, `outfit_likes` (3 tables)
 - Permutation-based outfit generation (no external APIs)
-- Outfit scoring and ranking functions
-- Outfit likes system
+- Outfit scoring and ranking system
+- Weather and occasion-based filtering
+- Outfit likes system for generated outfits
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 008: Likes Feature** (`sql/008_likes_feature.sql`)
+- **Creates table:** `likes` (1 table)
 - Item likes system (like Instagram)
-- Auto-increment likes count
-- Popular items queries
+- Auto-increment `likes_count` on clothes table
+- Functions: `toggle_like()`, `get_popular_items()`
 - Expected: ✅ "Success. No rows returned"
 
 **What this does:**
@@ -201,16 +204,34 @@ WHERE table_schema = 'public'
 ORDER BY table_name;
 ```
 
-**Expected tables (should see 9):**
+**Expected tables (should see 17):**
+
+**Core Tables (Migration 001 - 4 tables):**
+- ✅ `users`
 - ✅ `clothes`
 - ✅ `friends`
-- ✅ `outfit_collections`
-- ✅ `outfit_history`
-- ✅ `social_feed_posts`
-- ✅ `suggestion_feedback`
 - ✅ `suggestions`
-- ✅ `user_preferences`
-- ✅ `users`
+
+**Advanced Features (Migration 004 - 8 tables):**
+- ✅ `outfit_history`
+- ✅ `shared_outfits`
+- ✅ `shared_outfit_likes`
+- ✅ `outfit_comments`
+- ✅ `style_preferences`
+- ✅ `suggestion_feedback`
+- ✅ `outfit_collections`
+- ✅ `collection_outfits`
+
+**Catalog System (Migration 005 - 1 table):**
+- ✅ `catalog_items`
+
+**Outfit Generation (Migration 007 - 3 tables):**
+- ✅ `generated_outfits`
+- ✅ `outfit_generation_history`
+- ✅ `outfit_likes`
+
+**Likes System (Migration 008 - 1 table):**
+- ✅ `likes`
 
 2. Check RLS is enabled:
 ```sql
@@ -230,7 +251,7 @@ WHERE schemaname = 'public'
 ORDER BY indexname;
 ```
 
-**Expected:** Should see 15+ indexes
+**Expected:** Should see 40+ indexes (for performance optimization)
 
 ---
 
@@ -440,28 +461,52 @@ SELECT check_user_quota('YOUR-USER-UUID-HERE');
 ## 📚 What Each Migration Does
 
 ### 001_initial_schema.sql
-- **Tables:** users, clothes, friends, suggestions
+- **Tables:** users, clothes, friends, suggestions (4 tables)
 - **Purpose:** Core data structure
-- **Key Features:** 200-item quota, 5 categories, privacy levels
+- **Key Features:** 200-item quota, 5 categories (top/bottom/outerwear/shoes/accessory), privacy levels
 - **Dependencies:** None (run first!)
 
 ### 002_rls_policies.sql
-- **Purpose:** Security layer
+- **Purpose:** Security layer (no tables, just policies)
 - **Key Features:** User can only see own data, friends-only privacy
 - **Dependencies:** Requires 001_initial_schema.sql
 - **Critical:** Without this, anyone can see anyone's data!
 
 ### 003_indexes_functions.sql
-- **Purpose:** Performance optimization
+- **Purpose:** Performance optimization (no tables, just indexes/functions)
 - **Key Features:** Fast lookups, quota checking, friend verification
 - **Dependencies:** Requires 001_initial_schema.sql
 - **Impact:** 10-100x faster queries
 
 ### 004_advanced_features.sql
-- **Tables:** outfit_collections, outfit_history, user_preferences, suggestion_feedback, social_feed_posts
-- **Purpose:** Advanced features (analytics, AI learning, social feed)
+- **Tables:** outfit_history, shared_outfits, shared_outfit_likes, outfit_comments, style_preferences, suggestion_feedback, outfit_collections, collection_outfits (8 tables)
+- **Purpose:** Social features, outfit tracking, AI learning
 - **Dependencies:** Requires 001, 002, 003
-- **Optional:** Can skip for basic MVP, but recommended
+- **Key Features:** Outfit sharing, likes/comments, collections, wear tracking
+
+### 005_catalog_system.sql
+- **Tables:** catalog_items (1 table)
+- **Purpose:** Browse pre-populated clothing catalog
+- **Key Features:** Full-text search, filtering (category/color/brand/season), add to closet
+- **Dependencies:** Requires 001, 002, 003
+
+### 006_color_detection.sql
+- **Tables:** None (adds columns to clothes table)
+- **Purpose:** AI-powered color detection and matching
+- **Key Features:** Primary/secondary colors, color harmony (complementary, analogous, triadic)
+- **Dependencies:** Requires 001_initial_schema.sql
+
+### 007_outfit_generation.sql
+- **Tables:** generated_outfits, outfit_generation_history, outfit_likes (3 tables)
+- **Purpose:** AI outfit generation system
+- **Key Features:** Permutation-based generation, scoring, weather/occasion filtering
+- **Dependencies:** Requires 001, 002, 003, 006 (needs color fields)
+
+### 008_likes_feature.sql
+- **Tables:** likes (1 table)
+- **Purpose:** Instagram-style likes for clothing items
+- **Key Features:** Toggle likes, auto-increment counter, popular items
+- **Dependencies:** Requires 001, 002, 003
 
 ---
 

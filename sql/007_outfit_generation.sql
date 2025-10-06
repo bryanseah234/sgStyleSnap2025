@@ -5,45 +5,244 @@
 -- ============================================
 -- DROP EXISTING OBJECTS (in reverse dependency order)
 -- ============================================
-DROP TRIGGER IF EXISTS increment_outfit_likes_trigger ON outfit_likes CASCADE;
-DROP TRIGGER IF EXISTS decrement_outfit_likes_trigger ON outfit_likes CASCADE;
-DROP TRIGGER IF EXISTS prevent_self_like_outfit_trigger ON outfit_likes CASCADE;
+-- === Triggers ===
+DO $$
+BEGIN
+    DROP TRIGGER IF EXISTS increment_outfit_likes_trigger ON outfit_likes CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
 
-DROP FUNCTION IF EXISTS increment_outfit_likes_count() CASCADE;
-DROP FUNCTION IF EXISTS decrement_outfit_likes_count() CASCADE;
-DROP FUNCTION IF EXISTS prevent_self_like_outfit() CASCADE;
-DROP FUNCTION IF EXISTS get_outfit_likers(UUID, INTEGER) CASCADE;
-DROP FUNCTION IF EXISTS get_popular_outfits(UUID, INTEGER) CASCADE;
-DROP FUNCTION IF EXISTS generate_outfit_permutations(UUID, VARCHAR, VARCHAR, INTEGER) CASCADE;
-DROP FUNCTION IF EXISTS score_outfit_color_harmony(UUID[]) CASCADE;
-DROP FUNCTION IF EXISTS score_outfit_style_compatibility(UUID[]) CASCADE;
+DO $$
+BEGIN
+    DROP TRIGGER IF EXISTS decrement_outfit_likes_trigger ON outfit_likes CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
 
-DROP POLICY IF EXISTS "Users can view own generated outfits" ON generated_outfits;
-DROP POLICY IF EXISTS "Users can view friends generated outfits" ON generated_outfits;
-DROP POLICY IF EXISTS "Users can create own outfits" ON generated_outfits;
-DROP POLICY IF EXISTS "Users can update own outfits" ON generated_outfits;
-DROP POLICY IF EXISTS "Users can delete own outfits" ON generated_outfits;
-DROP POLICY IF EXISTS "Users can like any outfit" ON outfit_likes;
-DROP POLICY IF EXISTS "Users can unlike own likes" ON outfit_likes;
-DROP POLICY IF EXISTS "Users can view outfit likes" ON outfit_likes;
+DO $$
+BEGIN
+    DROP TRIGGER IF EXISTS prevent_self_like_outfit_trigger ON outfit_likes CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
 
-DROP INDEX IF EXISTS idx_generated_outfits_user_id;
-DROP INDEX IF EXISTS idx_generated_outfits_created_at;
-DROP INDEX IF EXISTS idx_generated_outfits_occasion;
-DROP INDEX IF EXISTS idx_generated_outfits_weather;
-DROP INDEX IF EXISTS idx_generated_outfits_is_saved;
-DROP INDEX IF EXISTS idx_generated_outfits_saved_collection;
-DROP INDEX IF EXISTS idx_generated_outfits_rating;
-DROP INDEX IF EXISTS idx_generated_outfits_item_ids;
-DROP INDEX IF EXISTS idx_outfit_likes_outfit_id;
-DROP INDEX IF EXISTS idx_outfit_likes_user_id;
-DROP INDEX IF EXISTS idx_outfit_likes_user_outfit;
+-- === Functions ===
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS increment_outfit_likes_count() CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS decrement_outfit_likes_count() CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS prevent_self_like_outfit() CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS get_outfit_likers(UUID, INTEGER) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS get_popular_outfits(UUID, INTEGER) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS generate_outfit_permutations(UUID, VARCHAR, VARCHAR, INTEGER) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS score_outfit_color_harmony(UUID[]) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP FUNCTION IF EXISTS score_outfit_style_compatibility(UUID[]) CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+-- === Row-Level Security Policies ===
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can view own generated outfits" ON generated_outfits;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can view friends generated outfits" ON generated_outfits;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can create own outfits" ON generated_outfits;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can update own outfits" ON generated_outfits;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can delete own outfits" ON generated_outfits;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can like any outfit" ON outfit_likes;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can unlike own likes" ON outfit_likes;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Users can view outfit likes" ON outfit_likes;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+-- === Indexes ===
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_user_id;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_created_at;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_occasion;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_weather;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_is_saved;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_saved_collection;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_rating;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_generated_outfits_item_ids;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_outfit_likes_outfit_id;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_outfit_likes_user_id;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP INDEX IF EXISTS idx_outfit_likes_user_outfit;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
 
 -- Note: This outfit_likes is for generated outfits (Task 11)
 -- Different from shared_outfit_likes in 004 (Task 13)
-DROP TABLE IF EXISTS outfit_likes CASCADE;
-DROP TABLE IF EXISTS outfit_generation_history CASCADE;
-DROP TABLE IF EXISTS generated_outfits CASCADE;
+DO $$
+BEGIN
+    DROP TABLE IF EXISTS outfit_likes CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP TABLE IF EXISTS outfit_generation_history CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    DROP TABLE IF EXISTS generated_outfits CASCADE;
+EXCEPTION WHEN undefined_table THEN
+    NULL;
+END $$;
+
 
 -- ============================================
 -- GENERATED OUTFITS TABLE

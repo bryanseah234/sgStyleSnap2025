@@ -125,19 +125,11 @@ CREATE INDEX idx_catalog_season ON catalog_items(season);
 -- Active items only (most queries)
 CREATE INDEX idx_catalog_active ON catalog_items(is_active) WHERE is_active = true;
 
--- Add generated column for full-text search
+-- Add search_vector column for full-text search (maintained by trigger)
 ALTER TABLE catalog_items 
-  ADD COLUMN search_vector tsvector 
-  GENERATED ALWAYS AS (
-    to_tsvector('english', 
-      name || ' ' || 
-      COALESCE(brand, '') || ' ' || 
-      COALESCE(description, '') || ' ' ||
-      COALESCE(array_to_string(tags, ' '), '')
-    )
-  ) STORED;
+  ADD COLUMN search_vector tsvector;
 
--- Full-text search index (now on the generated column)
+-- Full-text search index
 CREATE INDEX idx_catalog_search ON catalog_items USING gin(search_vector);
 
 -- Index for user items linked to catalog
@@ -292,6 +284,28 @@ $$;
 -- ============================================
 -- TRIGGERS
 -- ============================================
+
+-- Function to update search_vector
+CREATE OR REPLACE FUNCTION update_catalog_search_vector()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('english',
+    NEW.name || ' ' ||
+    COALESCE(NEW.brand, '') || ' ' ||
+    COALESCE(NEW.description, '') || ' ' ||
+    COALESCE(array_to_string(NEW.tags, ' '), '')
+  );
+  RETURN NEW;
+END;
+$$;
+
+-- Trigger to update search_vector on insert/update
+CREATE TRIGGER update_catalog_search_vector_trigger
+  BEFORE INSERT OR UPDATE ON catalog_items
+  FOR EACH ROW
+  EXECUTE FUNCTION update_catalog_search_vector();
 
 -- Trigger to update updated_at timestamp on catalog_items
 CREATE TRIGGER update_catalog_items_updated_at
