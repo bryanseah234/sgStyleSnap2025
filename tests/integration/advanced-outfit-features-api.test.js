@@ -11,16 +11,14 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 
 // Mock Supabase for now - in real integration tests, you'd use a test database
-const mockSupabase = {
-  auth: {
-    getUser: vi.fn()
-  },
-  from: vi.fn(),
-  rpc: vi.fn()
-}
-
 vi.mock('../../src/services/api', () => ({
-  supabase: mockSupabase
+  supabase: {
+    auth: {
+      getUser: vi.fn()
+    },
+    from: vi.fn(),
+    rpc: vi.fn()
+  }
 }))
 
 import outfitHistoryService from '../../src/services/outfit-history-service'
@@ -28,6 +26,9 @@ import sharedOutfitsService from '../../src/services/shared-outfits-service'
 import collectionsService from '../../src/services/collections-service'
 import stylePreferencesService from '../../src/services/style-preferences-service'
 import analyticsService from '../../src/services/analytics-service'
+
+// Get mock instance
+import { supabase as mockSupabase } from '../../src/services/api'
 
 describe('Advanced Outfit Features API Integration Tests', () => {
   let testUser1, testUser2
