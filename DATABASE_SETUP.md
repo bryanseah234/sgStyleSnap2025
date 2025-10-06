@@ -152,6 +152,15 @@ For each migration below:
 - Functions: `toggle_like()`, `get_popular_items()`
 - Expected: ✅ "Success. No rows returned"
 
+**Migration 009: Enhanced Categories** (`sql/009_enhanced_categories.sql`)
+- **Updates:** Category constraints on `clothes` and `catalog_items` tables
+- Expands from 5 simple categories to 20 detailed categories
+- Categories: blazer, blouse, body, dress, hat, hoodie, longsleeve, not-sure, other, outerwear, pants, polo, shirt, shoes, shorts, skip, skirt, t-shirt, top, undershirt
+- Function: `get_category_group()` maps detailed categories to simple groups
+- View: `category_distribution` for analytics
+- **Backward Compatible:** Existing simple categories remain valid
+- Expected: ✅ "Success. No rows returned"
+
 **What this does:**
 - Enables Row Level Security on all tables
 - Creates policies so users can only see their own data
