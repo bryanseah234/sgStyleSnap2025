@@ -93,7 +93,8 @@ stylesnap/
 │ ├── 005_catalog_system.sql           # Task 9: Catalog database
 │ ├── 006_color_detection.sql          # Task 10: Color fields and functions
 │ ├── 007_outfit_generation.sql        # Task 11: Outfit generation (permutation-based)
-│ └── 008_likes_feature.sql            # Task 12: Likes system
+│ ├── 008_likes_feature.sql            # Task 12: Likes system
+│ └── 009_notifications_system.sql     # Task 14: Notifications, suggestions, item likes
 ├── src/
 │ ├── assets/
 │ │ ├── styles/
@@ -135,7 +136,14 @@ stylesnap/
 │ │ │ ├── SharedOutfitCard.vue           # Task 13: Instagram-style post card
 │ │ │ ├── SharedOutfitsFeed.vue          # Task 13: Friends-only feed (chronological)
 │ │ │ ├── ShareOutfitModal.vue           # Task 13: Share outfit form
-│ │ │ └── OutfitCommentsList.vue         # Task 13: Comments with add/delete
+│ │ │ ├── OutfitCommentsList.vue         # Task 13: Comments with add/delete
+│ │ │ ├── CreateSuggestionModal.vue      # Task 14: Create outfit suggestion for friend
+│ │ │ └── SuggestionApprovalCard.vue     # Task 14: Approve/reject friend suggestions
+│ │ ├── notifications/
+│ │ │ ├── NotificationsList.vue          # Task 14: Main notifications list
+│ │ │ ├── NotificationItem.vue           # Task 14: Individual notification card
+│ │ │ ├── NotificationBadge.vue          # Task 14: Unread count badge
+│ │ │ └── EmptyNotifications.vue         # Task 14: Empty state component
 │ │ ├── outfits/
 │ │ │ ├── OutfitHistoryCard.vue          # Task 13: Single outfit entry card
 │ │ │ ├── OutfitHistoryList.vue          # Task 13: History with filters
@@ -163,7 +171,8 @@ stylesnap/
 │ │ ├── Friends.vue            # Social feed with friends' outfits only
 │ │ ├── Settings.vue           # User settings with avatar selection
 │ │ ├── Suggestions.vue
-│ │ └── Analytics.vue                  # Task 13: Wardrobe analytics page
+│ │ ├── Analytics.vue                  # Task 13: Wardrobe analytics page
+│ │ └── Notifications.vue              # Task 14: Notifications page with tabs
 │ ├── stores/
 │ │ ├── index.js
 │ │ ├── auth-store.js
@@ -175,7 +184,8 @@ stylesnap/
 │ │ ├── shared-outfits-store.js        # Task 13: Social outfit sharing
 │ │ ├── collections-store.js           # Task 13: Collections/lookbooks
 │ │ ├── style-preferences-store.js     # Task 13: Style preferences
-│ │ └── analytics-store.js             # Task 13: Wardrobe analytics
+│ │ ├── analytics-store.js             # Task 13: Wardrobe analytics
+│ │ └── notifications-store.js         # Task 14: Notifications state + real-time updates
 │ ├── services/
 │ │ ├── api.js
 │ │ ├── auth-service.js
@@ -183,7 +193,7 @@ stylesnap/
 │ │ ├── friends-service.js
 │ │ ├── user-service.js            # User profile updates (avatar selection)
 │ │ ├── suggestions-service.js
-│ │ ├── likes-service.js               # Task 12: Likes API integration
+│ │ ├── likes-service.js               # Task 12/14: Likes API (outfits + items)
 │ │ ├── outfit-service.js              # Task 11: Manual outfit creation API
 │ │ ├── outfit-generator-service.js    # Task 11: Auto outfit generation
 │ │ ├── outfit-history-service.js      # Task 13: Outfit history API
@@ -191,6 +201,8 @@ stylesnap/
 │ │ ├── collections-service.js         # Task 13: Collections API
 │ │ ├── style-preferences-service.js   # Task 13: Preferences API
 │ │ ├── analytics-service.js           # Task 13: Analytics API
+│ │ ├── notifications-service.js       # Task 14: Notifications API
+│ │ ├── friend-suggestions-service.js  # Task 14: Friend outfit suggestions API
 │ │ ├── weather-service.js             # Batch 9: Weather integration
 │ │ ├── push-notifications.js          # Batch 10: Push notifications
 │ │ └── offline-sync.js                # Batch 10: Offline sync

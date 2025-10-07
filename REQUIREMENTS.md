@@ -262,3 +262,122 @@ ORDER BY created_at DESC
 - Default: 20 outfits per page
 - Max: 50 outfits per request
 - Infinite scroll or "Load More" button
+
+### Notification System (Friends-Only Interactions)
+**Notification Tab in Navigation:**
+- Bell icon in nav bar with unread badge (red dot with count)
+- Tapping icon navigates to `/notifications` page
+- Badge shows count of unread notifications (max display: 99+)
+- Real-time updates via Supabase subscriptions
+
+**Notification Types:**
+1. **Friend Outfit Suggestions** (type: `friend_outfit_suggestion`)
+   - Friend manually creates outfit using items from YOUR closet
+   - Notification shows: friend's avatar, "X suggested an outfit for you", preview
+   - Action required: Approve or Reject
+   - On approval: Outfit added to your `generated_outfits` table automatically
+   - On rejection: Suggestion marked as rejected, no outfit added
+
+2. **Outfit Likes** (type: `outfit_like`)
+   - Friend likes your shared outfit in social feed
+   - Notification shows: friend's avatar, "X liked your outfit", outfit preview
+   - Only friends can like your outfits (enforced by RLS)
+   - Clicking navigates to outfit details
+
+3. **Item Likes** (type: `item_like`)
+   - Friend likes individual item in your closet
+   - Notification shows: friend's avatar, "X liked your [item name]", item image
+   - Only friends can like your items (enforced by RLS)
+   - Cannot like own items
+   - Clicking navigates to item details
+
+**Friend Outfit Suggestion Workflow:**
+1. **Creation (Friend's perspective):**
+   - Friend browses YOUR closet items
+   - Selects multiple items (no category restrictions)
+   - Optionally adds message (max 500 chars)
+   - Submits suggestion
+   - Stored in `friend_outfit_suggestions` table with status='pending'
+   - Notification automatically created via database trigger
+
+2. **Approval (Your perspective):**
+   - Receive notification with outfit preview
+   - View full outfit with all items
+   - Read friend's message (if provided)
+   - Options: "Approve" or "Reject" buttons
+   - **On Approve:**
+     - Database function `approve_friend_outfit_suggestion()` called
+     - New entry created in `generated_outfits` table
+     - Fields set: `is_manual=true`, `created_by_friend=true`, `friend_suggester_id=[friend's ID]`
+     - Suggestion status updated to 'approved'
+     - Notification marked as read
+     - Toast: "Outfit added to your closet!"
+   - **On Reject:**
+     - Database function `reject_friend_outfit_suggestion()` called
+     - Suggestion status updated to 'rejected'
+     - Notification marked as read
+     - Toast: "Suggestion rejected"
+
+3. **Validation:**
+   - All items MUST belong to your closet (enforced by RLS)
+   - Friend MUST have accepted friend status (enforced by RLS)
+   - Cannot suggest to yourself
+
+**Item Likes System:**
+- New table: `item_likes` (separate from old `likes` table)
+- Each like creates notification (via trigger)
+- Only friends can like (enforced by RLS)
+- Cannot like own items (check constraint)
+- Likes count denormalized on `clothes.likes_count`
+- Triggers auto-increment/decrement count
+
+**Outfit Likes System:**
+- Table: `shared_outfit_likes` (for social feed posts)
+- Each like creates notification (via trigger)
+- Only friends can like (enforced by RLS and trigger logic)
+- Likes count denormalized on `shared_outfits.likes_count`
+- Triggers auto-increment/decrement count
+
+**Notification Management:**
+- **Mark as Read:** Individual notifications or "Mark All as Read"
+- **Delete:** Swipe to delete individual notifications
+- **Filter:** Tabs for "All" and "Unread"
+- **Pagination:** Load 20 at a time, infinite scroll
+- **Real-time:** New notifications appear instantly (Supabase subscription)
+- **Browser Notifications:** Request permission, show desktop notifications
+- **Sound:** Optional notification sound (user can disable)
+
+**Privacy & Security:**
+- RLS policies enforce friends-only access
+- Suggestions validate item ownership
+- Triggers prevent duplicate notifications
+- Only owner can approve/reject suggestions
+- Notification actor must be friend
+
+**Database Tables:**
+- `notifications` - Centralized notification storage
+- `friend_outfit_suggestions` - Suggestion records with status
+- `item_likes` - Individual item likes
+- `shared_outfit_likes` - Outfit likes (social feed)
+- `generated_outfits` - Extended with `created_by_friend` and `friend_suggester_id`
+
+**UI Components:**
+- NotificationsList.vue - Main list with tabs
+- NotificationItem.vue - Individual notification card
+- NotificationBadge.vue - Unread count badge
+- SuggestionApprovalCard.vue - Approve/reject interface
+- CreateSuggestionModal.vue - Friend creates suggestion
+- ItemLikeButton.vue - Heart button on items
+- ItemLikersList.vue - Modal showing who liked
+
+**API Endpoints:**
+- `GET /api/notifications` - Get notifications (paginated)
+- `GET /api/notifications/unread-count` - Get unread count
+- `PUT /api/notifications/:id/read` - Mark as read
+- `PUT /api/notifications/read-all` - Mark all as read
+- `POST /api/friend-suggestions` - Create suggestion
+- `POST /api/friend-suggestions/:id/approve` - Approve
+- `POST /api/friend-suggestions/:id/reject` - Reject
+- `POST /api/items/:id/like` - Like item
+- `DELETE /api/items/:id/like` - Unlike item
+- `GET /api/items/:id/likes` - Get likers

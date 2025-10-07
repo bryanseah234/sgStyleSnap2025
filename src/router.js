@@ -39,6 +39,7 @@ import Suggestions from './pages/Suggestions.vue'
 import Settings from './pages/Settings.vue' // Profile settings with avatar selection
 import Analytics from './pages/Analytics.vue'
 import OutfitGenerator from './pages/OutfitGenerator.vue'
+import Notifications from './pages/Notifications.vue' // Notifications page
 
 const routes = [
   {
@@ -100,6 +101,12 @@ const routes = [
     path: '/outfit-generator',
     name: 'OutfitGenerator',
     component: OutfitGenerator,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/notifications',
+    name: 'Notifications',
+    component: Notifications,
     meta: { requiresAuth: true }
   },
   // Catch-all 404 route

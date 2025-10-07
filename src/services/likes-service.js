@@ -1,12 +1,13 @@
 /**
  * Likes Service
  * 
- * Handles all like/unlike operations for clothing items.
+ * Handles all like/unlike operations for clothing items and outfits.
  * 
  * Features:
- * - Like/unlike individual items
+ * - Like/unlike individual items (item_likes table - creates notifications)
+ * - Like/unlike shared outfits (shared_outfit_likes table - creates notifications)
  * - Get user's liked items
- * - Get likers for an item
+ * - Get likers for an item or outfit
  * - Get popular items from friends
  * - Like statistics
  * 
@@ -14,6 +15,7 @@
  * - Users can only like items from friends
  * - Users cannot like their own items
  * - Likes respect item privacy settings
+ * - Notifications created automatically via database triggers
  */
 
 import { supabase } from './auth-service'
@@ -344,6 +346,344 @@ export const likesService = {
     } catch (error) {
       console.error('Error batch checking liked items:', error)
       return new Set()
+    }
+  },
+
+  // ============================================================================
+  // NEW: SHARED OUTFIT LIKES (with notifications)
+  // ============================================================================
+
+  /**
+   * Like a shared outfit (creates notification)
+   * @param {string} outfitId - Outfit ID
+   * @returns {Promise<object>}
+   */
+  async likeSharedOutfit(outfitId) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) throw new Error('Not authenticated')
+      
+      // Insert like (trigger will create notification)
+      const { error: likeError } = await supabase
+        .from('shared_outfit_likes')
+        .insert({
+          outfit_id: outfitId,
+          user_id: user.id
+        })
+      
+      if (likeError) {
+        if (likeError.code === '23505') {
+          throw new Error('Already liked this outfit')
+        }
+        throw likeError
+      }
+      
+      // Get updated likes count
+      const { data: outfit, error: outfitError } = await supabase
+        .from('shared_outfits')
+        .select('likes_count')
+        .eq('id', outfitId)
+        .single()
+      
+      if (outfitError) throw outfitError
+      
+      return {
+        success: true,
+        likes_count: outfit.likes_count
+      }
+    } catch (error) {
+      console.error('Error liking shared outfit:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Unlike a shared outfit
+   * @param {string} outfitId - Outfit ID
+   * @returns {Promise<object>}
+   */
+  async unlikeSharedOutfit(outfitId) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) throw new Error('Not authenticated')
+      
+      // Delete like
+      const { error: deleteError } = await supabase
+        .from('shared_outfit_likes')
+        .delete()
+        .eq('outfit_id', outfitId)
+        .eq('user_id', user.id)
+      
+      if (deleteError) throw deleteError
+      
+      // Get updated likes count
+      const { data: outfit, error: outfitError } = await supabase
+        .from('shared_outfits')
+        .select('likes_count')
+        .eq('id', outfitId)
+        .single()
+      
+      if (outfitError) throw outfitError
+      
+      return {
+        success: true,
+        likes_count: outfit.likes_count
+      }
+    } catch (error) {
+      console.error('Error unliking shared outfit:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get likers for a shared outfit
+   * @param {string} outfitId - Outfit ID
+   * @returns {Promise<Array>}
+   */
+  async getSharedOutfitLikers(outfitId) {
+    try {
+      const { data, error } = await supabase
+        .from('shared_outfit_likes')
+        .select(`
+          created_at,
+          user:users!shared_outfit_likes_user_id_fkey (
+            id,
+            username,
+            avatar
+          )
+        `)
+        .eq('outfit_id', outfitId)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      
+      return data.map(like => ({
+        user_id: like.user.id,
+        username: like.user.username,
+        avatar: like.user.avatar,
+        liked_at: like.created_at
+      }))
+    } catch (error) {
+      console.error('Error fetching shared outfit likers:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Check if current user liked a shared outfit
+   * @param {string} outfitId - Outfit ID
+   * @returns {Promise<boolean>}
+   */
+  async hasUserLikedSharedOutfit(outfitId) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) return false
+      
+      const { data, error } = await supabase
+        .from('shared_outfit_likes')
+        .select('id')
+        .eq('outfit_id', outfitId)
+        .eq('user_id', user.id)
+        .maybeSingle()
+      
+      if (error) throw error
+      return !!data
+    } catch (error) {
+      console.error('Error checking shared outfit like status:', error)
+      return false
+    }
+  },
+
+  // ============================================================================
+  // NEW: CLOSET ITEM LIKES (with notifications)
+  // ============================================================================
+
+  /**
+   * Like a friend's closet item (creates notification)
+   * @param {string} itemId - Item ID
+   * @returns {Promise<object>}
+   */
+  async likeClosetItem(itemId) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) throw new Error('Not authenticated')
+      
+      // Insert like (trigger will create notification and update likes_count)
+      const { error: likeError } = await supabase
+        .from('item_likes')
+        .insert({
+          item_id: itemId,
+          user_id: user.id
+        })
+      
+      if (likeError) {
+        if (likeError.code === '23505') {
+          throw new Error('Already liked this item')
+        }
+        // Check for self-like or non-friend error
+        if (likeError.code === '23514') {
+          throw new Error('Cannot like your own items or non-friends\' items')
+        }
+        throw likeError
+      }
+      
+      // Get updated likes count
+      const { data: item, error: itemError } = await supabase
+        .from('clothes')
+        .select('likes_count')
+        .eq('id', itemId)
+        .single()
+      
+      if (itemError) throw itemError
+      
+      return {
+        success: true,
+        likes_count: item.likes_count
+      }
+    } catch (error) {
+      console.error('Error liking closet item:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Unlike a closet item
+   * @param {string} itemId - Item ID
+   * @returns {Promise<object>}
+   */
+  async unlikeClosetItem(itemId) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) throw new Error('Not authenticated')
+      
+      // Delete like (trigger will update likes_count)
+      const { error: deleteError } = await supabase
+        .from('item_likes')
+        .delete()
+        .eq('item_id', itemId)
+        .eq('user_id', user.id)
+      
+      if (deleteError) throw deleteError
+      
+      // Get updated likes count
+      const { data: item, error: itemError } = await supabase
+        .from('clothes')
+        .select('likes_count')
+        .eq('id', itemId)
+        .single()
+      
+      if (itemError) throw itemError
+      
+      return {
+        success: true,
+        likes_count: item.likes_count
+      }
+    } catch (error) {
+      console.error('Error unliking closet item:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get likers for a closet item
+   * @param {string} itemId - Item ID
+   * @returns {Promise<Array>}
+   */
+  async getClosetItemLikers(itemId) {
+    try {
+      const { data, error } = await supabase
+        .from('item_likes')
+        .select(`
+          created_at,
+          user:users!item_likes_user_id_fkey (
+            id,
+            username,
+            avatar
+          )
+        `)
+        .eq('item_id', itemId)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      
+      return data.map(like => ({
+        user_id: like.user.id,
+        username: like.user.username,
+        avatar: like.user.avatar,
+        liked_at: like.created_at
+      }))
+    } catch (error) {
+      console.error('Error fetching closet item likers:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Check if current user liked a closet item
+   * @param {string} itemId - Item ID
+   * @returns {Promise<boolean>}
+   */
+  async hasUserLikedClosetItem(itemId) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) return false
+      
+      const { data, error } = await supabase
+        .from('item_likes')
+        .select('id')
+        .eq('item_id', itemId)
+        .eq('user_id', user.id)
+        .maybeSingle()
+      
+      if (error) throw error
+      return !!data
+    } catch (error) {
+      console.error('Error checking closet item like status:', error)
+      return false
+    }
+  },
+
+  /**
+   * Toggle like on shared outfit
+   * @param {string} outfitId - Outfit ID
+   * @param {boolean} isLiked - Current like state
+   * @returns {Promise<object>}
+   */
+  async toggleSharedOutfitLike(outfitId, isLiked) {
+    try {
+      if (isLiked) {
+        return await this.unlikeSharedOutfit(outfitId)
+      } else {
+        return await this.likeSharedOutfit(outfitId)
+      }
+    } catch (error) {
+      console.error('Error toggling shared outfit like:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Toggle like on closet item
+   * @param {string} itemId - Item ID
+   * @param {boolean} isLiked - Current like state
+   * @returns {Promise<object>}
+   */
+  async toggleClosetItemLike(itemId, isLiked) {
+    try {
+      if (isLiked) {
+        return await this.unlikeClosetItem(itemId)
+      } else {
+        return await this.likeClosetItem(itemId)
+      }
+    } catch (error) {
+      console.error('Error toggling closet item like:', error)
+      throw error
     }
   }
 }
