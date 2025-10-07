@@ -5,7 +5,7 @@
  * 
  * Functions:
  * - getItems(filters): Fetches all user's items with optional filters
- *   - filters: { category?, search?, sort? }
+ *   - filters: { category?, clothing_type?, search?, sort? }
  *   - Returns: Array of closet items
  * 
  * - getItem(id): Fetches single item by ID
@@ -129,6 +129,11 @@ export async function getItems(filters = {}) {
     // Apply category filter
     if (filters.category && filters.category !== 'all') {
       query = query.eq('category', filters.category)
+    }
+    
+    // Apply clothing_type filter
+    if (filters.clothing_type && filters.clothing_type !== 'all') {
+      query = query.eq('clothing_type', filters.clothing_type)
     }
     
     // Apply search filter
