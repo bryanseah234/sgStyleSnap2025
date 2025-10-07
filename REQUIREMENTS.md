@@ -215,3 +215,50 @@ When viewing an item in the virtual closet, users can see comprehensive statisti
 - Collaborative filtering ("Users like you also liked...")
 - Canvas item resize/rotate controls
 - Outfit templates/layouts
+
+### Social Feed (Friends-Only Outfits)
+**Feed Display:**
+- Shows outfits shared by **accepted friends only**
+- Sorted **chronologically** (newest first)
+- Displays username, avatar, outfit image, caption, like/comment counts
+- Real-time like/unlike functionality
+- Navigate to full outfit details on tap
+
+**Friends-Only Filtering:**
+- Uses `friends` table with canonical ordering (requester_id < receiver_id)
+- Checks **both directions** of friendship relationship
+- Only shows outfits when `status = 'accepted'`
+- **Automatically excludes:**
+  - Non-friends (no friendship record)
+  - Pending requests (status = 'pending')
+  - Rejected requests (status = 'rejected')
+  - Unfriended users (friendship deleted from database)
+
+**Dynamic Updates:**
+- When user unfriends someone → Their outfits **immediately disappear** from feed
+- When friendship changes to 'rejected' → Outfits removed from feed
+- When friendship accepted → Outfits appear in feed
+- No caching of old friendships - queries live data every time
+
+**Bidirectional Query:**
+```sql
+WHERE user_id IN (
+  SELECT CASE 
+    WHEN requester_id = current_user THEN receiver_id
+    WHEN receiver_id = current_user THEN requester_id
+  END
+  FROM friends
+  WHERE (requester_id = current_user OR receiver_id = current_user)
+    AND status = 'accepted'
+)
+ORDER BY created_at DESC
+```
+
+**Empty State:**
+- If user has 0 accepted friends → Shows "Add friends to see their outfits"
+- Friendly message with link to Friends page
+
+**Pagination:**
+- Default: 20 outfits per page
+- Max: 50 outfits per request
+- Infinite scroll or "Load More" button

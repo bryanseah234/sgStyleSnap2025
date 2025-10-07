@@ -133,7 +133,7 @@ stylesnap/
 │ │ │ ├── LikersList.vue                 # Task 12: Modal showing likers
 │ │ │ ├── PopularItemsCarousel.vue       # Task 12: Trending items carousel
 │ │ │ ├── SharedOutfitCard.vue           # Task 13: Instagram-style post card
-│ │ │ ├── SharedOutfitsFeed.vue          # Task 13: Social feed with filters
+│ │ │ ├── SharedOutfitsFeed.vue          # Task 13: Friends-only feed (chronological)
 │ │ │ ├── ShareOutfitModal.vue           # Task 13: Share outfit form
 │ │ │ └── OutfitCommentsList.vue         # Task 13: Comments with add/delete
 │ │ ├── outfits/
@@ -160,7 +160,7 @@ stylesnap/
 │ ├── pages/
 │ │ ├── Login.vue
 │ │ ├── Closet.vue             # Home page with settings icon
-│ │ ├── Friends.vue
+│ │ ├── Friends.vue            # Social feed with friends' outfits only
 │ │ ├── Settings.vue           # User settings with avatar selection
 │ │ ├── Suggestions.vue
 │ │ └── Analytics.vue                  # Task 13: Wardrobe analytics page

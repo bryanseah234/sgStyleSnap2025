@@ -47,9 +47,13 @@ Implement advanced outfit management features including outfit history tracking,
   - `DELETE /api/outfit-history/:id` - Delete history entry
   - `GET /api/outfit-history/stats` - Get user's outfit statistics
 
-- [ ] **Shared Outfits**
+- [ ] **Shared Outfits (Friends-Only Feed)**
   - `POST /api/shared-outfits` - Share an outfit
-  - `GET /api/shared-outfits/feed` - Get feed of shared outfits
+  - `GET /api/shared-outfits/feed` - Get feed of friends' outfits only (chronological)
+    - ✅ Only shows outfits from accepted friends
+    - ✅ Uses bidirectional friendship query (canonical ordering)
+    - ✅ Automatically excludes unfriended users
+    - ✅ Sorted by created_at DESC (newest first)
   - `GET /api/shared-outfits/:id` - Get specific shared outfit
   - `PUT /api/shared-outfits/:id` - Update shared outfit
   - `DELETE /api/shared-outfits/:id` - Delete shared outfit
@@ -268,12 +272,42 @@ The migration file includes:
 ```
 
 #### GET /api/shared-outfits/feed
-**Get social feed of shared outfits**
+**Get social feed of shared outfits from friends only (chronologically sorted)**
+
+**Authentication**: Required
 
 **Query Parameters:**
-- `visibility` - "public" or "friends" (default: both)
-- `limit` - Max results (default: 20)
-- `offset` - Pagination
+- `limit` - Max results (default: 20, max: 50)
+- `offset` - Pagination offset (default: 0)
+
+**Filtering Logic:**
+- **Friends-only**: Only returns outfits from users with accepted friend status
+- **Bidirectional check**: Uses `friends` table with canonical ordering (requester_id < receiver_id)
+- **Dynamic filtering**: Automatically excludes outfits when:
+  - Friendship is deleted (unfriended)
+  - Friendship status changes from 'accepted' to 'rejected' or 'pending'
+  - No friendship relationship exists
+- **Chronological order**: Sorted by created_at DESC (newest first)
+
+**SQL Query Pattern:**
+```sql
+-- Get friends using bidirectional canonical ordering
+SELECT so.*, u.id, u.name, u.avatar_url,
+       EXISTS(SELECT 1 FROM shared_outfit_likes WHERE outfit_id = so.id AND user_id = $current_user) as is_liked_by_me
+FROM shared_outfits so
+JOIN users u ON u.id = so.user_id
+WHERE so.user_id IN (
+  SELECT CASE 
+    WHEN requester_id = $current_user THEN receiver_id
+    WHEN receiver_id = $current_user THEN requester_id
+  END as friend_id
+  FROM friends
+  WHERE (requester_id = $current_user OR receiver_id = $current_user)
+    AND status = 'accepted'
+)
+ORDER BY so.created_at DESC
+LIMIT $limit OFFSET $offset;
+```
 
 **Response:**
 ```json
@@ -288,6 +322,7 @@ The migration file includes:
       },
       "caption": "Love this!",
       "outfit_items": [...],
+      "visibility": "friends",
       "likes_count": 15,
       "comments_count": 3,
       "is_liked_by_me": true,
@@ -297,6 +332,8 @@ The migration file includes:
   "total": 50
 }
 ```
+
+**Note**: If user has no accepted friends, returns empty array `[]` with total: 0
 
 #### POST /api/shared-outfits/:id/like
 **Like a shared outfit**
@@ -564,32 +601,73 @@ export default {
   },
 
   /**
-   * Get social feed of shared outfits
+   * Get social feed of shared outfits from friends only
+   * Automatically filters to show only outfits from accepted friends
+   * Sorted chronologically (newest first)
+   * 
    * @param {Object} options - Query options
-   * @returns {Promise<Object>} Feed data
+   * @param {number} options.limit - Max results (default: 20)
+   * @param {number} options.offset - Pagination offset (default: 0)
+   * @returns {Promise<Object>} Feed data with friends' outfits only
    */
   async getFeed(options = {}) {
-    const { limit = 20, offset = 0, visibility } = options
+    const { limit = 20, offset = 0 } = options
     
-    let query = supabase
+    const currentUser = supabase.auth.user()
+    if (!currentUser) throw new Error('Not authenticated')
+    
+    // Step 1: Get list of friend IDs using bidirectional canonical ordering
+    // The friends table uses requester_id < receiver_id constraint
+    const { data: friendships, error: friendsError } = await supabase
+      .from('friends')
+      .select('requester_id, receiver_id')
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+    
+    if (friendsError) throw friendsError
+    
+    // Extract friend IDs from both directions of the relationship
+    const friendIds = friendships.map(f => 
+      f.requester_id === currentUser.id ? f.receiver_id : f.requester_id
+    )
+    
+    // If no friends, return empty feed
+    if (friendIds.length === 0) {
+      return { outfits: [], total: 0 }
+    }
+    
+    // Step 2: Get shared outfits from friends only
+    const { data, error, count } = await supabase
       .from('shared_outfits')
       .select(`
         *,
         user:user_id (id, name, avatar_url)
-      `)
-      .order('created_at', { ascending: false })
+      `, { count: 'exact' })
+      .in('user_id', friendIds)  // Only friends' outfits
+      .order('created_at', { ascending: false })  // Chronological (newest first)
       .range(offset, offset + limit - 1)
-    
-    if (visibility) {
-      query = query.eq('visibility', visibility)
-    }
-    
-    const { data, error, count } = await query
     
     if (error) throw error
     
+    // Check if current user liked each outfit
+    const outfitsWithLikes = await Promise.all(
+      data.map(async (outfit) => {
+        const { data: likeData } = await supabase
+          .from('shared_outfit_likes')
+          .select('id')
+          .eq('outfit_id', outfit.id)
+          .eq('user_id', currentUser.id)
+          .single()
+        
+        return {
+          ...outfit,
+          is_liked_by_me: !!likeData
+        }
+      })
+    )
+    
     return {
-      outfits: data || [],
+      outfits: outfitsWithLikes || [],
       total: count || 0
     }
   },

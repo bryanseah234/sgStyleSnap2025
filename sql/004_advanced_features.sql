@@ -812,6 +812,83 @@ COMMENT ON TABLE suggestion_feedback IS 'User feedback on outfit suggestions';
 COMMENT ON TABLE outfit_collections IS 'User-created outfit collections/lookbooks';
 COMMENT ON TABLE collection_outfits IS 'Outfits within collections';
 
+-- =============================================================================
+-- 9. HELPER FUNCTIONS FOR SOCIAL FEED
+-- =============================================================================
+
+/**
+ * Get friends-only outfit feed for a user
+ * Returns shared outfits from accepted friends only, sorted chronologically
+ * Automatically excludes unfriended users by querying live friendship status
+ * 
+ * @param p_user_id - The current user's ID
+ * @param p_limit - Max number of outfits to return (default 20)
+ * @param p_offset - Pagination offset (default 0)
+ * @returns Table of shared outfits with user info, sorted by created_at DESC
+ */
+CREATE OR REPLACE FUNCTION get_friends_outfit_feed(
+  p_user_id UUID,
+  p_limit INT DEFAULT 20,
+  p_offset INT DEFAULT 0
+)
+RETURNS TABLE (
+  outfit_id UUID,
+  user_id UUID,
+  username TEXT,
+  user_avatar TEXT,
+  caption TEXT,
+  outfit_items JSONB,
+  visibility TEXT,
+  likes_count INT,
+  comments_count INT,
+  created_at TIMESTAMPTZ,
+  is_liked_by_me BOOLEAN
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    so.id AS outfit_id,
+    so.user_id,
+    u.username,
+    u.avatar AS user_avatar,
+    so.caption,
+    so.outfit_items,
+    so.visibility,
+    so.likes_count,
+    COALESCE(
+      (SELECT COUNT(*)::INT FROM outfit_comments WHERE outfit_id = so.id),
+      0
+    ) AS comments_count,
+    so.created_at,
+    EXISTS(
+      SELECT 1 FROM shared_outfit_likes 
+      WHERE outfit_id = so.id AND user_id = p_user_id
+    ) AS is_liked_by_me
+  FROM shared_outfits so
+  JOIN users u ON u.id = so.user_id
+  WHERE so.user_id IN (
+    -- Get friend IDs using bidirectional canonical ordering
+    -- friends table uses requester_id < receiver_id constraint
+    SELECT CASE 
+      WHEN f.requester_id = p_user_id THEN f.receiver_id
+      WHEN f.receiver_id = p_user_id THEN f.requester_id
+    END AS friend_id
+    FROM friends f
+    WHERE (f.requester_id = p_user_id OR f.receiver_id = p_user_id)
+      AND f.status = 'accepted'
+  )
+  ORDER BY so.created_at DESC
+  LIMIT p_limit
+  OFFSET p_offset;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add comment for documentation
+COMMENT ON FUNCTION get_friends_outfit_feed IS 
+  'Returns chronologically sorted outfits from accepted friends only. ' ||
+  'Automatically excludes unfriended users by checking live friendship status. ' ||
+  'Uses bidirectional query with canonical ordering (requester_id < receiver_id).';
+
 -- Grant permissions (if using service role)
 -- GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
 -- GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
