@@ -63,12 +63,25 @@
 const DEFAULT_OPTIONS = {
   maxWidth: 1200,
   maxHeight: 1200,
-  quality: 0.8,
-  maxSizeMB: 5
+  quality: 0.85, // Slightly higher quality for WebP
+  maxSizeMB: 10, // Before compression limit
+  outputFormat: 'webp' // Always output WebP for smallest size
 }
 
 /**
- * Validates image file
+ * Allowed image file extensions
+ */
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.jfif']
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg', 
+  'image/png', 
+  'image/webp',
+  'image/pjpeg' // Progressive JPEG
+]
+
+/**
+ * Validates image file (strict validation)
  * @param {File} file - Image file to validate
  * @returns {Object} { valid: boolean, error?: string }
  */
@@ -77,17 +90,38 @@ export function validateImage(file) {
     return { valid: false, error: 'No file provided' }
   }
   
-  // Check file type
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-  if (!validTypes.includes(file.type)) {
-    return { valid: false, error: 'Invalid file type. Please upload JPG, PNG, or WebP image.' }
+  // Check if it's a File object
+  if (!(file instanceof File) && !(file instanceof Blob)) {
+    return { valid: false, error: 'Invalid file object' }
   }
   
-  // Check file size (max 5MB)
+  // Check file extension
+  const fileName = file.name?.toLowerCase() || ''
+  const hasValidExtension = ALLOWED_EXTENSIONS.some(ext => fileName.endsWith(ext))
+  
+  if (!hasValidExtension) {
+    return { 
+      valid: false, 
+      error: `Invalid file type. Only image files are allowed (${ALLOWED_EXTENSIONS.join(', ')})` 
+    }
+  }
+  
+  // Check MIME type
+  if (!ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+    return { 
+      valid: false, 
+      error: 'Invalid file type. Only JPG, PNG, and WebP images are allowed.' 
+    }
+  }
+  
+  // Check file size (max 10MB before compression)
   const maxSizeMB = DEFAULT_OPTIONS.maxSizeMB
   const maxSizeBytes = maxSizeMB * 1024 * 1024
   if (file.size > maxSizeBytes) {
-    return { valid: false, error: `File too large. Maximum size is ${maxSizeMB}MB.` }
+    return { 
+      valid: false, 
+      error: `File too large. Maximum size is ${maxSizeMB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.` 
+    }
   }
   
   return { valid: true }
@@ -136,7 +170,7 @@ export async function compressImage(file, options = {}) {
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0, width, height)
         
-        // Convert canvas to blob
+        // Convert canvas to blob (always WebP for best compression)
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -144,17 +178,25 @@ export async function compressImage(file, options = {}) {
               return
             }
             
-            // Convert blob to file
-            const compressedFile = new File([blob], file.name, {
-              type: file.type,
+            // Create new filename with .webp extension
+            const originalName = file.name.replace(/\.[^/.]+$/, '')
+            const newFileName = `${originalName}.webp`
+            
+            // Convert blob to file (WebP format)
+            const compressedFile = new File([blob], newFileName, {
+              type: 'image/webp',
               lastModified: Date.now()
             })
             
-            console.log(`Original: ${(file.size / 1024).toFixed(2)}KB, Compressed: ${(compressedFile.size / 1024).toFixed(2)}KB`)
+            const originalSizeKB = (file.size / 1024).toFixed(2)
+            const compressedSizeKB = (compressedFile.size / 1024).toFixed(2)
+            const savings = ((1 - compressedFile.size / file.size) * 100).toFixed(1)
+            
+            console.log(`Image compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${savings}% smaller)`)
             
             resolve(compressedFile)
           },
-          file.type,
+          'image/webp', // Always output WebP
           opts.quality
         )
       }

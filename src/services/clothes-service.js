@@ -58,13 +58,13 @@ import { supabase } from './auth-service'
 import { compressImage } from '../utils/image-compression'
 
 /**
- * Upload image to Cloudinary
+ * Upload image to Cloudinary with WebP optimization
  * @param {File} file - Image file to upload
- * @returns {Promise<string>} Cloudinary URL
+ * @returns {Promise<Object>} { url: string, thumbnail_url: string, public_id: string }
  */
 export async function uploadImage(file) {
   try {
-    // Compress image first
+    // Compress image first (converts to WebP)
     const compressedFile = await compressImage(file)
     
     // Get Cloudinary credentials from environment
@@ -79,6 +79,9 @@ export async function uploadImage(file) {
     const formData = new FormData()
     formData.append('file', compressedFile)
     formData.append('upload_preset', uploadPreset)
+    formData.append('folder', 'closet-items') // Organize uploads
+    formData.append('format', 'webp') // Force WebP format
+    formData.append('quality', 'auto:good') // Auto quality optimization
     
     // Upload to Cloudinary
     const response = await fetch(
@@ -90,11 +93,27 @@ export async function uploadImage(file) {
     )
     
     if (!response.ok) {
-      throw new Error('Failed to upload image to Cloudinary')
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error?.message || 'Failed to upload image to Cloudinary')
     }
     
     const data = await response.json()
-    return data.secure_url
+    
+    // Generate optimized URLs with Cloudinary transformations
+    const baseUrl = data.secure_url
+    const publicId = data.public_id
+    
+    // Full size image URL (WebP, quality optimized)
+    const fullImageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good/${publicId}.webp`
+    
+    // Thumbnail URL (400x400, WebP, quality optimized)
+    const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/${publicId}.webp`
+    
+    return {
+      url: fullImageUrl,
+      thumbnail_url: thumbnailUrl,
+      public_id: publicId
+    }
   } catch (error) {
     console.error('Image upload failed:', error)
     throw new Error(`Image upload failed: ${error.message}`)
@@ -217,7 +236,9 @@ export async function createItem(itemData) {
       style_tags: itemData.style_tags || [],
       privacy: itemData.privacy || 'friends',
       size: itemData.size || null,
-      brand: itemData.brand || null
+      brand: itemData.brand || null,
+      primary_color: itemData.primary_color || null,
+      secondary_colors: itemData.secondary_colors || []
     }
     
     const { data, error } = await supabase

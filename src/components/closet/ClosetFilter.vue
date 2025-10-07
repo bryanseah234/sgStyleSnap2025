@@ -25,6 +25,25 @@
       </select>
     </div>
 
+    <!-- Clothing Type Filter -->
+    <div class="filter-section">
+      <label class="filter-label">Clothing Type</label>
+      <select
+        v-model="localFilters.clothing_type"
+        @change="emitFilters"
+        class="filter-select"
+      >
+        <option value="">All Types</option>
+        <option
+          v-for="type in CLOTHING_TYPES"
+          :key="type"
+          :value="type"
+        >
+          {{ CLOTHING_TYPE_LABELS[type] || type }}
+        </option>
+      </select>
+    </div>
+
     <!-- Privacy Filter -->
     <div class="filter-section">
       <label class="filter-label">Privacy</label>
@@ -53,12 +72,14 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { CATEGORY_GROUPS } from '@/config/constants'
+import { CLOTHING_TYPES, CLOTHING_TYPE_LABELS } from '@/utils/clothing-constants'
 
 const props = defineProps({
   filters: {
     type: Object,
     default: () => ({
       category: '',
+      clothing_type: '',
       privacy: ''
     })
   }
@@ -73,7 +94,7 @@ watch(() => props.filters, (newFilters) => {
 }, { deep: true })
 
 const hasActiveFilters = computed(() => {
-  return localFilters.value.category || localFilters.value.privacy
+  return localFilters.value.category || localFilters.value.clothing_type || localFilters.value.privacy
 })
 
 function emitFilters() {
@@ -83,6 +104,7 @@ function emitFilters() {
 function clearFilters() {
   localFilters.value = {
     category: '',
+    clothing_type: '',
     privacy: ''
   }
   emitFilters()

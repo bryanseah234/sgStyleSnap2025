@@ -93,6 +93,7 @@ const closetStore = useClosetStore()
 
 const filters = ref({
   category: '',
+  clothing_type: '',
   privacy: ''
 })
 
@@ -103,6 +104,10 @@ const items = computed(() => {
     filtered = filtered.filter(item => item.category === filters.value.category)
   }
 
+  if (filters.value.clothing_type) {
+    filtered = filtered.filter(item => item.clothing_type === filters.value.clothing_type)
+  }
+
   if (filters.value.privacy) {
     filtered = filtered.filter(item => item.privacy === filters.value.privacy)
   }
@@ -111,7 +116,7 @@ const items = computed(() => {
 })
 
 const quotaUsed = computed(() => closetStore.quota?.used || 0)
-const hasFilters = computed(() => filters.value.category || filters.value.privacy)
+const hasFilters = computed(() => filters.value.category || filters.value.clothing_type || filters.value.privacy)
 
 onMounted(() => {
   closetStore.fetchItems()

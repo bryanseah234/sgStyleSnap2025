@@ -124,19 +124,27 @@ export const useClosetStore = defineStore('closet', {
         
         // Upload image to Cloudinary first
         let imageUrl = null
+        let thumbnailUrl = null
+        let publicId = null
+        
         if (itemData.file) {
-          imageUrl = await clothesService.uploadImage(itemData.file)
+          const uploadResult = await clothesService.uploadImage(itemData.file)
+          imageUrl = uploadResult.url
+          thumbnailUrl = uploadResult.thumbnail_url
+          publicId = uploadResult.public_id
         } else if (itemData.image_url) {
           imageUrl = itemData.image_url
+          thumbnailUrl = itemData.thumbnail_url || itemData.image_url
         } else {
           throw new Error('Image file or URL is required')
         }
         
-        // Create item with image URL
+        // Create item with image URLs
         const newItem = await clothesService.createItem({
           name: itemData.name,
           category: itemData.category,
           image_url: imageUrl,
+          thumbnail_url: thumbnailUrl,
           style_tags: itemData.style_tags,
           privacy: itemData.privacy,
           size: itemData.size,
@@ -166,7 +174,9 @@ export const useClosetStore = defineStore('closet', {
         
         // If new image provided, upload it first
         if (itemData.file) {
-          itemData.image_url = await clothesService.uploadImage(itemData.file)
+          const uploadResult = await clothesService.uploadImage(itemData.file)
+          itemData.image_url = uploadResult.url
+          itemData.thumbnail_url = uploadResult.thumbnail_url
           delete itemData.file
         }
         

@@ -137,19 +137,110 @@
         </select>
       </div>
 
-      <!-- Image Upload (Placeholder) -->
+      <!-- Image Upload -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Image *
         </label>
-        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md p-4 text-center">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Image upload coming soon
+        
+        <!-- Image Preview -->
+        <div v-if="imagePreview" class="mb-4">
+          <img 
+            :src="imagePreview" 
+            alt="Preview" 
+            class="w-full h-48 object-cover rounded-md"
+          />
+          
+          <!-- Color Analysis -->
+          <div v-if="detectingColors" class="mt-3 flex items-center text-sm text-gray-600 dark:text-gray-400">
+            <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Analyzing colors...
+          </div>
+          
+          <div v-else-if="detectedColors" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+              Detected Colors
+              <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                ({{ Math.round(detectedColors.confidence * 100) }}% confident)
+              </span>
+            </h4>
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- Primary Color -->
+              <div class="flex items-center gap-2">
+                <div 
+                  class="w-10 h-10 rounded-md border-2 border-gray-300 dark:border-gray-600 shadow-sm"
+                  :style="{ backgroundColor: getColorHex(detectedColors.primary) }"
+                  :title="`Primary: ${detectedColors.primary}`"
+                ></div>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
+                  {{ detectedColors.primary }}
+                </span>
+              </div>
+              
+              <!-- Secondary Colors -->
+              <template v-if="detectedColors.secondary && detectedColors.secondary.length > 0">
+                <span class="text-gray-400">+</span>
+                <div 
+                  v-for="color in detectedColors.secondary" 
+                  :key="color"
+                  class="w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600"
+                  :style="{ backgroundColor: getColorHex(color) }"
+                  :title="`Secondary: ${color}`"
+                ></div>
+              </template>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Colors will be stored for better search and outfit matching
+            </p>
+          </div>
+          
+          <button
+            type="button"
+            @click="clearImage"
+            class="mt-2 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+          >
+            Remove Image
+          </button>
+        </div>
+        
+        <!-- File Input -->
+        <div 
+          v-else
+          class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md p-4 text-center hover:border-blue-500 transition-colors cursor-pointer"
+          @click="triggerFileInput"
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
+          @drop.prevent="handleDrop"
+          :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900/10': isDragging }"
+        >
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*,.jpg,.jpeg,.png,.webp"
+            @change="handleFileChange"
+            class="hidden"
+          />
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Click to upload or drag and drop
           </p>
           <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Max 5MB, JPG/PNG/WebP
+            JPG, PNG, or WebP (max 10MB)
+          </p>
+          <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+            Images automatically converted to WebP for optimal storage
           </p>
         </div>
+        
+        <!-- Upload Error -->
+        <p v-if="imageError" class="mt-2 text-sm text-red-600 dark:text-red-400">
+          {{ imageError }}
+        </p>
       </div>
 
       <!-- Quota Warning -->
@@ -184,6 +275,8 @@
 import { ref, computed } from 'vue'
 import { useClosetStore } from '@/stores/closet-store'
 import { CLOTHING_CATEGORIES, CATEGORY_GROUPS, SEASONS, PRIVACY_OPTIONS } from '@/config/constants'
+import { compressImage } from '@/utils/image-compression'
+import colorDetector from '@/utils/color-detector'
 
 const emit = defineEmits(['success', 'cancel'])
 
@@ -194,34 +287,128 @@ const form = ref({
   category: '',
   brand: '',
   season: '',
-  privacy: 'friends'
+  privacy: 'friends',
+  file: null,
+  primary_color: null,
+  secondary_colors: []
 })
 
 const submitting = ref(false)
+const imagePreview = ref(null)
+const imageError = ref(null)
+const isDragging = ref(false)
+const fileInput = ref(null)
+const detectingColors = ref(false)
+const detectedColors = ref(null)
 
 const quotaUsed = computed(() => closetStore.quota?.used || 0)
 const quotaWarning = computed(() => quotaUsed.value >= 180)
 
 const isFormValid = computed(() => {
-  return form.value.name && form.value.category
+  return form.value.name && form.value.category && form.value.file
 })
+
+function triggerFileInput() {
+  fileInput.value?.click()
+}
+
+async function handleFileChange(event) {
+  const file = event.target.files?.[0]
+  if (file) {
+    await processFile(file)
+  }
+}
+
+async function handleDrop(event) {
+  isDragging.value = false
+  const file = event.dataTransfer.files?.[0]
+  if (file) {
+    await processFile(file)
+  }
+}
+
+async function processFile(file) {
+  imageError.value = null
+  detectedColors.value = null
+  
+  try {
+    // Compress and convert to WebP
+    const compressed = await compressImage(file, 1)
+    
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result
+    }
+    reader.readAsDataURL(compressed)
+    
+    // Store compressed file
+    form.value.file = compressed
+    
+    // Detect colors from the original file (better quality for detection)
+    detectingColors.value = true
+    try {
+      const colors = await colorDetector.detectColors(file, {
+        maxColors: 5,
+        quality: 10,
+        excludeWhiteBlack: true
+      })
+      
+      detectedColors.value = colors
+      
+      // Store colors in form
+      form.value.primary_color = colors.primary
+      form.value.secondary_colors = colors.secondary || []
+      
+      console.log('Detected colors:', colors)
+    } catch (colorError) {
+      console.error('Color detection failed:', colorError)
+      // Continue without color detection - not critical
+    } finally {
+      detectingColors.value = false
+    }
+  } catch (error) {
+    imageError.value = error.message
+    console.error('Image processing error:', error)
+  }
+}
+
+function clearImage() {
+  imagePreview.value = null
+  form.value.file = null
+  form.value.primary_color = null
+  form.value.secondary_colors = []
+  imageError.value = null
+  detectedColors.value = null
+  detectingColors.value = false
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+function getColorHex(colorName) {
+  return colorDetector.getHexColor(colorName)
+}
 
 async function handleSubmit() {
   if (!isFormValid.value || submitting.value) return
-
-  // TODO: Implement actual submission when image upload is ready
-  alert('Form submission not yet implemented. Need to add image upload functionality.')
   
-  // For now, just emit success
-  // submitting.value = true
-  // try {
-  //   await closetStore.addItem(form.value)
-  //   emit('success')
-  // } catch (error) {
-  //   alert(error.message)
-  // } finally {
-  //   submitting.value = false
-  // }
+  // Check quota
+  if (!closetStore.canAddItem) {
+    imageError.value = 'You have reached your 200 item limit. Please remove some items to add new ones.'
+    return
+  }
+
+  submitting.value = true
+  try {
+    await closetStore.addItem(form.value)
+    emit('success')
+  } catch (error) {
+    imageError.value = error.message
+    console.error('Failed to add item:', error)
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
