@@ -6,6 +6,13 @@
 
 ---
 
+## Important Privacy Note
+
+**Catalog Items Privacy:**  
+All catalog items (suggested items list) are displayed **anonymously** without owner attribution. Users cannot see who uploaded an item, whether it was pre-populated by admins or contributed by other users. The `catalog_items` table has no `owner_id` column by design, and all API responses exclude any user attribution information.
+
+---
+
 ## Table of Contents
 
 1. [Authentication](#authentication)
@@ -14,8 +21,9 @@
 4. [Suggestions](#suggestions)
 5. [User Management](#user-management)
 6. [Likes](#likes)
-7. [Error Codes](#error-codes)
-8. [Rate Limits](#rate-limits)
+7. [Catalog Items](#catalog-items)
+8. [Error Codes](#error-codes)
+9. [Rate Limits](#rate-limits)
 
 ---
 
@@ -169,8 +177,8 @@ Authorization: Bearer <token>
   "count": 20,
   "total": 150,
   "quota": {
-    "used": 150,
-    "limit": 200
+    "used": 35,
+    "limit": 50
   },
   "pagination": {
     "limit": 20,
@@ -334,10 +342,11 @@ Authorization: Bearer <token>
 ```json
 {
   "quota": {
-    "used": 150,
-    "limit": 200,
-    "remaining": 50,
-    "percentage": 75.0
+    "used": 35,
+    "limit": 50,
+    "remaining": 15,
+    "percentage": 70.0,
+    "totalItems": 150
   },
   "breakdown": {
     "active_items": 150,
@@ -347,8 +356,8 @@ Authorization: Bearer <token>
   "warnings": [
     {
       "type": "approaching_limit",
-      "message": "You're at 75% capacity. Consider removing unused items.",
-      "threshold": 180
+      "message": "You're at 90% upload capacity. Add items from catalog instead!",
+      "threshold": 45
     }
   ]
 }

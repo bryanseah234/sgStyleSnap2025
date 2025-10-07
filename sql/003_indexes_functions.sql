@@ -51,14 +51,14 @@ CREATE INDEX idx_users_google_id ON users(google_id) WHERE removed_at IS NULL;
 -- HELPER FUNCTIONS
 -- ============================================
 
--- Function to check item quota
--- NOTE: This function only COUNTS items. The API must enforce the 200-item limit.
+-- Function to check item quota (counts only user uploads, not catalog items)
+-- NOTE: This function only COUNTS items. The API must enforce the 50 upload limit.
 -- Usage: SELECT check_item_quota('user-uuid-here');
--- If result >= 200, API should return 403 QUOTA_EXCEEDED error
+-- If result >= 50 (for items with catalog_item_id IS NULL), API should return 403 QUOTA_EXCEEDED error
 CREATE OR REPLACE FUNCTION check_item_quota(user_id UUID)
 RETURNS INTEGER AS $$
     SELECT COUNT(*)::INTEGER FROM clothes 
-    WHERE owner_id = user_id AND removed_at IS NULL;
+    WHERE owner_id = user_id AND removed_at IS NULL AND catalog_item_id IS NULL;
 $$ LANGUAGE sql STABLE;
 
 -- Function to get friend's viewable items

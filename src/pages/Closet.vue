@@ -28,8 +28,8 @@
       <div class="closet-header">
         <h1>My Closet</h1>
         <p class="quota-text">
-          {{ quotaUsed }} / 200 items
-          <span v-if="quotaUsed >= 180" class="quota-warning">⚠️ Near limit!</span>
+          {{ quotaUsed }} / 50 uploads ({{ totalItems }} total items)
+          <span v-if="quotaUsed >= 45" class="quota-warning">⚠️ Near limit!</span>
         </p>
       </div>
 
@@ -116,6 +116,7 @@ const items = computed(() => {
 })
 
 const quotaUsed = computed(() => closetStore.quota?.used || 0)
+const totalItems = computed(() => closetStore.quota?.totalItems || 0)
 const hasFilters = computed(() => filters.value.category || filters.value.clothing_type || filters.value.privacy)
 
 onMounted(() => {

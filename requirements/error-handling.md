@@ -37,11 +37,11 @@ interface ErrorResponse {
 ### 2.2 Quota Enforcement
 
 ```typescript
-// When user exceeds 200 item limit
+// When user exceeds 50 upload limit
 {
-  error: "You've reached your 200 item limit. Please remove some items to add new ones.",
+  error: "You've reached your 50 upload limit. Add unlimited items from our catalog instead!",
   code: "QUOTA_EXCEEDED",
-  details: { current: 200, limit: 200 }
+  details: { current: 50, limit: 50 }
 }
 ```
 
@@ -578,12 +578,13 @@ try {
   });
 }
 
-// Warning logging
-if (clothes.length > 180) {
-  logger.warn('Approaching item quota', {
-    current: clothes.length,
-    limit: 200,
-    remaining: 200 - clothes.length
+// Warning logging (only count user uploads, not catalog items)
+const userUploads = clothes.filter(item => !item.catalog_item_id).length;
+if (userUploads > 45) {
+  logger.warn('Approaching upload quota', {
+    current: userUploads,
+    limit: 50,
+    remaining: 50 - userUploads
   });
 }
 

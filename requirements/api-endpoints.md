@@ -19,13 +19,23 @@ headers: {
 
 Create a new clothing item.
 
+**Image Upload Method (Device-Specific):**
+- Desktop/Laptop: File upload only (no camera access)
+- Mobile/Tablet: File upload + camera capture using HTML `capture="environment"` attribute
+
+**Auto-Catalog Contribution:**
+- After successful upload, item automatically added to catalog_items table
+- Catalog entry has no owner_id (anonymous contribution)
+- Happens in background without user prompt
+- Uses same image_url, name, category as user's upload
+
 **Request:**
 
 ```json
 {
   "name": "string",           // Required, max 255 chars
   "category": "string",       // Required: top/bottom/outerwear/shoes/accessory
-  "image_url": "string",      // Required (from Cloudinary)
+  "image_url": "string",      // Required (from Cloudinary, uploaded via device-specific method)
   "style_tags": ["string"],   // Optional
   "privacy": "string",        // Required: private/friends, default: friends
   "size": "string",           // Optional
@@ -36,14 +46,14 @@ Create a new clothing item.
 **Responses:**
 
 - `200 OK` - Item created successfully
-- `403 Forbidden` - Quota exceeded (200 items max)
+- `403 Forbidden` - Quota exceeded (50 uploads max, catalog items unlimited)
 - `400 Bad Request` - Validation errors
 
 **Business Logic:**
 
 - **CRITICAL: Quota Enforcement**
-  - Check user's current item count (where `removed_at` IS NULL)
-  - If count >= 200, return `403` with quota error
+  - Check user's current upload count (where `removed_at` IS NULL AND `catalog_item_id` IS NULL)
+  - If count >= 50, return `403` with quota error (catalog items unlimited)
   - Use database function `check_item_quota(user_id)` for accuracy
 - **Validate `image_url`:**
   - Must be from Cloudinary domain (e.g., `res.cloudinary.com`)
@@ -69,7 +79,7 @@ export async function checkQuotaMiddleware(req, res, next) {
     if (error) throw error;
     
     const currentCount = data;
-    const limit = 200;
+    const limit = 50; // Upload limit (catalog items don't count)
     
     // Set quota headers for client awareness
     res.setHeader('X-Quota-Used', currentCount);
@@ -78,7 +88,7 @@ export async function checkQuotaMiddleware(req, res, next) {
     
     if (currentCount >= limit) {
       return res.status(403).json({
-        error: "You've reached your 200 item limit. Please remove some items to add new ones.",
+        error: "You've reached your 50 upload limit. Add unlimited items from our catalog instead!",
         code: 'QUOTA_EXCEEDED',
         details: {
           current: currentCount,
@@ -113,20 +123,20 @@ app.post('/api/clothes',
 **Client-Side Quota Warning:**
 
 ```javascript
-// Show warning at 180 items (90% capacity)
-if (quota.used >= 180) {
+// Show warning at 45 uploads (90% capacity)
+if (quota.used >= 45) {
   showQuotaWarning({
-    message: `You're approaching your item limit (${quota.used}/200)`,
+    message: `You're approaching your upload limit (${quota.used}/50). Add unlimited items from catalog!`,
     severity: 'warning',
     action: 'Manage Items'
   });
 }
 
-// Block UI at 200 items
-if (quota.used >= 200) {
+// Block UI at 50 uploads
+if (quota.used >= 50) {
   disableUploadButton();
   showQuotaError({
-    message: "You've reached your 200 item limit",
+    message: "You've reached your 50 upload limit. Add items from catalog!",
     severity: 'error',
     action: 'Remove Items'
   });
@@ -138,6 +148,9 @@ if (quota.used >= 200) {
 ### 2.2 `GET /closet`
 
 Get user's clothing items with pagination.
+
+**Note:** Items may have catalog_item_id linking to catalog for similarity detection.
+When browsing catalog, items with matching catalog_item_id are excluded from suggestions.
 
 **Query Parameters:**
 
@@ -154,8 +167,9 @@ Get user's clothing items with pagination.
   "count": 42,
   "total": 150,
   "quota": {
-    "used": 150,
-    "limit": 200
+    "used": 35,
+    "limit": 50,
+    "totalItems": 150
   },
   "pagination": {
     "limit": 20,
@@ -245,7 +259,7 @@ Restore a soft-deleted clothing item.
 
 - Verify `owner_id` matches authenticated user
 - Check if `removed_at` is within 30 days
-- Check if restoring would exceed quota (200 items)
+- Check if restoring would exceed quota (50 uploads, excluding catalog items)
 - Set `removed_at = NULL`
 - Item counts toward quota again
 
@@ -281,10 +295,11 @@ Get user's quota usage and statistics.
 ```json
 {
   "quota": {
-    "used": 150,
-    "limit": 200,
-    "remaining": 50,
-    "percentage": 75.0
+    "used": 35,
+    "limit": 50,
+    "remaining": 15,
+    "percentage": 70.0,
+    "totalItems": 150
   },
   "breakdown": {
     "active_items": 150,
@@ -294,8 +309,8 @@ Get user's quota usage and statistics.
   "warnings": [
     {
       "type": "approaching_limit",
-      "message": "You're at 75% capacity. Consider removing unused items.",
-      "threshold": 180
+      "message": "You're at 90% upload capacity. Add items from catalog instead!",
+      "threshold": 45
     }
   ],
   "storage": {
@@ -311,9 +326,9 @@ Get user's quota usage and statistics.
 - Calculate trash items: `COUNT(*) WHERE removed_at IS NOT NULL`
 - Calculate recoverable: `COUNT(*) WHERE removed_at > NOW() - INTERVAL '30 days'`
 - Add warnings at:
-  - 90% (180 items): "Approaching limit"
-  - 95% (190 items): "Nearly full - remove items soon"
-  - 100% (200 items): "Limit reached - remove items to add new ones"
+  - 90% (45 uploads): "Approaching upload limit - add from catalog!"
+  - 95% (48 uploads): "Nearly at upload limit - use catalog instead"
+  - 100% (50 uploads): "Upload limit reached - add unlimited items from catalog"
 - Estimate storage from Cloudinary metadata (if available)
 
 **Implementation:**
@@ -347,23 +362,23 @@ app.get('/api/quota', authenticate, async (req, res) => {
       return daysSinceRemoval <= 30;
     }).length || 0;
     
-    const limit = 200;
+    const limit = 50; // Upload limit (catalog items don't count)
     const remaining = Math.max(0, limit - activeCount);
     const percentage = (activeCount / limit) * 100;
     
     // Generate warnings
     const warnings = [];
-    if (activeCount >= 190) {
+    if (activeCount >= 48) {
       warnings.push({
         type: 'nearly_full',
-        message: 'Nearly full - remove items soon to add new ones',
-        threshold: 190
+        message: 'Nearly at upload limit - use catalog instead',
+        threshold: 48
       });
-    } else if (activeCount >= 180) {
+    } else if (activeCount >= 45) {
       warnings.push({
         type: 'approaching_limit',
-        message: `You're at ${Math.round(percentage)}% capacity. Consider removing unused items.`,
-        threshold: 180
+        message: `You're at ${Math.round(percentage)}% upload capacity. Add items from catalog!`,
+        threshold: 45
       });
     }
     

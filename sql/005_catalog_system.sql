@@ -142,7 +142,9 @@ CREATE INDEX idx_clothes_catalog_item ON clothes(catalog_item_id);
 -- Enable RLS on catalog_items
 ALTER TABLE catalog_items ENABLE ROW LEVEL SECURITY;
 
--- Policy: Anyone can view active catalog items (public read)
+-- Policy: Anyone can view active catalog items (public read, anonymous)
+-- CRITICAL: catalog_items table has NO owner_id column to ensure anonymity
+-- Items are displayed without attribution (admin or user-uploaded)
 CREATE POLICY "Anyone can view active catalog items"
 ON catalog_items FOR SELECT
 USING (is_active = true);
@@ -212,6 +214,8 @@ END;
 $$;
 
 -- Function to add catalog item to user's closet
+-- Note: When users upload items, they are automatically added to catalog_items
+-- (without owner_id) for anonymous community contribution
 CREATE OR REPLACE FUNCTION add_catalog_item_to_closet(
   user_id_param UUID,
   catalog_item_id_param UUID,
@@ -225,15 +229,16 @@ DECLARE
   catalog_item RECORD;
   user_item_count INTEGER;
 BEGIN
-  -- Check user's quota (200 items max)
+  -- Check user's upload quota (50 user-uploaded items max)
+  -- Catalog additions are unlimited
   SELECT COUNT(*) INTO user_item_count
   FROM clothes
   WHERE owner_id = user_id_param
-    AND removed_at IS NULL;
+    AND removed_at IS NULL
+    AND catalog_item_id IS NULL; -- Only count user uploads
   
-  IF user_item_count >= 200 THEN
-    RAISE EXCEPTION 'Quota exceeded: Maximum 200 items per user';
-  END IF;
+  -- Note: No quota check here since catalog additions are unlimited
+  -- Users can add unlimited items from catalog
   
   -- Check if catalog item exists
   SELECT * INTO catalog_item

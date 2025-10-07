@@ -5,9 +5,9 @@
 **Requirements**: [REQ: api-endpoints], [REQ: performance]
 
 ## 6.1 Quota Management
-- [ ] Display current usage (X/200 items) in closet
-- [ ] Show warning at 180 items with progress bar
-- [ ] Block uploads at 200 with clear messaging
+- [ ] Display current usage (X/50 uploads) in closet, show total items separately
+- [ ] Show warning at 45 uploads (90% threshold) with progress bar
+- [ ] Block uploads at 50 with clear messaging (suggest catalog additions)
 - [ ] Build quota dashboard in profile page
 - [ ] Implement quota calculation utility
 
@@ -49,7 +49,7 @@ cloudinary-cleanup.js
 
 ## Acceptance Criteria:
 - [ ] Users see clear quota usage and warnings
-- [ ] Uploads blocked at 200 items with helpful message
+- [ ] Uploads blocked at 50 items with helpful message directing to catalog
 - [ ] 30-day purge script works automatically
 - [ ] Cloudinary usage stays within free tier limits
 - [ ] Performance metrics meet targets

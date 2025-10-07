@@ -12,10 +12,11 @@
   - image: file upload (required, max 5MB, formats: jpg, png, webp)
   
   Features:
+  - Device-specific upload: Desktop/laptop = file upload only, Mobile/tablet = file upload + camera
   - Image preview before upload
   - Client-side image compression (using utils/image-compression.js)
   - Validation for all fields
-  - Check quota before allowing upload (200 item limit)
+  - Check quota before allowing upload (50 upload limit, unlimited catalog additions)
   - Upload progress indicator
   - Error handling
   
@@ -220,6 +221,7 @@
             ref="fileInput"
             type="file"
             accept="image/*,.jpg,.jpeg,.png,.webp"
+            :capture="isMobileDevice ? 'environment' : undefined"
             @change="handleFileChange"
             class="hidden"
           />
@@ -227,7 +229,12 @@
             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Click to upload or drag and drop
+            <template v-if="isMobileDevice">
+              📸 Tap to take a photo or upload from gallery
+            </template>
+            <template v-else>
+              Click to upload or drag and drop
+            </template>
           </p>
           <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
             JPG, PNG, or WebP (max 10MB)
@@ -246,7 +253,7 @@
       <!-- Quota Warning -->
       <div v-if="quotaWarning" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
         <p class="text-sm text-yellow-800 dark:text-yellow-200">
-          ⚠️ You have {{ quotaUsed }} / 200 items. You're approaching your limit!
+          ⚠️ You have {{ quotaUsed }} / 50 uploads. Add unlimited items from our catalog!
         </p>
       </div>
 
@@ -302,10 +309,22 @@ const detectingColors = ref(false)
 const detectedColors = ref(null)
 
 const quotaUsed = computed(() => closetStore.quota?.used || 0)
-const quotaWarning = computed(() => quotaUsed.value >= 180)
+const quotaWarning = computed(() => quotaUsed.value >= 45) // Warn at 90% of 50
 
 const isFormValid = computed(() => {
   return form.value.name && form.value.category && form.value.file
+})
+
+// Detect if device is mobile/tablet (allows camera) vs desktop/laptop (file upload only)
+const isMobileDevice = computed(() => {
+  if (typeof window === 'undefined') return false
+  
+  // Check for touch support and screen size
+  const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const isMobileWidth = window.innerWidth <= 1024 // tablets and below
+  const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  
+  return (hasTouchScreen && isMobileWidth) || isMobileUserAgent
 })
 
 function triggerFileInput() {
@@ -395,7 +414,7 @@ async function handleSubmit() {
   
   // Check quota
   if (!closetStore.canAddItem) {
-    imageError.value = 'You have reached your 200 item limit. Please remove some items to add new ones.'
+    imageError.value = 'You have reached your 50 upload limit. Add unlimited items from our catalog instead!'
     return
   }
 

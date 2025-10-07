@@ -89,6 +89,6 @@ describe('API Endpoints Integration Tests', () => {
   })
   
   describe('Quota Enforcement', () => {
-    // TODO: Test 200 item limit
+    // TODO: Test 50 upload limit (catalog items unlimited)
   })
 })

@@ -250,8 +250,9 @@ test('add item journey', async ({ page }) => {
 - Authentication flow
 - Quota enforcement
 - Privacy/RLS policies
-- Image upload
+- Image upload (device-specific: desktop = file only, mobile = camera + file)
 - Friend system
+- Color detection
 
 **Medium Priority (60%+ coverage):**
 - Outfit suggestions

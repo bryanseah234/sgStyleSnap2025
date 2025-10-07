@@ -1,19 +1,19 @@
 <!--
   QuotaIndicator Component - StyleSnap
   
-  Purpose: Displays user's closet item quota (200 item limit per user)
+  Purpose: Displays user's closet upload quota (50 upload limit, unlimited catalog additions)
   
   Props:
   - currentCount: number (items currently in closet)
-  - maxCount: number (default: 200, the quota limit)
+  - maxCount: number (default: 50, the upload quota limit)
   - showDetails: boolean (default: true - shows "X / 200 items" text)
   
   Usage:
   <QuotaIndicator :currentCount="userItemCount" />
   
   Business Logic:
-  - Each user has a 200-item quota
-  - Show warning when approaching limit (>180 items = 90%)
+  - Each user has a 50 upload quota (catalog items unlimited)
+  - Show warning when approaching limit (>45 uploads = 90%)
   - Block uploads when at limit
   - Use ProgressBar component internally
   - Color changes: green (0-80%), yellow (80-90%), red (90-100%)

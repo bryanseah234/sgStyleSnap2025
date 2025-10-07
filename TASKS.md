@@ -26,9 +26,12 @@ Each task may depend on the previous ones. Check individual task files for detai
 - ✅ Database schema setup
 - ✅ Google OAuth implementation
 - ✅ Image upload with client-side resizing
+  - Desktop/Laptop: File upload only
+  - Mobile/Tablet: File upload + camera capture
 - ✅ Friend system with privacy enforcement
 - ✅ Suggestion canvas with drag-and-drop
-- ✅ 200-item quota system
+- ✅ 50 upload quota + unlimited catalog system
+- ✅ Color detection with k-means clustering
 
 ## Implementation Status
 - **Tasks 1-7:** ✅ Complete (Core MVP features)
@@ -37,6 +40,9 @@ Each task may depend on the previous ones. Check individual task files for detai
   - ✅ Backend: SQL (005_catalog_system.sql), catalog-service.js
   - ✅ Frontend: catalog-store.js for state management
   - ✅ Features: Browsing, filtering, search, add to closet
+  - ✅ Privacy: Anonymous browsing (no owner attribution)
+  - ⏳ Auto-Contribution: User uploads auto-added to catalog (needs implementation)
+  - ⏳ Smart Filtering: Exclude owned items from catalog browse (needs implementation)
   - ⏳ UI: CatalogBrowser page pending (functionality ready)
 - **Task 10:** ✅ Complete (Color Detection AI - SQL + documentation)
   - ✅ Backend: SQL (006_color_detection.sql)

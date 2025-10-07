@@ -9,8 +9,9 @@
  * - isLoading: boolean
  * - filters: Object (category, search, sort)
  * - quota: Object
- *   - used: number (current item count)
- *   - max: number (200)
+ *   - used: number (user upload count)
+ *   - max: number (50 for uploads)
+ *   - totalItems: number (total including catalog additions)
  * 
  * Actions:
  * - fetchItems(): Fetches all user's items from Supabase
@@ -29,9 +30,10 @@
  * - isQuotaFull: returns used >= max
  * 
  * Business Rules:
- * - Max 200 items per user
- * - Must check quota before allowing new item
+ * - Max 50 user uploads per user (catalog additions are unlimited)
+ * - Must check quota before allowing new upload
  * - Delete from Cloudinary when item deleted
+ * - Items with catalog_item_id do not count towards upload quota
  * 
  * Reference:
  * - services/clothes-service.js for API calls
@@ -55,7 +57,8 @@ export const useClosetStore = defineStore('closet', {
     },
     quota: {
       used: 0,
-      max: 200
+      max: 50, // Only user uploads count towards quota
+      totalItems: 0 // Total items including catalog additions
     }
   }),
   
@@ -99,7 +102,10 @@ export const useClosetStore = defineStore('closet', {
         const clothesService = await import('../services/clothes-service')
         const items = await clothesService.getItems(this.filters)
         this.items = items
-        this.quota.used = items.length
+        
+        // Count only user uploads (catalog_item_id is null) for quota
+        this.quota.used = items.filter(item => !item.catalog_item_id).length
+        this.quota.totalItems = items.length
       } catch (error) {
         console.error('Failed to fetch items:', error)
         throw error
@@ -113,9 +119,9 @@ export const useClosetStore = defineStore('closet', {
      * @param {Object} itemData - Item data including file
      */
     async addItem(itemData) {
-      // Check quota before upload
+      // Check quota before upload (only for user uploads, not catalog additions)
       if (!this.canAddItem) {
-        throw new Error('You have reached your 200 item limit. Please remove some items to add new ones.')
+        throw new Error('You have reached your 50 upload limit. Add unlimited items from our catalog instead!')
       }
       
       this.isLoading = true

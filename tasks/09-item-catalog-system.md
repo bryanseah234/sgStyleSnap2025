@@ -16,6 +16,24 @@ Implement a pre-populated catalog of clothing items that users can browse and ad
 - Consistent image quality
 - Easier to browse and discover items
 - Reduces friction for new users
+- Community-driven catalog (users auto-contribute uploads)
+
+**Privacy Requirements:**
+- **CRITICAL**: All catalog items must be displayed anonymously
+- Never show who uploaded an item (admin or user)
+- No owner attribution in UI (no "uploaded by" or user names)
+- Owner information excluded from API responses for catalog browsing
+
+**Auto-Contribution:**
+- **CRITICAL**: User uploads automatically added to catalog behind the scenes
+- No prompt or confirmation needed from user
+- Contribution happens silently after successful upload
+- Items added with same image, name, category from user's upload
+
+**Smart Filtering:**
+- Catalog browse excludes items user already owns
+- Prevents showing duplicates in suggested items list
+- Uses catalog_item_id or image matching to detect owned items
 
 ---
 
@@ -58,8 +76,26 @@ Implement a pre-populated catalog of clothing items that users can browse and ad
 - [ ] Filter by category, color, brand, season
 - [ ] Full-text search
 - [ ] Visual feedback on add-to-closet
-- [ ] Quota warning if near 200 items
+- [ ] Quota warning if near 50 uploads (catalog additions don't count)
 - [ ] Mobile-optimized layout
+
+### Privacy & Security
+- [ ] **CRITICAL**: Owner information never exposed in catalog API responses
+- [ ] **CRITICAL**: No user attribution displayed in catalog UI
+- [ ] Catalog items appear identical whether uploaded by admin or user
+- [ ] RLS policies prevent owner_id leakage in catalog views
+
+### Auto-Contribution
+- [ ] **CRITICAL**: User uploads automatically create catalog_items entries
+- [ ] No user prompt or confirmation for catalog contribution
+- [ ] Happens in background after successful upload
+- [ ] Catalog entry uses same image_url, name, category as user's item
+
+### Smart Filtering
+- [ ] **CRITICAL**: Catalog browse excludes items user already owns
+- [ ] Query filters by catalog_item_id in user's clothes table
+- [ ] Prevents duplicate item suggestions
+- [ ] "Already in your closet" handling for edge cases
 
 ---
 
@@ -211,7 +247,7 @@ CREATE INDEX idx_clothes_catalog_item ON clothes(catalog_item_id);
 ```
 
 **Error Responses:**
-- `400` - Quota exceeded (200 items)
+- `400` - Upload quota exceeded (50 uploads, use catalog for more)
 - `404` - Catalog item not found
 - `409` - Item already in closet
 
@@ -575,7 +611,7 @@ USING (is_active = true);
 ### API Validation
 
 - Validate catalog item exists before adding
-- Check user quota before adding (200 limit)
+- Check user upload quota before direct uploads (50 limit, catalog additions unlimited)
 - Prevent duplicate adds (check if already in closet)
 - Sanitize search queries (prevent SQL injection)
 - Rate limit search endpoint

@@ -6,9 +6,9 @@
   Features:
   - Display user info (name, email, avatar from Google)
   - Show user's closet statistics:
-    - Total items count
+    - Total items count (including catalog additions)
     - Items per category breakdown
-    - Quota usage (X / 200 items)
+    - Upload quota usage (X / 50 uploads)
   - Privacy settings (default privacy level for new items)
   - Account settings:
     - Notification preferences

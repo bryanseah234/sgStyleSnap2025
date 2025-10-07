@@ -100,7 +100,7 @@ For each migration below:
 - **Creates tables:** `users`, `clothes`, `friends`, `suggestions` (4 tables)
 - Sets up UUID extensions and timestamps
 - Implements soft delete support
-- 200-item quota per user, 5 categories (top/bottom/outerwear/shoes/accessory)
+- 50 upload quota per user (unlimited catalog additions), 5 categories (top/bottom/outerwear/shoes/accessory)
 - Expected: ✅ "Success. No rows returned"
 
 **Migration 002: RLS Policies** (`sql/002_rls_policies.sql`)
@@ -112,7 +112,7 @@ For each migration below:
 
 **Migration 003: Indexes & Functions** (`sql/003_indexes_functions.sql`)
 - Performance indexes for fast queries
-- Helper functions: `check_user_quota()`, `is_friends_with()`, `get_friend_closet()`
+- Helper functions: `add_catalog_item_to_closet()` (checks 50 upload quota), `is_friends_with()`, `get_friend_closet()`
 - Optimizes common lookups (10-100x faster)
 - Expected: ✅ "Success. No rows returned"
 
@@ -444,10 +444,24 @@ VITE_GOOGLE_CLIENT_ID=123456-abc123.apps.googleusercontent.com
 
 # Cloudinary (get from https://cloudinary.com/console)
 VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
-VITE_CLOUDINARY_UPLOAD_PRESET=your-preset
+VITE_CLOUDINARY_UPLOAD_PRESET=sgstylesnap
 
 # Weather API (optional - get from https://openweathermap.org/api)
 VITE_OPENWEATHER_API_KEY=your-api-key
+
+# Image Upload Configuration
+# - Desktop/Laptop: File upload only (no camera access)
+# - Mobile/Tablet: File upload + camera capture
+# - Max file size: 10MB
+# - Formats: JPG, PNG, WebP (auto-converted to WebP)
+# - Auto color detection with k-means clustering
+
+# Catalog Privacy & Auto-Contribution (Task 9)
+# - Catalog items displayed anonymously (no owner attribution)
+# - catalog_items table has NO owner_id column (privacy by design)
+# - Users cannot see who uploaded items (admin or other users)
+# - User uploads automatically added to catalog (background, no prompt)
+# - Catalog browse excludes items user already owns (prevents duplicates)
 ```
 
 ---
@@ -481,7 +495,7 @@ RETURNING *;
 SELECT check_user_quota('YOUR-USER-UUID-HERE');
 ```
 
-**Expected:** Returns quota information (0 items used, 200 available)
+**Expected:** Returns quota information (0 uploads used, 50 available for uploads, unlimited catalog additions)
 
 ---
 
@@ -521,7 +535,7 @@ SELECT check_user_quota('YOUR-USER-UUID-HERE');
 ### 001_initial_schema.sql
 - **Tables:** users, clothes, friends, suggestions (4 tables)
 - **Purpose:** Core data structure
-- **Key Features:** 200-item quota, 5 categories (top/bottom/outerwear/shoes/accessory), privacy levels
+- **Key Features:** 50 upload quota (unlimited catalog), 5 categories (top/bottom/outerwear/shoes/accessory), privacy levels
 - **Dependencies:** None (run first!)
 
 ### 002_rls_policies.sql

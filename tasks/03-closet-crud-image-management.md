@@ -16,8 +16,10 @@
 
 ## 3.2 Closet Management API
 - [ ] Implement POST /clothes endpoint
-  - **CRITICAL**: Add quota check (200 items max)
+  - **CRITICAL**: Add quota check (50 user uploads max, catalog additions unlimited)
   - Return 403 with friendly message at limit
+  - **NEW**: Automatically add uploaded item to catalog_items table (anonymous)
+  - Background catalog contribution after successful upload
 - [ ] Implement GET /closet endpoint
   - Filter by authenticated user
   - Support category filtering
@@ -33,10 +35,11 @@
   - Category filter bar
   - Loading states and empty state
 - [ ] Build `AddItemForm.vue` component
-  - Camera/gallery selection
-  - Image cropping tool
+  - Device-specific upload: Desktop/laptop = file upload only, Mobile/tablet = camera + file upload
+  - Image preview and compression
   - Required fields validation
   - Optional fields under "Advanced" toggle
+  - Color detection integration
 
 ## 3.4 Base UI Components
 - [ ] Create reusable UI components in `/components/ui/`:
@@ -72,7 +75,7 @@ image-compression.js
 ## Acceptance Criteria:
 - [ ] Images resized to < 1MB before upload
 - [ ] Users can add items with required fields
-- [ ] 200-item quota enforced with clear messaging
+- [ ] 50 upload quota enforced with clear messaging (catalog additions unlimited)
 - [ ] Closet displays items in responsive grid
 - [ ] Category filtering works correctly
 - [ ] Soft delete moves items to "trash" (removed_at set)

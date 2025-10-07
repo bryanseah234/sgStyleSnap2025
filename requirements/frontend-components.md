@@ -499,12 +499,13 @@ const memoryObserver = new IntersectionObserver(
 
 **CRITICAL Requirements:**
 
-- Image selection (camera/gallery)
+- Image selection: Device-specific (Desktop/laptop = file upload only, Mobile/tablet = camera + file upload)
 - CLIENT-SIDE RESIZE to max 1080px
 - Target < 1MB file size
 - Required fields with validation
 - Optional fields in collapsible section
 - Upload progress with percentage
+- Auto color detection using k-means clustering
 
 **ISSUE #28 FIX: Client-Side Image Compression Implementation**
 

@@ -162,8 +162,9 @@ export const SIZES = [
  * Item Quotas
  */
 export const QUOTAS = {
-  MAX_ITEMS: 200,
-  WARNING_THRESHOLD: 180, // 90% of max
+  MAX_UPLOADS: 50, // User uploads limit (catalog items unlimited)
+  MAX_ITEMS: 200, // Deprecated - kept for backward compatibility
+  WARNING_THRESHOLD: 45, // 90% of max (upload limit)
   RECOVERY_PERIOD_DAYS: 30
 }
 

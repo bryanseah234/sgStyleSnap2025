@@ -31,7 +31,7 @@
  * 
  * Reference:
  * - utils/quota-calculator.js (functions being tested)
- * - Business rule: 200 item quota per user
+ * - Business rule: 50 upload quota per user (catalog items excluded)
  */
 
 import { describe, it, expect } from 'vitest'
@@ -48,8 +48,8 @@ describe('Quota Calculator Utility', () => {
     // TODO: Test quota calculation at various levels
     // TODO: Test 0 items (0%)
     // TODO: Test 100 items (50%)
-    // TODO: Test 180 items (90% - warning threshold)
-    // TODO: Test 200 items (100% - full)
+    // TODO: Test 45 uploads (90% - warning threshold)
+    // TODO: Test 50 items (100% - full, user uploads only)
   })
   
   describe('canAddItems', () => {

@@ -18,6 +18,9 @@ All exported functions must have JSDoc comments:
 ```javascript
 /**
  * Compresses an image file to meet size and dimension requirements.
+ * Supports device-specific upload methods:
+ * - Desktop/Laptop: File upload only (no camera access)
+ * - Mobile/Tablet: File upload + camera capture via HTML capture attribute
  * 
  * @param {File} file - The image file to compress
  * @param {Object} options - Compression options
@@ -102,9 +105,29 @@ Use JSDoc for type definitions:
 /**
  * @typedef {Object} QuotaInfo
  * @property {number} used - Current item count
- * @property {number} limit - Maximum allowed items (200)
+ * @property {number} limit - Maximum allowed uploads (50, catalog items unlimited)
  * @property {number} remaining - Items remaining before limit
  * @property {number} percentage - Usage percentage (0-100)
+ */
+
+/**
+ * @typedef {Object} CatalogItem
+ * @property {string} id - Unique identifier (UUID)
+ * @property {string} name - Item name (max 255 chars)
+ * @property {('top'|'bottom'|'outerwear'|'shoes'|'accessory')} category - Item category
+ * @property {string} image_url - Cloudinary image URL (HTTPS)
+ * @property {string} thumbnail_url - Cloudinary thumbnail URL
+ * @property {string[]} [tags] - Search tags
+ * @property {string} [brand] - Brand name
+ * @property {string} [color] - Primary color
+ * @property {string} [season] - Season (spring/summer/fall/winter/all-season)
+ * @property {string[]} [style] - Style tags (casual/formal/sporty/etc)
+ * @property {boolean} is_active - Whether item is active in catalog
+ * @property {string} created_at - ISO timestamp
+ * 
+ * PRIVACY NOTE: CatalogItem has NO owner_id or user attribution.
+ * All catalog items are displayed anonymously by design.
+ * Users cannot determine who uploaded an item (admin or other users).
  */
 ```
 
@@ -158,7 +181,7 @@ export function isValidCloudinaryUrl(url) {
 ```javascript
 /**
  * Middleware to check user's item quota before allowing new uploads.
- * Returns 403 if user has reached the 200 item limit.
+ * Returns 403 if user has reached the 50 upload limit (catalog items don't count).
  * 
  * @middleware
  * @param {Request} req - Express request object
@@ -332,7 +355,7 @@ function handleItemClick(item) {
  * });
  */
 export function useQuota() {
-  const quota = ref({ used: 0, limit: 200, remaining: 200, percentage: 0 });
+  const quota = ref({ used: 0, limit: 50, remaining: 50, percentage: 0 }); // Upload quota
   
   const isNearLimit = computed(() => quota.value.percentage >= 90);
   const isAtLimit = computed(() => quota.value.used >= quota.value.limit);
@@ -713,7 +736,7 @@ onMounted(() => {
 // Constants
 // ==========================================
 
-export const QUOTA_LIMIT = 200;
+export const QUOTA_LIMIT = 50; // Upload limit (catalog items don't count)
 export const WARNING_THRESHOLD = 0.9; // 90%
 export const CRITICAL_THRESHOLD = 0.95; // 95%
 

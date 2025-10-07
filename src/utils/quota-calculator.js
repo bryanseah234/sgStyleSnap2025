@@ -4,13 +4,13 @@
  * Purpose: Helper functions for calculating and checking user's closet item quota
  * 
  * Business Rules:
- * - Each user has a 200-item quota (hard limit)
+ * - Each user has a 50 upload quota (hard limit, catalog items unlimited)
  * - Quota is enforced at database level (check constraint) and application level
- * - Show warning when user reaches 90% (180 items)
+ * - Show warning when user reaches 90% (45 uploads)
  * - Block uploads when at 100% (200 items)
  * 
  * Functions:
- * - calculateQuota(currentCount, maxCount = 200): Calculates quota info
+ * - calculateQuota(currentCount, maxCount = 50): Calculates quota info (upload limit)
  *   - Returns: {
  *       used: number,
  *       max: number,
@@ -31,7 +31,7 @@
  * - getQuotaMessage(quota): Returns user-friendly message
  *   - < 90%: "You have X items. Y spots remaining."
  *   - 90-99%: "You're almost at your limit! Only Y spots left."
- *   - 100%: "You've reached your 200-item limit. Delete some items to add more."
+ *   - 100%: "You've reached your 50 upload limit. Add unlimited items from catalog!"
  * 
  * Usage:
  * import { calculateQuota, canAddItems, getQuotaColor } from './quota-calculator'
@@ -58,7 +58,7 @@
 /**
  * Default max quota
  */
-const DEFAULT_MAX_QUOTA = 200
+const DEFAULT_MAX_QUOTA = 50 // Upload limit (catalog items don't count)
 const WARNING_THRESHOLD = 0.9 // 90%
 
 /**
@@ -124,7 +124,7 @@ export function getQuotaColor(percentage) {
  */
 export function getQuotaMessage(quota) {
   if (quota.isFull) {
-    return "You've reached your 200-item limit. Delete some items to add more."
+    return "You've reached your 50 upload limit. Add unlimited items from catalog!"
   }
   
   if (quota.isNearLimit) {

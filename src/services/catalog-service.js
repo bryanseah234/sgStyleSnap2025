@@ -9,6 +9,11 @@
  * - Category, color, brand, season filtering
  * - Add catalog items to user's closet
  * 
+ * Privacy:
+ * - CRITICAL: All catalog items displayed anonymously
+ * - No owner information exposed (admin or user-uploaded)
+ * - catalog_items table has no owner_id column by design
+ * 
  * Dependencies:
  * - Supabase client (api.js)
  * - SQL Migration 005 (catalog_items table)
@@ -27,9 +32,13 @@ const catalogService = {
    * @param {string} options.brand - Filter by brand
    * @param {string} options.season - Filter by season
    * @param {string} options.style - Filter by style
+   * @param {boolean} options.excludeOwned - Exclude items user already owns (default: true)
    * @param {number} options.page - Page number (default: 1)
    * @param {number} options.limit - Items per page (default: 20)
-   * @returns {Promise<Object>} Catalog items with pagination info
+   * @returns {Promise<Object>} Catalog items with pagination info (excludes owned items)
+   * 
+   * Note: By default, items user already has in their closet are filtered out.
+   * This prevents showing duplicate suggestions.
    */
   async browse(options = {}) {
     const {
@@ -214,7 +223,7 @@ const catalogService = {
         throw new Error('You already have this item in your closet')
       }
 
-      // Check quota (200 items max)
+      // Check upload quota (50 items max, catalog additions don't count)
       const { count } = await supabase
         .from('clothes')
         .select('*', { count: 'exact', head: true })
@@ -222,7 +231,7 @@ const catalogService = {
         .is('removed_at', null)
 
       if (count >= 200) {
-        throw new Error('You have reached your item quota (200 items)')
+        throw new Error('You have reached your upload quota (50 items). Add from catalog instead!')
       }
 
       // Create new closet item from catalog

@@ -3,6 +3,12 @@
 ## Overview
 The Item Catalog System provides a pre-populated database of clothing items that users can browse and add to their closet. This feature helps users quickly populate their closet without manually uploading photos of every item.
 
+**Privacy Note:** All catalog items are displayed anonymously. Users cannot see who uploaded an item (whether it was admin-populated or contributed by other users). Owner information is never exposed in the catalog view.
+
+**Auto-Contribution:** When users upload items to their personal closet, those items are automatically added to the catalog (anonymously) for other users to discover. This happens behind the scenes without user confirmation.
+
+**Smart Filtering:** When browsing the catalog, users only see items they don't already have in their closet, preventing duplicate additions.
+
 ## Business Requirements
 
 ### User Stories
@@ -11,7 +17,8 @@ The Item Catalog System provides a pre-populated database of clothing items that
 3. **As a user**, I want to filter catalog items by season, occasion, and weather so I see relevant items
 4. **As a user**, I want to add catalog items to my closet with one click so I can build my wardrobe efficiently
 5. **As a user**, I want to see high-quality placeholder images for catalog items so I know what each item looks like
-6. **As an admin**, I want to manage the catalog database so I can add, update, or remove items
+6. **As a user**, I want to browse catalog items anonymously without knowing who uploaded them
+7. **As an admin**, I want to manage the catalog database so I can add, update, or remove items
 
 ### Success Criteria
 - Users can browse at least 100+ pre-populated catalog items
@@ -46,6 +53,8 @@ The Item Catalog System provides a pre-populated database of clothing items that
 - **FR-017**: Show detailed description (material, fit, care instructions)
 - **FR-018**: Display tags for search optimization
 - **FR-019**: Show "Add to Closet" button prominently
+- **FR-019a**: **CRITICAL**: Never display owner information (user who uploaded the item)
+- **FR-019b**: **CRITICAL**: No user attribution or "uploaded by" labels in catalog view
 
 ### 4. Add to Closet
 - **FR-020**: Add catalog item to user's closet with one click
@@ -54,6 +63,10 @@ The Item Catalog System provides a pre-populated database of clothing items that
 - **FR-023**: Prevent duplicate additions (warn if item already in closet)
 - **FR-024**: Show success confirmation after adding
 - **FR-025**: Redirect to closet after adding (optional)
+- **FR-026**: **CRITICAL**: Automatically add user-uploaded items to catalog (no prompt)
+- **FR-027**: **CRITICAL**: Filter catalog to hide items user already owns
+- **FR-028**: Catalog contribution happens silently in background after successful upload
+- **FR-029**: Use image similarity or exact match to detect owned items in catalog browse
 
 ### 5. Admin Management (Future)
 - **FR-026**: Admin dashboard to add/edit/delete catalog items
@@ -101,9 +114,10 @@ Query Params:
   - brand (string, optional)
   - season (string, optional)
   - style (string, optional)
+  - exclude_owned (boolean, default: true) - Hide items user already owns
 Response:
   {
-    "items": [...],
+    "items": [...],  // CRITICAL: owner_id excluded, items user owns excluded
     "pagination": {
       "page": 1,
       "limit": 20,
@@ -111,6 +125,12 @@ Response:
       "totalPages": 8
     }
   }
+
+Privacy Note: Responses MUST NOT include owner_id, owner name, or any user attribution.
+All catalog items are displayed anonymously.
+
+Filtering Note: By default, items that user already has in their closet are excluded.
+This prevents showing duplicate items and improves browsing experience.
 ```
 
 #### 2. Search Catalog
@@ -139,7 +159,10 @@ Response:
     "description": "...",
     "category": "outerwear",
     ...
+    // CRITICAL: No owner_id, no user attribution
   }
+
+Privacy Note: Response MUST NOT include any owner or uploader information.
 ```
 
 #### 4. Add Catalog Item to Closet

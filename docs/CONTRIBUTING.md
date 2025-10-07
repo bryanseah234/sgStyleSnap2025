@@ -328,7 +328,7 @@ chore:    # Build process, dependencies
 
 # Examples:
 git commit -m "feat(closet): add virtual scrolling to grid"
-git commit -m "fix(quota): handle edge case at exactly 200 items"
+git commit -m "fix(quota): handle edge case at exactly 50 uploads"
 git commit -m "docs(api): update endpoint examples"
 git commit -m "perf(images): implement thumbnail caching"
 ```
@@ -427,7 +427,7 @@ describe('QuotaIndicator', () => {
   it('shows warning at 90%+', () => {
     const wrapper = mount(QuotaIndicator, {
       props: {
-        quota: { used: 180, limit: 200, percentage: 90.0 }
+        quota: { used: 45, limit: 50, percentage: 90.0 }
       }
     });
     

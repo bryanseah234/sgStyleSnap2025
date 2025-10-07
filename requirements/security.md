@@ -1383,6 +1383,7 @@ app.post('/api/clothes', authenticate, async (req, res) => {
 - **Public:** User name, public items (future feature)
 - **Friends:** Items marked with 'friends' privacy
 - **Private:** Items marked with 'private' privacy, email addresses
+- **Anonymous:** Catalog items (no owner attribution)
 
 ---
 
@@ -1392,6 +1393,20 @@ app.post('/api/clothes', authenticate, async (req, res) => {
 - Friends can only view friends' items with 'friends' privacy
 - Never expose email addresses in friend searches
 - Implement proper authorization checks
+- **CRITICAL**: Catalog items MUST be displayed anonymously
+  - No owner_id in catalog API responses
+  - No user attribution in catalog UI
+  - Users cannot determine who uploaded catalog items (admin or other users)
+  - catalog_items table has no owner_id column by design
+- **Auto-Catalog Contribution**:
+  - User uploads automatically added to catalog_items (background)
+  - No user confirmation or prompt required
+  - Catalog entry created without owner_id (anonymous)
+  - Enables community-driven catalog growth
+- **Smart Filtering**:
+  - Catalog browse excludes items user already owns
+  - Prevents duplicate suggestions
+  - Uses catalog_item_id or image matching for detection
 
 ---
 
