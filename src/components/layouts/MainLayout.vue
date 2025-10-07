@@ -24,14 +24,14 @@
         <span class="nav-label">Closet</span>
       </router-link>
       
+      <router-link to="/catalog" class="nav-item" :class="{ active: $route.path === '/catalog' }">
+        <span class="nav-icon">🛍️</span>
+        <span class="nav-label">Catalog</span>
+      </router-link>
+      
       <router-link to="/suggestions" class="nav-item" :class="{ active: $route.path === '/suggestions' }">
         <span class="nav-icon">✨</span>
         <span class="nav-label">Suggestions</span>
-      </router-link>
-      
-      <router-link to="/analytics" class="nav-item" :class="{ active: $route.path === '/analytics' }">
-        <span class="nav-icon">📊</span>
-        <span class="nav-label">Analytics</span>
       </router-link>
       
       <router-link to="/friends" class="nav-item" :class="{ active: $route.path === '/friends' }">

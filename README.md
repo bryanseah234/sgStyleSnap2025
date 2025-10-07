@@ -59,6 +59,8 @@ StyleSnap is a production-ready PWA that helps users digitize their wardrobe, re
 ### 4. **Technical Documentation**
    - `docs/CODE_STANDARDS.md` - Coding conventions and best practices
    - `docs/API_REFERENCE.md` - Complete API endpoint documentation
+   - `docs/SQL_MIGRATION_GUIDE.md` - **NEW:** Database migration guide & troubleshooting
+   - `docs/TESTING.md` - **NEW:** Testing guide (unit, integration, E2E)
    - `docs/CONTRIBUTING.md` - How to contribute
    - `docs/DEPLOYMENT.md` - Production deployment guide
    - `docs/design/DESIGN_REFERENCE.md` - Mobile UI mockup documentation
@@ -304,10 +306,9 @@ See `requirements/security.md` for complete security requirements.
 - **Task 9:** ✅ Complete (Item Catalog System - browse pre-populated items)
 - **Task 10:** ✅ Complete (Color Detection AI - automatic color recognition)
 - **Task 11:** ✅ Complete (Outfit Generation from Permutations - smart outfit combinations)
-- **Task 12:** ✅ Complete (Likes Feature - Full frontend integration)
-- **Task 13:** ✅ Complete (Advanced Outfit Features - Social, collections, analytics)
-- **Enhancement:** ✅ Complete (Clothing Types - 20 granular types with filtering)
-- **Database:** ✅ Complete (9 migrations: schema, RLS, indexes, advanced features, catalog, colors, outfits, likes, clothing types)
+- **Task 12:** ✅ Complete (Likes Feature - Full frontend integration + tests)
+- **Task 13:** ✅ Complete (Advanced Outfit Features - Full implementation + tests)
+- **Database:** ✅ Complete (8 migrations: schema, RLS, indexes, advanced features, catalog, colors, outfits, likes)
 - **API Endpoints:** ✅ Complete (80+ endpoints documented)
 - **Frontend:** ✅ Complete (Vue 3 + mobile-first design with likes integration)
 - **PWA:** ✅ Complete (Offline, push notifications, installable)

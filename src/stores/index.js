@@ -29,11 +29,12 @@ export const pinia = createPinia()
 // Export all stores for easy access
 export { useAuthStore } from './auth-store'
 export { useClosetStore } from './closet-store'
+export { useCatalogStore } from './catalog-store'
 export { useFriendsStore } from './friends-store'
 export { useSuggestionsStore } from './suggestions-store'
-
-// TODO: Import and export individual stores for direct access
-// export { useAuthStore } from './auth-store'
-// export { useClosetStore } from './closet-store'
-// export { useFriendsStore } from './friends-store'
-// export { useSuggestionsStore } from './suggestions-store'
+export { useLikesStore } from './likes-store'
+export { useOutfitHistoryStore } from './outfit-history-store'
+export { useSharedOutfitsStore } from './shared-outfits-store'
+export { useCollectionsStore } from './collections-store'
+export { useStylePreferencesStore } from './style-preferences-store'
+export { useAnalyticsStore } from './analytics-store'

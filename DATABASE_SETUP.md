@@ -159,6 +159,14 @@ For each migration below:
 - Auto-trigger to set category based on clothing_type
 - Enables granular filtering by specific clothing types
 - Expected: ✅ "Success. No rows returned" + verification messages
+**Migration 009: Enhanced Categories** (`sql/009_enhanced_categories.sql`)
+- **Updates:** Category constraints on `clothes` and `catalog_items` tables
+- Expands from 5 simple categories to 20 detailed categories
+- Categories: blazer, blouse, body, dress, hat, hoodie, longsleeve, not-sure, other, outerwear, pants, polo, shirt, shoes, shorts, skip, skirt, t-shirt, top, undershirt
+- Function: `get_category_group()` maps detailed categories to simple groups
+- View: `category_distribution` for analytics
+- **Backward Compatible:** Existing simple categories remain valid
+- Expected: ✅ "Success. No rows returned"
 
 **What this does:**
 - Enables Row Level Security on all tables
@@ -260,6 +268,48 @@ ORDER BY indexname;
 ```
 
 **Expected:** Should see 40+ indexes (for performance optimization)
+
+4. Verify functions exist:
+```sql
+SELECT routine_name
+FROM information_schema.routines
+WHERE routine_schema = 'public'
+ORDER BY routine_name;
+```
+
+**Expected:** Should see 20+ functions including:
+- `check_user_quota()`
+- `is_friends_with()`
+- `get_friend_closet()`
+- `increment_likes_count()`
+- `get_complementary_color()`
+- And more...
+
+5. Test basic connectivity:
+```sql
+-- Should return current timestamp
+SELECT NOW();
+
+-- Should return 0 rows (empty database)
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM clothes;
+```
+
+**✅ If all checks pass, your database is ready!**
+
+### Step 5: Validate Migrations (Optional)
+
+You can run the validation script to verify all migrations:
+
+```bash
+npm run validate-migrations
+```
+
+This script checks:
+- ✅ All 8 migration files exist
+- ✅ DROP IF EXISTS statements present (re-runnable)
+- ✅ Expected tables are created
+- ✅ Dependencies are correct
 
 ---
 

@@ -26,6 +26,7 @@ import { useAuthStore } from './stores/auth-store'
 // Import pages
 import Login from './pages/Login.vue'
 import Closet from './pages/Closet.vue'
+import Catalog from './pages/Catalog.vue'
 import Friends from './pages/Friends.vue'
 import Suggestions from './pages/Suggestions.vue'
 import Profile from './pages/Profile.vue'
@@ -50,6 +51,12 @@ const routes = [
     path: '/closet',
     name: 'Closet',
     component: Closet,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/catalog',
+    name: 'Catalog',
+    component: Catalog,
     meta: { requiresAuth: true }
   },
   {
