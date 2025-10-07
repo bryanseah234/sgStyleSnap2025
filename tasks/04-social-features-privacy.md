@@ -5,10 +5,18 @@
 **Requirements**: [REQ: api-endpoints], [REQ: frontend-components], [REQ: security]
 
 ## 4.1 Friend Management System
-- [ ] Implement POST /friends/request endpoint
+- [ ] **CRITICAL**: Implement POST /users/search endpoint with anti-scraping measures
+  - Minimum 3-character query requirement
+  - Rate limiting: 20 searches per minute
+  - Result limit: 10 users maximum
+  - Random ordering (no pagination)
+  - Never return email addresses
+  - Search by username (fuzzy) or email (exact match only)
+  - Include friendship status in results
+- [ ] Implement POST /friends/request endpoint (by user_id, not email)
 - [ ] Implement POST /friends/:id/accept endpoint
 - [ ] Implement POST /friends/:id/reject endpoint
-- [ ] Build friend search by email functionality
+- [ ] Build secure friend search UI with debouncing
 - [ ] Create pending requests notification system
 
 ## 4.2 Privacy-Critical Features
@@ -54,9 +62,17 @@ friends-service.js
 
 
 ## Acceptance Criteria:
-- [ ] Users can search for friends by email
+- [ ] Users can search for friends by username or email (secure)
+- [ ] **CRITICAL**: Search prevents database scraping:
+  - Minimum 3-character queries enforced
+  - Rate limiting active (20/minute)
+  - Results limited to 10 users
+  - No pagination or result counts
+  - Random ordering on each search
+  - Email addresses never exposed
 - [ ] Friend requests can be sent and accepted
 - [ ] Privacy settings are strictly enforced
 - [ ] Friend's closets only show 'friends' privacy items
 - [ ] Profile page displays user info and settings
+- [ ] Monitoring alerts on suspicious search patterns
 

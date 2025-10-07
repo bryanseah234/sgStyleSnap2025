@@ -86,12 +86,13 @@ export const icons = {
 
 **Requirements:**
 
-- Persistent bottom navigation bar (mobile)
-- Side navigation (desktop)
-- Three primary tabs: My Closet, Friends, Profile
-- Notification badge indicator
-- Theme toggle button
-- Responsive breakpoint handling
+- Responsive navigation bar
+- Three primary tabs: My Closet, Friends, Suggestions
+- **Settings Access:** Settings icon (gear/cog) in top-right of header on Closet page
+- Active tab highlighting
+- Mobile-optimized bottom nav
+
+**Note:** Settings is NOT a tab in main nav, but accessible via icon on home page
 
 ---
 
@@ -108,29 +109,197 @@ export const icons = {
 
 ## 3. Page Components
 
+**Authentication: Google SSO Only**
+
+All authentication pages use Google OAuth 2.0 exclusively:
+- No email/password authentication
+- No magic links or other auth methods  
+- `/login` and `/register` pages both use `supabase.auth.signInWithOAuth({ provider: 'google' })`
+- After successful authentication: Redirect to `/closet` (home page)
+- User profile auto-created in database on first sign-in
+
+---
+
 ### 3.1 Login.vue
 
 **Requirements:**
 
 - Uses AuthLayout wrapper
-- Single "Sign in with Google" button
+- **Google SSO Only:** Single "Sign in with Google" button (no email/password)
 - Display app logo and mascot
-- Handle OAuth redirect flow
-- Store JWT securely
+- Handle OAuth redirect flow to Google
+- Supabase Auth handles JWT storage securely
 - Show loading state during authentication
+- Redirect to `/closet` (home page) after successful login
+- Link to Register page: "Don't have an account? Sign up"
+
+**Implementation:**
+
+```vue
+<template>
+  <AuthLayout>
+    <div class="login-container">
+      <img src="@/assets/logo.png" alt="StyleSnap" class="logo" />
+      <h1>Welcome to StyleSnap</h1>
+      <p>Sign in with your Google account to get started</p>
+      
+      <button 
+        @click="signInWithGoogle" 
+        :disabled="loading"
+        class="google-signin-btn"
+      >
+        <img src="@/assets/google-icon.svg" alt="Google" />
+        {{ loading ? 'Signing in...' : 'Sign in with Google' }}
+      </button>
+      
+      <p class="register-link">
+        Don't have an account? 
+        <router-link to="/register">Sign up</router-link>
+      </p>
+    </div>
+  </AuthLayout>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { supabase } from '@/services/auth-service'
+import AuthLayout from '@/components/layouts/AuthLayout.vue'
+
+const router = useRouter()
+const loading = ref(false)
+
+async function signInWithGoogle() {
+  loading.value = true
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/closet`
+      }
+    })
+    
+    if (error) throw error
+    // OAuth flow will redirect to Google, then back to /closet
+  } catch (error) {
+    console.error('Login failed:', error)
+    alert('Failed to sign in. Please try again.')
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+```
 
 ---
 
-### 3.2 Closet.vue
+### 3.1b Register.vue
+
+**Requirements:**
+
+- Uses AuthLayout wrapper
+- **Google SSO Only:** Single "Sign up with Google" button (no email/password)
+- Display app logo and mascot
+- Same Google OAuth flow as Login page
+- Redirect to `/closet` (home page) after successful registration
+- Link to Login page: "Already have an account? Sign in"
+- User profile auto-created on first Google sign-in
+
+**Implementation:**
+
+```vue
+<template>
+  <AuthLayout>
+    <div class="register-container">
+      <img src="@/assets/logo.png" alt="StyleSnap" class="logo" />
+      <h1>Join StyleSnap</h1>
+      <p>Create your account with Google to start organizing your wardrobe</p>
+      
+      <button 
+        @click="signUpWithGoogle" 
+        :disabled="loading"
+        class="google-signup-btn"
+      >
+        <img src="@/assets/google-icon.svg" alt="Google" />
+        {{ loading ? 'Creating account...' : 'Sign up with Google' }}
+      </button>
+      
+      <p class="login-link">
+        Already have an account? 
+        <router-link to="/login">Sign in</router-link>
+      </p>
+    </div>
+  </AuthLayout>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { supabase } from '@/services/auth-service'
+import AuthLayout from '@/components/layouts/AuthLayout.vue'
+
+const router = useRouter()
+const loading = ref(false)
+
+async function signUpWithGoogle() {
+  loading.value = true
+  try {
+    // Same Google OAuth flow - Supabase handles new user creation
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/closet`
+      }
+    })
+    
+    if (error) throw error
+    // OAuth flow will redirect to Google, then back to /closet
+    // User record auto-created in users table via trigger
+  } catch (error) {
+    console.error('Registration failed:', error)
+    alert('Failed to create account. Please try again.')
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+```
+
+---
+
+### 3.2 Closet.vue (Home Page)
 
 **Requirements:**
 
 - Uses MainLayout wrapper
+- **Settings Icon:** Gear/cog icon in top-right header (navigates to `/settings`)
 - Integrates ClosetGrid component
 - Floating action button for adding items
-- Category filter controls
+- **Filter Controls:**
+  - **Favorites toggle button** - Show only favorited items
+  - **Category dropdown** - Filter by category (dynamically populated from user's items)
+  - **Clothing type filter** - Specific type within category
+  - **Privacy filter** - private/friends
+  - **Clear filters button** - Reset all filters
+  - **Active filter indicators** - Show which filters are applied
 - Item count with quota indicator
 - Search functionality
+
+**Header Layout:**
+
+```vue
+<template>
+  <MainLayout>
+    <div class="closet-header">
+      <h1>My Closet</h1>
+      <button @click="$router.push('/settings')" class="settings-btn">
+        <SettingsIcon /> <!-- Gear/cog icon -->
+      </button>
+    </div>
+    <!-- Rest of closet content -->
+  </MainLayout>
+</template>
+```
 
 ---
 
@@ -286,24 +455,321 @@ const pollInterval = setInterval(async () => {
 onUnmounted(() => clearInterval(pollInterval));
 ```
 
+**Friend Search Component:**
+
+```vue
+<!-- Secure friend search with debouncing -->
+<template>
+  <div class="friend-search">
+    <input
+      v-model="searchQuery"
+      @input="debouncedSearch"
+      type="text"
+      placeholder="Search by name or email (min 3 characters)"
+      :disabled="searching"
+      minlength="3"
+    />
+    
+    <div v-if="searchQuery.length > 0 && searchQuery.length < 3" class="hint">
+      Type at least 3 characters to search
+    </div>
+    
+    <div v-if="searching" class="loading">Searching...</div>
+    
+    <div v-if="searchResults.length > 0" class="results">
+      <div v-for="user in searchResults" :key="user.id" class="user-card">
+        <img :src="user.avatar_url" :alt="user.name" />
+        <span>{{ user.name }}</span>
+        
+        <!-- Show appropriate button based on friendship status -->
+        <button 
+          v-if="user.friendship_status === 'none'"
+          @click="sendRequest(user.id)"
+          :disabled="sending"
+        >
+          Add Friend
+        </button>
+        <span v-else-if="user.friendship_status === 'pending_sent'">
+          Request Sent
+        </span>
+        <button 
+          v-else-if="user.friendship_status === 'pending_received'"
+          @click="acceptRequest(user.id)"
+        >
+          Accept Request
+        </button>
+        <span v-else-if="user.friendship_status === 'accepted'">
+          ✓ Friends
+        </span>
+      </div>
+    </div>
+    
+    <div v-if="!searching && searchQuery.length >= 3 && searchResults.length === 0" class="no-results">
+      No users found
+    </div>
+    
+    <div v-if="rateLimited" class="error">
+      Too many searches. Please wait a moment.
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
+import friendsService from '@/services/friends-service';
+
+const searchQuery = ref('');
+const searchResults = ref([]);
+const searching = ref(false);
+const sending = ref(false);
+const rateLimited = ref(false);
+
+// Debounce search to prevent excessive API calls (500ms delay)
+const debouncedSearch = useDebounceFn(async () => {
+  if (searchQuery.value.length < 3) {
+    searchResults.value = [];
+    return;
+  }
+  
+  searching.value = true;
+  rateLimited.value = false;
+  
+  try {
+    const results = await friendsService.searchUsers(searchQuery.value);
+    searchResults.value = results.users;
+  } catch (error) {
+    if (error.response?.status === 429) {
+      rateLimited.value = true;
+    }
+    console.error('Search failed:', error);
+  } finally {
+    searching.value = false;
+  }
+}, 500);
+
+async function sendRequest(userId) {
+  sending.value = true;
+  try {
+    await friendsService.sendRequest(userId);
+    // Update local state
+    const user = searchResults.value.find(u => u.id === userId);
+    if (user) user.friendship_status = 'pending_sent';
+  } catch (error) {
+    console.error('Failed to send request:', error);
+  } finally {
+    sending.value = false;
+  }
+}
+</script>
+```
+
 **Empty States:**
 
-- **No Friends:** "You haven't added any friends yet. Search by email to get started!"
+- **No Friends:** "You haven't added any friends yet. Search by name or email to get started!"
 - **No Received Requests:** "No pending friend requests"
 - **No Sent Requests:** "You haven't sent any friend requests"
+- **Search No Results:** "No users found matching your search"
+- **Search Too Short:** "Type at least 3 characters to search"
 
 ---
 
-### 3.4 Profile.vue
+### 3.4 Settings.vue
 
 **Requirements:**
 
 - Uses MainLayout wrapper
-- User avatar and name display
-- Quota usage visualization
-- Theme toggle
-- Settings links
+- Accessible via settings icon on home page (`/closet`)
+- Profile information display (read-only)
+- Profile photo selection from 6 default avatars
+- Theme toggle (future)
 - Sign out button
+
+**Profile Information Display:**
+
+```vue
+<template>
+  <MainLayout>
+    <div class="settings-container">
+      <h1>Settings</h1>
+      
+      <!-- Profile Section -->
+      <section class="profile-section">
+        <h2>Profile</h2>
+        
+        <!-- Current Avatar Display -->
+        <div class="current-avatar">
+          <img :src="user.avatar_url" :alt="user.name" class="avatar-large" />
+        </div>
+        
+        <!-- Profile Info (Read-Only) -->
+        <div class="profile-info">
+          <div class="info-field">
+            <label>Username</label>
+            <p class="read-only">{{ user.username }}</p>
+            <small class="hint">Username cannot be changed</small>
+          </div>
+          
+          <div class="info-field">
+            <label>Name</label>
+            <p class="read-only">{{ user.name }}</p>
+            <small class="hint">Name from Google account</small>
+          </div>
+          
+          <div class="info-field">
+            <label>Email</label>
+            <p class="read-only">{{ user.email }}</p>
+            <small class="hint">Email from Google account</small>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Profile Photo Selection -->
+      <section class="avatar-selection">
+        <h2>Profile Photo</h2>
+        <p>Choose from our default avatars</p>
+        
+        <div class="avatar-grid">
+          <button
+            v-for="avatar in defaultAvatars"
+            :key="avatar.id"
+            @click="selectAvatar(avatar.url)"
+            :class="['avatar-option', { selected: user.avatar_url === avatar.url }]"
+          >
+            <img :src="avatar.url" :alt="avatar.name" />
+            <CheckIcon v-if="user.avatar_url === avatar.url" class="selected-icon" />
+          </button>
+        </div>
+        
+        <!-- Future: Custom Upload -->
+        <!-- <button @click="uploadCustomAvatar" class="upload-btn" disabled>
+          <UploadIcon /> Upload Custom Photo (Coming Soon)
+        </button> -->
+      </section>
+      
+      <!-- Account Actions -->
+      <section class="account-actions">
+        <button @click="signOut" class="sign-out-btn">
+          Sign Out
+        </button>
+      </section>
+    </div>
+  </MainLayout>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth-store'
+import { updateUserAvatar } from '@/services/user-service'
+import MainLayout from '@/components/layouts/MainLayout.vue'
+
+const router = useRouter()
+const authStore = useAuthStore()
+const user = computed(() => authStore.user)
+
+// 6 Default Avatar Options
+// Avatars stored in /public/avatars/
+const defaultAvatars = [
+  { id: 1, name: 'Avatar 1', url: '/avatars/default-1.png' },
+  { id: 2, name: 'Avatar 2', url: '/avatars/default-2.png' },
+  { id: 3, name: 'Avatar 3', url: '/avatars/default-3.png' },
+  { id: 4, name: 'Avatar 4', url: '/avatars/default-4.png' },
+  { id: 5, name: 'Avatar 5', url: '/avatars/default-5.png' },
+  { id: 6, name: 'Avatar 6', url: '/avatars/default-6.png' }
+]
+
+async function selectAvatar(avatarUrl) {
+  try {
+    await updateUserAvatar(user.value.id, avatarUrl)
+    // Update local state
+    authStore.updateUser({ avatar_url: avatarUrl })
+  } catch (error) {
+    console.error('Failed to update avatar:', error)
+    alert('Failed to update profile photo. Please try again.')
+  }
+}
+
+async function signOut() {
+  if (confirm('Are you sure you want to sign out?')) {
+    await authStore.signOut()
+    router.push('/login')
+  }
+}
+
+// Future: Custom avatar upload
+// async function uploadCustomAvatar() {
+//   // TODO: Implement Cloudinary upload for custom avatars
+//   // Similar to clothes image upload flow
+//   // Store in /avatars/ folder in Cloudinary
+// }
+</script>
+
+<style scoped>
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.avatar-option {
+  position: relative;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.avatar-option.selected {
+  border-color: #4f46e5;
+}
+
+.avatar-option img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.selected-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #4f46e5;
+  color: white;
+  border-radius: 50%;
+  padding: 0.25rem;
+}
+
+.read-only {
+  font-weight: 500;
+  color: #1f2937;
+  margin: 0.25rem 0;
+}
+
+.hint {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+</style>
+```
+
+**Username Generation Rules:**
+
+- **Username:** Automatically generated from email address (part before @)
+  - Example: `john.doe@gmail.com` → username: `john.doe`
+  - Cannot be changed by user (immutable)
+  - Displayed in settings but not editable
+
+- **Name:** Full name from Google OAuth (first + last name)
+  - Pulled from Google account during sign-in
+  - Cannot be changed in app (immutable)
+  - Display only
+
+- **Email:** From Google OAuth
+  - Cannot be changed (immutable)
+  - Display only
 
 ---
 
@@ -388,9 +854,209 @@ onUnmounted(() => clearInterval(pollInterval));
 
 - Responsive grid (3 cols mobile, 4-6 desktop)
 - Lazy loading with Intersection Observer
-- Category filter integration
-- Item click → detail modal
-- Empty state with illustration
+- **Favorite toggle button** on each item card (heart icon)
+  - Filled heart for favorited items
+  - Outlined heart for non-favorited items
+  - Click to toggle favorite status
+  - Positioned in top-right corner of card
+  - Optimistic UI update (immediate visual feedback)
+- **Filter integration:**
+  - Favorites filter (show only favorited items)
+  - Category filter (top, bottom, outerwear, shoes, accessory)
+  - Clothing type filter
+  - Privacy filter
+- **Item click → detail modal** (ItemDetailModal component)
+- Empty states:
+  - No items yet (first time user)
+  - No favorites (when favorites filter active)
+  - No results (when filters applied)
+
+---
+
+### 5.2 ItemDetailModal.vue
+
+**Purpose:** Display detailed information and statistics for a clothing item
+
+**Props:**
+- `item` - Item object with full details and statistics
+- `isOpen` - Boolean to control modal visibility
+
+**Events:**
+- `close` - Emitted when modal is closed
+- `favorite-toggle` - Emitted when favorite status is toggled
+- `delete` - Emitted when delete button is clicked
+- `edit` - Emitted when edit button is clicked
+
+**Features:**
+
+**Main Image Display:**
+- Full resolution image (image_url)
+- Zoom on click/tap
+- Swipe gestures on mobile
+
+**Item Information:**
+- **Name** - Item name (editable via edit button)
+- **Category** - Display category with icon
+- **Brand** - Brand name (if provided)
+- **Size** - Size information (if provided)
+- **Color** - Color detection result (if available)
+- **Privacy** - Privacy level (private/friends) with icon
+- **Style Tags** - Array of tags as chips/badges
+- **Favorite Status** - Heart icon (clickable to toggle)
+
+**Statistics Section:**
+
+```vue
+<template>
+  <div class="item-statistics">
+    <h3>Statistics</h3>
+    
+    <div class="stat-grid">
+      <!-- Days in Closet -->
+      <div class="stat-item">
+        <CalendarIcon class="stat-icon" />
+        <div class="stat-content">
+          <p class="stat-label">In Your Closet</p>
+          <p class="stat-value">{{ statistics.days_in_closet }} days</p>
+          <p class="stat-sublabel">Added {{ formatDate(item.created_at) }}</p>
+        </div>
+      </div>
+      
+      <!-- Favorite Status -->
+      <div class="stat-item">
+        <HeartIcon :class="{ 'filled': item.is_favorite }" class="stat-icon" />
+        <div class="stat-content">
+          <p class="stat-label">Favorite</p>
+          <p class="stat-value">{{ item.is_favorite ? 'Yes' : 'No' }}</p>
+          <button @click="toggleFavorite" class="stat-action">
+            {{ item.is_favorite ? 'Unfavorite' : 'Add to Favorites' }}
+          </button>
+        </div>
+      </div>
+      
+      <!-- Category -->
+      <div class="stat-item">
+        <CategoryIcon class="stat-icon" />
+        <div class="stat-content">
+          <p class="stat-label">Category</p>
+          <p class="stat-value">{{ getCategoryLabel(item.category) }}</p>
+          <p class="stat-sublabel">{{ item.clothing_type || 'No specific type' }}</p>
+        </div>
+      </div>
+      
+      <!-- Color -->
+      <div class="stat-item" v-if="item.color">
+        <div class="stat-icon color-swatch" :style="{ backgroundColor: item.color }"></div>
+        <div class="stat-content">
+          <p class="stat-label">Detected Color</p>
+          <p class="stat-value">{{ item.color }}</p>
+        </div>
+      </div>
+      
+      <!-- Times Worn -->
+      <div class="stat-item">
+        <OutfitIcon class="stat-icon" />
+        <div class="stat-content">
+          <p class="stat-label">Times Worn</p>
+          <p class="stat-value">{{ statistics.times_worn || 0 }} times</p>
+          <p class="stat-sublabel" v-if="statistics.last_worn">
+            Last worn {{ formatDate(statistics.last_worn) }}
+          </p>
+          <p class="stat-sublabel" v-else>Never worn yet</p>
+        </div>
+      </div>
+      
+      <!-- In Outfits -->
+      <div class="stat-item">
+        <CollectionIcon class="stat-icon" />
+        <div class="stat-content">
+          <p class="stat-label">In Outfits</p>
+          <p class="stat-value">{{ statistics.in_outfits || 0 }} outfits</p>
+          <p class="stat-sublabel">Outfit combinations</p>
+        </div>
+      </div>
+      
+      <!-- Times Shared -->
+      <div class="stat-item">
+        <ShareIcon class="stat-icon" />
+        <div class="stat-content">
+          <p class="stat-label">Shared with Friends</p>
+          <p class="stat-value">{{ statistics.times_shared || 0 }} times</p>
+        </div>
+      </div>
+      
+      <!-- Last Updated -->
+      <div class="stat-item">
+        <ClockIcon class="stat-icon" />
+        <div class="stat-content">
+          <p class="stat-label">Last Updated</p>
+          <p class="stat-value">{{ formatDate(item.updated_at) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { formatDistanceToNow, format } from 'date-fns';
+
+const props = defineProps({
+  item: {
+    type: Object,
+    required: true
+  },
+  isOpen: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const emit = defineEmits(['close', 'favorite-toggle', 'delete', 'edit']);
+
+const statistics = computed(() => props.item.statistics || {});
+
+function formatDate(dateString) {
+  if (!dateString) return 'N/A';
+  return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+}
+
+function toggleFavorite() {
+  emit('favorite-toggle', props.item.id, !props.item.is_favorite);
+}
+
+function handleDelete() {
+  if (confirm('Are you sure you want to delete this item?')) {
+    emit('delete', props.item.id);
+  }
+}
+
+function handleEdit() {
+  emit('edit', props.item);
+}
+</script>
+```
+
+**Action Buttons:**
+- **Favorite/Unfavorite** - Toggle favorite status
+- **Edit** - Open edit form
+- **Delete** - Delete item with confirmation
+- **Share** - Share item with friends
+- **Close** - Close modal
+
+**Styling:**
+- Full-screen modal on mobile
+- Centered modal on desktop (max-width: 800px)
+- Smooth animations
+- Responsive grid for statistics (2 cols mobile, 3-4 cols desktop)
+- Icon + text for each statistic
+- Color-coded for visual hierarchy
+
+**Services Used:**
+- `clothes-service.js`
+  - `getItemDetails(id)` - Fetch item with statistics
+  - `toggleFavorite(id, isFavorite)` - Toggle favorite
+  - `deleteItem(id)` - Delete item
 
 **ISSUE #30 FIX: Virtual Scrolling & Lazy Loading Implementation**
 

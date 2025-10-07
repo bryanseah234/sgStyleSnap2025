@@ -3,36 +3,53 @@
  * 
  * Purpose: Authentication API calls and session management using Supabase Auth
  * 
+ * **CRITICAL: Google OAuth 2.0 (SSO) ONLY**
+ * - Authentication Method: Google OAuth exclusively
+ * - No email/password, magic links, or other auth methods
+ * - Pages: /login and /register both use signInWithGoogle()
+ * - After successful auth: Redirect to /closet (home page)
+ * - User profile auto-created in users table on first sign-in
+ * 
  * Functions:
- * - signInWithGoogle(): Initiates Google OAuth flow
+ * - signInWithGoogle(): Initiates Google OAuth flow (used by both login and register)
  * - signOut(): Signs out current user
  * - getCurrentUser(): Gets current authenticated user from session
  * - getSession(): Gets current Supabase session
  * - refreshSession(): Refreshes auth token
  * - onAuthStateChange(callback): Subscribe to auth state changes
  * 
- * Authentication Flow:
- * 1. User clicks "Sign in with Google"
- * 2. signInWithGoogle() redirects to Google OAuth
- * 3. Google redirects back to app with auth code
- * 4. Supabase exchanges code for session token
- * 5. Session stored in localStorage
- * 6. getCurrentUser() fetches user profile
+ * Authentication Flow (Login & Register):
+ * 1. User clicks "Sign in with Google" or "Sign up with Google"
+ * 2. signInWithGoogle() redirects to Google OAuth consent screen
+ * 3. User authorizes app in Google
+ * 4. Google redirects back to Supabase with auth code
+ * 5. Supabase exchanges code for session token
+ * 6. Supabase creates user in auth.users (if new)
+ * 7. Database trigger creates entry in public.users table
+ * 8. User redirected to /closet (home page)
+ * 9. Session stored securely (IndexedDB with localStorage fallback)
  * 
  * Session Management:
- * - Tokens stored in localStorage by Supabase
+ * - Tokens stored in IndexedDB by Supabase (localStorage fallback)
  * - Access token expires after 1 hour
  * - Refresh token used to get new access token
  * - Auto-refresh handled by Supabase client
  * 
  * Usage:
  * import { signInWithGoogle, getCurrentUser } from './auth-service'
- * await signInWithGoogle()
+ * 
+ * // Used in both Login.vue and Register.vue
+ * await signInWithGoogle() // Same function for both pages
  * const user = await getCurrentUser()
  * 
- * Environment Variables Required:
+ * Environment Variables Required (.env):
  * - VITE_SUPABASE_URL: Supabase project URL
  * - VITE_SUPABASE_ANON_KEY: Supabase anon/public key
+ * 
+ * Supabase Setup:
+ * - Enable Google provider in Authentication > Providers
+ * - Configure Google OAuth credentials from Google Cloud Console
+ * - Set redirect URL: https://YOUR-PROJECT.supabase.co/auth/v1/callback
  * 
  * Reference:
  * - tasks/02-authentication-database.md for auth setup

@@ -98,7 +98,13 @@ CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
 
 ---
 
-### 3. Google OAuth Setup
+### 3. Google OAuth Setup (SSO Only)
+
+**CRITICAL: This is the ONLY authentication method for StyleSnap**
+- No email/password authentication
+- No magic links or other auth methods
+- Both `/login` and `/register` pages use Google OAuth
+- After successful auth, users redirect to `/closet` (home page)
 
 **Go to:** https://console.cloud.google.com/
 
@@ -119,9 +125,10 @@ CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
    - **App name:** StyleSnap
    - **User support email:** your email
    - **Developer contact:** your email
+   - **Scopes:** Add `email` and `profile` (default)
 4. Click **Save and Continue**
-5. Scopes: Skip for now (default is fine)
-6. Test users: Add your email
+5. Scopes: Default (email, profile, openid) is sufficient
+6. Test users: Add your email (and any testers)
 7. Click **Save and Continue**
 
 #### Step 4: Create OAuth 2.0 Client ID
@@ -130,24 +137,41 @@ CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
 3. Application type: **Web application**
 4. Name: "StyleSnap Web Client"
 5. **Authorized JavaScript origins:**
-   - `http://localhost:3000` (for dev)
-   - `https://your-domain.vercel.app` (for production)
-6. **Authorized redirect URIs:**
-   - `http://localhost:3000/auth/callback`
-   - `https://your-domain.vercel.app/auth/callback`
-   - `https://xxxxx.supabase.co/auth/v1/callback` (your Supabase URL)
+   - `http://localhost:5173` (Vite dev server)
+   - `http://localhost:3000` (alternative dev)
+   - `https://your-domain.vercel.app` (production)
+6. **Authorized redirect URIs (CRITICAL):**
+   - `https://xxxxx.supabase.co/auth/v1/callback` (YOUR Supabase URL)
+   - Replace `xxxxx` with your actual Supabase project reference
 7. Click **Create**
-8. Copy the **Client ID**:
+8. Copy the **Client ID** and **Client Secret**:
 
 ```env
+# Add to .env (frontend only needs Client ID)
 VITE_GOOGLE_CLIENT_ID=123456789012-abc123def456.apps.googleusercontent.com
 ```
 
-**⚠️ Important:** Also add this Client ID to Supabase:
-1. Supabase → **Authentication** → **Providers** → **Google**
-2. Enable Google provider
-3. Paste Client ID
-4. Click **Save**
+#### Step 5: Configure in Supabase (CRITICAL)
+1. Go to Supabase Dashboard
+2. **Authentication** → **Providers** → **Google**
+3. **Enable** Google provider (toggle ON)
+4. **Client ID:** Paste from Google Cloud Console
+5. **Client Secret:** Paste from Google Cloud Console
+6. **Redirect URL:** Should show `https://xxxxx.supabase.co/auth/v1/callback`
+7. Click **Save**
+
+#### Step 6: Test the Flow
+1. Start your dev server: `npm run dev`
+2. Go to `http://localhost:5173/login`
+3. Click "Sign in with Google"
+4. Should redirect to Google OAuth consent screen
+5. After authorization, should redirect back to `/closet`
+6. Check Supabase → **Authentication** → **Users** to see new user
+
+**⚠️ Common Issues:**
+- **"redirect_uri_mismatch":** Verify Supabase callback URL is in Google Console authorized URIs
+- **"unauthorized_client":** Check Client ID and Secret are correct in Supabase
+- **Infinite redirect loop:** Clear browser cache and cookies
 
 ---
 

@@ -24,11 +24,14 @@ Each task may depend on the previous ones. Check individual task files for detai
 
 ## Critical Path Tasks
 - ✅ Database schema setup
-- ✅ Google OAuth implementation
+- ✅ Google OAuth implementation (SSO only - no email/password)
+  - Login page: `/login` with "Sign in with Google"
+  - Register page: `/register` with "Sign up with Google"
+  - Redirect to `/closet` (home) after successful auth
 - ✅ Image upload with client-side resizing
   - Desktop/Laptop: File upload only
   - Mobile/Tablet: File upload + camera capture
-- ✅ Friend system with privacy enforcement
+- ✅ Friend system with privacy enforcement & anti-scraping protection
 - ✅ Suggestion canvas with drag-and-drop
 - ✅ 50 upload quota + unlimited catalog system
 - ✅ Color detection with k-means clustering

@@ -1,15 +1,30 @@
 # API Endpoints Requirements
 
-## 1. Authentication Headers
+## 1. Authentication
 
-All endpoints (except auth) require an `Authorization` header:
+**CRITICAL: Google SSO Only**
+- **Authentication Method:** Google OAuth 2.0 (Single Sign-On) exclusively
+- **Pages:** `/login` and `/register` (both use same Google OAuth flow)
+- **After Auth:** Redirect to `/closet` (home page)
+- **User Creation:** Auto-created on first Google sign-in
+- **No Other Methods:** No email/password, magic links, or alternative auth
+
+**Authorization Headers:**
+
+All API endpoints require an `Authorization` header with JWT token from Supabase Auth:
 
 ```javascript
 headers: {
-  'Authorization': 'Bearer <jwt_token>',
+  'Authorization': 'Bearer <jwt_token>', // Managed by Supabase Auth
   'Content-Type': 'application/json'
 }
 ```
+
+**Supabase Auth handles:**
+- Token storage (IndexedDB with localStorage fallback)
+- Automatic token refresh
+- Session management
+- OAuth redirect flow
 
 ---
 
@@ -154,7 +169,8 @@ When browsing catalog, items with matching catalog_item_id are excluded from sug
 
 **Query Parameters:**
 
-- `category` (optional) - Comma-separated categories
+- `category` (optional) - Comma-separated categories (top, bottom, outerwear, shoes, accessory)
+- `is_favorite` (optional) - Filter favorite items only (true/false)
 - `limit` (optional) - Items per page, default: 20, max: 100
 - `offset` (optional) - Number of items to skip, default: 0
 - `sort` (optional) - Sort order: `newest` (default), `oldest`, `name`
@@ -460,6 +476,217 @@ const quotaStatus = computed(() => {
 
 ---
 
+### 2.11 `GET /clothes/:id`
+
+Get detailed information about a specific clothing item with statistics.
+
+**Path Parameters:**
+- `id` - UUID of the clothing item
+
+**Response:**
+
+```json
+{
+  "id": "string",
+  "owner_id": "string",
+  "name": "string",
+  "category": "string",
+  "image_url": "string",
+  "thumbnail_url": "string",
+  "style_tags": ["string"],
+  "privacy": "string",
+  "size": "string",
+  "brand": "string",
+  "is_favorite": boolean,
+  "created_at": "timestamp",
+  "updated_at": "timestamp",
+  "statistics": {
+    "days_in_closet": 45,
+    "times_worn": 12,
+    "last_worn": "2025-09-15T10:30:00Z",
+    "in_outfits": 8,
+    "times_shared": 3
+  }
+}
+```
+
+**Responses:**
+
+- `200 OK` - Item details returned with statistics
+- `404 Not Found` - Item not found or not owned by user
+- `401 Unauthorized` - Not authenticated
+
+**Business Logic:**
+
+- Only item owner can view full details
+- Calculate days in closet: `CURRENT_DATE - created_at`
+- Include wear count from `outfit_history` table
+- Include outfit count from `outfit_generation_history` table where item is included
+- Include share count from `shared_outfits` table
+- Exclude soft-deleted items
+
+**Implementation Example:**
+
+```javascript
+// routes/clothes.js
+app.get('/api/clothes/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+  
+  try {
+    // Get item details
+    const { data: item, error: itemError } = await supabase
+      .from('clothes')
+      .select('*')
+      .eq('id', id)
+      .eq('owner_id', userId)
+      .is('removed_at', null)
+      .single();
+    
+    if (itemError || !item) {
+      return res.status(404).json({
+        error: 'Item not found',
+        code: 'ITEM_NOT_FOUND'
+      });
+    }
+    
+    // Calculate statistics
+    const createdDate = new Date(item.created_at);
+    const now = new Date();
+    const daysInCloset = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+    
+    // Get wear count from outfit_history
+    const { count: wearCount } = await supabase
+      .from('outfit_history')
+      .select('*', { count: 'exact', head: true })
+      .contains('item_ids', [id]);
+    
+    // Get last worn date
+    const { data: lastWornData } = await supabase
+      .from('outfit_history')
+      .select('worn_date')
+      .contains('item_ids', [id])
+      .order('worn_date', { ascending: false })
+      .limit(1)
+      .single();
+    
+    // Get outfit count
+    const { count: outfitCount } = await supabase
+      .from('outfit_generation_history')
+      .select('*', { count: 'exact', head: true })
+      .contains('item_ids', [id]);
+    
+    // Get share count
+    const { count: shareCount } = await supabase
+      .from('shared_outfits')
+      .select('*', { count: 'exact', head: true })
+      .contains('item_ids', [id]);
+    
+    res.json({
+      ...item,
+      statistics: {
+        days_in_closet: daysInCloset,
+        times_worn: wearCount || 0,
+        last_worn: lastWornData?.worn_date || null,
+        in_outfits: outfitCount || 0,
+        times_shared: shareCount || 0
+      }
+    });
+  } catch (error) {
+    console.error('Failed to get item details:', error);
+    res.status(500).json({
+      error: 'Failed to retrieve item details',
+      code: 'ITEM_FETCH_FAILED'
+    });
+  }
+});
+```
+
+---
+
+### 2.12 `PUT /clothes/:id/favorite`
+
+Toggle favorite status for a clothing item.
+
+**Path Parameters:**
+- `id` - UUID of the clothing item
+
+**Request:**
+
+```json
+{
+  "is_favorite": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": "string",
+  "is_favorite": true,
+  "message": "Item marked as favorite"
+}
+```
+
+**Responses:**
+
+- `200 OK` - Favorite status updated
+- `404 Not Found` - Item not found or not owned by user
+- `401 Unauthorized` - Not authenticated
+
+**Business Logic:**
+
+- Only item owner can toggle favorite status
+- Update `is_favorite` field in database
+- Return updated item with new favorite status
+
+**Implementation Example:**
+
+```javascript
+// routes/clothes.js
+app.put('/api/clothes/:id/favorite', authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { is_favorite } = req.body;
+  const userId = req.user.id;
+  
+  try {
+    // Verify ownership and update
+    const { data, error } = await supabase
+      .from('clothes')
+      .update({ 
+        is_favorite,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .eq('owner_id', userId)
+      .select()
+      .single();
+    
+    if (error || !data) {
+      return res.status(404).json({
+        error: 'Item not found',
+        code: 'ITEM_NOT_FOUND'
+      });
+    }
+    
+    res.json({
+      id: data.id,
+      is_favorite: data.is_favorite,
+      message: is_favorite ? 'Item marked as favorite' : 'Item unmarked as favorite'
+    });
+  } catch (error) {
+    console.error('Failed to toggle favorite:', error);
+    res.status(500).json({
+      error: 'Failed to update favorite status',
+      code: 'FAVORITE_UPDATE_FAILED'
+    });
+  }
+});
+```
+
+---
+
 ## 3. Social Endpoints
 
 ### 3.1 `GET /friends/:id/cabinet`
@@ -497,15 +724,146 @@ Get a friend's viewable closet.
 
 ---
 
-### 3.2 `POST /friends/request`
+### 3.2 `POST /users/search`
 
-Send a friend request by email.
+**SECURE** friend search endpoint with anti-scraping protection.
 
 **Request:**
 
 ```json
 {
-  "email": "string" // Target user's email
+  "query": "string" // Username or email (min 3 characters)
+}
+```
+
+**Response:**
+
+```json
+{
+  "users": [
+    {
+      "id": "string",
+      "name": "string",
+      "avatar_url": "string",
+      "friendship_status": "none" | "pending_sent" | "pending_received" | "accepted"
+    }
+  ],
+  "count": 5,
+  "has_more": false
+}
+```
+
+**Responses:**
+
+- `200 OK` - Search results (may be empty)
+- `400 Bad Request` - Query too short (< 3 characters)
+- `429 Too Many Requests` - Rate limit exceeded (anti-scraping)
+
+**CRITICAL Anti-Scraping Measures:**
+
+- **Minimum Query Length:** Require 3+ characters (prevents iteration)
+- **Rate Limiting:** Max 20 searches per user per minute
+- **Result Limit:** Max 10 results per search (prevents full enumeration)
+- **Fuzzy Matching:** Use ILIKE for partial matches only (no wildcards)
+- **No Pagination:** Disable pagination to prevent systematic scraping
+- **Random Ordering:** Return results in random order (prevents predictable enumeration)
+- **Authentication Required:** Must be logged in (prevents anonymous scraping)
+- **Email Hiding:** Never return email addresses in search results
+- **Timing Attack Prevention:** Use consistent response times
+
+**Business Logic:**
+
+- Search by username (ILIKE match): `WHERE name ILIKE '%query%'`
+- Search by email (exact match only): `WHERE email = query`
+- Exclude self from results: `WHERE id != auth.uid()`
+- Return friendship status for each result:
+  - `none`: No relationship
+  - `pending_sent`: Current user sent request
+  - `pending_received`: Current user received request
+  - `accepted`: Already friends
+- Limit to 10 results maximum
+- Order randomly: `ORDER BY RANDOM()`
+- **Security:** Email only matches exact, never returned in response
+
+**Implementation Example:**
+
+```javascript
+// Secure search with anti-scraping
+app.post('/api/users/search', authenticate, rateLimitSearch, async (req, res) => {
+  const { query } = req.body;
+  const userId = req.user.id;
+  
+  // Validation
+  if (!query || query.length < 3) {
+    return res.status(400).json({
+      error: 'Query must be at least 3 characters',
+      code: 'QUERY_TOO_SHORT'
+    });
+  }
+  
+  try {
+    // Search with anti-scraping measures
+    const { data: users, error } = await supabase
+      .from('users')
+      .select(`
+        id, name, avatar_url,
+        friends_as_requester:friends!requester_id(status),
+        friends_as_receiver:friends!receiver_id(status)
+      `)
+      .or(`name.ilike.%${query}%,email.eq.${query}`)
+      .neq('id', userId)
+      .is('removed_at', null)
+      .limit(10);
+    
+    if (error) throw error;
+    
+    // Randomize results (anti-scraping)
+    const shuffled = users.sort(() => Math.random() - 0.5);
+    
+    // Determine friendship status
+    const results = shuffled.map(user => {
+      let friendship_status = 'none';
+      
+      if (user.friends_as_requester?.length) {
+        const status = user.friends_as_requester[0].status;
+        friendship_status = status === 'accepted' ? 'accepted' : 'pending_sent';
+      } else if (user.friends_as_receiver?.length) {
+        const status = user.friends_as_receiver[0].status;
+        friendship_status = status === 'accepted' ? 'accepted' : 'pending_received';
+      }
+      
+      return {
+        id: user.id,
+        name: user.name,
+        avatar_url: user.avatar_url,
+        friendship_status
+      };
+    });
+    
+    res.json({
+      users: results,
+      count: results.length,
+      has_more: false // Never indicate more results (anti-scraping)
+    });
+    
+  } catch (error) {
+    console.error('Search failed:', error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+```
+
+---
+
+### 3.3 `POST /friends/request`
+
+Send a friend request by user ID.
+
+**Request:**
+
+```json
+{
+  "user_id": "string" // Target user's ID from search results
 }
 ```
 
@@ -522,25 +880,27 @@ Send a friend request by email.
 **Responses:**
 
 - `200 OK` - Request sent (or already exists - same response to prevent enumeration)
-- `400 Bad Request` - Invalid email format
+- `400 Bad Request` - Invalid user_id or cannot friend yourself
+- `404 Not Found` - User doesn't exist (consistent response to prevent enumeration)
 - `429 Too Many Requests` - Rate limit exceeded
 
 **Business Logic:**
 
 - **Rate Limiting:** Max 10 requests per user per hour
-- **Anti-Spam:** Max 3 requests to same email per day
-- **Email Validation:** Check format client-side and server-side
+- **Anti-Spam:** Max 3 requests to same user per day
+- **Validation:** Ensure user_id exists and is not self
 - **Response Consistency:** Always return success message, even if:
-  - User doesn't exist (prevents email enumeration)
   - Request already sent (prevents duplicate detection)
   - Already friends (prevents friendship detection)
-- If user exists, create friend request with canonical ordering
-- If user doesn't exist, log attempt but return success
-- **Security:** Never reveal if email exists in system
+- Create friend request with canonical ordering:
+  - Use `CHECK (requester_id < receiver_id)` to ensure single row per pair
+  - Store lower UUID as requester_id, higher as receiver_id
+  - Track original initiator separately if needed
+- **Security:** Never reveal if request already exists
 
 ---
 
-### 3.3 `POST /friends/:id/accept`
+### 3.4 `POST /friends/:id/accept`
 
 Accept a friend request.
 
@@ -554,7 +914,7 @@ Accept a friend request.
 
 ---
 
-### 3.4 `POST /suggestions`
+### 3.5 `POST /suggestions`
 
 Create an outfit suggestion.
 
@@ -596,7 +956,7 @@ Create an outfit suggestion.
 
 ---
 
-### 3.5 `GET /suggestions`
+### 3.6 `GET /suggestions`
 
 Get suggestions received by the authenticated user.
 
@@ -638,7 +998,7 @@ Get suggestions received by the authenticated user.
 
 ---
 
-### 3.6 `GET /suggestions/sent`
+### 3.7 `GET /suggestions/sent`
 
 Get suggestions sent by the authenticated user.
 
@@ -674,7 +1034,7 @@ Get suggestions sent by the authenticated user.
 
 ---
 
-### 3.7 `PUT /suggestions/:id/read`
+### 3.8 `PUT /suggestions/:id/read`
 
 Mark a suggestion as read.
 
@@ -696,7 +1056,7 @@ Mark a suggestion as read.
 
 ---
 
-### 3.8 `DELETE /suggestions/:id`
+### 3.9 `DELETE /suggestions/:id`
 
 Delete a suggestion.
 
@@ -722,7 +1082,7 @@ Delete a suggestion.
 
 ---
 
-### 3.9 `GET /friends`
+### 3.10 `GET /friends`
 
 Get user's friends list.
 
@@ -764,7 +1124,7 @@ Get user's friends list.
 
 ---
 
-### 3.10 `DELETE /friends/:id`
+### 3.11 `DELETE /friends/:id`
 
 Unfriend a user or reject/cancel a friend request.
 
@@ -787,7 +1147,7 @@ Unfriend a user or reject/cancel a friend request.
 
 ---
 
-### 3.11 `GET /profile`
+### 3.12 `GET /profile`
 
 Get authenticated user's profile.
 
@@ -797,6 +1157,7 @@ Get authenticated user's profile.
 {
   "id": "string",
   "email": "string",
+  "username": "string",
   "name": "string",
   "avatar_url": "string",
   "created_at": "2025-10-01T12:00:00Z",

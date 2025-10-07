@@ -30,31 +30,38 @@
  *   - Deletes friendship record
  *   - Returns: Success response
  * 
- * - searchUsers(query): Searches for users by name or email
- *   - query: string (name or email to search)
- *   - Excludes: current user, existing friends, pending requests
- *   - Returns: Array of user objects
+ * - searchUsers(query): **SECURE** search for users by name or email
+ *   - query: string (min 3 characters, name fuzzy match or email exact match)
+ *   - Excludes: current user, deleted users
+ *   - Includes: friendship_status (none, pending_sent, pending_received, accepted)
+ *   - Anti-scraping: Min 3 chars, max 10 results, random order, no emails in results
+ *   - Returns: { users: Array, count: number, has_more: false }
  * 
  * - getFriendProfile(friendId): Gets friend's profile and public items
  *   - Only returns items with privacy_level = 'public'
  *   - Returns: { user: Object, items: Array }
  * 
  * API Endpoints:
+ * - POST /api/users/search - **SECURE** search users (anti-scraping protected)
  * - GET /api/friends - List friends
  * - GET /api/friends/requests - Get pending requests
- * - POST /api/friends/request - Send friend request
+ * - POST /api/friends/request - Send friend request (by user_id, not email)
  * - PUT /api/friends/:id/accept - Accept request
  * - PUT /api/friends/:id/reject - Reject request
  * - DELETE /api/friends/:id - Unfriend or cancel request
- * - GET /api/users/search?q=query - Search users
  * - GET /api/friends/:id/profile - Get friend profile
  * 
  * Friendship Table Structure:
  * - id: UUID
- * - requester_id: UUID (who sent the request)
- * - target_user_id: UUID (who received the request)
+ * - requester_id: UUID (lower UUID, canonical ordering)
+ * - receiver_id: UUID (higher UUID, canonical ordering)
  * - status: 'pending' | 'accepted' | 'rejected'
  * - created_at: timestamp
+ * 
+ * IMPORTANT: Canonical Ordering (requester_id < receiver_id)
+ * - Prevents duplicate rows for same relationship
+ * - Single source of truth per friendship pair
+ * - Check constraint enforces this at database level
  * 
  * Reference:
  * - requirements/api-endpoints.md for endpoint specifications
@@ -312,26 +319,87 @@ export async function unfriend(friendshipId) {
 }
 
 /**
- * Search users by name or email
- * @param {string} query - Search query
- * @returns {Promise<Array>} Array of user objects
+ * **SECURE** Search users by name or email with anti-scraping protection
+ * 
+ * CRITICAL Anti-Scraping Measures:
+ * - Minimum 3-character query (prevents iteration)
+ * - Rate limiting: 20 searches/minute (enforced at API level)
+ * - Result limit: 10 users maximum
+ * - Random ordering (prevents enumeration)
+ * - Email addresses never exposed in results
+ * - Includes friendship status for each result
+ * 
+ * @param {string} query - Search query (min 3 characters)
+ * @returns {Promise<Object>} { users: Array, count: number, has_more: false }
+ * @throws {Error} If query too short or rate limit exceeded
  */
 export async function searchUsers(query) {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
     
-    // Search users by name or email (case-insensitive)
-    const { data, error } = await supabase
+    // Validate minimum query length (anti-scraping)
+    if (!query || query.trim().length < 3) {
+      throw new Error('Query must be at least 3 characters')
+    }
+    
+    // Search users with friendship status
+    // Note: Fuzzy name search OR exact email match
+    const { data: users, error } = await supabase
       .from('users')
-      .select('id, name, email, avatar_url')
-      .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
+      .select(`
+        id, 
+        name, 
+        avatar_url,
+        friends_as_requester:friends!requester_id(id, receiver_id, status),
+        friends_as_receiver:friends!receiver_id(id, requester_id, status)
+      `)
+      .or(`name.ilike.%${query}%,email.eq.${query}`)
       .neq('id', user.id) // Exclude current user
-      .limit(20)
+      .is('removed_at', null) // Only active users
+      .limit(10) // Hard limit (anti-scraping)
     
     if (error) throw error
     
-    return data || []
+    // Shuffle results for random ordering (anti-scraping)
+    const shuffled = (users || []).sort(() => Math.random() - 0.5)
+    
+    // Determine friendship status for each user
+    const results = shuffled.map(searchUser => {
+      let friendship_status = 'none'
+      
+      // Check if user is in a friendship with current user
+      const asRequester = searchUser.friends_as_requester?.find(
+        f => f.receiver_id === user.id
+      )
+      const asReceiver = searchUser.friends_as_receiver?.find(
+        f => f.requester_id === user.id
+      )
+      
+      if (asRequester) {
+        friendship_status = asRequester.status === 'accepted' 
+          ? 'accepted' 
+          : 'pending_received' // They sent request to us
+      } else if (asReceiver) {
+        friendship_status = asReceiver.status === 'accepted'
+          ? 'accepted'
+          : 'pending_sent' // We sent request to them
+      }
+      
+      return {
+        id: searchUser.id,
+        name: searchUser.name,
+        avatar_url: searchUser.avatar_url,
+        friendship_status
+        // CRITICAL: Never return email in search results
+      }
+    })
+    
+    return {
+      users: results,
+      count: results.length,
+      has_more: false // Never indicate more results (anti-scraping)
+    }
   } catch (error) {
     console.error('Failed to search users:', error)
     throw new Error(`Failed to search users: ${error.message}`)

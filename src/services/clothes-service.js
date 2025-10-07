@@ -6,6 +6,9 @@
  * Features:
  * - Upload images to Cloudinary
  * - Create/Read/Update/Delete clothing items
+ * - Favorite/unfavorite items (heart toggle)
+ * - Filter by category, favorites, clothing type, privacy
+ * - Get unique categories from user's closet
  * - Soft delete with 30-day recovery
  * - Quota enforcement (50 uploads max)
  * - Auto-contribute uploads to catalog (anonymous, background)
@@ -121,6 +124,11 @@ export async function getItems(filters = {}) {
     // Apply clothing_type filter
     if (filters.clothing_type && filters.clothing_type !== 'all') {
       query = query.eq('clothing_type', filters.clothing_type)
+    }
+    
+    // Apply favorite filter
+    if (filters.is_favorite === true) {
+      query = query.eq('is_favorite', true)
     }
     
     // Apply search filter
@@ -279,6 +287,153 @@ export async function deleteItem(id) {
   } catch (error) {
     console.error('Failed to delete item:', error)
     throw new Error(`Failed to delete item: ${error.message}`)
+  }
+}
+
+/**
+ * Toggle favorite status for an item
+ * @param {string} id - Item ID
+ * @param {boolean} isFavorite - New favorite status
+ * @returns {Promise<Object>} Updated item
+ */
+export async function toggleFavorite(id, isFavorite) {
+  try {
+    const { data, error } = await supabase
+      .from('clothes')
+      .update({ 
+        is_favorite: isFavorite,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .is('removed_at', null)
+      .select()
+      .single()
+    
+    if (error) {
+      throw error
+    }
+    
+    return data
+  } catch (error) {
+    console.error('Failed to toggle favorite:', error)
+    throw new Error(`Failed to toggle favorite: ${error.message}`)
+  }
+}
+
+/**
+ * Get detailed information about a specific item with statistics
+ * @param {string} id - Item ID
+ * @returns {Promise<Object>} Item with statistics
+ */
+export async function getItemDetails(id) {
+  try {
+    // Get item details
+    const { data: item, error } = await supabase
+      .from('clothes')
+      .select('*')
+      .eq('id', id)
+      .is('removed_at', null)
+      .single()
+    
+    if (error) {
+      throw error
+    }
+    
+    // Calculate days in closet
+    const createdDate = new Date(item.created_at)
+    const now = new Date()
+    const daysInCloset = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24))
+    
+    // Get wear count from outfit_history (if table exists)
+    let timesWorn = 0
+    let lastWorn = null
+    try {
+      const { count } = await supabase
+        .from('outfit_history')
+        .select('*', { count: 'exact', head: true })
+        .contains('item_ids', [id])
+      
+      timesWorn = count || 0
+      
+      // Get last worn date
+      if (timesWorn > 0) {
+        const { data: lastWornData } = await supabase
+          .from('outfit_history')
+          .select('worn_date')
+          .contains('item_ids', [id])
+          .order('worn_date', { ascending: false })
+          .limit(1)
+          .single()
+        
+        lastWorn = lastWornData?.worn_date || null
+      }
+    } catch (err) {
+      console.log('outfit_history table not available yet')
+    }
+    
+    // Get outfit count from outfit_generation_history (if table exists)
+    let inOutfits = 0
+    try {
+      const { count } = await supabase
+        .from('outfit_generation_history')
+        .select('*', { count: 'exact', head: true })
+        .contains('item_ids', [id])
+      
+      inOutfits = count || 0
+    } catch (err) {
+      console.log('outfit_generation_history table not available yet')
+    }
+    
+    // Get share count from shared_outfits (if table exists)
+    let timesShared = 0
+    try {
+      const { count } = await supabase
+        .from('shared_outfits')
+        .select('*', { count: 'exact', head: true })
+        .contains('item_ids', [id])
+      
+      timesShared = count || 0
+    } catch (err) {
+      console.log('shared_outfits table not available yet')
+    }
+    
+    return {
+      ...item,
+      statistics: {
+        days_in_closet: daysInCloset,
+        times_worn: timesWorn,
+        last_worn: lastWorn,
+        in_outfits: inOutfits,
+        times_shared: timesShared
+      }
+    }
+  } catch (error) {
+    console.error('Failed to get item details:', error)
+    throw new Error(`Failed to get item details: ${error.message}`)
+  }
+}
+
+/**
+ * Get unique categories from user's closet
+ * @returns {Promise<Array<string>>} Array of category names
+ */
+export async function getUserCategories() {
+  try {
+    const { data, error } = await supabase
+      .from('clothes')
+      .select('category')
+      .is('removed_at', null)
+    
+    if (error) {
+      throw error
+    }
+    
+    // Get unique categories
+    const categories = [...new Set(data.map(item => item.category))]
+    return categories.sort()
+  } catch (error) {
+    console.error('Failed to get categories:', error)
+    throw new Error(`Failed to get categories: ${error.message}`)
   }
 }
 

@@ -22,25 +22,42 @@ DROP TABLE IF EXISTS users CASCADE;
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm"; -- Trigram for fuzzy text search (friend search)
 
 -- ============================================
 -- AUTHENTICATION INTEGRATION
 -- ============================================
--- This schema integrates with Supabase Auth.
+-- CRITICAL: Google OAuth 2.0 (SSO) ONLY
+-- This schema integrates with Supabase Auth using Google OAuth exclusively.
 -- The users.id should match auth.users.id for RLS policies to work correctly.
--- When a user signs up via Google OAuth:
---   1. Supabase Auth creates entry in auth.users
---   2. Trigger/function creates corresponding entry in public.users
---   3. RLS policies use auth.uid() which returns authenticated user's UUID
+-- 
+-- Authentication Flow:
+--   1. User clicks "Sign in with Google" on /login or /register page
+--   2. Supabase Auth redirects to Google OAuth consent screen
+--   3. User authorizes app, Google redirects back to Supabase
+--   4. Supabase Auth creates entry in auth.users (if new user)
+--   5. Trigger/function creates corresponding entry in public.users
+--   6. User redirected to /closet (home page)
+--   7. RLS policies use auth.uid() which returns authenticated user's UUID
+-- 
+-- No email/password, magic links, or other auth methods supported.
 -- ============================================
 
 -- Users table
+-- Profile Photo System:
+--   - 6 default avatar options stored in /public/avatars/default-1.png through default-6.png
+--   - avatar_url stores either: default avatar path OR Google profile photo URL
+--   - Future: Can be extended to support custom uploaded avatars via Cloudinary
+-- Username Rules:
+--   - username: Auto-generated from email (part before @), cannot be changed by user
+--   - name: Full name from Google OAuth (first + last name), cannot be changed
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
-    name VARCHAR(255),
-    avatar_url TEXT,
-    google_id VARCHAR(255) UNIQUE, -- OAuth provider ID from Google (renamed from provider_id for clarity)
+    username VARCHAR(255) NOT NULL, -- Auto-generated from email (before @), immutable
+    name VARCHAR(255), -- Full name from Google OAuth (first + last name), immutable
+    avatar_url TEXT, -- Path to default avatar OR Google photo URL OR future custom upload
+    google_id VARCHAR(255) UNIQUE, -- OAuth provider ID from Google
     removed_at TIMESTAMP WITH TIME ZONE, -- Soft delete support for users
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -62,12 +79,15 @@ CREATE TABLE clothes (
     privacy VARCHAR(20) DEFAULT 'friends' CHECK (privacy IN ('private', 'friends')),
     size VARCHAR(20),
     brand VARCHAR(100),
+    is_favorite BOOLEAN DEFAULT false, -- User can mark items as favorite for quick access
     removed_at TIMESTAMP WITH TIME ZONE, -- Soft delete: items retained for 30-day recovery period
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Friends table
+-- IMPORTANT: Uses canonical ordering (requester_id < receiver_id) to prevent duplicate rows
+-- Friendship states: pending (request sent), accepted (friends), rejected (declined)
 CREATE TABLE friends (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   requester_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -78,6 +98,14 @@ CREATE TABLE friends (
   UNIQUE(requester_id, receiver_id),
   CHECK (requester_id < receiver_id) -- Enforce canonical ordering to prevent duplicate friendships
 );
+
+-- Index for faster queries on user's clothes
+CREATE INDEX idx_clothes_owner ON clothes(owner_id);
+CREATE INDEX idx_clothes_category ON clothes(category);
+CREATE INDEX idx_clothes_favorite ON clothes(owner_id, is_favorite) WHERE is_favorite = true;
+
+-- Note: Email index intentionally omitted from public queries to prevent enumeration
+-- Email searches use exact match only (email = ?) without exposing results
 
 -- Suggestions table
 CREATE TABLE suggestions (

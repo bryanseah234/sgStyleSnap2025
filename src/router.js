@@ -3,13 +3,19 @@
  * 
  * Purpose: Define application routes and navigation logic
  * 
+ * Authentication: Google SSO Only
+ * - Login and Register pages both use Google OAuth
+ * - No email/password authentication
+ * - After successful auth, redirect to /closet (home page)
+ * 
  * Routes:
  * - / (redirect to /closet if authenticated, /login if not)
- * - /login - Login page (public)
- * - /closet - Main closet page (protected)
+ * - /login - Login page with Google SSO (public, guest only)
+ * - /register - Register page with Google SSO (public, guest only)
+ * - /closet - Main closet page (protected, home after login, has settings icon)
  * - /friends - Friends list (protected)
  * - /suggestions - Outfit suggestions (protected)
- * - /profile - User profile (protected)
+ * - /settings - User settings with avatar selection (protected)
  * 
  * Route Guards:
  * - requiresAuth: Check authentication before allowing access
@@ -25,11 +31,12 @@ import { useAuthStore } from './stores/auth-store'
 
 // Import pages
 import Login from './pages/Login.vue'
+import Register from './pages/Register.vue'
 import Closet from './pages/Closet.vue'
 import Catalog from './pages/Catalog.vue'
 import Friends from './pages/Friends.vue'
 import Suggestions from './pages/Suggestions.vue'
-import Profile from './pages/Profile.vue'
+import Settings from './pages/Settings.vue' // Profile settings with avatar selection
 import Analytics from './pages/Analytics.vue'
 import OutfitGenerator from './pages/OutfitGenerator.vue'
 
@@ -45,6 +52,12 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: { requiresAuth: false, guestOnly: true }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
     meta: { requiresAuth: false, guestOnly: true }
   },
   {
@@ -78,9 +91,9 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
+    path: '/settings',
+    name: 'Settings',
+    component: Settings,
     meta: { requiresAuth: true }
   },
   {

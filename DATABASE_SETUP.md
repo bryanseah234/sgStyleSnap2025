@@ -1,6 +1,34 @@
-# Database Setup Guide - StyleSnap
+# StyleSnap Database Setup Guide
 
-This guide will walk you through setting up your Supabase PostgreSQL database for StyleSnap.
+Complete guide for setting up the Supabase database for StyleSnap application.
+
+## Authentication: Google SSO Only
+
+**CRITICAL:** This application uses Google OAuth 2.0 (Single Sign-On) exclusively.
+
+- **Authentication Method:** Google OAuth only (no email/password)
+- **Pages:** `/login` and `/register` (both use same Google OAuth flow)
+- **After Auth:** Redirect to `/closet` (home page)
+- **User Creation:** Auto-created in `users` table on first Google sign-in
+  - `username`: Auto-generated from email (part before @)
+  - `name`: From Google OAuth (first + last name)
+  - `avatar_url`: Defaults to first default avatar or Google photo
+- **Environment Variables:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (in `.env`)
+- **Supabase Setup:** Enable Google provider in Authentication > Providers
+- **Google Cloud:** OAuth consent screen and credentials configured
+
+## User Profile & Settings
+
+**Profile Photo System:**
+- 6 default avatars stored in `/public/avatars/default-1.png` through `default-6.png`
+- User selects from defaults via Settings page (accessible from gear icon on home page)
+- Future: Can be extended to support custom avatar uploads via Cloudinary
+
+**Profile Fields:**
+- **Username:** Auto-generated from email (part before @), immutable
+- **Name:** From Google OAuth (first + last name), immutable
+- **Email:** From Google OAuth, immutable
+- **Avatar:** Can be changed by user (select from 6 defaults)
 
 ---
 
@@ -462,6 +490,13 @@ VITE_OPENWEATHER_API_KEY=your-api-key
 # - Users cannot see who uploaded items (admin or other users)
 # - User uploads automatically added to catalog (background, no prompt)
 # - Catalog browse excludes items user already owns (prevents duplicates)
+
+# Friend Search & Anti-Scraping (Task 4)
+# - Secure friend search by username (fuzzy) or email (exact match)
+# - Anti-scraping: 3-char minimum, rate limiting, 10 result max, random order
+# - Email addresses never exposed in search results
+# - Friendship states: pending, accepted, rejected
+# - Canonical ordering (requester_id < receiver_id) prevents duplicate rows
 ```
 
 ---

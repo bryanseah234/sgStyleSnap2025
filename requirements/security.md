@@ -299,9 +299,17 @@ xssPayloads.forEach(payload => {
 
 ### 1.2 Authentication Security
 
-- Never store JWT in localStorage
-- Use httpOnly cookies or secure memory storage
-- Implement token refresh mechanism
+**CRITICAL: Google SSO Only**
+- **Authentication Method:** Google OAuth 2.0 (Single Sign-On) ONLY
+- No email/password authentication
+- No magic links or other auth methods
+- Google OAuth configured in Supabase Auth settings
+- Secrets stored in `.env` file (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
+
+**Token Management:**
+- Never store JWT in localStorage (XSS vulnerability)
+- Use Supabase Auth built-in secure storage (IndexedDB with localStorage fallback)
+- Implement automatic token refresh mechanism
 - Clear sensitive data on logout
 - Add auth checks to route guards
 
@@ -1393,6 +1401,81 @@ app.post('/api/clothes', authenticate, async (req, res) => {
 - Friends can only view friends' items with 'friends' privacy
 - Never expose email addresses in friend searches
 - Implement proper authorization checks
+
+---
+
+### 4.3 Anti-Scraping Measures (Friend Search)
+
+**CRITICAL**: Prevent systematic enumeration of user database.
+
+**Implemented Protections:**
+
+- **Minimum Query Length:** Require 3+ characters (prevents iteration like 'a', 'b', 'c')
+- **Rate Limiting:** Max 20 searches per user per minute (prevents automated scraping)
+- **Result Limit:** Max 10 results per search (prevents full database extraction)
+- **No Pagination:** Disable offset/pagination (prevents sequential scraping)
+- **Random Ordering:** Return results in random order (prevents predictable enumeration)
+- **Authentication Required:** Must be logged in (prevents anonymous scraping)
+- **Email Hiding:** Never return email addresses in search results
+- **Fuzzy Matching Only:** Use ILIKE for partial matches, no wildcards exposed
+- **Timing Attack Prevention:** Use consistent response times regardless of results
+- **No Result Count:** Never indicate total available results
+- **Exact Email Match:** Email search only matches exact email, never returned in response
+
+**Rate Limiting Implementation:**
+
+```javascript
+// Rate limit for user search
+const searchRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // 20 requests per minute
+  message: 'Too many search requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Use user ID for rate limiting (requires authentication)
+  keyGenerator: (req) => req.user.id
+});
+
+// Apply to search endpoint
+app.post('/api/users/search', authenticate, searchRateLimiter, handleSearch);
+```
+
+**Database Query Example:**
+
+```sql
+-- Secure search query with anti-scraping measures
+SELECT 
+  id, 
+  name, 
+  avatar_url,
+  -- Never return email in search results
+  NULL as email
+FROM users
+WHERE 
+  -- Fuzzy name match OR exact email match
+  (name ILIKE '%' || :query || '%' OR email = :query)
+  -- Exclude self
+  AND id != :current_user_id
+  -- Exclude deleted users
+  AND removed_at IS NULL
+-- Random order prevents enumeration
+ORDER BY RANDOM()
+-- Hard limit prevents scraping
+LIMIT 10;
+```
+
+**Monitoring for Scraping Attempts:**
+
+- Log all search queries with user_id and timestamp
+- Alert on:
+  - Users hitting rate limit repeatedly
+  - Systematic single-character searches ('a', 'b', 'c', etc.)
+  - Sequential searches with predictable patterns
+  - Searches from same IP across multiple accounts
+- Implement progressive penalties:
+  - First violation: Warning
+  - Repeated violations: Temporary search ban (1 hour)
+  - Persistent violations: Account review
 - **CRITICAL**: Catalog items MUST be displayed anonymously
   - No owner_id in catalog API responses
   - No user attribution in catalog UI

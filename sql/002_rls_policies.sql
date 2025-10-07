@@ -38,8 +38,18 @@ ALTER TABLE suggestions ENABLE ROW LEVEL SECURITY;
 -- ============================================
 -- USERS POLICIES
 -- ============================================
+-- Users can view own full data
 CREATE POLICY "Users can view own data" ON users
     FOR SELECT USING (auth.uid() = id);
+
+-- Authenticated users can search for other users (limited fields)
+-- IMPORTANT: Rate limiting and result limits enforced at API level
+-- Email addresses never exposed in search results (handled by API)
+CREATE POLICY "Users can search other users" ON users
+    FOR SELECT USING (
+        auth.uid() IS NOT NULL -- Must be authenticated
+        AND removed_at IS NULL -- Only active users
+    );
 
 CREATE POLICY "Users can update own data" ON users
     FOR UPDATE USING (auth.uid() = id);

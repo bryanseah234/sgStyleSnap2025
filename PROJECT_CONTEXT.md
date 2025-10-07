@@ -40,7 +40,16 @@ Digital closet app for outfit suggestions from friends.
 ## Technology Stack
 Frontend: Vue.js 3 + Vite + Tailwind CSS
 Backend: Supabase (PostgreSQL) + Cloudinary
-Authentication: Google OAuth
+Authentication: Google OAuth 2.0 (SSO) ONLY
+
+## Authentication Flow
+**CRITICAL: Google SSO Exclusively**
+- `/login` page: "Sign in with Google" button
+- `/register` page: "Sign up with Google" button  
+- Both use same OAuth flow: `supabase.auth.signInWithOAuth({ provider: 'google' })`
+- After successful auth: Redirect to `/closet` (home page)
+- User profile auto-created in `users` table on first sign-in
+- No email/password, magic links, or other authentication methods
 
 ## Complete File Structure
 stylesnap/
@@ -108,6 +117,8 @@ stylesnap/
 │ │ │ └── AuthLayout.vue
 │ │ ├── closet/
 │ │ │ ├── ClosetGrid.vue
+│ │ │ ├── ItemDetailModal.vue          # Item details with statistics
+│ │ │ ├── ClosetFilter.vue             # Filter by favorites, category, etc
 │ │ │ ├── AddItemForm.vue
 │ │ │ └── LikedItemsGrid.vue           # Task 12: Grid of liked items
 │ │ ├── social/
@@ -143,9 +154,9 @@ stylesnap/
 │ │     └── SeasonalBreakdown.vue        # Task 13: Category/occasion/rating stats
 │ ├── pages/
 │ │ ├── Login.vue
-│ │ ├── Closet.vue
+│ │ ├── Closet.vue             # Home page with settings icon
 │ │ ├── Friends.vue
-│ │ ├── Profile.vue                    # Updated: Added tabs for History, Collections, Preferences
+│ │ ├── Settings.vue           # User settings with avatar selection
 │ │ ├── Suggestions.vue
 │ │ └── Analytics.vue                  # Task 13: Wardrobe analytics page
 │ ├── stores/
@@ -165,6 +176,7 @@ stylesnap/
 │ │ ├── auth-service.js
 │ │ ├── clothes-service.js
 │ │ ├── friends-service.js
+│ │ ├── user-service.js            # User profile updates (avatar selection)
 │ │ ├── suggestions-service.js
 │ │ ├── likes-service.js               # Task 12: Likes API integration
 │ │ ├── outfit-history-service.js      # Task 13: Outfit history API
@@ -239,6 +251,7 @@ When requirements reference tasks: `[TASK: 01-infrastructure-setup#1.1]`
 - **API Specifications**: `requirements/api-endpoints.md`
 - **Component Guidelines**: `requirements/frontend-components.md`
 - **Security Requirements**: `requirements/security.md`
+- **Friend Search**: `tasks/04-social-features-privacy.md` (includes anti-scraping measures)
 - **Development Tasks**: Start with `tasks/01-infrastructure-setup.md`
 
 ## Development Workflow
