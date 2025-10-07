@@ -29,11 +29,25 @@
 
 ## 3.3 Item Management
 - [ ] Build `ClosetGrid.vue` to display all items
+  - [ ] **Add card animations:**
+    - [ ] Staggered entrance (fade-in + slide-up)
+    - [ ] Hover effects (scale, translate, shadow)
+    - [ ] Image zoom on card hover
+    - [ ] Dark overlay fade on hover
+  - [ ] **Add loading states:**
+    - [ ] Skeleton loaders for initial load
+    - [ ] Shimmer effect on skeletons
+    - [ ] Spinner for page-level loading
 - [ ] Add favorite toggle (heart icon) to each item card
   - [ ] Filled heart for favorited items
   - [ ] Outlined heart for non-favorited items
   - [ ] Click to toggle favorite status
   - [ ] Optimistic UI update
+  - [ ] **Add heart animations:**
+    - [ ] Scale animation on toggle (bounce effect)
+    - [ ] Hidden (scale-0) when not favorite, show on card hover
+    - [ ] Scale 1.25x on heart button hover
+    - [ ] Smooth color transition
 - [ ] Add `ClosetFilter.vue` for filtering
   - [ ] Favorites filter (toggle button)
   - [ ] Category filter (dropdown with user's available categories)
@@ -94,7 +108,22 @@ utils/
 image-compression.js
 
 ## Acceptance Criteria:
+## Acceptance Criteria:
 - [ ] Images resized to < 1MB before upload
+- [ ] Cloudinary URLs generated with transformations
+- [ ] Thumbnails lazy-loaded in grid
+- [ ] **All animations implemented:**
+  - [ ] Button hover/click animations (scale, shadow)
+  - [ ] Card hover animations (scale, translate, shadow)
+  - [ ] Heart favorite bounce animation
+  - [ ] FAB rotate and pulse animations
+  - [ ] Modal slide-up entrance/exit
+  - [ ] Staggered list/grid entrance animations
+  - [ ] Loading spinners on all async actions
+  - [ ] Skeleton loaders for content loading
+  - [ ] Toast notifications with slide animations
+  - [ ] Smooth transitions between states
+- [ ] **Reduced motion respected:** Users with motion sensitivity see minimal animations
 ## Acceptance Criteria:
 - [ ] Users can upload clothing items with images
 - [ ] Images optimized and stored in Cloudinary

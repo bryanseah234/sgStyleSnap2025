@@ -273,30 +273,67 @@ async function signUpWithGoogle() {
 
 - Uses MainLayout wrapper
 - **Settings Icon:** Gear/cog icon in top-right header (navigates to `/settings`)
+  - **Animation:** Rotate on hover (360deg), scale on click
 - Integrates ClosetGrid component
-- Floating action button for adding items
+- **Floating action button** (FAB) for adding items
+  - **Animation:** Scale up on hover (1.1x), rotate 90deg, shadow expansion
+  - **Animation:** Scale down on click (0.95x)
+  - **Animation:** Bounce on page load
+  - **Animation:** Pulse when quota near limit (45+/50)
 - **Filter Controls:**
   - **Favorites toggle button** - Show only favorited items
+    - **Animation:** Smooth color transition when toggled
+    - **Animation:** Heart icon fills with bounce effect when activated
   - **Category dropdown** - Filter by category (dynamically populated from user's items)
+    - **Animation:** Slide down with stagger on options
   - **Clothing type filter** - Specific type within category
   - **Privacy filter** - private/friends
   - **Clear filters button** - Reset all filters
+    - **Animation:** Shake animation on hover
   - **Active filter indicators** - Show which filters are applied
+    - **Animation:** Fade in with slide up
+    - **Animation:** Scale in badges
 - Item count with quota indicator
+  - **Animation:** Progress bar fills smoothly
+  - **Animation:** Warning pulse when near limit
 - Search functionality
+  - **Animation:** Search icon rotates while searching
+  - **Animation:** Results fade in with stagger
+- **Loading States:**
+  - Skeleton loaders for grid items
+  - Spinner overlay for full-page loads
+  - Shimmer effect on placeholders
 
-**Header Layout:**
+**Loading States:**
 
 ```vue
 <template>
   <MainLayout>
-    <div class="closet-header">
-      <h1>My Closet</h1>
-      <button @click="$router.push('/settings')" class="settings-btn">
-        <SettingsIcon /> <!-- Gear/cog icon -->
-      </button>
+    <!-- Loading overlay -->
+    <div v-if="loading" class="loading-overlay">
+      <Spinner size="xl" color="primary" message="Loading your closet..." />
     </div>
-    <!-- Rest of closet content -->
+    
+    <!-- Skeleton loader for initial load -->
+    <div v-if="initialLoading" class="closet-skeleton">
+      <div class="grid grid-cols-3 md:grid-cols-4 gap-4">
+        <Skeleton v-for="n in 12" :key="n" variant="rectangular" height="280px" rounded="lg" />
+      </div>
+    </div>
+    
+    <!-- Actual content -->
+    <div v-else>
+      <div class="closet-header">
+        <h1 class="animate-fade-in">My Closet</h1>
+        <button 
+          @click="$router.push('/settings')" 
+          class="settings-btn transition-all duration-300 hover:rotate-180 hover:scale-110 active:scale-95"
+        >
+          <SettingsIcon />
+        </button>
+      </div>
+      <!-- Rest of closet content -->
+    </div>
   </MainLayout>
 </template>
 ```
@@ -854,12 +891,24 @@ async function signOut() {
 
 - Responsive grid (3 cols mobile, 4-6 desktop)
 - Lazy loading with Intersection Observer
+- **Item Card Animations:**
+  - **Entrance:** Staggered fade-in + slide up (100ms delay per card)
+  - **Hover:** Scale up (1.05x) + translate up (-8px) + shadow expansion
+  - **Hover Image:** Scale up (1.1x) with overflow hidden
+  - **Hover Overlay:** Fade in dark overlay (20% opacity)
+  - **Click:** Scale down briefly (0.98x) then navigate
 - **Favorite toggle button** on each item card (heart icon)
   - Filled heart for favorited items
   - Outlined heart for non-favorited items
   - Click to toggle favorite status
   - Positioned in top-right corner of card
   - Optimistic UI update (immediate visual feedback)
+  - **Animations:**
+    - **Hidden state:** Scale 0 when not favorite, scale 100 on card hover
+    - **Visible state:** Scale 100 always when favorited
+    - **Toggle animation:** Bounce effect (3 bounces) when favorited
+    - **Unfavorite:** Scale down to 0 when unfavorited
+    - **Hover heart:** Scale 1.25x on heart hover
 - **Filter integration:**
   - Favorites filter (show only favorited items)
   - Category filter (top, bottom, outerwear, shoes, accessory)
@@ -1044,13 +1093,25 @@ function handleEdit() {
 - **Share** - Share item with friends
 - **Close** - Close modal
 
+**Animations:**
+
+- **Modal entrance:** Fade in overlay (0.3s) + slide up content (0.3s ease-out)
+- **Modal exit:** Fade out overlay + slide down content
+- **Image zoom:** Scale transform on click/tap with smooth transition
+- **Favorite toggle:** Heart scale + bounce animation when clicked
+- **Statistics grid:** Staggered fade-in for each stat item (50ms delay per item)
+- **Action buttons:** Scale on hover (1.05x), scale on click (0.95x)
+- **Delete confirmation:** Shake animation on delete button
+- **Success actions:** Checkmark animation after save/update
+
 **Styling:**
 - Full-screen modal on mobile
 - Centered modal on desktop (max-width: 800px)
-- Smooth animations
+- Smooth animations (300ms ease-out standard)
 - Responsive grid for statistics (2 cols mobile, 3-4 cols desktop)
 - Icon + text for each statistic
 - Color-coded for visual hierarchy
+- Backdrop blur effect on overlay
 
 **Services Used:**
 - `clothes-service.js`

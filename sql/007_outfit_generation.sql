@@ -1,6 +1,20 @@
 -- Migration 007: Outfit Generation System (Permutation-based)
 -- Creates tables and functions for automatic outfit generation
 -- This file is re-runnable - safe to execute multiple times
+--
+-- TECHNICAL APPROACH:
+-- - Permutation-based algorithm (NO machine learning)
+-- - Category validation: Each outfit has exactly ONE item per category
+-- - No duplicate categories allowed (no shirt + shirt, etc.)
+-- - Client-side processing in browser (fast, free, private)
+-- - Outfits displayed on blank canvas (no person overlay)
+-- - Items shown in original uploaded photos
+--
+-- CATEGORY RULES (CRITICAL):
+-- ✅ Valid:   1 top + 1 bottom + 1 shoes
+-- ❌ Invalid: 2 tops, 2 bottoms, 2 shoes in same outfit
+-- ✅ Valid:   1 top + 1 bottom + 1 shoes + 1 outerwear + 1 accessory
+-- ❌ Invalid: 1 top + 1 top (even if different styles)
 
 -- ============================================
 -- DROP EXISTING OBJECTS (in reverse dependency order)
@@ -252,23 +266,50 @@ CREATE TABLE generated_outfits (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   item_ids UUID[] NOT NULL, -- Array of clothes IDs in the outfit
+  
+  -- Auto-generation fields (NULL for manual outfits)
   generation_params JSONB, -- Weather, occasion, style preferences
   color_scheme VARCHAR(50), -- monochromatic, complementary, analogous, triadic, neutral, mixed
   style_theme VARCHAR(50), -- casual, formal, sporty, business, mixed
   occasion VARCHAR(50), -- work, casual, date, workout, formal
   weather_condition VARCHAR(50), -- hot, warm, cool, cold
-  ai_score INTEGER CHECK (ai_score BETWEEN 0 AND 100), -- AI-generated outfit score
+  ai_score INTEGER CHECK (ai_score BETWEEN 0 AND 100), -- Algorithm score for auto-generated outfits
+  
+  -- Manual creation fields
+  is_manual BOOLEAN DEFAULT false, -- TRUE if user created manually, FALSE if auto-generated
+  outfit_name VARCHAR(100), -- User-provided name (manual outfits only)
+  outfit_notes TEXT, -- Optional notes/description (manual outfits only)
+  item_positions JSONB, -- Array of {item_id, x, y, z_index} for manual positioning
+  tags VARCHAR(50)[], -- User-defined tags for categorization
+  
+  -- Common fields
   user_rating INTEGER CHECK (user_rating BETWEEN 1 AND 5), -- User feedback rating
   is_saved BOOLEAN DEFAULT false,
   saved_to_collection_id UUID REFERENCES outfit_collections(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), -- Last update time
   rated_at TIMESTAMP WITH TIME ZONE,
   saved_at TIMESTAMP WITH TIME ZONE,
   
   -- Constraints
-  CONSTRAINT check_item_ids_not_empty CHECK (array_length(item_ids, 1) >= 3), -- Minimum 3 items (top+bottom+shoes)
-  CONSTRAINT check_item_ids_max CHECK (array_length(item_ids, 1) <= 6) -- Maximum 6 items
+  CONSTRAINT check_item_ids_not_empty CHECK (array_length(item_ids, 1) >= 1), -- Minimum 1 item
+  CONSTRAINT check_item_ids_max_auto CHECK (
+    (is_manual = false AND array_length(item_ids, 1) <= 6) OR is_manual = true
+  ), -- Auto-generated: max 6 items
+  CONSTRAINT check_item_ids_max_manual CHECK (
+    (is_manual = true AND array_length(item_ids, 1) <= 10) OR is_manual = false
+  ), -- Manual: max 10 items
+  CONSTRAINT check_manual_has_name CHECK (
+    (is_manual = true AND outfit_name IS NOT NULL) OR is_manual = false
+  ) -- Manual outfits must have a name
 );
+
+-- Example item_positions JSONB for manual outfits:
+-- [
+--   {"item_id": "550e8400-e29b-41d4-a716-446655440000", "x": 100, "y": 50, "z_index": 1},
+--   {"item_id": "550e8400-e29b-41d4-a716-446655440001", "x": 100, "y": 200, "z_index": 2},
+--   {"item_id": "550e8400-e29b-41d4-a716-446655440002", "x": 100, "y": 350, "z_index": 3}
+-- ]
 
 -- ============================================
 -- OUTFIT GENERATION HISTORY
@@ -313,6 +354,9 @@ CREATE INDEX idx_generated_outfits_item_ids ON generated_outfits USING gin(item_
 CREATE INDEX idx_generated_outfits_occasion ON generated_outfits(occasion);
 CREATE INDEX idx_generated_outfits_weather ON generated_outfits(weather_condition);
 CREATE INDEX idx_generated_outfits_created ON generated_outfits(created_at DESC);
+CREATE INDEX idx_generated_outfits_is_manual ON generated_outfits(is_manual); -- Filter by creation type
+CREATE INDEX idx_generated_outfits_tags ON generated_outfits USING gin(tags); -- Search by tags
+CREATE INDEX idx_generated_outfits_updated ON generated_outfits(updated_at DESC); -- Recently updated
 
 -- Generation history indexes
 CREATE INDEX idx_outfit_gen_history_user ON outfit_generation_history(user_id);

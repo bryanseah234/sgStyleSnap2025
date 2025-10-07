@@ -82,8 +82,9 @@ stylesnap/
 │ ├── 08-mobile-mockups.md             # Design reference (optional)
 │ ├── 09-item-catalog-system.md        # Item catalog implementation
 │ ├── 10-color-detection-ai.md         # Color detection AI implementation
-│ ├── 11-outfit-generation.md          # Outfit generation from permutations
-│ └── 12-likes-feature.md              # Likes feature implementation
+│ ├── 11-outfit-generation.md          # Outfit generation (permutation-based, no ML)
+│ ├── 12-likes-feature.md              # Likes feature implementation
+│ └── 13-advanced-outfit-features.md   # Task 13: Advanced outfit features
 ├── sql/
 │ ├── 001_initial_schema.sql
 │ ├── 002_rls_policies.sql
@@ -138,7 +139,11 @@ stylesnap/
 │ │ ├── outfits/
 │ │ │ ├── OutfitHistoryCard.vue          # Task 13: Single outfit entry card
 │ │ │ ├── OutfitHistoryList.vue          # Task 13: History with filters
-│ │ │ └── RecordOutfitModal.vue          # Task 13: Record/edit outfit form
+│ │ │ ├── RecordOutfitModal.vue          # Task 13: Record/edit outfit form
+│ │ │ ├── ManualOutfitCreator.vue        # Task 11: Manual outfit creation page
+│ │ │ ├── OutfitCanvas.vue               # Task 11: Drag-drop canvas component
+│ │ │ ├── ClosetItemsSidebar.vue         # Task 11: Draggable items sidebar
+│ │ │ └── SaveOutfitDialog.vue           # Task 11: Save outfit dialog
 │ │ ├── collections/
 │ │ │ ├── CollectionCard.vue             # Task 13: Collection grid card
 │ │ │ ├── CollectionsList.vue            # Task 13: Collections grid view
@@ -179,6 +184,8 @@ stylesnap/
 │ │ ├── user-service.js            # User profile updates (avatar selection)
 │ │ ├── suggestions-service.js
 │ │ ├── likes-service.js               # Task 12: Likes API integration
+│ │ ├── outfit-service.js              # Task 11: Manual outfit creation API
+│ │ ├── outfit-generator-service.js    # Task 11: Auto outfit generation
 │ │ ├── outfit-history-service.js      # Task 13: Outfit history API
 │ │ ├── shared-outfits-service.js      # Task 13: Shared outfits API
 │ │ ├── collections-service.js         # Task 13: Collections API

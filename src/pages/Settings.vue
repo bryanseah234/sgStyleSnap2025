@@ -129,18 +129,18 @@
                 <img
                   :src="avatar.url"
                   :alt="avatar.alt"
-                  class="w-full h-auto aspect-square object-cover"
+                  class="w-full h-auto aspect-square object-cover transition-transform duration-300"
                   :class="[
-                    updatingAvatar ? 'opacity-50' : 'opacity-100'
+                    updatingAvatar ? 'opacity-50' : 'opacity-100 group-hover:scale-110'
                   ]"
                 />
                 
                 <!-- Selected Indicator -->
                 <div
                   v-if="profile.avatar_url === avatar.url"
-                  class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-20"
+                  class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-20 animate-fade-in"
                 >
-                  <svg class="w-12 h-12 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-12 h-12 text-blue-600 animate-bounce-subtle" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                   </svg>
                 </div>

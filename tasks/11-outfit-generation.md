@@ -9,34 +9,69 @@
 
 ## 📋 Overview
 
-Implement a **permutation-based outfit generation system** that automatically creates complete outfit suggestions from a user's closet items. The system uses **local algorithms** (no external AI APIs) to generate outfit combinations based on color harmony, style compatibility, weather conditions, and occasion.
+Implement a **permutation-based outfit generation system** that automatically creates complete outfit suggestions from a user's closet items. The system uses **rule-based algorithms** (no ML/AI) to generate outfit combinations based on:
+- **Category rules** (no duplicate categories - no shirt + shirt)
+- Color harmony principles
+- Style compatibility
+- Weather conditions
+- Occasion appropriateness
 
 **Key Benefits:**
 - Helps users discover new outfit combinations
 - Reduces decision fatigue ("What should I wear?")
+- **Smart category filtering** - Never suggests duplicate items
 - Maximizes wardrobe utility
-- Personalized style recommendations
 - **100% Free** - No external API costs
 - **Fast** - Generates outfits in milliseconds
-- **Privacy** - All processing happens locally
+- **Privacy** - All processing happens locally in browser
 
 **How It Works:**
-1. Generate all valid permutations of user's items (top + bottom + shoes + optional outerwear/accessories)
-2. Score each permutation using color harmony rules and style compatibility
-3. Filter by weather, occasion, and user preferences
-4. Return top-scoring outfit combinations
+1. Group items by category (top, bottom, shoes, outerwear, accessories)
+2. Generate permutations with **exactly ONE item per category**
+3. Score each permutation using color harmony rules and style compatibility
+4. Filter by weather, occasion, and user preferences
+5. Return top-scoring outfit combinations
+6. Display items on **blank canvas** (no person overlay)
+
+**Visual Presentation:**
+- Items displayed as uploaded photos on neutral background
+- Vertical or grid layout (top → bottom → shoes → outerwear → accessories)
+- NO superimposition on mannequin or person
+- Clean, simple presentation for clarity
 
 ---
 
 ## 🎯 Acceptance Criteria
 
-### AI Algorithm
+### Permutation Algorithm
+- [ ] **Category grouping** - Items grouped by category before permutation
+- [ ] **Category validation** - Each outfit has max ONE item per category
 - [ ] Outfit generation algorithm implemented
-- [ ] Color harmony rules defined
+- [ ] Color harmony rules defined (monochromatic, complementary, analogous, etc.)
 - [ ] Style compatibility matrix created
-- [ ] Weather-based filtering
-- [ ] Occasion-based filtering
-- [ ] Learning from user feedback
+- [ ] Weather-based filtering (no shorts in cold, no coats in hot)
+- [ ] Occasion-based filtering (no gym clothes for formal)
+- [ ] Outfit scoring (0-100) based on harmony and completeness
+- [ ] No ML/AI models required - pure JavaScript
+
+### Visual Presentation
+- [ ] **Canvas display** - Items shown on blank background
+- [ ] **No person overlay** - Just item images
+- [ ] Items arranged in logical order (top → bottom → shoes)
+- [ ] Clean layout (vertical or grid)
+- [ ] Item names and categories visible
+
+### Manual Outfit Creation
+- [ ] **Drag-and-drop interface** - Users can manually create outfits
+- [ ] **Closet items sidebar** - All items shown as draggable thumbnails
+- [ ] **Search/filter** - Filter items by category, name, color while creating
+- [ ] **Canvas positioning** - Items can be placed anywhere on canvas
+- [ ] **No category restrictions** - Users can add any combination (2 tops, 3 accessories, etc.)
+- [ ] **Z-index controls** - Reorder items for layering visualization
+- [ ] **Save with metadata** - Custom name, notes, tags
+- [ ] **Edit existing** - Update manually-created outfits
+- [ ] **Auto-save drafts** - Save progress while editing
+- [ ] **Max 10 items** - Practical limit for manual outfits
 
 ### Database
 - [ ] `generated_outfits` table created
@@ -46,17 +81,39 @@ Implement a **permutation-based outfit generation system** that automatically cr
 - [ ] Migration file: `sql/007_outfit_generation.sql`
 
 ### API Endpoints
-- [ ] `POST /api/outfits/generate` - Generate new outfit
+
+**Auto-Generated:**
+- [ ] `POST /api/outfits/generate` - Generate new outfit (validates no duplicate categories)
 - [ ] `GET /api/outfits/suggested` - Get pre-generated outfits
+- [ ] Response includes `displayMode: 'canvas'` and item order
+
+**Manual Creation:**
+- [ ] `POST /api/outfits/manual` - Create manual outfit with positions
+- [ ] `PUT /api/outfits/manual/:id` - Update manual outfit
+- [ ] `GET /api/outfits` - List all outfits (both auto and manual)
+- [ ] `DELETE /api/outfits/:id` - Delete outfit
 - [ ] `POST /api/outfits/:id/rate` - Rate generated outfit
 - [ ] `POST /api/outfits/:id/save` - Save to collections
 
 ### Frontend
+
+**Auto-Generation:**
 - [ ] "Generate Outfit" button/page
 - [ ] Outfit generation parameters (occasion, weather, style)
 - [ ] Display generated outfit with reasoning
 - [ ] Accept/reject/regenerate options
 - [ ] Save outfit to collection
+
+**Manual Creation:**
+- [ ] **ManualOutfitCreator.vue** - Main creation interface
+- [ ] **OutfitCanvas.vue** - Drag-and-drop canvas component
+- [ ] **ClosetItemsSidebar.vue** - Draggable items sidebar
+- [ ] "Create Outfit Manually" button in Outfits page
+- [ ] Search/filter in sidebar (category, name, color)
+- [ ] Item positioning controls (drag, z-index)
+- [ ] Save dialog (name, notes, tags input)
+- [ ] Edit mode for existing manual outfits
+- [ ] Mobile-responsive layout
 
 ### AI Features
 - [ ] Color harmony matching (complementary, analogous, triadic)

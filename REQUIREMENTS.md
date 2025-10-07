@@ -54,6 +54,64 @@
 - **Multiple Filters:** All filters can be applied simultaneously
 - **Clear Filters:** Reset all filters with single button
 
+### UI/UX Animations & Motion Design
+**Purpose:** Create a polished, professional app feel with smooth animations and visual feedback
+
+**Loading States:**
+- **Spinner animations** - Rotating spinner for all async operations
+- **Skeleton loaders** - Shimmer effect placeholders for content loading
+- **Progress bars** - Smooth filling animations for uploads
+- **Pull-to-refresh** - Mobile gesture with spinner indicator
+
+**Interactive Animations:**
+- **Button interactions:**
+  - Hover: Scale (1.05x) + shadow expansion
+  - Click: Scale down (0.95x) momentarily
+  - Loading: Pulse animation + inline spinner
+- **Icon buttons:**
+  - Hover: Scale (1.1x) + optional rotate
+  - Favorite heart: Bounce effect (3x) when toggled
+- **Cards (clothing items):**
+  - Entrance: Staggered fade-in + slide-up (100ms delay per card)
+  - Hover: Scale (1.05x) + translate up (-8px) + shadow expansion
+  - Hover image: Scale (1.1x) with overflow hidden
+  - Hover overlay: Fade in dark overlay (20% opacity)
+- **Floating Action Button (FAB):**
+  - Hover: Scale (1.1x) + rotate (90deg) + shadow expansion
+  - Click: Scale (0.95x)
+  - Page load: Bounce entrance
+  - Near quota limit: Pulse animation
+
+**Modal & Overlay Animations:**
+- **Entrance:** Fade in overlay (0.3s) + slide up content (0.3s)
+- **Exit:** Fade out overlay + slide down content
+- **Backdrop:** Blur effect on background
+
+**List & Grid Animations:**
+- **Entrance:** Staggered animation (50-100ms delay per item)
+- **Filter changes:** Smooth fade out → reorder → fade in
+- **Item removal:** Scale down + fade out
+- **Item addition:** Scale up + fade in from 0.95
+
+**Notifications & Feedback:**
+- **Toast notifications:** Slide down from top, auto-dismiss with fade
+- **Success checkmark:** Animated SVG checkmark with circle
+- **Error shake:** Horizontal shake animation
+- **Form validation:** Smooth color transitions for errors
+
+**Micro-interactions:**
+- **Heart favorite:** Scale + bounce + color fill animation
+- **Settings gear:** Rotate 180deg on hover
+- **Search icon:** Rotate while searching
+- **Filter badges:** Pop in with scale animation
+- **Quota indicator:** Progress bar fills smoothly, pulse on warning
+
+**Performance:**
+- All animations use CSS transforms (GPU accelerated)
+- Respect `prefers-reduced-motion` for accessibility
+- Maximum duration: 400ms for most animations
+- Easing: `ease-out` for entrances, `ease-in` for exits
+
 ### Item Statistics & Details
 When viewing an item in the virtual closet, users can see comprehensive statistics:
 - **Days in Closet:** Calculated from when item was added (created_at)
@@ -96,3 +154,64 @@ When viewing an item in the virtual closet, users can see comprehensive statisti
   - `accepted`: Mutual friendship established
   - `rejected`: Friend request declined
 - **Relationship Management:** Send requests, accept/reject, unfriend
+
+### Outfit Generation (Permutation-Based)
+**Algorithm Type:** Rule-based permutation system (NO machine learning)
+
+**How It Works:**
+1. Group user's closet items by category (top, bottom, shoes, outerwear, accessories)
+2. Generate permutations with **exactly ONE item per category**
+3. Score outfits using color harmony rules and style compatibility
+4. Filter by weather, occasion, and user preferences
+5. Return top-scoring combinations
+
+**Category Rules (CRITICAL):**
+- ✅ Valid: 1 top + 1 bottom + 1 shoes
+- ❌ Invalid: 2 tops, 2 bottoms, 2 shoes in same outfit
+- ✅ Valid: 1 top + 1 bottom + 1 shoes + 1 outerwear + 1 accessory
+- ❌ Invalid: 1 top + 1 top (even if different styles)
+- **Enforcement:** Algorithm validates NO duplicate categories before scoring
+
+**Scoring System (0-100):**
+- Color Harmony (40%): Monochromatic, complementary, analogous, neutral
+- Completeness (60%): Required items (top+bottom+shoes) + optional (outerwear, accessories)
+
+**Visual Presentation:**
+- Outfits displayed as **item images on blank canvas**
+- NO superimposition on person/mannequin
+- Items arranged vertically or in grid layout
+- Order: top → bottom → shoes → outerwear → accessories
+- Each item shown in original uploaded photo
+
+**User Actions:**
+- Generate outfit with weather/occasion parameters
+- Rate outfits (1-5 stars) for personal tracking
+- Save favorite outfits to collection
+- Regenerate to get different permutation
+- Swap individual items (respects category rules)
+
+**Manual Outfit Creation:**
+- **Create outfits manually** via drag-and-drop interface
+- **Drag items** from closet sidebar onto blank canvas
+- **Search/filter items** while creating (category, name, color)
+- **Position items freely** anywhere on canvas (x, y coordinates)
+- **No category restrictions** - Add any combination (2 tops for layering, 3 accessories, etc.)
+- **Z-index reordering** - Layer items for visual depth
+- **Save with metadata** - Custom name, notes, and tags
+- **Edit existing outfits** - Add/remove/reposition items
+- **Auto-save drafts** - Work saved automatically
+- **Max 10 items per outfit** - Practical limit
+
+**Storage:**
+- Manual outfits stored in same table as auto-generated
+- Flagged with `is_manual: true`
+- Includes `item_positions` (x, y, z_index for each item)
+- Includes `outfit_name`, `outfit_notes`, `tags`
+
+**Future Enhancements (NOT implemented yet):**
+- Machine learning from user preferences
+- Photo overlay on mannequin/person
+- Style transfer from inspiration photos
+- Collaborative filtering ("Users like you also liked...")
+- Canvas item resize/rotate controls
+- Outfit templates/layouts
