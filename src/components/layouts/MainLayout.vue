@@ -34,6 +34,31 @@
         <span class="nav-label">Suggestions</span>
       </router-link>
       
+      <router-link to="/notifications" class="nav-item relative" :class="{ active: $route.path === '/notifications' }">
+        <span class="nav-icon-wrapper">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="nav-icon-svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+            />
+          </svg>
+          <NotificationBadge
+            v-if="notificationsStore.unreadCount > 0"
+            :count="notificationsStore.unreadCount"
+            :pulse="notificationsStore.hasUnread"
+          />
+        </span>
+        <span class="nav-label">Notifications</span>
+      </router-link>
+      
       <router-link to="/friends" class="nav-item" :class="{ active: $route.path === '/friends' }">
         <span class="nav-icon">👥</span>
         <span class="nav-label">Friends</span>
@@ -48,12 +73,22 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth-store'
+import { useNotificationsStore } from '../../stores/notifications-store'
+import NotificationBadge from '../notifications/NotificationBadge.vue'
 
 const authStore = useAuthStore()
+const notificationsStore = useNotificationsStore()
 
 const userName = computed(() => authStore.userName)
+
+onMounted(() => {
+  // Initialize notifications when layout mounts
+  if (!notificationsStore.initialized) {
+    notificationsStore.initialize()
+  }
+})
 </script>
 
 <style scoped>
@@ -145,6 +180,18 @@ const userName = computed(() => authStore.userName)
 
 .nav-icon {
   font-size: 1.5rem;
+}
+
+.nav-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon-svg {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .nav-label {
