@@ -77,7 +77,12 @@
         
         <!-- Items Grid -->
         <div v-else class="items-grid">
-          <div v-for="item in items" :key="item.id" class="item-card">
+          <div 
+            v-for="item in items" 
+            :key="item.id" 
+            class="item-card"
+            @click="handleItemClick(item)"
+          >
             <div class="item-image">
               <img v-if="item.image_url" :src="item.thumbnail_url || item.image_url" :alt="item.name" />
               <div v-else class="item-image-placeholder">
@@ -106,6 +111,17 @@
       >
         <span class="plus-icon transition-transform duration-300">+</span>
       </button>
+
+      <!-- Item Detail Modal -->
+      <ItemDetailModal
+        :item-id="selectedItemId"
+        :is-open="showDetailModal"
+        @close="closeDetailModal"
+        @updated="handleItemUpdated"
+        @deleted="handleItemDeleted"
+        @edit="handleEditItem"
+        @share="handleShareItem"
+      />
     </div>
   </MainLayout>
 </template>
@@ -116,6 +132,7 @@ import { useRouter } from 'vue-router'
 import { useClosetStore } from '../stores/closet-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import ClosetFilter from '../components/closet/ClosetFilter.vue'
+import ItemDetailModal from '../components/closet/ItemDetailModal.vue'
 import { getCategoryLabel } from '@/config/constants'
 
 const router = useRouter()
@@ -127,6 +144,10 @@ const filters = ref({
   privacy: '',
   is_favorite: false
 })
+
+// Item detail modal state
+const selectedItemId = ref(null)
+const showDetailModal = ref(false)
 
 const items = computed(() => {
   let filtered = closetStore.items
@@ -174,6 +195,37 @@ function handleFilterChange(newFilters) {
 
 function goToSettings() {
   router.push('/settings')
+}
+
+// Item detail modal handlers
+function handleItemClick(item) {
+  selectedItemId.value = item.id
+  showDetailModal.value = true
+}
+
+function closeDetailModal() {
+  showDetailModal.value = false
+  selectedItemId.value = null
+}
+
+function handleItemUpdated(updatedItem) {
+  // Item updated in modal, refresh the closet
+  closetStore.fetchItems()
+}
+
+function handleItemDeleted(deletedItemId) {
+  // Item deleted, refresh the closet
+  closetStore.fetchItems()
+}
+
+function handleEditItem(item) {
+  // TODO: Open edit form modal
+  alert(`Edit item: ${item.name}`)
+}
+
+function handleShareItem(item) {
+  // TODO: Open share dialog
+  alert(`Share item: ${item.name}`)
 }
 </script>
 

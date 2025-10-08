@@ -25,7 +25,7 @@
  * - Image compression (image-compression.js)
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 import { compressImage } from '../utils/image-compression'
 
 /**
@@ -456,5 +456,40 @@ export async function getItemCount() {
   } catch (error) {
     console.error('Failed to get item count:', error)
     return 0
+  }
+}
+
+/**
+ * Upload item (combines image upload and item creation)
+ * @param {Object} itemData - Item data with file
+ * @returns {Promise<Object>} Created item
+ */
+export async function uploadItem(itemData) {
+  // Upload image first
+  const uploadResult = await uploadImage(itemData.file)
+  
+  // Create item with image URLs
+  return createItem({
+    ...itemData,
+    image_url: uploadResult.url,
+    thumbnail_url: uploadResult.thumbnail_url
+  })
+}
+
+/**
+ * Get user's quota information
+ * @returns {Promise<Object>} { used: number, max: number, remaining: number }
+ */
+export async function getQuota() {
+  const used = await getItemCount()
+  const max = 50 // From requirements
+  
+  return {
+    used,
+    max,
+    remaining: max - used,
+    percentage: (used / max) * 100,
+    isFull: used >= max,
+    isNearLimit: used >= (max * 0.9)
   }
 }

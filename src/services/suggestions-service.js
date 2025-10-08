@@ -62,7 +62,7 @@
  * - components/social/SuggestionCanvas.vue for items_data format
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 
 /**
  * Get suggestions received by current user

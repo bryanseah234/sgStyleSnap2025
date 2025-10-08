@@ -5,7 +5,19 @@
  * 
  * State:
  * - items: Array (all user's closet items)
- * - currentItem: Object | null (selected item for viewing/editing)
+ * - currentItem: Object | null (        // Add to local state
+        this.items.push(newItem)
+        this.quota.used = this.items.length
+        
+        return newItem
+      } catch (error) {
+        console.error('Failed to add item:', error)
+        this.error = error.message
+        throw error
+      } finally {
+        this.isLoading = false
+        this.loading = false
+      }em for viewing/editing)
  * - isLoading: boolean
  * - filters: Object (category, search, sort)
  * - quota: Object
@@ -48,16 +60,20 @@ export const useClosetStore = defineStore('closet', {
   state: () => ({
     items: [],
     currentItem: null,
-    isLoading: false,
+    loading: false,
+    isLoading: false, // Backward compatibility
+    error: null,
     filters: {
       category: 'all',
       clothing_type: 'all',
+      privacy: 'all',
+      favorites: false,
       search: '',
       sort: 'recent'
     },
     quota: {
       used: 0,
-      max: 50, // Only user uploads count towards quota
+      limit: 50, // Only user uploads count towards quota
       totalItems: 0 // Total items including catalog additions
     }
   }),
@@ -76,6 +92,16 @@ export const useClosetStore = defineStore('closet', {
         items = items.filter(item => item.clothing_type === state.filters.clothing_type)
       }
       
+      // Filter by privacy
+      if (state.filters.privacy && state.filters.privacy !== 'all') {
+        items = items.filter(item => item.privacy === state.filters.privacy)
+      }
+      
+      // Filter by favorites
+      if (state.filters.favorites) {
+        items = items.filter(item => item.is_favorite === true)
+      }
+      
       // Filter by search
       if (state.filters.search) {
         const search = state.filters.search.toLowerCase()
@@ -87,9 +113,13 @@ export const useClosetStore = defineStore('closet', {
       
       return items
     },
-    quotaPercentage: (state) => (state.quota.used / state.quota.max) * 100,
-    isQuotaFull: (state) => state.quota.used >= state.quota.max,
-    canAddItem: (state) => state.quota.used < state.quota.max
+    favoriteItems: (state) => state.items.filter(item => item.is_favorite === true),
+    itemCount: (state) => state.items.length,
+    quotaPercentage: (state) => (state.quota.used / state.quota.limit) * 100,
+    isQuotaFull: (state) => state.quota.used >= state.quota.limit,
+    canAddItem: (state) => state.quota.used < state.quota.limit,
+    isQuotaNearLimit: (state) => state.quota.used >= (state.quota.limit * 0.9),
+    quotaRemaining: (state) => state.quota.limit - state.quota.used
   },
   
   actions: {
@@ -125,19 +155,19 @@ export const useClosetStore = defineStore('closet', {
       }
       
       this.isLoading = true
+      this.loading = true
       try {
         const clothesService = await import('../services/clothes-service')
         
         // Upload image to Cloudinary first
         let imageUrl = null
         let thumbnailUrl = null
-        let publicId = null
         
         if (itemData.file) {
           const uploadResult = await clothesService.uploadImage(itemData.file)
           imageUrl = uploadResult.url
           thumbnailUrl = uploadResult.thumbnail_url
-          publicId = uploadResult.public_id
+          // public_id is stored in the result but not used locally
         } else if (itemData.image_url) {
           imageUrl = itemData.image_url
           thumbnailUrl = itemData.thumbnail_url || itemData.image_url
@@ -171,14 +201,15 @@ export const useClosetStore = defineStore('closet', {
     },
     
     /**
-     * Update existing item
+     * Update item
      */
     async updateItem(id, itemData) {
       this.isLoading = true
+      this.loading = true
       try {
         const clothesService = await import('../services/clothes-service')
         
-        // If new image provided, upload it first
+        // Upload new image if provided
         if (itemData.file) {
           const uploadResult = await clothesService.uploadImage(itemData.file)
           itemData.image_url = uploadResult.url
@@ -197,9 +228,11 @@ export const useClosetStore = defineStore('closet', {
         return updatedItem
       } catch (error) {
         console.error('Failed to update item:', error)
+        this.error = error.message
         throw error
       } finally {
         this.isLoading = false
+        this.loading = false
       }
     },
     
@@ -208,6 +241,7 @@ export const useClosetStore = defineStore('closet', {
      */
     async deleteItem(id) {
       this.isLoading = true
+      this.loading = true
       try {
         const clothesService = await import('../services/clothes-service')
         await clothesService.deleteItem(id)
@@ -217,10 +251,19 @@ export const useClosetStore = defineStore('closet', {
         this.quota.used = this.items.length
       } catch (error) {
         console.error('Failed to delete item:', error)
+        this.error = error.message
         throw error
       } finally {
         this.isLoading = false
+        this.loading = false
       }
+    },
+    
+    /**
+     * Remove item (alias for deleteItem)
+     */
+    async removeItem(id) {
+      return this.deleteItem(id)
     },
     
     /**

@@ -3,7 +3,7 @@
  * Manages user style preferences
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 
 export default {
   /**
