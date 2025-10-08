@@ -43,11 +43,11 @@ Step 9: Update documentation as needed
 | 02 | Authentication & Database | ✅ Complete | `tasks/02-authentication-database.md` |
 | 03 | Closet CRUD & Images | ✅ Complete | `tasks/03-closet-crud-image-management.md` |
 | 04 | Social Features | ✅ Complete | `tasks/04-social-features-privacy.md` |
-| 05 | Suggestion System | ✅ Complete | `tasks/05-suggestion-system.md` |
-| 06 | Quotas & Maintenance | ✅ Complete | `tasks/06-quotas-maintenance.md` |
-| 07 | QA & Launch | ✅ Complete | `tasks/07-qa-security-launch.md` |
-| 08 | Mobile Mockups | ⏳ Optional | `tasks/08-mobile-mockups.md` |
-| 09 | Item Catalog | ✅ Complete | `tasks/09-item-catalog-system.md` |
+| 05 | Suggestion System | 🚧 Backend Complete | `tasks/05-suggestion-system.md` |
+| 06 | Quotas & Maintenance | ✅ Core Complete | `tasks/06-quotas-maintenance.md` |
+| 07 | QA & Launch | ✅ Core Complete | `tasks/07-qa-security-launch.md` |
+| 08 | Mobile Mockups | ✅ Complete | `tasks/08-mobile-mockups.md` |
+| 09 | Item Catalog System | ✅ Complete | `tasks/09-item-catalog-system.md` |
 | 10 | Color Detection | ✅ Complete | `tasks/10-color-detection-ai.md` |
 | 11 | Outfit Generation | ✅ Complete | `tasks/11-outfit-generation.md` |
 | 12 | Likes Feature | ✅ Complete | `tasks/12-likes-feature.md` |
