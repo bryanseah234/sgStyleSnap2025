@@ -1,8 +1,75 @@
 # StyleSnap - Development Tasks
 
+## 🤖 For LLM Agents: Task Navigation Guide
+
+### How to Use This File
+
+This file is the **central task index** for the StyleSnap project. Follow this workflow:
+
+1. **Find Your Task**: Browse task list below or search by feature name
+2. **Read Task File**: Open specific task file in `tasks/*.md` for detailed instructions
+3. **Check Status**: Look for ✅ Complete, ⏳ Pending, or 🚧 In Progress markers
+4. **Review Requirements**: Cross-reference with [REQUIREMENTS.md](REQUIREMENTS.md) for specs
+5. **Consult Documentation**: Check [docs/README.md](docs/README.md) for implementation guides
+6. **Follow Standards**: Always adhere to [docs/CODE_STANDARDS.md](docs/CODE_STANDARDS.md)
+
+### Task Execution Workflow
+
+```text
+Step 1: Identify task from index below
+  ↓
+Step 2: Read full task file (tasks/XX-*.md)
+  ↓
+Step 3: Review requirements (requirements/*.md)
+  ↓
+Step 4: Check feature guide (docs/*_GUIDE.md)
+  ↓
+Step 5: Review database schema (sql/*.sql or docs/DATABASE_GUIDE.md)
+  ↓
+Step 6: Check API reference (API_GUIDE.md)
+  ↓
+Step 7: Implement following CODE_STANDARDS.md
+  ↓
+Step 8: Test and validate (docs/TESTS_GUIDE.md)
+  ↓
+Step 9: Update documentation as needed
+```
+
+### Quick Task Lookup
+
+| Task # | Feature | Status | File |
+|--------|---------|--------|------|
+| 01 | Infrastructure Setup | ✅ Complete | `tasks/01-infrastructure-setup.md` |
+| 02 | Authentication & Database | ✅ Complete | `tasks/02-authentication-database.md` |
+| 03 | Closet CRUD & Images | ✅ Complete | `tasks/03-closet-crud-image-management.md` |
+| 04 | Social Features | ✅ Complete | `tasks/04-social-features-privacy.md` |
+| 05 | Suggestion System | ✅ Complete | `tasks/05-suggestion-system.md` |
+| 06 | Quotas & Maintenance | ✅ Complete | `tasks/06-quotas-maintenance.md` |
+| 07 | QA & Launch | ✅ Complete | `tasks/07-qa-security-launch.md` |
+| 08 | Mobile Mockups | ⏳ Optional | `tasks/08-mobile-mockups.md` |
+| 09 | Item Catalog | ✅ Complete | `tasks/09-item-catalog-system.md` |
+| 10 | Color Detection | ✅ Complete | `tasks/10-color-detection-ai.md` |
+| 11 | Outfit Generation | ✅ Complete | `tasks/11-outfit-generation.md` |
+| 12 | Likes Feature | ✅ Complete | `tasks/12-likes-feature.md` |
+| 13 | Advanced Outfits | ✅ Complete | `tasks/13-advanced-outfit-features.md` |
+| 14 | Notifications | ✅ Complete | `tasks/14-notification-system.md` |
+
+### Critical Rules for Task Implementation
+
+- ⚠️ **ALWAYS** read the complete task file before starting
+- ⚠️ **NEVER** skip database migration files (sql/*.sql)
+- ⚠️ **ALWAYS** follow [docs/CODE_STANDARDS.md](docs/CODE_STANDARDS.md)
+- ⚠️ **ALWAYS** update documentation when making changes
+- ⚠️ **NEVER** delete existing `.md` documentation files
+- ⚠️ **ALWAYS** test your implementation (unit, integration, E2E)
+- ⚠️ **ALWAYS** check task dependencies before starting
+
+---
+
 ## Task Order
 
 ### Core Features (MVP)
+
 1. [Infrastructure Setup](tasks/01-infrastructure-setup.md)
 2. [Authentication & Database](tasks/02-authentication-database.md)
 3. [Closet CRUD & Image Management](tasks/03-closet-crud-image-management.md)
@@ -13,6 +80,7 @@
 8. [Mobile UI Mockups](tasks/08-mobile-mockups.md) - Design reference (optional)
 
 ### Enhanced Features (Extended MVP)
+
 9. [Item Catalog System](tasks/09-item-catalog-system.md) - Browse pre-populated clothing
 10. [Color Detection AI](tasks/10-color-detection-ai.md) - Automatic color recognition
 11. [Outfit Generation](tasks/11-outfit-generation.md) - Smart outfit combinations from permutations
@@ -21,9 +89,11 @@
 14. [Notification System](tasks/14-notification-system.md) - Push notifications, friend suggestions, item likes
 
 ## Task Dependencies
+
 Each task may depend on the previous ones. Check individual task files for detailed dependencies.
 
 ## Critical Path Tasks
+
 - ✅ Database schema setup
 - ✅ Google OAuth implementation (SSO only - no email/password)
   - Login page: `/login` with "Sign in with Google"
@@ -38,6 +108,7 @@ Each task may depend on the previous ones. Check individual task files for detai
 - ✅ Color detection with k-means clustering
 
 ## Implementation Status
+
 - **Tasks 1-7:** ✅ Complete (Core MVP features)
 - **Task 8:** ⏳ Optional (Mobile mockup documentation)
 - **Task 9:** ✅ Complete (Item Catalog System - Full implementation)
@@ -93,6 +164,7 @@ Each task may depend on the previous ones. Check individual task files for detai
   - ⏳ UI Components: NotificationCenter, FriendSuggestionCard pending
 
 ## Additional Enhancements
+
 - **Clothing Types System:** ✅ Complete (Enhanced Categories)
   - ✅ SQL Migration: 009_enhanced_categories.sql (adds clothing_type column)
   - ✅ Constants: clothing-constants.js (20 clothing types defined)
@@ -103,6 +175,7 @@ Each task may depend on the previous ones. Check individual task files for detai
 ## Feature Summary
 
 ### ✅ Fully Implemented
+
 - Digital closet with CRUD operations
 - Image upload with Cloudinary integration
 - Google OAuth authentication
@@ -118,6 +191,7 @@ Each task may depend on the previous ones. Check individual task files for detai
 - Clothing types filtering (20 granular types)
 
 ### ✅ Testing Complete
+
 - **Likes Feature Tests:** Full implementation with comprehensive test coverage
   - ✅ SQL migration (008_likes_feature.sql)
   - ✅ Service layer (likes-service.js)
@@ -134,6 +208,7 @@ Each task may depend on the previous ones. Check individual task files for detai
   - ⏳ E2E tests (user journeys) - infrastructure exists, tests pending
 
 ### 📋 Documentation Files
+
 - **Tasks:** `tasks/01-*.md` through `tasks/14-*.md`
 - **Requirements:** `requirements/*.md` (including item-catalog, color-detection, outfit-generation)
 - **SQL Migrations:** `sql/001-010_*.sql` (10 migrations total)
@@ -149,5 +224,6 @@ Each task may depend on the previous ones. Check individual task files for detai
   - 010: Push notifications (subscriptions, Edge Function integration)
 - **Database Guide:** `DATABASE_GUIDE.md` - Complete database setup and migration guide
 - **Deployment:** `DEPLOYMENT_GUIDE.md`, `SECRETS_REFERENCE.md`, `SUPABASE_COMMANDS.md`
-- **Testing Guide:** `docs/TESTING.md` - Unit, integration, and E2E testing setup
-- **Implementation Guides:** `LIKES_FEATURE_SUMMARY.md`, `tasks/11-outfit-generation.md`, `tasks/14-notification-system.md`
+- **Testing Guide:** `TESTS_GUIDE.md` - Unit, integration, and E2E testing setup
+- **Documentation Index:** `docs/README.md` - Complete index of all feature guides
+- **Feature Guides:** `docs/*_GUIDE.md` - Authentication, Closet, Catalog, Colors, Outfits, Social, Likes, Notifications, Categories

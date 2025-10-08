@@ -1,6 +1,32 @@
 # StyleSnap - Requirements Index
 
+## 🤖 For LLM Agents: Requirements Navigation
+
+### How to Use This File
+
+This file serves as the **requirements index** for the StyleSnap project. Follow this workflow:
+
+1. **Start Here**: Review the core requirements below
+2. **Deep Dive**: Read detailed requirement files in `requirements/*.md`
+3. **Find Tasks**: Cross-reference with [TASKS.md](TASKS.md) for implementation tasks
+4. **Consult Guides**: Check [docs/README.md](docs/README.md) for feature-specific documentation
+5. **Review API**: Use [API_GUIDE.md](API_GUIDE.md) as **SINGLE SOURCE OF TRUTH** for all APIs
+
+### Quick Reference
+
+- **Database Schema**: [requirements/database-schema.md](requirements/database-schema.md)
+- **Frontend Components**: [requirements/frontend-components.md](requirements/frontend-components.md)
+- **Security Rules**: [requirements/security.md](requirements/security.md)
+- **Error Handling**: [requirements/error-handling.md](requirements/error-handling.md)
+- **Performance**: [requirements/performance.md](requirements/performance.md)
+- **Item Catalog**: [requirements/item-catalog.md](requirements/item-catalog.md)
+- **Color Detection**: [requirements/color-detection.md](requirements/color-detection.md)
+- **Outfit Generation**: [requirements/outfit-generation.md](requirements/outfit-generation.md)
+
+---
+
 ## Core Requirements
+
 1. [Database Schema](requirements/database-schema.md)
 2. **[API Guide](API_GUIDE.md)** - **SINGLE SOURCE OF TRUTH** for all APIs
 3. [Frontend Components](requirements/frontend-components.md)
@@ -9,7 +35,9 @@
 6. [Performance](requirements/performance.md)
 
 ## Authentication
-**CRITICAL: Google SSO Only**
+
+### CRITICAL: Google SSO Only
+
 - Authentication: Google OAuth 2.0 (Single Sign-On) exclusively
 - No email/password, magic links, or other auth methods
 - Pages: `/login` and `/register` (both use Google OAuth)
@@ -18,25 +46,31 @@
 - Secrets stored in `.env`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
 ## User Settings
-**Profile Photo:**
+
+### Profile Photo
+
 - 6 default avatars in `/public/avatars/default-1.png` through `default-6.png`
 - User selects from defaults in Settings page (accessible via settings icon on home page)
 - Future extensibility: Custom avatar upload via Cloudinary
 
-**Username & Name Rules:**
+### Username & Name Rules
+
 - Username: Auto-generated from email (part before @), cannot be changed
 - Name: From Google OAuth (first + last name), cannot be changed
 - Email: From Google OAuth, cannot be changed
 - All profile fields are display-only except avatar selection
 
 ## Additional References
+
 - **[API Guide](API_GUIDE.md)** - Complete API documentation
 - [Project Context](PROJECT_CONTEXT.md)
 - [Tasks Overview](TASKS.md)
 - [SQL Migrations](sql/)
 
-## Quick Reference
+## System Requirements
+
 ### Quota Limits
+
 - **Max User Uploads:** 50 items (images uploaded by user)
 - **Catalog Additions:** Unlimited (items added from pre-populated catalog)
 - **Warning Threshold:** 45 uploads (90%)
@@ -48,6 +82,7 @@
 - **Favorite Items**: Users can mark items as favorites for quick access (heart icon toggle)
 
 ### Filtering & Organization
+
 - **Favorites Filter:** Show only favorited items with toggle button
 - **Category Filter:** Filter by category (dropdown populated with user's available categories)
 - **Clothing Type Filter:** Filter by specific type within category
@@ -56,15 +91,18 @@
 - **Clear Filters:** Reset all filters with single button
 
 ### UI/UX Animations & Motion Design
-**Purpose:** Create a polished, professional app feel with smooth animations and visual feedback
+
+Purpose: Create a polished, professional app feel with smooth animations and visual feedback
 
 **Loading States:**
+
 - **Spinner animations** - Rotating spinner for all async operations
 - **Skeleton loaders** - Shimmer effect placeholders for content loading
 - **Progress bars** - Smooth filling animations for uploads
 - **Pull-to-refresh** - Mobile gesture with spinner indicator
 
 **Interactive Animations:**
+
 - **Button interactions:**
   - Hover: Scale (1.05x) + shadow expansion
   - Click: Scale down (0.95x) momentarily
