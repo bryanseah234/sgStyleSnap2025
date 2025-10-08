@@ -20,7 +20,7 @@
  * - SQL Migration 009 (enhanced categories)
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 
 const catalogService = {
   /**

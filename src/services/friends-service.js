@@ -70,7 +70,7 @@
  * - sql/002_rls_policies.sql for RLS rules on friend data
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 
 /**
  * Get all accepted friendships for current user

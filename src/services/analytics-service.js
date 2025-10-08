@@ -3,7 +3,7 @@
  * Provides wardrobe analytics and insights
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 
 export default {
   /**

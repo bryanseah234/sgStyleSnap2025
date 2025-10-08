@@ -36,7 +36,7 @@
  * - Auto-refresh handled by Supabase client
  * 
  * Usage:
- * import { signInWithGoogle, getCurrentUser } from './auth-service'
+ * import { signInWithGoogle, getCurrentUser } from '../config/supabase'
  * 
  * // Used in both Login.vue and Register.vue
  * await signInWithGoogle() // Same function for both pages
@@ -57,17 +57,7 @@
  * - Supabase Auth docs: https://supabase.com/docs/guides/auth
  */
 
-import { createClient } from '@supabase/supabase-js'
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase credentials. Please check your .env file.')
-}
-
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
+import { supabase } from '../config/supabase'
 
 /**
  * Sign in with Google OAuth
@@ -91,10 +81,10 @@ export async function signInWithGoogle() {
  * @returns {Promise<void>}
  */
 export async function signOut() {
-  const { error } = await supabase.auth.signOut()
+  const result = await supabase.auth.signOut()
   
-  if (error) {
-    throw new Error(`Sign out failed: ${error.message}`)
+  if (result?.error) {
+    throw new Error(`Sign out failed: ${result.error.message}`)
   }
 }
 

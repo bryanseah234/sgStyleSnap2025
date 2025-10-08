@@ -3,7 +3,7 @@
  * Handles social outfit sharing functionality
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 
 export default {
   /**

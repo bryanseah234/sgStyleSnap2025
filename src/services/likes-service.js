@@ -18,7 +18,7 @@
  * - Notifications created automatically via database triggers
  */
 
-import { supabase } from './auth-service'
+import { supabase } from '../config/supabase'
 
 export const likesService = {
   /**

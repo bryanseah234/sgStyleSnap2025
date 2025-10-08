@@ -13,7 +13,7 @@
  * - avatar_url: Can be changed by user (6 default options)
  */
 
-import { supabase } from './api.js';
+import { supabase } from '../config/supabase.js';
 
 /**
  * Get current user's profile
