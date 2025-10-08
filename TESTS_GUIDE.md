@@ -1109,7 +1109,7 @@ npx playwright install chromium
 
 ### StyleSnap Docs
 - [Architecture](docs/ARCHITECTURE.md)
-- [API Reference](docs/API_REFERENCE.md)
+- [API Guide](API_GUIDE.md)
 - [Database Guide](DATABASE_GUIDE.md)
 - [Deployment Guide](DEPLOYMENT_GUIDE.md)
 

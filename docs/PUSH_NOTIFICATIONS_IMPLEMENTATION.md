@@ -88,7 +88,7 @@
 
 ### 6. Documentation
 **Files:**
-- `requirements/api-endpoints.md` - Section 4: Push Notifications (comprehensive API docs)
+- `API_GUIDE.md` - Notifications API section (comprehensive API docs)
 - `REQUIREMENTS.md` - Updated with push notification overview
 - `docs/PUSH_NOTIFICATIONS.md` - Complete implementation guide
 
@@ -288,7 +288,7 @@ curl -X POST \
 
 ## 📚 Documentation
 
-- **API Reference:** `requirements/api-endpoints.md` Section 4
+- **API Reference:** `API_GUIDE.md` - Notifications API section
 - **Setup Guide:** `docs/PUSH_NOTIFICATIONS.md`
 - **Database Schema:** `sql/010_push_notifications.sql`
 - **Requirements:** `REQUIREMENTS.md` - Notification System section

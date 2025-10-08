@@ -66,6 +66,15 @@ VITE_SUPABASE_URL=https://xxxxxxxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
 
 # ==================================================
+# GOOGLE OAUTH (REQUIRED - Only Authentication Method)
+# ==================================================
+# Get from: https://console.cloud.google.com/
+# 1. Create OAuth 2.0 Client ID
+# 2. Add redirect URI: https://your-project.supabase.co/auth/v1/callback
+# 3. Configure in Supabase Dashboard → Authentication → Providers → Google
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+
+# ==================================================
 # CLOUDINARY (Required)
 # ==================================================
 # Get from: https://cloudinary.com/console
@@ -104,6 +113,9 @@ VERCEL_PROJECT_ID=prj_xxxxx           # From: .vercel/project.json after running
 # Supabase
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
+
+# Google OAuth (REQUIRED - only authentication method)
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 
 # Cloudinary
 VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
@@ -226,6 +238,7 @@ supabase secrets list --project-ref YOUR_PROJECT_REF
 |----------|------------|----------------|--------|----------|---------------|
 | **VITE_SUPABASE_URL** | ✅ | ✅ | ✅ | ❌ | `https://abc.supabase.co` |
 | **VITE_SUPABASE_ANON_KEY** | ✅ | ✅ | ✅ | ❌ | `eyJhbGciOi...` |
+| **VITE_GOOGLE_CLIENT_ID** | ✅ | ✅ | ✅ | ❌ | `123-abc.apps.googleusercontent.com` |
 | **VITE_CLOUDINARY_CLOUD_NAME** | ✅ | ✅ | ✅ | ❌ | `stylesnap-app` |
 | **VITE_CLOUDINARY_UPLOAD_PRESET** | ✅ | ✅ | ✅ | ❌ | `unsigned_preset` |
 | **VITE_VAPID_PUBLIC_KEY** | ✅ | ✅ | ✅ | ❌ | `BKxYjz3Q9YVs...` |
@@ -463,7 +476,7 @@ For more detailed information, see:
 
 - **Push Notifications:** `docs/PUSH_NOTIFICATIONS.md`
 - **Database Guide:** `DATABASE_GUIDE.md` - Complete database setup and schema
-- **API Reference:** `docs/API_REFERENCE.md`
+- **API Reference:** `API_GUIDE.md`
 - **Testing Guide:** `docs/TESTING.md`
 
 ---

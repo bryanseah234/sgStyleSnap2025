@@ -60,4 +60,4 @@ user-journeys.test.js
 docs/
 CONTRIBUTING.md
 DEPLOYMENT.md
-API_REFERENCE.md
+API_GUIDE.md

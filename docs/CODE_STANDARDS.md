@@ -564,7 +564,7 @@ quota-calculator.js
 ✅ Documentation: UPPER_CASE or PascalCase
 README.md
 CONTRIBUTING.md
-API_REFERENCE.md
+API_GUIDE.md
 
 ✅ Configuration: lowercase or kebab-case
 package.json

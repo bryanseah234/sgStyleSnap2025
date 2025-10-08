@@ -796,7 +796,7 @@ async function syncLikes() {
 4. ⏳ Test offline support (pending)
 5. ✅ Add loading states and error handling (COMPLETED in components)
 6. ✅ Add animations and transitions (COMPLETED in components)
-7. ✅ Update documentation (API_REFERENCE.md already updated)
+7. ✅ Update documentation (API_GUIDE.md consolidated)
 
 ### Phase 6: Frontend Integration (Completed)
 1. ✅ Initialize likes store in `App.vue` on user login

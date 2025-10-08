@@ -217,7 +217,7 @@ const availableMockups = fs.readdirSync('docs/design/mobile-mockups/');
 **3. Prioritize Implementation Over Mockups:**
 - Look at actual code first (see "Implementation" column in tables above)
 - Review `src/assets/styles/mobile.css` for styling patterns
-- Check API endpoints in `/requirements/api-endpoints.md`
+- Check API endpoints in `/API_GUIDE.md`
 - Use mockup only for understanding UX flow intent
 
 **4. Handle Missing Mockups Gracefully:**
@@ -286,7 +286,7 @@ Infer:
 
 ### Technical References
 - **Component Guidelines**: `requirements/frontend-components.md` - Component specs
-- **API Endpoints**: `requirements/api-endpoints.md` - Backend integration
+- **API Endpoints**: `API_GUIDE.md` - Backend integration
 - **Database Schema**: `sql/001_initial_schema.sql` - Data structure
 - **PWA Configuration**: `public/manifest.json`, `public/service-worker.js`
 
