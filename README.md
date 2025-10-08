@@ -30,6 +30,7 @@ A Progressive Web App for managing your wardrobe and getting AI-powered outfit s
    - `AUTHENTICATION_GUIDE.md` - Google OAuth (SSO only)
    - `CLOSET_GUIDE.md` - Digital wardrobe management
    - `CATALOG_GUIDE.md` - Pre-populated item catalog
+   - `CATALOG_SEEDING.md` - **Bulk catalog upload from CSV**
    - `COLOR_DETECTION_GUIDE.md` - AI color recognition
    - `OUTFIT_GENERATION_GUIDE.md` - Smart outfit combinations
    - `SOCIAL_GUIDE.md` - Friends & social feed

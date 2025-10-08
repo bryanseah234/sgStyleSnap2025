@@ -1,0 +1,6 @@
+name,clothing_type,category,brand,size,primary_color,secondary_colors,style_tags,weather_tags,season,description,image_filename,privacy
+Classic White T-Shirt,T-Shirt,top,Uniqlo,M,white,,casual|basic,warm|hot,summer,Essential white crew neck t-shirt,white-tshirt.jpg,public
+Blue Denim Jacket,Outwear,outerwear,Levi's,L,blue,,casual|classic,cool|warm,spring,Classic denim jacket perfect for layering,denim-jacket.jpg,public
+Black Leather Boots,Shoes,shoes,Clarks,42,black,,formal|classic,cool|cold,fall,Chelsea boots perfect for formal occasions,black-boots.jpg,public
+Striped Long-Sleeve Top,Longsleeve,top,COS,M,navy,white,casual|nautical,cool|warm,fall,Classic Breton stripe long-sleeve tee,striped-longsleeve.jpg,public
+Tailored Navy Blazer,Blazer,outerwear,Theory,L,navy,,formal|business,cool|warm,all,Professional tailored blazer,navy-blazer.jpg,public
