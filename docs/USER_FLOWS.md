@@ -595,7 +595,7 @@ flowchart TD
 ## Related Documentation
 - [API Reference](./API_REFERENCE.md) - API endpoints
 - [Architecture](./ARCHITECTURE.md) - System architecture
-- [Database Schema](./DATABASE_SCHEMA.md) - Database structure
+- [Database Guide](../DATABASE_GUIDE.md) - Complete database structure and setup
 - [Notifications](./NOTIFICATIONS.md) - Notification system
 
 ---
