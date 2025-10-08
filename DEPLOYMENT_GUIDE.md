@@ -462,7 +462,7 @@ npm run build
 For more detailed information, see:
 
 - **Push Notifications:** `docs/PUSH_NOTIFICATIONS.md`
-- **Database Schema:** `docs/DATABASE_SCHEMA.md`
+- **Database Guide:** `DATABASE_GUIDE.md` - Complete database setup and schema
 - **API Reference:** `docs/API_REFERENCE.md`
 - **Testing Guide:** `docs/TESTING.md`
 

@@ -147,7 +147,7 @@ Each task may depend on the previous ones. Check individual task files for detai
   - 008: Likes feature
   - 009: Notifications system (notifications, friend suggestions, item likes)
   - 010: Push notifications (subscriptions, Edge Function integration)
+- **Database Guide:** `DATABASE_GUIDE.md` - Complete database setup and migration guide
 - **Deployment:** `DEPLOYMENT_GUIDE.md`, `SECRETS_REFERENCE.md`, `SUPABASE_COMMANDS.md`
-- **Migration Guide:** `docs/SQL_MIGRATION_GUIDE.md` - Comprehensive migration documentation
 - **Testing Guide:** `docs/TESTING.md` - Unit, integration, and E2E testing setup
 - **Implementation Guides:** `LIKES_FEATURE_SUMMARY.md`, `tasks/11-outfit-generation.md`, `tasks/14-notification-system.md`

@@ -551,7 +551,7 @@ A: Dresses count as both top and bottom, so they can be standalone outfits with 
 - `src/config/constants.js` - Category definitions
 - `sql/009_enhanced_categories.sql` - Database migration
 - `src/services/outfit-generation-service.js` - Outfit algorithm
-- `DATABASE_SETUP.md` - Setup instructions
+- `DATABASE_GUIDE.md` - Complete database setup and schema
 
 ---
 
