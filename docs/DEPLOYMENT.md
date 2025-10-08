@@ -54,6 +54,8 @@ This guide covers deploying StyleSnap to production, including all services and 
 
 ## Environment Setup
 
+> **📚 Complete Reference:** See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) for detailed information about all environment variables, security guidelines, and where to store them.
+
 ### Production Environment Variables
 
 Create `.env.production`:
@@ -76,6 +78,9 @@ VITE_API_URL=https://api.stylesnap.com
 # Analytics (optional)
 VITE_SENTRY_DSN=your-sentry-dsn
 VITE_DATADOG_CLIENT_TOKEN=your-datadog-token
+
+# Push Notifications (Web Push API)
+VITE_VAPID_PUBLIC_KEY=BKxYj...your-public-key
 
 # Environment
 VITE_APP_ENV=production
@@ -104,6 +109,10 @@ DATABASE_URL=postgresql://...
 JWT_SECRET=your-jwt-secret
 SESSION_SECRET=your-session-secret
 
+# Push Notifications (Server-Side Only)
+VAPID_PRIVATE_KEY=4T1c...your-private-key
+VAPID_SUBJECT=mailto:support@stylesnap.com
+
 # Monitoring
 SENTRY_DSN=your-backend-sentry-dsn
 SLACK_WEBHOOK_URL=your-slack-webhook
@@ -112,6 +121,71 @@ SLACK_WEBHOOK_URL=your-slack-webhook
 NODE_ENV=production
 PORT=3000
 ```
+
+### Generating VAPID Keys for Push Notifications
+
+Push notifications require VAPID (Voluntary Application Server Identification) keys for authentication between your server and push services.
+
+#### Method 1: Using web-push CLI (Recommended)
+
+```bash
+# Install web-push globally
+npm install -g web-push
+
+# Generate VAPID keys
+web-push generate-vapid-keys
+```
+
+**Output:**
+```
+=======================================
+
+Public Key:
+BKxYjWm4VBitBjCrKyE_hJKxvIZrK3oVnEL8YlZnHqPZfDQqH1234567890abcdefghijklmnopqrstuvwxyz
+
+Private Key:
+4T1cABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijk
+
+=======================================
+```
+
+#### Method 2: Using Online Generator
+
+Visit [https://web-push-codelab.glitch.me](https://web-push-codelab.glitch.me) and click "Generate VAPID Keys".
+
+#### Method 3: Using Node.js Script
+
+```javascript
+// generate-vapid-keys.js
+const webpush = require('web-push');
+const vapidKeys = webpush.generateVAPIDKeys();
+
+console.log('Public Key:', vapidKeys.publicKey);
+console.log('Private Key:', vapidKeys.privateKey);
+```
+
+Run:
+```bash
+npm install web-push
+node generate-vapid-keys.js
+```
+
+#### Where to Store VAPID Keys
+
+**Public Key (Client-Side):**
+- Add to `.env.production`: `VITE_VAPID_PUBLIC_KEY=BKxYj...`
+- Add to Vercel/Netlify environment variables
+- Safe to expose to client
+
+**Private Key (Server-Side Only):**
+- Add to Supabase Edge Function secrets (see Supabase deployment section)
+- Never commit to git or expose to client
+- Used for signing push messages
+
+**VAPID Subject:**
+- Email or URL identifying your app
+- Format: `mailto:support@yourdomain.com` or `https://yourdomain.com`
+- Add to both client and server environments
 
 ---
 
@@ -197,6 +271,99 @@ pg_dump "postgresql://postgres:[password]@db.[project].supabase.co:5432/postgres
 pg_restore --dbname="postgresql://..." backup_20251005.dump
 ```
 
+### 5. Deploy Supabase Edge Functions
+
+StyleSnap uses Supabase Edge Functions for server-side operations like sending push notifications.
+
+**Install Supabase CLI:**
+
+```bash
+# macOS
+brew install supabase/tap/supabase
+
+# Windows
+scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+scoop install supabase
+
+# Linux/WSL
+brew install supabase/tap/supabase
+```
+
+**Login to Supabase:**
+
+```bash
+supabase login
+```
+
+**Deploy Edge Functions:**
+
+```bash
+# Navigate to project root
+cd /path/to/ClosetApp
+
+# Deploy send-push-notification function
+supabase functions deploy send-push-notification --project-ref your-project-ref
+```
+
+**Set Edge Function Secrets:**
+
+```bash
+# Set VAPID private key (CRITICAL - server-side only)
+supabase secrets set VAPID_PRIVATE_KEY="4T1c...your-private-key" --project-ref your-project-ref
+
+# Set VAPID public key
+supabase secrets set VAPID_PUBLIC_KEY="BKxYj...your-public-key" --project-ref your-project-ref
+
+# Set VAPID subject (contact email)
+supabase secrets set VAPID_SUBJECT="mailto:support@yourdomain.com" --project-ref your-project-ref
+```
+
+**Verify Function Deployment:**
+
+```bash
+# List deployed functions
+supabase functions list --project-ref your-project-ref
+
+# Test function
+curl -X POST \
+  'https://your-project.supabase.co/functions/v1/send-push-notification' \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "user_id": "test-user-id",
+    "type": "outfit_like",
+    "title": "Test Notification",
+    "body": "This is a test notification"
+  }'
+```
+
+**Function Logs:**
+
+```bash
+# View function logs
+supabase functions logs send-push-notification --project-ref your-project-ref
+
+# Stream logs in real-time
+supabase functions logs send-push-notification --follow --project-ref your-project-ref
+```
+
+**Environment Variables for Functions:**
+
+The Edge Function automatically has access to:
+- `Deno.env.get('SUPABASE_URL')` - Your project URL
+- `Deno.env.get('SUPABASE_ANON_KEY')` - Anon key
+- `Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')` - Service role key
+- `Deno.env.get('VAPID_PUBLIC_KEY')` - Your VAPID public key
+- `Deno.env.get('VAPID_PRIVATE_KEY')` - Your VAPID private key
+- `Deno.env.get('VAPID_SUBJECT')` - Your VAPID subject
+
+**Important Security Notes:**
+
+⚠️ **NEVER expose VAPID private key to client!**
+- Private key only in Supabase Edge Function secrets
+- Public key can be in client environment variables (with `VITE_` prefix)
+- Private key is used to sign push messages on server
+
 ---
 
 ## Frontend Deployment
@@ -226,8 +393,12 @@ pg_restore --dbname="postgresql://..." backup_20251005.dump
    vercel env add VITE_SUPABASE_URL production
    vercel env add VITE_SUPABASE_ANON_KEY production
    vercel env add VITE_CLOUDINARY_CLOUD_NAME production
-   # ... add all variables
+   vercel env add VITE_CLOUDINARY_UPLOAD_PRESET production
+   vercel env add VITE_VAPID_PUBLIC_KEY production
+   # ... add all VITE_* variables
    ```
+   
+   **See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) for complete list of required variables.**
 
 **Deploy:**
 

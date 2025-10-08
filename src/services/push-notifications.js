@@ -173,26 +173,85 @@ export async function unsubscribeFromPushNotifications() {
  */
 async function sendSubscriptionToServer(subscription) {
   try {
-    const response = await fetch('/api/push/subscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      },
-      body: JSON.stringify({
-        subscription: subscription.toJSON()
-      })
-    });
+    const { supabase } = await import('../config/supabase');
     
-    if (!response.ok) {
-      throw new Error('Failed to save subscription');
-    }
+    const subscriptionData = subscription.toJSON();
+    
+    // Detect device information
+    const deviceInfo = detectDeviceInfo();
+    
+    // Save subscription to database
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .upsert({
+        endpoint: subscriptionData.endpoint,
+        expiration_time: subscriptionData.expirationTime 
+          ? new Date(subscriptionData.expirationTime).toISOString() 
+          : null,
+        p256dh: subscriptionData.keys.p256dh,
+        auth: subscriptionData.keys.auth,
+        user_agent: navigator.userAgent,
+        device_type: deviceInfo.deviceType,
+        browser: deviceInfo.browser,
+        os: deviceInfo.os,
+        is_active: true,
+        last_used_at: new Date().toISOString()
+      }, {
+        onConflict: 'endpoint'
+      });
+    
+    if (error) throw error;
     
     console.log('[Notifications] Subscription saved to server');
   } catch (error) {
     console.error('[Notifications] Failed to save subscription:', error);
     throw error;
   }
+}
+
+/**
+ * Detect device information
+ * 
+ * @returns {Object} Device info
+ */
+function detectDeviceInfo() {
+  const ua = navigator.userAgent;
+  
+  // Detect device type
+  let deviceType = 'desktop';
+  if (/Mobile|Android|iPhone/i.test(ua)) {
+    deviceType = 'mobile';
+  } else if (/Tablet|iPad/i.test(ua)) {
+    deviceType = 'tablet';
+  }
+  
+  // Detect browser
+  let browser = 'unknown';
+  if (ua.indexOf('Firefox') > -1) {
+    browser = 'Firefox';
+  } else if (ua.indexOf('Chrome') > -1) {
+    browser = 'Chrome';
+  } else if (ua.indexOf('Safari') > -1) {
+    browser = 'Safari';
+  } else if (ua.indexOf('Edge') > -1) {
+    browser = 'Edge';
+  }
+  
+  // Detect OS
+  let os = 'unknown';
+  if (ua.indexOf('Win') > -1) {
+    os = 'Windows';
+  } else if (ua.indexOf('Mac') > -1) {
+    os = 'macOS';
+  } else if (ua.indexOf('Linux') > -1) {
+    os = 'Linux';
+  } else if (ua.indexOf('Android') > -1) {
+    os = 'Android';
+  } else if (ua.indexOf('iOS') > -1 || ua.indexOf('iPhone') > -1 || ua.indexOf('iPad') > -1) {
+    os = 'iOS';
+  }
+  
+  return { deviceType, browser, os };
 }
 
 /**
@@ -203,20 +262,15 @@ async function sendSubscriptionToServer(subscription) {
  */
 async function removeSubscriptionFromServer(subscription) {
   try {
-    const response = await fetch('/api/push/unsubscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      },
-      body: JSON.stringify({
-        endpoint: subscription.endpoint
-      })
-    });
+    const { supabase } = await import('../config/supabase');
     
-    if (!response.ok) {
-      throw new Error('Failed to remove subscription');
-    }
+    // Delete subscription from database
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .delete()
+      .eq('endpoint', subscription.endpoint);
+    
+    if (error) throw error;
     
     console.log('[Notifications] Subscription removed from server');
   } catch (error) {
@@ -280,27 +334,55 @@ export async function showNotification(title, options = {}) {
  */
 export async function getNotificationPreferences() {
   try {
-    const response = await fetch('/api/user/notification-preferences', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      }
-    });
+    const { supabase } = await import('../config/supabase');
     
-    if (!response.ok) {
-      throw new Error('Failed to get preferences');
+    const { data, error } = await supabase
+      .from('notification_preferences')
+      .select('*')
+      .single();
+    
+    if (error) {
+      // If no preferences found, return defaults
+      if (error.code === 'PGRST116') {
+        return {
+          push_enabled: true,
+          friend_requests: true,
+          friend_accepted: true,
+          outfit_likes: true,
+          outfit_comments: true,
+          item_likes: true,
+          friend_outfit_suggestions: true,
+          daily_suggestions: false,
+          daily_suggestion_time: '08:00:00',
+          weather_alerts: false,
+          quota_warnings: true,
+          quiet_hours_enabled: false,
+          quiet_hours_start: '22:00:00',
+          quiet_hours_end: '08:00:00'
+        };
+      }
+      throw error;
     }
     
-    return await response.json();
+    return data;
   } catch (error) {
     console.error('[Notifications] Failed to get preferences:', error);
     // Return default preferences
     return {
+      push_enabled: true,
       friend_requests: true,
+      friend_accepted: true,
       outfit_likes: true,
       outfit_comments: true,
-      daily_suggestions: true,
+      item_likes: true,
+      friend_outfit_suggestions: true,
+      daily_suggestions: false,
+      daily_suggestion_time: '08:00:00',
       weather_alerts: false,
-      quota_warnings: true
+      quota_warnings: true,
+      quiet_hours_enabled: false,
+      quiet_hours_start: '22:00:00',
+      quiet_hours_end: '08:00:00'
     };
   }
 }
@@ -320,20 +402,26 @@ export async function getNotificationPreferences() {
  */
 export async function updateNotificationPreferences(preferences) {
   try {
-    const response = await fetch('/api/user/notification-preferences', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      },
-      body: JSON.stringify(preferences)
-    });
+    const { supabase } = await import('../config/supabase');
     
-    if (!response.ok) {
-      throw new Error('Failed to update preferences');
-    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
     
-    return await response.json();
+    const { data, error } = await supabase
+      .from('notification_preferences')
+      .upsert({
+        user_id: user.id,
+        ...preferences,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return data;
   } catch (error) {
     console.error('[Notifications] Failed to update preferences:', error);
     throw error;

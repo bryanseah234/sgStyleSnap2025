@@ -63,6 +63,74 @@ Add these secrets:
 | `VITE_CLOUDINARY_CLOUD_NAME` | `your-cloud-name` | Cloudinary dashboard |
 | `VITE_CLOUDINARY_UPLOAD_PRESET` | `your-preset` | Cloudinary settings |
 | `VITE_OPENWEATHER_API_KEY` | `your-api-key` | OpenWeatherMap (optional) |
+| `VITE_VAPID_PUBLIC_KEY` | `BKxYj...` | Generate with web-push (see below) |
+
+### Step 5.5: Generate VAPID Keys for Push Notifications
+
+Push notifications require VAPID keys for secure authentication.
+
+#### Option 1: Using web-push CLI (Recommended)
+
+```bash
+# Install web-push globally
+npm install -g web-push
+
+# Generate VAPID keys
+web-push generate-vapid-keys
+```
+
+You'll get output like this:
+```
+=======================================
+
+Public Key:
+BKxYjWm4VBitBjCrKyE_hJKxvIZrK3oVnEL8YlZnHqPZfDQqH1234567890abcdefghijklmnopqrstuvwxyz
+
+Private Key:
+4T1cABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijk
+
+=======================================
+```
+
+#### Option 2: Using Online Generator
+
+Visit: https://web-push-codelab.glitch.me/
+
+Click "Generate VAPID Keys" button to get your keys instantly.
+
+#### Option 3: Using Node.js Script
+
+Create a file `generate-vapid-keys.js`:
+
+```javascript
+const webpush = require('web-push');
+
+const vapidKeys = webpush.generateVAPIDKeys();
+
+console.log('Public Key:', vapidKeys.publicKey);
+console.log('Private Key:', vapidKeys.privateKey);
+```
+
+Run it:
+```bash
+npm install web-push
+node generate-vapid-keys.js
+```
+
+#### Add VAPID Keys to GitHub Secrets
+
+Add this additional secret:
+
+| Secret Name | Value | Description |
+|------------|-------|-------------|
+| `VITE_VAPID_PUBLIC_KEY` | `BKxYj...` | Public VAPID key (client-side) |
+
+**Note:** The private key (`VAPID_PRIVATE_KEY`) will be added to Supabase Edge Function secrets later (see Supabase deployment section).
+
+⚠️ **Important:** 
+- **Public key** goes in GitHub secrets (with `VITE_` prefix for client access)
+- **Private key** stays server-side only (Supabase Edge Function secrets)
+- Never commit private keys to git!
 
 ### Step 6: Test Deployment
 Push to main branch or create a PR:
@@ -252,7 +320,10 @@ Now you have **8 workflows**:
 
 ### Checklist:
 - [ ] Add all GitHub secrets (see Step 5 above)
+- [ ] Generate VAPID keys (see Step 5.5)
 - [ ] Link Vercel project (`vercel link`)
+- [ ] Deploy Supabase Edge Functions (see Step 6)
+- [ ] Configure Edge Function secrets with VAPID keys
 - [ ] Create `playwright.config.js` if missing
 - [ ] Update E2E tests to use Playwright syntax
 - [ ] Test build locally (`npm run build`)
@@ -275,6 +346,91 @@ git add .
 git commit -m "Add deployment and E2E workflows"
 git push origin main
 ```
+
+### **Step 6: Deploy Supabase Edge Functions**
+
+Your push notification system requires a Supabase Edge Function to send push notifications server-side.
+
+#### 6.1 Install Supabase CLI
+
+```bash
+# macOS
+brew install supabase/tap/supabase
+
+# Windows
+scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+scoop install supabase
+
+# Linux/WSL
+brew install supabase/tap/supabase
+```
+
+#### 6.2 Login and Link Project
+
+```bash
+# Login to Supabase
+supabase login
+
+# Get your project reference ID from Supabase dashboard:
+# Settings > General > Reference ID
+```
+
+#### 6.3 Deploy Edge Function
+
+```bash
+# Navigate to project root
+cd /path/to/ClosetApp
+
+# Deploy send-push-notification function
+supabase functions deploy send-push-notification --project-ref YOUR_PROJECT_REF
+```
+
+#### 6.4 Configure Edge Function Secrets
+
+These secrets are **server-side only** and used by the Edge Function to sign and send push notifications:
+
+```bash
+# Set VAPID private key (CRITICAL - never expose to client!)
+supabase secrets set VAPID_PRIVATE_KEY="your-private-key-from-step-5.5" --project-ref YOUR_PROJECT_REF
+
+# Set VAPID public key
+supabase secrets set VAPID_PUBLIC_KEY="your-public-key-from-step-5.5" --project-ref YOUR_PROJECT_REF
+
+# Set VAPID subject (your contact email)
+supabase secrets set VAPID_SUBJECT="mailto:support@yourdomain.com" --project-ref YOUR_PROJECT_REF
+```
+
+#### 6.5 Verify Deployment
+
+```bash
+# List all deployed functions
+supabase functions list --project-ref YOUR_PROJECT_REF
+
+# Check function logs
+supabase functions logs send-push-notification --project-ref YOUR_PROJECT_REF
+```
+
+#### 6.6 Test Edge Function (Optional)
+
+```bash
+# Get a JWT token from your app's auth system first, then:
+curl -X POST \
+  'https://YOUR_PROJECT_REF.supabase.co/functions/v1/send-push-notification' \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "user_id": "test-user-id",
+    "type": "outfit_like",
+    "title": "Test Notification",
+    "body": "Testing push notifications"
+  }'
+```
+
+**Security Reminder:**
+- ⚠️ **NEVER** commit VAPID private key to git
+- ⚠️ **NEVER** add VAPID private key to GitHub secrets (client can access these)
+- ✅ **ONLY** store VAPID private key in Supabase Edge Function secrets
+- ✅ Public key can safely be in GitHub secrets (VITE_VAPID_PUBLIC_KEY)
 
 ---
 
@@ -302,6 +458,23 @@ git push origin main
 **No workflows appear**
 - Solution: Make sure `.github/workflows/` files are in the main branch
 - Check workflow syntax with GitHub's validator
+
+### Supabase Edge Function Issues
+**Error: Function not found**
+- Solution: Run `supabase functions list --project-ref YOUR_PROJECT_REF` to verify deployment
+- Redeploy: `supabase functions deploy send-push-notification --project-ref YOUR_PROJECT_REF`
+
+**Error: Missing VAPID keys**
+- Solution: Set secrets with `supabase secrets set VAPID_PRIVATE_KEY="..." --project-ref YOUR_PROJECT_REF`
+- Verify: Check function logs with `supabase functions logs send-push-notification --project-ref YOUR_PROJECT_REF`
+
+**Error: Push notifications not sending**
+- Solution:
+  1. Check Edge Function logs for errors
+  2. Verify VAPID keys are correct (public key in GitHub secrets, private key in Supabase secrets)
+  3. Test subscription exists in `push_subscriptions` table
+  4. Check notification preferences allow the notification type
+  5. Verify user has active push subscription (not disabled after failures)
 
 ---
 

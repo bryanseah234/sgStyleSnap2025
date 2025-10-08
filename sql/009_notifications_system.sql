@@ -12,79 +12,22 @@
 -- DROP EXISTING OBJECTS (in reverse dependency order)
 -- =============================================================================
 
--- Drop triggers first
-DO $$ BEGIN
-  DROP TRIGGER IF EXISTS trigger_notify_friend_outfit_suggestion ON friend_outfit_suggestions;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TRIGGER IF EXISTS trigger_notify_outfit_like ON shared_outfit_likes;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TRIGGER IF EXISTS trigger_notify_item_like ON item_likes;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TRIGGER IF EXISTS trigger_friend_outfit_suggestions_updated_at ON friend_outfit_suggestions;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TRIGGER IF EXISTS trigger_notifications_updated_at ON notifications;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
+-- Drop tables first (CASCADE will drop triggers and constraints automatically)
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS friend_outfit_suggestions CASCADE;
+DROP TABLE IF EXISTS item_likes CASCADE;
 
--- Drop functions
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS create_friend_suggestion_notification() CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS create_outfit_like_notification() CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS create_item_like_notification() CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS get_user_notifications(UUID, INT, INT) CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS mark_notification_read(UUID) CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS mark_all_notifications_read(UUID) CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS get_unread_notification_count(UUID) CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS approve_friend_outfit_suggestion(UUID) CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS reject_friend_outfit_suggestion(UUID) CASCADE;
-  EXCEPTION WHEN undefined_object THEN NULL;
-END $$;
-
--- Drop tables
-DO $$ BEGIN
-  DROP TABLE IF EXISTS notifications CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS friend_outfit_suggestions CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS item_likes CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
+-- Drop functions (after tables are dropped)
+DROP FUNCTION IF EXISTS create_friend_suggestion_notification() CASCADE;
+DROP FUNCTION IF EXISTS create_outfit_like_notification() CASCADE;
+DROP FUNCTION IF EXISTS create_item_like_notification() CASCADE;
+DROP FUNCTION IF EXISTS get_user_notifications(UUID, INT, INT) CASCADE;
+DROP FUNCTION IF EXISTS mark_notification_read(UUID) CASCADE;
+DROP FUNCTION IF EXISTS mark_all_notifications_read(UUID) CASCADE;
+DROP FUNCTION IF EXISTS get_unread_notification_count(UUID) CASCADE;
+DROP FUNCTION IF EXISTS approve_friend_outfit_suggestion(UUID) CASCADE;
+DROP FUNCTION IF EXISTS reject_friend_outfit_suggestion(UUID) CASCADE;
+DROP FUNCTION IF EXISTS update_item_likes_count() CASCADE;
 
 -- =============================================================================
 -- 1. ITEM LIKES TABLE
@@ -99,12 +42,10 @@ CREATE TABLE item_likes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   
   -- One like per user per item
-  UNIQUE(item_id, user_id),
+  UNIQUE(item_id, user_id)
   
-  -- Only friends can like items (enforced by RLS policy)
-  CONSTRAINT check_friend_relationship CHECK (
-    user_id != (SELECT owner_id FROM clothes WHERE id = item_id)
-  )
+  -- Note: "Can't like own items" is enforced by RLS policy (see section 6)
+  -- CHECK constraints cannot use subqueries in PostgreSQL
 );
 
 -- Indexes

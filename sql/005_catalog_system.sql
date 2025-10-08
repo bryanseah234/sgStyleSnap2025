@@ -136,6 +136,22 @@ CREATE INDEX idx_catalog_search ON catalog_items USING gin(search_vector);
 CREATE INDEX idx_clothes_catalog_item ON clothes(catalog_item_id);
 
 -- ============================================
+-- UPDATE FUNCTIONS (After catalog_item_id column exists)
+-- ============================================
+
+-- Update check_item_quota function to exclude catalog items
+-- This replaces the basic version from migration 003
+CREATE OR REPLACE FUNCTION check_item_quota(user_id UUID)
+RETURNS INTEGER AS $$
+    SELECT COUNT(*)::INTEGER FROM clothes 
+    WHERE owner_id = user_id 
+      AND removed_at IS NULL 
+      AND catalog_item_id IS NULL; -- Only count user uploads, not catalog additions
+$$ LANGUAGE sql STABLE;
+
+COMMENT ON FUNCTION check_item_quota IS 'Counts user-uploaded items only (excludes catalog additions). Returns count for quota enforcement.';
+
+-- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
 
