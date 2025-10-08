@@ -100,6 +100,20 @@ export const useLikesStore = defineStore('likes', {
      */
     totalLikedItems: (state) => {
       return state.likedItemIds.size
+    },
+
+    /**
+     * Alias for totalLikedItems
+     */
+    likedItemsCount: (state) => {
+      return state.likedItemIds.size
+    },
+
+    /**
+     * Check if store is initialized
+     */
+    isInitialized: (state) => {
+      return state.initialized
     }
   },
 
@@ -285,13 +299,26 @@ export const useLikesStore = defineStore('likes', {
       try {
         this.loading = true
         const stats = await likesService.getUserLikesStats(userId)
-        this.stats = {
-          totalItems: stats.total_items || 0,
-          totalLikesReceived: stats.total_likes_received || 0,
-          avgLikesPerItem: stats.avg_likes_per_item || 0,
-          mostLikedItemId: stats.most_liked_item_id,
-          mostLikedItemName: stats.most_liked_item_name,
-          mostLikedItemLikes: stats.most_liked_item_likes || 0
+        
+        // Handle null or undefined stats
+        if (!stats) {
+          this.stats = {
+            totalItems: 0,
+            totalLikesReceived: 0,
+            avgLikesPerItem: 0,
+            mostLikedItemId: null,
+            mostLikedItemName: null,
+            mostLikedItemLikes: 0
+          }
+        } else {
+          this.stats = {
+            totalItems: stats.total_items || 0,
+            totalLikesReceived: stats.total_likes_received || 0,
+            avgLikesPerItem: stats.avg_likes_per_item || 0,
+            mostLikedItemId: stats.most_liked_item_id,
+            mostLikedItemName: stats.most_liked_item_name,
+            mostLikedItemLikes: stats.most_liked_item_likes || 0
+          }
         }
         return this.stats
       } catch (error) {
@@ -356,6 +383,20 @@ export const useLikesStore = defineStore('likes', {
       this.liking = {}
       this.error = null
       this.initialized = false
+    },
+
+    /**
+     * Alias for initializeLikes
+     */
+    async initialize() {
+      return this.initializeLikes()
+    },
+
+    /**
+     * Alias for resetStore
+     */
+    reset() {
+      return this.resetStore()
     }
   }
 })

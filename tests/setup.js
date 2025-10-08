@@ -3,7 +3,15 @@
  * Global test configuration and mocks
  */
 
-import { vi } from 'vitest'
+import { vi, beforeAll } from 'vitest'
+
+// Set up test environment variables before all tests
+beforeAll(() => {
+  vi.stubEnv('VITE_SUPABASE_URL', 'https://test.supabase.co')
+  vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key')
+  vi.stubEnv('VITE_CLOUDINARY_CLOUD_NAME', 'test-cloud')
+  vi.stubEnv('VITE_VAPID_PUBLIC_KEY', 'test-vapid-key')
+})
 
 // Mock Supabase client for unit tests
 global.mockSupabase = {
