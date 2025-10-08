@@ -380,4 +380,66 @@ ORDER BY created_at DESC
 - `POST /api/friend-suggestions/:id/reject` - Reject
 - `POST /api/items/:id/like` - Like item
 - `DELETE /api/items/:id/like` - Unlike item
+### Notification System (Friends-Only Interactions) + Push Notifications
+
+**Web Push API Integration:**
+- Browser push notifications for real-time updates
+- Service Worker handles push events and displays notifications
+- User-controlled preferences with quiet hours
+- Multi-device support (mobile, tablet, desktop)
+- VAPID protocol for secure push delivery
+
+**Push Notification Types:**
+1. **Friend Requests** - When someone sends a friend request
+2. **Friend Accepted** - When your friend request is accepted
+3. **Outfit Likes** - When someone likes your shared outfit
+4. **Outfit Comments** - When someone comments on your outfit
+5. **Item Likes** - When someone likes your closet item
+6. **Friend Outfit Suggestions** - When a friend suggests an outfit
+7. **Daily Suggestions** (optional) - Morning outfit recommendations
+8. **Weather Alerts** (optional) - Outfit updates based on weather
+9. **Quota Warnings** - When approaching upload limit
+
+**Notification Preferences:**
+- Master toggle for all push notifications
+- Individual toggles for each notification type
+- Quiet hours (e.g., 10 PM - 8 AM, no non-urgent notifications)
+- Daily suggestion time customization (e.g., 8:00 AM)
+- Test notification button in settings
+
+**Technical Implementation:**
+- Push subscriptions stored in `push_subscriptions` table
+- Preferences stored in `notification_preferences` table
+- Delivery log in `notification_delivery_log` table
+- Supabase Edge Function `send-push-notification` for sending
+- Service worker in `public/service-worker.js` for receiving
+- Client service in `src/services/push-notifications.js`
+
+**Database Functions:**
+- `should_send_notification()` - Check if notification should be sent
+- `get_user_push_subscriptions()` - Get active subscriptions
+- `mark_subscription_failed()` - Track failed deliveries
+- `reset_subscription_failed_count()` - Reset on success
+- `cleanup_expired_push_subscriptions()` - Remove expired/failed
+
+**Components:**
+- `PushNotificationPrompt.vue` - Permission request prompt
+- `NotificationSettings.vue` - Preferences management
+- `NotificationToggle.vue` - Individual type toggle
+- `ToggleSwitch.vue` - UI switch component
+
+**Automatic Triggers:**
+- Push notifications sent automatically on relevant events
+- Respects user preferences before sending
+- Supports multiple devices per user
+- Automatic retry on temporary failures
+- Auto-disable after 5 consecutive failures
+
+/* Lines 267-383 omitted */
 - `GET /api/items/:id/likes` - Get likers
+
+**Push Notification Endpoints:**
+- Subscription managed client-side via Service Worker + Supabase
+- Preferences via direct Supabase queries to `notification_preferences`
+- Sending via Supabase Edge Function `send-push-notification`
+- See `requirements/api-endpoints.md` Section 4 for full details

@@ -385,49 +385,165 @@ async function syncComments() {
 // PUSH NOTIFICATIONS
 // =============================================================================
 
+/**
+ * Notification type configurations
+ */
+const NOTIFICATION_CONFIGS = {
+  friend_request: {
+    icon: '/icons/friend-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200, 100, 200],
+    actions: [
+      { action: 'view', title: 'View Request' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ],
+    requireInteraction: true
+  },
+  friend_accepted: {
+    icon: '/icons/friend-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200],
+    actions: [
+      { action: 'view', title: 'View Profile' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  },
+  outfit_like: {
+    icon: '/icons/heart-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200],
+    actions: [
+      { action: 'view', title: 'View Outfit' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  },
+  outfit_comment: {
+    icon: '/icons/comment-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200],
+    actions: [
+      { action: 'view', title: 'View Comment' },
+      { action: 'reply', title: 'Reply' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  },
+  item_like: {
+    icon: '/icons/heart-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200],
+    actions: [
+      { action: 'view', title: 'View Item' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  },
+  friend_outfit_suggestion: {
+    icon: '/icons/suggestion-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200, 100, 200],
+    actions: [
+      { action: 'view', title: 'View Suggestion' },
+      { action: 'approve', title: 'Add to Closet' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ],
+    requireInteraction: true
+  },
+  daily_suggestion: {
+    icon: '/icons/outfit-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200],
+    actions: [
+      { action: 'view', title: 'View Outfit' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  },
+  weather_alert: {
+    icon: '/icons/weather-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200, 100, 200],
+    actions: [
+      { action: 'view', title: 'Update Wardrobe' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  },
+  quota_warning: {
+    icon: '/icons/warning-icon.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [200, 100, 200, 100, 200],
+    actions: [
+      { action: 'view', title: 'Manage Items' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ],
+    requireInteraction: true
+  }
+};
+
 self.addEventListener('push', (event) => {
   console.log('[Service Worker] Push notification received');
   
   let data = {
+    type: 'default',
     title: 'StyleSnap',
     body: 'New notification',
     icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png'
+    badge: '/icons/badge-72x72.png',
+    data: {}
   };
   
   if (event.data) {
     try {
-      data = { ...data, ...event.data.json() };
+      const payload = event.data.json();
+      data = { ...data, ...payload };
     } catch (error) {
       console.error('[Service Worker] Invalid push data:', error);
     }
   }
   
+  // Get configuration for notification type
+  const config = NOTIFICATION_CONFIGS[data.type] || {};
+  
+  // Build notification options
   const options = {
     body: data.body,
-    icon: data.icon,
-    badge: data.badge,
-    vibrate: [200, 100, 200],
-    data: data.data || {},
-    actions: data.actions || [
-      {
-        action: 'view',
-        title: 'View',
-        icon: '/icons/view-icon.png'
-      },
-      {
-        action: 'close',
-        title: 'Close',
-        icon: '/icons/close-icon.png'
-      }
+    icon: data.icon || config.icon || '/icons/icon-192x192.png',
+    badge: data.badge || config.badge || '/icons/badge-72x72.png',
+    vibrate: config.vibrate || [200, 100, 200],
+    data: {
+      ...data.data,
+      type: data.type,
+      timestamp: Date.now()
+    },
+    actions: data.actions || config.actions || [
+      { action: 'view', title: 'View' },
+      { action: 'dismiss', title: 'Dismiss' }
     ],
-    tag: data.tag || 'stylesnap-notification',
-    renotify: true,
-    requireInteraction: data.requireInteraction || false
+    tag: data.tag || `stylesnap-${data.type}-${Date.now()}`,
+    renotify: data.renotify !== false,
+    requireInteraction: data.requireInteraction || config.requireInteraction || false,
+    silent: data.silent || false,
+    image: data.image // Optional large image
   };
   
+  // Show notification
   event.waitUntil(
     self.registration.showNotification(data.title, options)
+      .then(() => {
+        console.log('[Service Worker] Notification shown:', data.title);
+        
+        // Send delivery confirmation to server
+        return fetch('/api/push/delivered', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            notification_id: data.data?.notification_id,
+            timestamp: Date.now()
+          })
+        }).catch(err => {
+          console.error('[Service Worker] Failed to send delivery confirmation:', err);
+        });
+      })
+      .catch(error => {
+        console.error('[Service Worker] Failed to show notification:', error);
+      })
   );
 });
 
@@ -437,48 +553,147 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   console.log('[Service Worker] Notification clicked:', event.action);
   
+  const notificationData = event.notification.data || {};
+  const action = event.action;
+  
+  // Close notification
   event.notification.close();
   
-  if (event.action === 'close') {
+  // Handle dismiss action
+  if (action === 'dismiss') {
     return;
   }
   
-  // Get URL from notification data
-  let url = event.notification.data.url || '/';
-  
-  // Handle different notification types
-  switch (event.notification.data.type) {
-    case 'friend-request':
-      url = '/friends?action=requests';
-      break;
-    case 'outfit-like':
-      url = `/shared-outfits/${event.notification.data.outfitId}`;
-      break;
-    case 'outfit-comment':
-      url = `/shared-outfits/${event.notification.data.outfitId}#comments`;
-      break;
-    case 'suggestion':
-      url = '/suggestions';
-      break;
-    default:
-      url = '/';
+  // Handle special actions
+  if (action === 'approve' && notificationData.type === 'friend_outfit_suggestion') {
+    // Quick approve suggestion
+    event.waitUntil(
+      fetch('/api/friend-suggestions/' + notificationData.suggestion_id + '/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(() => {
+        // Show confirmation
+        return self.registration.showNotification('Outfit Added!', {
+          body: 'The suggested outfit has been added to your closet.',
+          icon: '/icons/icon-192x192.png',
+          badge: '/icons/badge-72x72.png',
+          tag: 'suggestion-approved',
+          requireInteraction: false
+        });
+      })
+      .catch(err => {
+        console.error('[Service Worker] Failed to approve suggestion:', err);
+      })
+    );
+    return;
   }
+  
+  // Determine target URL based on notification type and action
+  let url = notificationData.url || '/notifications';
+  
+  switch (notificationData.type) {
+    case 'friend_request':
+      url = '/friends?tab=requests';
+      break;
+      
+    case 'friend_accepted':
+      url = notificationData.friend_id 
+        ? `/friends/${notificationData.friend_id}` 
+        : '/friends';
+      break;
+      
+    case 'outfit_like':
+      url = notificationData.outfit_id 
+        ? `/shared-outfits/${notificationData.outfit_id}` 
+        : '/friends';
+      break;
+      
+    case 'outfit_comment':
+      url = notificationData.outfit_id 
+        ? `/shared-outfits/${notificationData.outfit_id}#comments` 
+        : '/friends';
+      break;
+      
+    case 'item_like':
+      url = notificationData.item_id 
+        ? `/closet/${notificationData.item_id}` 
+        : '/closet';
+      break;
+      
+    case 'friend_outfit_suggestion':
+      if (action === 'view') {
+        url = '/notifications?filter=suggestions';
+      } else {
+        url = notificationData.suggestion_id 
+          ? `/notifications?suggestion=${notificationData.suggestion_id}` 
+          : '/notifications';
+      }
+      break;
+      
+    case 'daily_suggestion':
+      url = '/outfit-generator?daily=true';
+      break;
+      
+    case 'weather_alert':
+      url = '/outfit-generator?weather=true';
+      break;
+      
+    case 'quota_warning':
+      url = '/closet?action=manage-quota';
+      break;
+      
+    default:
+      url = notificationData.url || '/notifications';
+  }
+  
+  // Track notification click
+  event.waitUntil(
+    fetch('/api/notifications/track-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        notification_id: notificationData.notification_id,
+        action: action || 'view',
+        timestamp: Date.now()
+      })
+    }).catch(err => {
+      console.error('[Service Worker] Failed to track click:', err);
+    })
+  );
   
   // Open or focus app
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Check if app is already open
+        // Check if app is already open at target URL
         for (const client of clientList) {
-          if (client.url === url && 'focus' in client) {
-            return client.focus();
+          const clientUrl = new URL(client.url);
+          const targetUrl = new URL(url, self.location.origin);
+          
+          if (clientUrl.pathname === targetUrl.pathname && 'focus' in client) {
+            // Focus existing window and navigate if needed
+            return client.focus().then(client => {
+              if (client.navigate) {
+                return client.navigate(url);
+              }
+              return client;
+            });
           }
+        }
+        
+        // Check if any app window is open
+        if (clientList.length > 0 && clientList[0].navigate) {
+          return clientList[0].focus().then(client => client.navigate(url));
         }
         
         // Open new window
         if (clients.openWindow) {
           return clients.openWindow(url);
         }
+      })
+      .catch(err => {
+        console.error('[Service Worker] Failed to handle notification click:', err);
       })
   );
 });

@@ -1418,7 +1418,543 @@ Get current user's like statistics.
 
 ---
 
-## 4. Scheduled Maintenance & Cleanup
+## 4. Push Notifications
+
+### 4.1 Push Notification Subscription
+
+#### Subscribe to Push Notifications
+
+**Endpoint:** Handled client-side via Service Worker and Supabase direct insert
+
+**Method:** Client-side subscription using Web Push API
+
+**Flow:**
+1. User grants notification permission via browser
+2. Service worker subscribes to push service
+3. Subscription details saved to `push_subscriptions` table via Supabase client
+
+**Database Storage:**
+
+```javascript
+// Automatically handled by push-notifications.js service
+const subscription = await registration.pushManager.subscribe({
+  userVisibleOnly: true,
+  applicationServerKey: VAPID_PUBLIC_KEY
+});
+
+// Saved to push_subscriptions table
+await supabase.from('push_subscriptions').upsert({
+  endpoint: subscription.endpoint,
+  p256dh: subscription.keys.p256dh,
+  auth: subscription.keys.auth,
+  device_type: 'mobile|tablet|desktop',
+  browser: 'Chrome|Firefox|Safari',
+  os: 'iOS|Android|Windows|macOS',
+  is_active: true
+});
+```
+
+**Subscription Table Fields:**
+- `endpoint` - Unique push service URL
+- `p256dh` - Public key for encryption (base64)
+- `auth` - Authentication secret (base64)
+- `device_type` - Device category
+- `browser` - Browser name
+- `os` - Operating system
+- `is_active` - Whether subscription is active
+- `failed_count` - Number of consecutive failures
+- `expiration_time` - Optional expiration timestamp
+
+---
+
+### 4.2 Notification Preferences
+
+#### Get User Notification Preferences
+
+**Endpoint:** Direct Supabase query from `notification_preferences` table
+
+**Query:**
+
+```javascript
+const { data } = await supabase
+  .from('notification_preferences')
+  .select('*')
+  .single();
+```
+
+**Response:**
+
+```json
+{
+  "user_id": "uuid",
+  "push_enabled": true,
+  "friend_requests": true,
+  "friend_accepted": true,
+  "outfit_likes": true,
+  "outfit_comments": true,
+  "item_likes": true,
+  "friend_outfit_suggestions": true,
+  "daily_suggestions": false,
+  "daily_suggestion_time": "08:00:00",
+  "weather_alerts": false,
+  "quota_warnings": true,
+  "quiet_hours_enabled": false,
+  "quiet_hours_start": "22:00:00",
+  "quiet_hours_end": "08:00:00"
+}
+```
+
+---
+
+#### Update Notification Preferences
+
+**Endpoint:** Direct Supabase upsert to `notification_preferences` table
+
+**Method:** Upsert via Supabase client
+
+**Request:**
+
+```javascript
+await supabase
+  .from('notification_preferences')
+  .upsert({
+    user_id: user.id,
+    push_enabled: true,
+    outfit_likes: false,
+    daily_suggestions: true,
+    daily_suggestion_time: '09:00:00',
+    quiet_hours_enabled: true,
+    quiet_hours_start: '22:00:00',
+    quiet_hours_end: '07:00:00'
+  });
+```
+
+**Business Logic:**
+- Default preferences created automatically on user signup via trigger
+- Quiet hours prevent non-urgent notifications during specified time
+- Each notification type can be toggled independently
+- Database function `should_send_notification()` checks preferences before sending
+
+---
+
+### 4.3 Send Push Notification
+
+**Endpoint:** Supabase Edge Function `send-push-notification`
+
+**Method:** `POST /functions/v1/send-push-notification`
+
+**Authentication:** Required (Bearer token)
+
+**Request:**
+
+```json
+{
+  "notification_id": "uuid",
+  "user_id": "uuid",
+  "type": "friend_request|friend_accepted|outfit_like|outfit_comment|item_like|friend_outfit_suggestion|daily_suggestion|weather_alert|quota_warning",
+  "title": "Friend Request",
+  "body": "John Doe sent you a friend request",
+  "data": {
+    "friend_id": "uuid",
+    "url": "/friends?tab=requests"
+  },
+  "icon": "/icons/friend-icon.png",
+  "badge": "/icons/badge-72x72.png",
+  "image": "https://...",
+  "tag": "friend-request-123",
+  "requireInteraction": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "sent_count": 2,
+  "failed_count": 0,
+  "results": [
+    {
+      "success": true,
+      "subscription_id": "uuid"
+    },
+    {
+      "success": true,
+      "subscription_id": "uuid"
+    }
+  ]
+}
+```
+
+**Business Logic:**
+
+1. **Verify Authentication:** Ensure requester is authenticated
+2. **Check Preferences:** Call `should_send_notification()` function to check:
+   - User has `push_enabled = true`
+   - Specific notification type is enabled
+   - Not during quiet hours (unless urgent)
+3. **Get Subscriptions:** Fetch user's active subscriptions via `get_user_push_subscriptions()`
+4. **Send to All Devices:** Push notification to each subscription endpoint
+5. **Handle Failures:** 
+   - Log delivery status to `notification_delivery_log`
+   - Increment `failed_count` on failed subscriptions
+   - Disable subscription after 5 consecutive failures
+6. **Reset on Success:** Reset `failed_count` to 0 on successful delivery
+
+**Error Handling:**
+
+- **401 Unauthorized:** Missing or invalid auth token
+- **400 Bad Request:** Missing required fields
+- **200 OK (Skipped):** User preferences disabled notification
+- **200 OK (No Subscriptions):** User has no active subscriptions
+- **200 OK (Partial Failure):** Some devices succeeded, some failed
+
+---
+
+### 4.4 Notification Types & Configurations
+
+Each notification type has predefined configuration:
+
+#### Friend Request
+```json
+{
+  "type": "friend_request",
+  "vibrate": [200, 100, 200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "View Request" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "requireInteraction": true,
+  "url": "/friends?tab=requests"
+}
+```
+
+#### Friend Accepted
+```json
+{
+  "type": "friend_accepted",
+  "vibrate": [200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "View Profile" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "url": "/friends/{friend_id}"
+}
+```
+
+#### Outfit Like
+```json
+{
+  "type": "outfit_like",
+  "vibrate": [200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "View Outfit" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "url": "/shared-outfits/{outfit_id}"
+}
+```
+
+#### Outfit Comment
+```json
+{
+  "type": "outfit_comment",
+  "vibrate": [200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "View Comment" },
+    { "action": "reply", "title": "Reply" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "url": "/shared-outfits/{outfit_id}#comments"
+}
+```
+
+#### Item Like
+```json
+{
+  "type": "item_like",
+  "vibrate": [200],
+  "actions": [
+    { "action": "view", "title": "View Item" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "url": "/closet/{item_id}"
+}
+```
+
+#### Friend Outfit Suggestion
+```json
+{
+  "type": "friend_outfit_suggestion",
+  "vibrate": [200, 100, 200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "View Suggestion" },
+    { "action": "approve", "title": "Add to Closet" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "requireInteraction": true,
+  "url": "/notifications?suggestion={suggestion_id}"
+}
+```
+
+#### Daily Suggestion
+```json
+{
+  "type": "daily_suggestion",
+  "vibrate": [200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "View Outfit" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "url": "/outfit-generator?daily=true"
+}
+```
+
+#### Weather Alert
+```json
+{
+  "type": "weather_alert",
+  "vibrate": [200, 100, 200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "Update Wardrobe" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "url": "/outfit-generator?weather=true"
+}
+```
+
+#### Quota Warning
+```json
+{
+  "type": "quota_warning",
+  "vibrate": [200, 100, 200, 100, 200],
+  "actions": [
+    { "action": "view", "title": "Manage Items" },
+    { "action": "dismiss", "title": "Dismiss" }
+  ],
+  "requireInteraction": true,
+  "url": "/closet?action=manage-quota"
+}
+```
+
+---
+
+### 4.5 Notification Triggers
+
+Push notifications are automatically triggered by specific events:
+
+#### Trigger: Friend Request Sent
+
+```javascript
+// After friend request created
+const notification = await supabase.from('notifications').insert({
+  user_id: receiver_id,
+  actor_id: sender_id,
+  type: 'friend_request',
+  // ... notification data
+});
+
+// Send push notification
+await supabase.functions.invoke('send-push-notification', {
+  body: {
+    notification_id: notification.id,
+    user_id: receiver_id,
+    type: 'friend_request',
+    title: 'New Friend Request',
+    body: `${sender_name} sent you a friend request`,
+    data: { friend_id: sender_id }
+  }
+});
+```
+
+#### Trigger: Outfit Liked
+
+```javascript
+// After like created on shared outfit
+await supabase.functions.invoke('send-push-notification', {
+  body: {
+    user_id: outfit_owner_id,
+    type: 'outfit_like',
+    title: 'New Like',
+    body: `${liker_name} liked your outfit`,
+    data: { outfit_id, liker_id }
+  }
+});
+```
+
+#### Trigger: Friend Outfit Suggestion
+
+```javascript
+// After friend creates outfit suggestion
+await supabase.functions.invoke('send-push-notification', {
+  body: {
+    user_id: recipient_id,
+    type: 'friend_outfit_suggestion',
+    title: 'Outfit Suggestion',
+    body: `${friend_name} suggested an outfit for you`,
+    data: { suggestion_id, friend_id },
+    requireInteraction: true
+  }
+});
+```
+
+---
+
+### 4.6 Service Worker Integration
+
+The service worker (`public/service-worker.js`) handles:
+
+1. **Receiving Push Events:** Listen for `push` events
+2. **Showing Notifications:** Display system notifications
+3. **Handling Clicks:** Navigate to appropriate page on click
+4. **Background Sync:** Queue failed notifications for retry
+
+**Push Event Handler:**
+
+```javascript
+self.addEventListener('push', (event) => {
+  const data = event.data.json();
+  
+  const options = {
+    body: data.body,
+    icon: data.icon,
+    badge: data.badge,
+    vibrate: data.vibrate || [200, 100, 200],
+    data: data.data,
+    actions: data.actions,
+    tag: data.tag,
+    requireInteraction: data.requireInteraction || false
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+```
+
+**Notification Click Handler:**
+
+```javascript
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  const url = getUrlForNotificationType(event.notification.data);
+  
+  event.waitUntil(
+    clients.openWindow(url)
+  );
+});
+```
+
+---
+
+### 4.7 Database Functions
+
+#### `should_send_notification(p_user_id, p_notification_type)`
+
+Checks if notification should be sent based on user preferences.
+
+**Returns:** `BOOLEAN`
+
+**Logic:**
+- Check if `push_enabled = true`
+- Check if specific type is enabled (e.g., `outfit_likes = true`)
+- Check quiet hours (if enabled)
+- Always allow urgent notifications during quiet hours
+
+---
+
+#### `get_user_push_subscriptions(p_user_id)`
+
+Get all active push subscriptions for a user.
+
+**Returns:** 
+
+```sql
+TABLE (
+  id UUID,
+  endpoint TEXT,
+  p256dh TEXT,
+  auth TEXT,
+  device_type VARCHAR,
+  last_used_at TIMESTAMP
+)
+```
+
+**Filters:**
+- `is_active = TRUE`
+- `expiration_time IS NULL OR expiration_time > NOW()`
+- Orders by `last_used_at DESC`
+
+---
+
+#### `mark_subscription_failed(p_subscription_id, p_error_message)`
+
+Increments failed count and disables after 5 failures.
+
+---
+
+#### `reset_subscription_failed_count(p_subscription_id)`
+
+Resets failed count to 0 on successful delivery.
+
+---
+
+#### `cleanup_expired_push_subscriptions()`
+
+Removes expired and failed subscriptions. Run via cron job.
+
+---
+
+### 4.8 Security & Privacy
+
+**Security Measures:**
+- All endpoints require authentication
+- RLS policies on all tables
+- VAPID keys for encryption
+- Subscriptions tied to user accounts
+- Automatic cleanup of inactive subscriptions
+
+**Privacy Considerations:**
+- Users control all notification types
+- Quiet hours support
+- Can disable notifications entirely
+- Subscription data never shared
+- Push content minimal (no sensitive data)
+
+---
+
+### 4.9 Monitoring & Analytics
+
+#### Delivery Statistics
+
+```javascript
+// Get notification stats for user
+const stats = await supabase.rpc('get_notification_stats', {
+  p_user_id: user.id,
+  p_days: 30
+});
+
+// Returns:
+{
+  total_sent: 150,
+  total_delivered: 145,
+  total_failed: 5,
+  delivery_rate: 96.67,
+  most_common_failure: "Expired subscription"
+}
+```
+
+**Monitoring Points:**
+- Delivery rate (should be > 95%)
+- Failed subscriptions (auto-disabled after 5 failures)
+- User preferences (opt-out rates by type)
+- Average response time
+- Device distribution
+
+---
+
+## 5. Scheduled Maintenance & Cleanup
 
 ### 4.1 Automated 30-Day Purge Script
 

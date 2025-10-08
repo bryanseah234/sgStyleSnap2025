@@ -42,66 +42,25 @@ DO $$ BEGIN
 END $$;
 
 -- Drop functions
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS extract_cloth_ids_from_outfit(JSONB) CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS get_user_outfit_stats(UUID) CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS get_most_worn_items(UUID, INTEGER) CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS get_unworn_combinations(UUID) CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS update_outfit_likes_count() CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP FUNCTION IF EXISTS update_outfit_comments_count() CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
+DROP FUNCTION IF EXISTS get_friends_outfit_feed(UUID, INT, INT) CASCADE;
+DROP FUNCTION IF EXISTS extract_cloth_ids_from_outfit(JSONB) CASCADE;
+DROP FUNCTION IF EXISTS get_user_outfit_stats(UUID) CASCADE;
+DROP FUNCTION IF EXISTS get_most_worn_items(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS get_unworn_combinations(UUID) CASCADE;
+DROP FUNCTION IF EXISTS update_outfit_likes_count() CASCADE;
+DROP FUNCTION IF EXISTS update_outfit_comments_count() CASCADE;
 DROP FUNCTION IF EXISTS update_collection_outfits_count() CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 
--- Drop tables in correct order
-DO $$ BEGIN
-  DROP TABLE IF EXISTS outfit_history CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS outfit_collections CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS suggestion_feedback CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS style_preferences CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS outfit_comments CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS shared_outfit_likes CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS shared_outfits CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
-DO $$ BEGIN
-  DROP TABLE IF EXISTS outfit_history CASCADE;
-  EXCEPTION WHEN undefined_table THEN NULL;
-END $$;
+-- Drop tables in correct order (children first, then parents)
+DROP TABLE IF EXISTS collection_outfits CASCADE;
+DROP TABLE IF EXISTS outfit_comments CASCADE;
+DROP TABLE IF EXISTS shared_outfit_likes CASCADE;
+DROP TABLE IF EXISTS suggestion_feedback CASCADE;
+DROP TABLE IF EXISTS outfit_history CASCADE;
+DROP TABLE IF EXISTS shared_outfits CASCADE;
+DROP TABLE IF EXISTS outfit_collections CASCADE;
+DROP TABLE IF EXISTS style_preferences CASCADE;
 
 -- =============================================================================
 -- 1. OUTFIT HISTORY & ANALYTICS
@@ -884,10 +843,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Add comment for documentation
-COMMENT ON FUNCTION get_friends_outfit_feed IS 
-  'Returns chronologically sorted outfits from accepted friends only. ' ||
-  'Automatically excludes unfriended users by checking live friendship status. ' ||
-  'Uses bidirectional query with canonical ordering (requester_id < receiver_id).';
+COMMENT ON FUNCTION get_friends_outfit_feed IS 'Returns chronologically sorted outfits from accepted friends only. Automatically excludes unfriended users by checking live friendship status. Uses bidirectional query with canonical ordering (requester_id < receiver_id).';
 
 -- Grant permissions (if using service role)
 -- GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
