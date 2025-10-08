@@ -204,11 +204,13 @@ describe('Likes Service', () => {
         error: null
       })
 
+      const mockEqChain = {
+        eq: vi.fn().mockResolvedValue({ error: null })
+      }
       const mockDelete = {
         delete: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis()
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
-      mockDelete.eq.mockResolvedValue({ error: null })
       mockSupabase.from.mockReturnValueOnce(mockDelete)
 
       const mockSelect = {
@@ -347,16 +349,20 @@ describe('Likes Service', () => {
         error: null
       })
 
-      const mockEqChain = {
+      const mockSingle = vi.fn().mockResolvedValue({
+        data: { id: 'like-1' },
+        error: null
+      })
+      const mockEq2 = {
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
-          data: { id: 'like-1' },
-          error: null
-        })
+        single: mockSingle
+      }
+      const mockEq1 = {
+        eq: vi.fn().mockReturnValue(mockEq2)
       }
       const mockSelect = {
         select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnValue(mockEqChain)
+        eq: vi.fn().mockReturnValue(mockEq1)
       }
       mockSupabase.from.mockReturnValueOnce(mockSelect)
 
@@ -373,16 +379,20 @@ describe('Likes Service', () => {
         error: null
       })
 
-      const mockEqChain = {
+      const mockSingle = vi.fn().mockResolvedValue({
+        data: null,
+        error: { code: 'PGRST116' }
+      })
+      const mockEq2 = {
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
-          data: null,
-          error: { code: 'PGRST116' }
-        })
+        single: mockSingle
+      }
+      const mockEq1 = {
+        eq: vi.fn().mockReturnValue(mockEq2)
       }
       const mockSelect = {
         select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnValue(mockEqChain)
+        eq: vi.fn().mockReturnValue(mockEq1)
       }
       mockSupabase.from.mockReturnValueOnce(mockSelect)
 
