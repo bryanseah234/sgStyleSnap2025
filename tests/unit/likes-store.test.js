@@ -8,33 +8,31 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
-// Mock likes service
-const mockLikesService = {
-  likeItem: vi.fn(),
-  unlikeItem: vi.fn(),
-  toggleLike: vi.fn(),
-  getUserLikedItems: vi.fn(),
-  getItemLikers: vi.fn(),
-  getPopularItems: vi.fn(),
-  hasLiked: vi.fn(),
-  getUserLikesStats: vi.fn()
-}
-
-// Mock auth store
-const mockAuthStore = {
-  user: { id: 'user-123' }
-}
-
+// Mock likes service - define factory inside mock
 vi.mock('../../src/services/likes-service', () => ({
-  likesService: mockLikesService
+  likesService: {
+    likeItem: vi.fn(),
+    unlikeItem: vi.fn(),
+    toggleLike: vi.fn(),
+    getUserLikedItems: vi.fn(),
+    getItemLikers: vi.fn(),
+    getPopularItems: vi.fn(),
+    getPopularItemsFromFriends: vi.fn(),
+    hasLiked: vi.fn(),
+    getUserLikesStats: vi.fn()
+  }
 }))
 
+// Mock auth store
 vi.mock('../../src/stores/auth-store', () => ({
-  useAuthStore: () => mockAuthStore
+  useAuthStore: () => ({
+    user: { id: 'user-123' }
+  })
 }))
 
 // Import after mocking
 import { useLikesStore } from '../../src/stores/likes-store'
+import { likesService as mockLikesService } from '../../src/services/likes-service'
 
 describe('Likes Store', () => {
   let store

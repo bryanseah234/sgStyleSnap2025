@@ -158,11 +158,13 @@ describe('Likes API Integration Tests', () => {
         error: null
       })
 
+      const mockEqChain = {
+        eq: vi.fn().mockResolvedValue({ error: null })
+      }
       const mockDelete = {
         delete: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis()
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
-      mockDelete.eq.mockResolvedValue({ error: null })
       mockSupabase.from.mockReturnValueOnce(mockDelete)
 
       const mockSelect = {
@@ -186,11 +188,13 @@ describe('Likes API Integration Tests', () => {
         error: null
       })
 
+      const mockEqChain = {
+        eq: vi.fn().mockResolvedValue({ error: null })
+      }
       const mockDelete = {
         delete: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis()
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
-      mockDelete.eq.mockResolvedValue({ error: null })
       mockSupabase.from.mockReturnValueOnce(mockDelete)
 
       const mockSelect = {
@@ -353,7 +357,14 @@ describe('Likes API Integration Tests', () => {
 
       const result = await likesService.getUserLikesStats('user-with-no-items')
 
-      expect(result).toBeNull()
+      expect(result).toEqual({
+        total_items: 0,
+        total_likes_received: 0,
+        avg_likes_per_item: 0,
+        most_liked_item_id: null,
+        most_liked_item_name: null,
+        most_liked_item_likes: 0
+      })
     })
   })
 
@@ -395,11 +406,13 @@ describe('Likes API Integration Tests', () => {
         error: null
       })
 
+      const mockEqChain = {
+        eq: vi.fn().mockResolvedValue({ error: null })
+      }
       const mockDelete = {
         delete: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis()
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
-      mockDelete.eq.mockResolvedValue({ error: null })
       mockSupabase.from.mockReturnValueOnce(mockDelete)
 
       const mockSelect = {
@@ -475,13 +488,16 @@ describe('Likes API Integration Tests', () => {
       }
       mockSupabase.from.mockReturnValueOnce(mockInsert)
 
-      const mockSelectExisting = {
-        select: vi.fn().mockReturnThis(),
+      const mockEqChain = {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { id: 'existing-like' },
           error: null
         })
+      }
+      const mockSelectExisting = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
       mockSupabase.from.mockReturnValueOnce(mockSelectExisting)
 

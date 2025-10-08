@@ -685,6 +685,59 @@ export const likesService = {
       console.error('Error toggling closet item like:', error)
       throw error
     }
+  },
+
+  // ============================================================================
+  // ALIASES FOR BACKWARD COMPATIBILITY
+  // ============================================================================
+
+  /**
+   * Alias for getPopularItemsFromFriends with min likes support
+   * @deprecated Use getPopularItemsFromFriends instead
+   */
+  async getPopularItems(limit = 20, minLikes = 0) {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_popular_items', {
+          limit_param: limit,
+          min_likes_param: minLikes
+        })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching popular items:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Alias for hasUserLikedItem (simpler implementation for backward compatibility)
+   * @deprecated Use hasUserLikedItem instead
+   */
+  async hasLiked(itemId) {
+    try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) return false
+      
+      const { data, error } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('item_id', itemId)
+        .eq('user_id', user.id)
+        .single()
+      
+      if (error) {
+        if (error.code === 'PGRST116') return false // No rows returned
+        throw error
+      }
+      return !!data
+    } catch (error) {
+      console.error('Error checking if item is liked:', error)
+      return false
+    }
   }
 }
 

@@ -160,11 +160,13 @@ describe('Likes Service', () => {
         error: null
       })
 
+      const mockEqChain = {
+        eq: vi.fn().mockResolvedValue({ error: null })
+      }
       const mockDelete = {
         delete: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis()
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
-      mockDelete.eq.mockResolvedValue({ error: null })
       mockSupabase.from.mockReturnValueOnce(mockDelete)
 
       const mockSelect = {
@@ -179,7 +181,7 @@ describe('Likes Service', () => {
       expect(result).toEqual({ likesCount: 4 })
       expect(mockDelete.delete).toHaveBeenCalled()
       expect(mockDelete.eq).toHaveBeenCalledWith('item_id', 'item-456')
-      expect(mockDelete.eq).toHaveBeenCalledWith('user_id', 'user-123')
+      expect(mockEqChain.eq).toHaveBeenCalledWith('user_id', 'user-123')
     })
 
     it('should throw error when not authenticated', async () => {
@@ -345,13 +347,16 @@ describe('Likes Service', () => {
         error: null
       })
 
-      const mockSelect = {
-        select: vi.fn().mockReturnThis(),
+      const mockEqChain = {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { id: 'like-1' },
           error: null
         })
+      }
+      const mockSelect = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
       mockSupabase.from.mockReturnValueOnce(mockSelect)
 
@@ -368,13 +373,16 @@ describe('Likes Service', () => {
         error: null
       })
 
-      const mockSelect = {
-        select: vi.fn().mockReturnThis(),
+      const mockEqChain = {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: null,
           error: { code: 'PGRST116' }
         })
+      }
+      const mockSelect = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnValue(mockEqChain)
       }
       mockSupabase.from.mockReturnValueOnce(mockSelect)
 
@@ -408,7 +416,7 @@ describe('Likes Service', () => {
       })
     })
 
-    it('should return null when no stats available', async () => {
+    it('should return default stats when no stats available', async () => {
       mockSupabase.rpc.mockResolvedValue({
         data: [],
         error: null
@@ -416,7 +424,14 @@ describe('Likes Service', () => {
 
       const result = await likesService.getUserLikesStats('user-123')
 
-      expect(result).toBeNull()
+      expect(result).toEqual({
+        total_items: 0,
+        total_likes_received: 0,
+        avg_likes_per_item: 0,
+        most_liked_item_id: null,
+        most_liked_item_name: null,
+        most_liked_item_likes: 0
+      })
     })
   })
 })
