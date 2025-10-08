@@ -18,6 +18,7 @@
 11. [Outfit Generation](tasks/11-outfit-generation.md) - Smart outfit combinations from permutations
 12. [Likes Feature](tasks/12-likes-feature.md) - Like/unlike clothing items
 13. [Advanced Outfit Features](tasks/13-advanced-outfit-features.md) - Outfit history, social sharing, collections
+14. [Notification System](tasks/14-notification-system.md) - Push notifications, friend suggestions, item likes
 
 ## Task Dependencies
 Each task may depend on the previous ones. Check individual task files for detailed dependencies.
@@ -79,9 +80,21 @@ Each task may depend on the previous ones. Check individual task files for detai
   - ✅ Testing: Unit/integration tests complete (81+ tests)
   - ⏳ Deployment: SQL migration needs to run on production Supabase
 
+- **Task 14:** ✅ Complete (Notification System - Database & Push Notifications)
+  - ✅ SQL Migration: 009_notifications_system.sql (notifications, friend_outfit_suggestions, item_likes)
+  - ✅ SQL Migration: 010_push_notifications.sql (push_subscriptions table, send notification function)
+  - ✅ Service Worker: Push notification support with background sync
+  - ✅ Frontend: PushNotificationService.vue component for subscription management
+  - ✅ Edge Function: send-push-notification function (Deno runtime)
+  - ✅ VAPID Keys: Public/private key generation documented
+  - ✅ Documentation: DEPLOYMENT_GUIDE.md, SECRETS_REFERENCE.md, SUPABASE_COMMANDS.md
+  - ⏳ Frontend Services: notifications-service.js, friend-suggestions-service.js pending
+  - ⏳ Stores: notifications-store.js pending
+  - ⏳ UI Components: NotificationCenter, FriendSuggestionCard pending
+
 ## Additional Enhancements
-- **Clothing Types System:** ✅ Complete (Migration 009)
-  - ✅ SQL Migration: 009_clothing_types.sql (adds clothing_type column)
+- **Clothing Types System:** ✅ Complete (Enhanced Categories)
+  - ✅ SQL Migration: 009_enhanced_categories.sql (adds clothing_type column)
   - ✅ Constants: clothing-constants.js (20 clothing types defined)
   - ✅ Filtering: Closet.vue updated with clothing_type filter
   - ✅ Mapping: Auto-mapping from clothing_type to category
@@ -121,9 +134,20 @@ Each task may depend on the previous ones. Check individual task files for detai
   - ⏳ E2E tests (user journeys) - infrastructure exists, tests pending
 
 ### 📋 Documentation Files
-- **Tasks:** `tasks/01-*.md` through `tasks/13-*.md`
+- **Tasks:** `tasks/01-*.md` through `tasks/14-*.md`
 - **Requirements:** `requirements/*.md` (including item-catalog, color-detection, outfit-generation)
-- **SQL Migrations:** `sql/001-008_*.sql` (008 = likes feature)
+- **SQL Migrations:** `sql/001-010_*.sql` (10 migrations total)
+  - 001: Initial schema (users, clothes, friends, suggestions)
+  - 002: RLS policies and security
+  - 003: Indexes and performance functions
+  - 004: Advanced features (collections, sharing, style preferences)
+  - 005: Catalog system
+  - 006: Color detection
+  - 007: Outfit generation
+  - 008: Likes feature
+  - 009: Notifications system (notifications, friend suggestions, item likes)
+  - 010: Push notifications (subscriptions, Edge Function integration)
+- **Deployment:** `DEPLOYMENT_GUIDE.md`, `SECRETS_REFERENCE.md`, `SUPABASE_COMMANDS.md`
 - **Migration Guide:** `docs/SQL_MIGRATION_GUIDE.md` - Comprehensive migration documentation
 - **Testing Guide:** `docs/TESTING.md` - Unit, integration, and E2E testing setup
-- **Implementation Guides:** `LIKES_FEATURE_SUMMARY.md`, `tasks/11-outfit-generation.md`
+- **Implementation Guides:** `LIKES_FEATURE_SUMMARY.md`, `tasks/11-outfit-generation.md`, `tasks/14-notification-system.md`

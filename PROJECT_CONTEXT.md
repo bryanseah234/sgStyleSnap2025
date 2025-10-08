@@ -1,5 +1,10 @@
 # StyleSnap - Project Content tasks/
-│ ├── 01│ │ ├── 09-item-catalog-system.md        # Item c│ │ │ ├── SuggestionItem.vue
+│ ├── 01│ │ ├── 09-item-catalog-system.md    │ ├── 09-item-catalog-system.md        # Item catalog implementation
+│ ├── 10-color-detection-ai.md         # Color detection AI implementation
+│ ├── 11-outfit-generation.md          # Outfit generation from permutations
+│ ├── 12-likes-feature.md              # Likes feature implementation
+│ ├── 13-advanced-outfit-features.md   # Task 13: Advanced outfit features
+│ └── 14-notification-system.md        # Task 14: Push notifications, friend suggestions Item c│ │ │ ├── SuggestionItem.vue
 │ │ │ ├── NotificationBell.vue
 │ │ │ ├── LikersList.vue                 # Task 12: Modal showing likers
 │ │ │ ├── PopularItemsCarousel.vue       # Task 12: Trending items carousel
@@ -94,7 +99,8 @@ stylesnap/
 │ ├── 006_color_detection.sql          # Task 10: Color fields and functions
 │ ├── 007_outfit_generation.sql        # Task 11: Outfit generation (permutation-based)
 │ ├── 008_likes_feature.sql            # Task 12: Likes system
-│ └── 009_notifications_system.sql     # Task 14: Notifications, suggestions, item likes
+│ ├── 009_notifications_system.sql     # Task 14: Notifications, suggestions, item likes
+│ └── 010_push_notifications.sql       # Task 14: Push subscription table
 ├── src/
 │ ├── assets/
 │ │ ├── styles/
@@ -289,4 +295,7 @@ When requirements reference tasks: `[TASK: 01-infrastructure-setup#1.1]`
 - **Code Standards**: `docs/CODE_STANDARDS.md` - Coding conventions and best practices
 - **API Reference**: `docs/API_REFERENCE.md` - Complete API endpoint documentation
 - **Contributing Guide**: `docs/CONTRIBUTING.md` - How to contribute to the project
-- **Deployment Guide**: `docs/DEPLOYMENT.md` - Production deployment instructions
+- **Deployment Guide**: `DEPLOYMENT_GUIDE.md` - **MAIN DEPLOYMENT GUIDE** (single source of truth)
+- **Secrets Reference**: `SECRETS_REFERENCE.md` - Quick lookup for environment variables
+- **Supabase Commands**: `SUPABASE_COMMANDS.md` - Complete CLI command reference
+- **Legacy Deployment**: `docs/DEPLOYMENT.md` - Additional reference material

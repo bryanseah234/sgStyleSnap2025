@@ -1,5 +1,9 @@
 # Deployment Guide
 
+> **📌 NOTE:** For the most up-to-date deployment instructions with complete examples, see the main [`DEPLOYMENT_GUIDE.md`](../DEPLOYMENT_GUIDE.md) in the project root.
+>
+> This document provides additional reference material and technical details.
+
 This guide covers deploying StyleSnap to production, including all services and configurations.
 
 ---

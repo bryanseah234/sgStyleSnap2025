@@ -180,21 +180,22 @@ For each migration below:
 - Functions: `toggle_like()`, `get_popular_items()`
 - Expected: ✅ "Success. No rows returned"
 
-**Migration 009: Clothing Types** (`sql/009_clothing_types.sql`)
-- **Modifies tables:** Adds `clothing_type` column to `clothes` and `catalog_items`
-- **Supports 20 clothing types:** Blazer, Blouse, Body, Dress, Hat, Hoodie, Longsleeve, Not sure, Other, Outwear, Pants, Polo, Shirt, Shoes, Shorts, Skip, Skirt, T-Shirt, Top, Undershirt
-- Helper function: `get_category_from_clothing_type()` to auto-map types to categories
-- Auto-trigger to set category based on clothing_type
-- Enables granular filtering by specific clothing types
-- Expected: ✅ "Success. No rows returned" + verification messages
-**Migration 009: Enhanced Categories** (`sql/009_enhanced_categories.sql`)
-- **Updates:** Category constraints on `clothes` and `catalog_items` tables
-- Expands from 5 simple categories to 20 detailed categories
-- Categories: blazer, blouse, body, dress, hat, hoodie, longsleeve, not-sure, other, outerwear, pants, polo, shirt, shoes, shorts, skip, skirt, t-shirt, top, undershirt
-- Function: `get_category_group()` maps detailed categories to simple groups
-- View: `category_distribution` for analytics
-- **Backward Compatible:** Existing simple categories remain valid
+**Migration 009: Notifications System** (`sql/009_notifications_system.sql`)
+- **Creates tables:** `notifications`, `friend_outfit_suggestions`, `item_likes` (3 tables)
+- Centralized notification system with real-time updates
+- Friend outfit suggestions (friends can suggest outfits to each other)
+- Item likes system (separate from outfit likes)
+- Notification triggers for auto-creation on events
 - Expected: ✅ "Success. No rows returned"
+
+**Migration 010: Push Notifications** (`sql/010_push_notifications.sql`)
+- **Creates table:** `push_subscriptions` (1 table)
+- Web push notification subscriptions
+- Function: `send_push_notification()` for Edge Function integration
+- Browser push notification support
+- Expected: ✅ "Success. No rows returned"
+
+**⚠️ Note:** There are legacy migration files (`009_clothing_types.sql`, `009_enhanced_categories.sql`) that are superseded by the current schema. Use only the migrations listed above in order.
 
 **What this does:**
 - Enables Row Level Security on all tables

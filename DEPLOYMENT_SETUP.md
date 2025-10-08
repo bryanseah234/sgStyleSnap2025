@@ -1,10 +1,29 @@
-# GitHub Workflows & Deployment Setup Guide
+# ⚠️ THIS FILE HAS BEEN REPLACED
 
-## ✅ New Files Created
+**Please use the new consolidated guide:** [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md)
 
-1. **`.github/workflows/deploy.yml`** - Vercel deployment workflow
-2. **`.github/workflows/e2e.yml`** - Playwright E2E testing workflow
-3. **`.gitignore`** - Complete git ignore rules for Vue 3 + Vite
+This document contains ALL deployment information in one place with:
+- ✅ Clear examples of what goes where (GitHub, Vercel, .env, Supabase)
+- ✅ Complete step-by-step commands
+- ✅ Environment variable reference tables
+- ✅ Troubleshooting guide
+- ✅ No duplicate information
+
+---
+
+# Old Content (Deprecated)
+
+---
+
+## 📋 Table of Contents
+
+1. [Quick Start Checklist](#quick-start-checklist)
+2. [Environment Variables - Complete Reference](#environment-variables-complete-reference)
+3. [Supabase Setup](#supabase-setup)
+4. [Vercel/Frontend Deployment](#vercelfrontend-deployment)
+5. [GitHub Actions Setup](#github-actions-setup)
+6. [Testing](#testing)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
