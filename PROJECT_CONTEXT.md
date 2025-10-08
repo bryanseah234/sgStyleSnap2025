@@ -58,17 +58,16 @@ Authentication: Google OAuth 2.0 (SSO) ONLY
 
 ## Complete File Structure
 stylesnap/
+├── API_GUIDE.md                       # **SINGLE SOURCE OF TRUTH** for all APIs
 ├── docs/
 │ ├── design/
 │ │ ├── DESIGN_REFERENCE.md           # Mobile UI mockup documentation
 │ │ └── mobile-mockups/               # Figma PNG exports (reference only)
 │ ├── CODE_STANDARDS.md
 │ ├── CONTRIBUTING.md
-│ ├── DEPLOYMENT.md
-│ └── API_REFERENCE.md
+│ └── DEPLOYMENT.md
 ├── requirements/
 │ ├── database-schema.md
-│ ├── api-endpoints.md
 │ ├── frontend-components.md
 │ ├── security.md
 │ ├── error-handling.md
@@ -272,8 +271,8 @@ When tasks reference requirements: `[REQ: database-schema#2.1]`
 When requirements reference tasks: `[TASK: 01-infrastructure-setup#1.1]`
 
 ## Critical Files for Development
+- **API Documentation**: `API_GUIDE.md` - **SINGLE SOURCE OF TRUTH** for all APIs
 - **Database Setup**: `sql/001_initial_schema.sql`
-- **API Specifications**: `requirements/api-endpoints.md`
 - **Component Guidelines**: `requirements/frontend-components.md`
 - **Security Requirements**: `requirements/security.md`
 - **Friend Search**: `tasks/04-social-features-privacy.md` (includes anti-scraping measures)
@@ -292,8 +291,8 @@ When requirements reference tasks: `[TASK: 01-infrastructure-setup#1.1]`
 - **Mobile UI Mockups**: `docs/design/DESIGN_REFERENCE.md` - Figma mockups and design intent (reference sketches only)
 
 ### Technical Documentation
+- **API Guide**: `API_GUIDE.md` - **SINGLE SOURCE OF TRUTH** for all APIs (REST, services, database functions, Edge functions)
 - **Code Standards**: `docs/CODE_STANDARDS.md` - Coding conventions and best practices
-- **API Reference**: `docs/API_REFERENCE.md` - Complete API endpoint documentation
 - **Contributing Guide**: `docs/CONTRIBUTING.md` - How to contribute to the project
 - **Deployment Guide**: `DEPLOYMENT_GUIDE.md` - **MAIN DEPLOYMENT GUIDE** (single source of truth)
 - **Secrets Reference**: `SECRETS_REFERENCE.md` - Quick lookup for environment variables

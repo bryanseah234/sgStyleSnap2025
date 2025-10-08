@@ -683,7 +683,7 @@ INSERT INTO catalog_items (name, category, image_url, thumbnail_url, tags, brand
 ## 🔗 Related Documentation
 
 - **[requirements/item-catalog.md](../requirements/item-catalog.md)** - Detailed requirements
-- **[requirements/api-endpoints.md](../requirements/api-endpoints.md)** - API patterns
+- **[API_GUIDE.md](../API_GUIDE.md)** - API patterns
 - **[requirements/frontend-components.md](../requirements/frontend-components.md)** - Component patterns
 - **[requirements/security.md](../requirements/security.md)** - Security requirements
 - **[docs/CODE_STANDARDS.md](../docs/CODE_STANDARDS.md)** - Coding conventions

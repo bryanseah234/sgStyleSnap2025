@@ -150,7 +150,7 @@ npm run format
 ```
 stylesnap/
 ├── docs/                  # Documentation files
-│   ├── API_REFERENCE.md
+│   ├── API_GUIDE.md (moved to root)
 │   ├── CODE_STANDARDS.md
 │   └── DEPLOYMENT.md
 ├── requirements/          # Requirement specifications
@@ -637,7 +637,7 @@ SELECT check_item_quota('user-uuid-here');
 ### Resources
 
 - **Documentation:** [docs/](docs/)
-- **API Reference:** [docs/API_REFERENCE.md](docs/API_REFERENCE.md)
+- **API Reference:** [API_GUIDE.md](../API_GUIDE.md)
 - **Code Standards:** [docs/CODE_STANDARDS.md](docs/CODE_STANDARDS.md)
 - **Requirements:** [requirements/](requirements/)
 

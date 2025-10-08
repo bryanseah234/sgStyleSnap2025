@@ -2,7 +2,7 @@
 
 ## Core Requirements
 1. [Database Schema](requirements/database-schema.md)
-2. [API Endpoints](requirements/api-endpoints.md)
+2. **[API Guide](API_GUIDE.md)** - **SINGLE SOURCE OF TRUTH** for all APIs
 3. [Frontend Components](requirements/frontend-components.md)
 4. [Security](requirements/security.md)
 5. [Error Handling](requirements/error-handling.md)
@@ -30,6 +30,7 @@
 - All profile fields are display-only except avatar selection
 
 ## Additional References
+- **[API Guide](API_GUIDE.md)** - Complete API documentation
 - [Project Context](PROJECT_CONTEXT.md)
 - [Tasks Overview](TASKS.md)
 - [SQL Migrations](sql/)
@@ -442,4 +443,4 @@ ORDER BY created_at DESC
 - Subscription managed client-side via Service Worker + Supabase
 - Preferences via direct Supabase queries to `notification_preferences`
 - Sending via Supabase Edge Function `send-push-notification`
-- See `requirements/api-endpoints.md` Section 4 for full details
+- See `API_GUIDE.md` for full API details

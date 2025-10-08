@@ -880,7 +880,7 @@ User → Google OAuth → Supabase Auth → JWT Token → API Requests
 ## Related Documentation
 - [User Flows](./USER_FLOWS.md) - User journey diagrams
 - [Database Guide](../DATABASE_GUIDE.md) - Complete database setup, schema, and ER diagrams
-- [API Reference](./API_REFERENCE.md) - API documentation
+- [API Guide](../API_GUIDE.md) - Complete API documentation
 - [Deployment](./DEPLOYMENT.md) - Deployment guide
 
 ---

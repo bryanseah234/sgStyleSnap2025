@@ -32,7 +32,7 @@ This directory contains mobile UI mockups exported from Figma. These sketches we
 **Implementation Reference:**
 - Actual styles: `/src/assets/styles/mobile.css`
 - Component structure: `/src/views/` and `/src/components/`
-- API integration: `/requirements/api-endpoints.md`
+- API integration: `/API_GUIDE.md`
 - Mobile features: `BATCH_10_FIXES.md`
 
 ---
@@ -346,7 +346,7 @@ This directory contains mobile UI mockups exported from Figma. These sketches we
 2. **Check Existing Implementation:**
    - Look at actual code first (see Component/Route column)
    - Review `mobile.css` for styling patterns
-   - Check API endpoints in `/requirements/api-endpoints.md`
+   - Check API endpoints in `/API_GUIDE.md`
 
 3. **Prioritize Code Over Mockups:**
    - If mockup conflicts with implementation, **follow the code**
@@ -396,7 +396,7 @@ This directory contains mobile UI mockups exported from Figma. These sketches we
 
 - **Mobile Implementation:** `BATCH_10_FIXES.md`
 - **Mobile Styles:** `/src/assets/styles/mobile.css`
-- **API Endpoints:** `/requirements/api-endpoints.md`
+- **API Endpoints:** `/API_GUIDE.md`
 - **Database Schema:** `/sql/001_initial_schema.sql`
 - **Component Standards:** `/docs/CODE_STANDARDS.md`
 - **Deployment Guide:** `/docs/DEPLOYMENT.md`

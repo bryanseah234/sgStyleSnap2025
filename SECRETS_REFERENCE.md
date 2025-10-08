@@ -11,6 +11,7 @@
 ```bash
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
 VITE_CLOUDINARY_UPLOAD_PRESET=your-preset
 VITE_VAPID_PUBLIC_KEY=BKxYjz3Q9YVs...
@@ -29,6 +30,7 @@ VERCEL_ORG_ID=team_xxxxx
 VERCEL_PROJECT_ID=prj_xxxxx
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
 VITE_CLOUDINARY_UPLOAD_PRESET=your-preset
 VITE_VAPID_PUBLIC_KEY=BKxYjz3Q9YVs...
@@ -46,6 +48,7 @@ Project → Settings → Environment Variables
 ```
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
 VITE_CLOUDINARY_UPLOAD_PRESET=your-preset
 VITE_VAPID_PUBLIC_KEY=BKxYjz3Q9YVs...
@@ -76,6 +79,7 @@ supabase secrets set VAPID_SUBJECT="mailto:support@yourdomain.com" --project-ref
 |----------|----------------|
 | **VITE_SUPABASE_URL** | Supabase Dashboard → Project Settings → API → Project URL |
 | **VITE_SUPABASE_ANON_KEY** | Supabase Dashboard → Project Settings → API → anon public key |
+| **VITE_GOOGLE_CLIENT_ID** | Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client ID |
 | **VITE_CLOUDINARY_CLOUD_NAME** | Cloudinary Console → Dashboard → Cloud name |
 | **VITE_CLOUDINARY_UPLOAD_PRESET** | Cloudinary → Settings → Upload → Create unsigned preset |
 | **VITE_VAPID_PUBLIC_KEY** | Generate: `web-push generate-vapid-keys` |
