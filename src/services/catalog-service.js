@@ -47,45 +47,46 @@ const catalogService = {
       brand = null,
       season = null,
       style = null,
+      excludeOwned = true,
       page = 1,
       limit = 20
     } = options
 
     try {
-      // Build query
-      let query = supabase
-        .from('catalog_items')
-        .select('*', { count: 'exact' })
-        .eq('is_active', true)
-
-      // Apply filters
-      if (category) {
-        query = query.eq('category', category)
-      }
-      if (color) {
-        query = query.eq('color', color)
-      }
-      if (brand) {
-        query = query.ilike('brand', `%${brand}%`)
-      }
-      if (season) {
-        query = query.eq('season', season)
-      }
-      if (style) {
-        query = query.contains('style', [style])
+      // Get current user if excluding owned items
+      let userId = null
+      if (excludeOwned) {
+        const { data: { user } } = await supabase.auth.getUser()
+        userId = user?.id || null
       }
 
-      // Apply pagination
-      const start = (page - 1) * limit
-      const end = start + limit - 1
-      query = query.range(start, end)
-
-      // Order by creation date (newest first)
-      query = query.order('created_at', { ascending: false })
-
-      const { data, error, count } = await query
+      // Use RPC function to get catalog items excluding owned
+      const { data, error } = await supabase.rpc('get_catalog_excluding_owned', {
+        user_id_param: userId,
+        category_filter: category,
+        color_filter: color,
+        brand_filter: brand,
+        season_filter: season,
+        page_limit: limit,
+        page_offset: (page - 1) * limit
+      })
 
       if (error) throw error
+
+      // Get total count for pagination
+      let countQuery = supabase
+        .from('catalog_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+        .eq('privacy', 'public')
+
+      // Apply same filters for count
+      if (category) countQuery = countQuery.eq('category', category)
+      if (color) countQuery = countQuery.eq('primary_color', color)
+      if (brand) countQuery = countQuery.ilike('brand', `%${brand}%`)
+      if (season) countQuery = countQuery.eq('season', season)
+
+      const { count } = await countQuery
 
       return {
         items: data || [],
@@ -248,8 +249,8 @@ const catalogService = {
       }
 
       // Add color if available (from Migration 006)
-      if (catalogItem.color) {
-        newItem.primary_color = catalogItem.color
+      if (catalogItem.primary_color) {
+        newItem.primary_color = catalogItem.primary_color
       }
 
       const { data, error } = await supabase
@@ -279,28 +280,31 @@ const catalogService = {
         .from('catalog_items')
         .select('brand')
         .eq('is_active', true)
+        .eq('privacy', 'public')
         .not('brand', 'is', null)
         .order('brand')
 
       // Get distinct colors
       const { data: colorData } = await supabase
         .from('catalog_items')
-        .select('color')
+        .select('primary_color')
         .eq('is_active', true)
-        .not('color', 'is', null)
-        .order('color')
+        .eq('privacy', 'public')
+        .not('primary_color', 'is', null)
+        .order('primary_color')
 
       // Get distinct seasons
       const { data: seasonData } = await supabase
         .from('catalog_items')
         .select('season')
         .eq('is_active', true)
+        .eq('privacy', 'public')
         .not('season', 'is', null)
         .order('season')
 
       // Remove duplicates
       const brands = [...new Set(brandData?.map(b => b.brand) || [])]
-      const colors = [...new Set(colorData?.map(c => c.color) || [])]
+      const colors = [...new Set(colorData?.map(c => c.primary_color) || [])]
       const seasons = [...new Set(seasonData?.map(s => s.season) || [])]
 
       return {
