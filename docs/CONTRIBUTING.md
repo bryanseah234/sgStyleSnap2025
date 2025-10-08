@@ -143,6 +143,22 @@ npm run lint
 npm run format
 ```
 
+### 5. (Optional) Seed Catalog Items
+
+To populate the catalog with sample items:
+
+```bash
+# Option 1: Use existing sample data (Unsplash images)
+npm run populate-catalog
+
+# Option 2: Seed from your own CSV + images
+npm run seed-catalog-csv -- ./my-items.csv ./my-images/
+
+# See docs/CATALOG_SEEDING.md for detailed guide
+```
+
+**Note:** Migration 011 must be run before seeding catalog items from CSV.
+
 ---
 
 ## Project Structure
