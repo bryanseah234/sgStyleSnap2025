@@ -474,10 +474,11 @@ npm run build
 
 For more detailed information, see:
 
-- **Push Notifications:** `docs/PUSH_NOTIFICATIONS.md`
+- **Push Notifications:** `docs/NOTIFICATIONS_GUIDE.md` - In-app & push notifications
 - **Database Guide:** `DATABASE_GUIDE.md` - Complete database setup and schema
 - **API Reference:** `API_GUIDE.md`
-- **Testing Guide:** `docs/TESTING.md`
+- **Testing Guide:** `TESTS_GUIDE.md`
+- **Documentation Index:** `docs/README.md` - Complete feature guide index
 
 ---
 
