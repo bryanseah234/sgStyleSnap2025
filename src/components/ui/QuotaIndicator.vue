@@ -25,18 +25,122 @@
 -->
 
 <template>
-  <!-- TODO: Implement quota display with ProgressBar -->
-  <!-- TODO: Calculate percentage and color based on usage -->
-  <!-- TODO: Show warning message when near limit -->
+  <div class="quota-indicator">
+    <div v-if="showDetails" class="quota-header">
+      <span class="quota-count">
+        {{ currentCount }} / {{ maxCount }} uploads
+      </span>
+      <span 
+        v-if="quota.isNearLimit" 
+        class="quota-badge"
+        :class="quota.isFull ? 'quota-badge-danger' : 'quota-badge-warning'"
+      >
+        {{ quota.isFull ? 'Full' : 'Near Limit' }}
+      </span>
+    </div>
+    
+    <ProgressBar 
+      :value="currentCount" 
+      :max="maxCount" 
+      :color="quotaColor"
+      size="md"
+    />
+    
+    <p v-if="showDetails" class="quota-message">
+      {{ quotaMessage }}
+    </p>
+  </div>
 </template>
 
 <script setup>
-// TODO: Define props
-// TODO: Import ProgressBar component
-// TODO: Calculate quota percentage and determine color
-// TODO: Show warning text if > 90% full
+import { computed } from 'vue'
+import ProgressBar from './ProgressBar.vue'
+import { calculateQuota, getQuotaColor, getQuotaMessage } from '@/utils/quota-calculator'
+
+const props = defineProps({
+  currentCount: {
+    type: Number,
+    required: true,
+    validator: (value) => value >= 0
+  },
+  maxCount: {
+    type: Number,
+    default: 50
+  },
+  showDetails: {
+    type: Boolean,
+    default: true
+  }
+})
+
+const quota = computed(() => calculateQuota(props.currentCount, props.maxCount))
+const quotaColor = computed(() => getQuotaColor(quota.value.percentage))
+const quotaMessage = computed(() => getQuotaMessage(quota.value))
 </script>
 
 <style scoped>
-/* TODO: Add quota indicator styles */
+.quota-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.quota-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quota-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.quota-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.quota-badge-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.quota-badge-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.quota-message {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .quota-count {
+    color: #d1d5db;
+  }
+  
+  .quota-badge-warning {
+    background-color: #78350f;
+    color: #fef3c7;
+  }
+  
+  .quota-badge-danger {
+    background-color: #7f1d1d;
+    color: #fee2e2;
+  }
+  
+  .quota-message {
+    color: #9ca3af;
+  }
+}
 </style>
