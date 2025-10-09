@@ -204,6 +204,34 @@ pnpm-lock.yaml
 .netlify
 
 # ============================================
+# Python / AI Models
+# ============================================
+# Python virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# PyTorch models (large binary files)
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.pkl
+*.pickle
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ============================================
 # Project-Specific
 # ============================================
 # Ignore uploaded images in development (if storing locally)
@@ -216,6 +244,34 @@ docs-generated/
 # Ignore maintenance script outputs
 scripts/output/
 scripts/logs/
+
+# ============================================
+# Web Scraper Data & Cache
+# ============================================
+# Scraped images and catalog data
+catalog-data/
+catalog-data/images/
+catalog-data/*.csv
+catalog-data/.downloaded_hashes.txt
+
+# Scraper temporary files
+scripts/temp_*.jpg
+scripts/temp_*.png
+scripts/*.pyc
+
+# Keep scraper documentation and templates
+!catalog-data/.gitkeep
+!scripts/catalog-items-template.csv
+!scripts/SCRAPER_GUIDE.md
+!scripts/SCRAPER_OPTIMIZATIONS.md
+!scripts/README.md
+
+# Keep Python scripts but ignore the model
+!scripts/*.py
+scripts/best_model.pth
+
+# Scraper URL list (user-specific)
+scripts/scrape-urls.txt
 
 # ============================================
 # Keep These Files & Folders
