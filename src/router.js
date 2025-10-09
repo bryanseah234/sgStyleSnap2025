@@ -41,7 +41,6 @@ import Analytics from './pages/Analytics.vue'
 import OutfitGenerator from './pages/OutfitGenerator.vue'
 import ManualOutfitCreator from './pages/ManualOutfitCreator.vue' // Manual outfit creation
 import Notifications from './pages/Notifications.vue' // Notifications page
-import DebugAuth from './pages/DebugAuth.vue' // Debug authentication
 
 const routes = [
   {
@@ -62,12 +61,6 @@ const routes = [
     name: 'Register',
     component: Register,
     meta: { requiresAuth: false, guestOnly: true }
-  },
-  {
-    path: '/debug-auth',
-    name: 'DebugAuth',
-    component: DebugAuth,
-    meta: { requiresAuth: false }
   },
   {
     path: '/closet',
@@ -136,27 +129,17 @@ const router = createRouter({
 })
 
 // Global navigation guard
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
-  // If auth hasn't been initialized yet, initialize it
-  // This is crucial for OAuth callbacks where the session is in the URL
-  if (!authStore.isAuthenticated && !authStore.loading) {
-    console.log('🔄 Router: Initializing auth before navigation...')
-    await authStore.initializeAuth()
-  }
   
   // Check if route requires authentication
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('🔒 Router: Route requires auth, redirecting to login')
     // Redirect to login if not authenticated
     next('/login')
   } else if (to.meta.guestOnly && authStore.isAuthenticated) {
-    console.log('✅ Router: User authenticated, redirecting to closet')
     // Redirect to closet if already authenticated (e.g., on login page)
     next('/closet')
   } else {
-    console.log('✅ Router: Navigation allowed to', to.path)
     // Allow navigation
     next()
   }

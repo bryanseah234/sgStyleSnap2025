@@ -4,41 +4,7 @@ This directory contains utility scripts for database management, maintenance, an
 
 ## Available Scripts
 
-### 🆕 1. `scrape-catalog.py` (NEW!)
-**AI-powered web scraper** that automatically downloads clothing images from websites, classifies them with machine learning, detects colors, and generates catalog entries.
-
-**Purpose:**
-- Automate catalog creation from e-commerce websites
-- AI classification using trained ResNet50 model
-- Face detection to filter out model photos
-- Automatic color detection
-- Generate ready-to-upload CSV
-
-**Usage:**
-```bash
-# 1. Add URLs to scrape
-vim scripts/scrape-urls.txt
-
-# 2. Run scraper
-python scripts/scrape-catalog.py
-
-# 3. Upload to Supabase
-node scripts/seed-catalog-from-csv.js catalog-data/scraped-items.csv catalog-data/images/
-```
-
-**Features:**
-- 🌐 Scrapes images from any website URL
-- 👤 Filters images with faces (no model shots)
-- 🧠 AI classification (20 clothing types)
-- 🎨 Auto color detection (18 colors)
-- 💾 Smart filename generation
-- 📝 CSV generation with required fields
-
-**See:** [SCRAPER_GUIDE.md](./SCRAPER_GUIDE.md) for complete documentation
-
----
-
-### 2. `populate-catalog.js`
+### 1. `populate-catalog.js`
 Populates the catalog database with curated clothing items for users to browse and add to their virtual closets.
 
 **Purpose:**
