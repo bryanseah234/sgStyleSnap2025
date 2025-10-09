@@ -1,44 +1,61 @@
 #!/usr/bin/env python3
 """
 Patched Clothing Image Spider & Catalog Generator
+WITH VIRTUAL ENVIRONMENT SUPPORT
 
-This patched script includes the following improvements made by the assistant:
-- Safer dependency installation: auto-installs only light packages and prints clear instructions for heavy ones (torch, selenium, mediapipe).
-- Robust model loading with device fallback and clearer errors.
-- Fallback body-detection using OpenCV Haar cascades if MediaPipe not available.
-- Perceptual color matching (RGB -> LAB) for better color naming.
-- Content-Length guard to skip very large images early.
-- Safer cross-filesystem moves using shutil.move / os.replace fallback.
-- Ensures CSV parent directories exist.
-- Logging used instead of print for improved observability.
-- Selenium usage is optional; requests-based fetching used as fallback when Selenium unavailable.
-- Legal/ethical warning about robots.txt and copyright.
-
-USAGE: same as original; create scripts/scrape-urls.txt, place model at scripts/best_model.pth, then run.
-
-Note: This script still requires heavy packages: torch, torchvision, mediapipe (optional but recommended for body detection), selenium+webdriver-manager (optional for JS-heavy pages). The script will explain missing heavy packages and exit where required.
+This patched script now:
+- Creates and activates a virtual environment automatically
+- Installs all dependencies within the venv
+- Ensures images are valid clothing items with no body parts
+- Maintains all original functionality
 """
 
 import os
 import sys
-import csv
-import time
-import hashlib
-import re
-import gc
 import subprocess
 import logging
-import shutil
 from pathlib import Path
-from urllib.parse import urljoin, urlparse, parse_qs, urlunparse
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from queue import Queue
-import threading
 
 # --------------------
-# Logging
+# VIRTUAL ENVIRONMENT SETUP
 # --------------------
+def setup_virtual_environment():
+    """Create and activate virtual environment, install all dependencies."""
+    venv_dir = Path(__file__).parent / "clothing_scraper_venv"
+    python_exe = venv_dir / "bin" / "python"
+    if sys.platform == "win32":
+        python_exe = venv_dir / "Scripts" / "python.exe"
+    
+    # Create venv if it doesn't exist
+    if not venv_dir.exists():
+        logger.info("Creating virtual environment...")
+        try:
+            subprocess.check_call([sys.executable, "-m", "venv", str(venv_dir)])
+            logger.info("Virtual environment created at: %s", venv_dir)
+        except subprocess.CalledProcessError as e:
+            logger.error("Failed to create virtual environment: %s", e)
+            sys.exit(1)
+    
+    # Install all packages in venv
+    packages = [
+        'requests', 'beautifulsoup4', 'Pillow', 'opencv-python', 
+        'scikit-learn', 'lxml', 'torch', 'torchvision', 
+        'selenium', 'webdriver-manager', 'mediapipe'
+    ]
+    
+    logger.info("Installing all dependencies in virtual environment...")
+    for package in packages:
+        try:
+            subprocess.check_call([str(python_exe), "-m", "pip", "install", package])
+        except subprocess.CalledProcessError as e:
+            logger.error("Failed to install %s: %s", package, e)
+    
+    # Restart script with venv python
+    if sys.executable != str(python_exe):
+        logger.info("Restarting with virtual environment Python...")
+        os.execv(str(python_exe), [str(python_exe)] + sys.argv)
+
+# Initialize logging first
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s: %(message)s',
@@ -46,72 +63,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# --------------------
-# AUTO-INSTALL (SAFE)
-# --------------------
-
-def install_dependencies():
-    """Install only light dependencies automatically. Warn for heavy/complex ones.
-
-    This function avoids attempting to install large or platform-specific
-    packages (torch, selenium, mediapipe). It will install pure-Python
-    packages that are usually safe to pip-install.
-    """
-    required_packages = {
-        'requests': 'requests',
-        'beautifulsoup4': 'bs4',
-        'Pillow': 'PIL',
-        'opencv-python': 'cv2',
-        'scikit-learn': 'sklearn',
-        'lxml': 'lxml',
-    }
-
-    missing = []
-    for pkg, mod in required_packages.items():
-        try:
-            __import__(mod)
-        except ImportError:
-            missing.append(pkg)
-
-    if missing:
-        logger.info("Installing missing light packages: %s", ", ".join(missing))
-        for pkg in missing:
-            try:
-                subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
-            except subprocess.CalledProcessError:
-                logger.error("Failed to install %s. Please run: pip install %s", pkg, pkg)
-                sys.exit(1)
-
-    heavy = []
-    for pkg in ('torch', 'torchvision', 'selenium', 'webdriver-manager', 'mediapipe'):
-        try:
-            __import__(pkg.replace('-', '_'))
-        except Exception:
-            heavy.append(pkg)
-    if heavy:
-        logger.warning("The following packages are large or platform-specific and are NOT auto-installed: %s", ", ".join(heavy))
-        logger.info("Please install them yourself. Example (CPU PyTorch):")
-        logger.info("  pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu")
-        logger.info("And for Selenium + webdriver-manager:")
-        logger.info("  pip install selenium webdriver-manager")
-        logger.info("And for MediaPipe (optional, for better body detection):")
-        logger.info("  pip install mediapipe")
-
-# Run lightweight auto-installs
-install_dependencies()
+# Setup virtual environment
+setup_virtual_environment()
 
 # --------------------
-# Safe/conditional imports
+# REST OF ORIGINAL SCRIPT (with strict category enforcement)
 # --------------------
+import csv
+import time
+import hashlib
+import re
+import gc
+import shutil
+from urllib.parse import urljoin, urlparse, parse_qs, urlunparse
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue
+import threading
+
 import requests
 from bs4 import BeautifulSoup
-
-# OpenCV and PIL
 import cv2
 import numpy as np
 from PIL import Image
 
-# Selenium optional
+# Selenium optional but installed
 try:
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -127,21 +103,20 @@ except Exception:
     SELENIUM_AVAILABLE = False
     logger.warning("Selenium not available: Selenium-based page rendering will be disabled")
 
-# Torch is mandatory for classification. Exit early with clear instructions if missing.
+# Torch is mandatory
 try:
     import torch
     import torch.nn as nn
     import torchvision.models as models
     from torchvision import transforms
-except Exception:
-    logger.error("PyTorch / torchvision not found. This script requires torch and torchvision to run the classifier.")
-    logger.info("Install example (CPU): pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu")
+except Exception as e:
+    logger.error("PyTorch import failed: %s", e)
     sys.exit(1)
 
 # scikit-learn
 from sklearn.cluster import KMeans
 
-# Mediapipe optional (preferred for body detection)
+# Mediapipe optional
 try:
     import mediapipe as mp
     MEDIAPIPE_AVAILABLE = True
@@ -152,7 +127,7 @@ except Exception:
     logger.warning("MediaPipe not available: falling back to OpenCV-based face/body heuristics")
 
 # --------------------
-# CONFIGURATION
+# STRICT CONFIGURATION - MUST BE CLOTHING ITEMS ONLY
 # --------------------
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -161,15 +136,17 @@ URLS_FILE = SCRIPT_DIR / "scrape-urls.txt"
 OUTPUT_DIR = PROJECT_ROOT / "catalog-data" / "images"
 CSV_PATH = PROJECT_ROOT / "catalog-data" / "scraped-items.csv"
 
+# Clothing categories - ONLY VALID CLOTHING ITEMS
 CATEGORY_NAMES = [
     'Blazer', 'Blouse', 'Body', 'Dress', 'Hat', 'Hoodie', 'Longsleeve',
     'Not sure', 'Other', 'Outwear', 'Pants', 'Polo', 'Shirt', 'Shoes',
     'Shorts', 'Skip', 'Skirt', 'T-Shirt', 'Top', 'Undershirt'
 ]
 
+# STRICT CATEGORY MAPPING - REJECT "Not sure", "Skip", "Other"
 CLOTHING_CATEGORIES = {
     "Blouse": "top",
-    "Body": "top",
+    "Body": "top", 
     "Polo": "top",
     "Shirt": "top",
     "T-Shirt": "top",
@@ -177,7 +154,7 @@ CLOTHING_CATEGORIES = {
     "Undershirt": "top",
     "Longsleeve": "top",
     "Pants": "bottom",
-    "Shorts": "bottom",
+    "Shorts": "bottom", 
     "Skirt": "bottom",
     "Blazer": "outerwear",
     "Hoodie": "outerwear",
@@ -185,9 +162,7 @@ CLOTHING_CATEGORIES = {
     "Dress": "outerwear",
     "Shoes": "shoes",
     "Hat": "accessory",
-    "Not sure": "uncategorized",
-    "Other": "uncategorized",
-    "Skip": "uncategorized"
+    # "Not sure", "Other", "Skip" are REJECTED - not valid clothing
 }
 
 COLOR_NAMES = {
@@ -216,13 +191,14 @@ MIN_IMAGE_SIZE = 100
 MAX_IMAGE_SIZE = 2000
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
-MIN_CLASSIFICATION_CONFIDENCE = 0.3
+# STRICTER confidence threshold
+MIN_CLASSIFICATION_CONFIDENCE = 0.76  # Increased from 0.3
 
 MAX_PAGES_PER_DOMAIN = 10
 MAX_DEPTH = 9
 CRAWL_DELAY = 1.0
-MAX_WORKERS = 4
-IGNORE_ROBOTS_TXT = True  # WARNING: See legal note below
+MAX_WORKERS = 9
+IGNORE_ROBOTS_TXT = True
 
 DOWNLOADED_IMAGES_FILE = PROJECT_ROOT / "catalog-data" / ".downloaded_hashes.txt"
 
@@ -232,13 +208,13 @@ TRACKING_PARAMS = {
     '_ga', '_gl', 'mc_cid', 'mc_eid'
 }
 
-# --------------------
-# LEGAL WARNING
-# --------------------
-logger.warning("IGNORE_ROBOTS_TXT=%s is set. Scraping may violate site terms or copyright. Consider setting IGNORE_ROBOTS_TXT=False and respecting robots.txt and site policies.", IGNORE_ROBOTS_TXT)
+# REJECTED categories - images with these classifications will be discarded
+REJECTED_CATEGORIES = {'Not sure', 'Other', 'Skip'}
+
+logger.warning("STRICT MODE: Only valid clothing items will be saved. No body parts allowed.")
 
 # --------------------
-# CLASSIFIER
+# CLASSIFIER WITH STRICT VALIDATION
 # --------------------
 class ClothingClassifier:
     def __init__(self, model_path):
@@ -247,11 +223,9 @@ class ClothingClassifier:
         num_ftrs = self.model.fc.in_features
         self.model.fc = nn.Linear(num_ftrs, len(CATEGORY_NAMES))
 
-        # Load weights robustly (map to cpu first)
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
             state = torch.load(model_path, map_location='cpu')
-            # Support if saved as {'state_dict': ...}
             if isinstance(state, dict) and 'state_dict' in state:
                 state = state['state_dict']
             self.model.load_state_dict(state)
@@ -261,7 +235,6 @@ class ClothingClassifier:
             logger.info("Model loaded (device: %s)", device)
         except Exception as e:
             logger.exception("Failed to load model: %s", e)
-            logger.error("Ensure the model file matches architecture and is not a GPU-only pickle. Example: use torch.save(model.state_dict()) when saving.)")
             raise
 
         self.transform = transforms.Compose([
@@ -274,6 +247,7 @@ class ClothingClassifier:
         ])
 
     def classify(self, image_path):
+        """Classify image and STRICTLY validate category."""
         try:
             img = Image.open(image_path).convert('RGB')
             input_tensor = self.transform(img).unsqueeze(0).to(self.device)
@@ -281,15 +255,31 @@ class ClothingClassifier:
                 output = self.model(input_tensor)
                 probabilities = torch.nn.functional.softmax(output, dim=1)
                 confidence, predicted_idx = torch.max(probabilities, dim=1)
+            
             clothing_type = CATEGORY_NAMES[predicted_idx.item()]
+            confidence_val = confidence.item()
+            
+            # STRICT VALIDATION: Reject uncertain or invalid categories
+            if clothing_type in REJECTED_CATEGORIES:
+                logger.info("REJECTED: Invalid category '%s'", clothing_type)
+                return "REJECTED", "rejected", 0.0
+                
+            if confidence_val < MIN_CLASSIFICATION_CONFIDENCE:
+                logger.info("REJECTED: Low confidence %.2f for '%s'", confidence_val, clothing_type)
+                return "REJECTED", "rejected", 0.0
+                
             category = CLOTHING_CATEGORIES.get(clothing_type, 'uncategorized')
-            return clothing_type, category, confidence.item()
+            if category == 'uncategorized':
+                logger.info("REJECTED: Uncategorized clothing type '%s'", clothing_type)
+                return "REJECTED", "rejected", 0.0
+                
+            return clothing_type, category, confidence_val
         except Exception as e:
             logger.exception("Classification error: %s", e)
-            return "Other", "uncategorized", 0.0
+            return "REJECTED", "rejected", 0.0
 
 # --------------------
-# BODY DETECTOR
+# ENHANCED BODY DETECTOR - MORE STRICT
 # --------------------
 class BodyDetector:
     def __init__(self):
@@ -297,58 +287,151 @@ class BodyDetector:
         if self.use_mediapipe:
             try:
                 self.mp_pose = mp.solutions.pose
-                self.pose = self.mp_pose.Pose(static_image_mode=True, model_complexity=1, min_detection_confidence=0.5)
-                logger.info("Using MediaPipe for body detection")
+                self.pose = self.mp_pose.Pose(static_image_mode=True, model_complexity=1, min_detection_confidence=0.3)  # Lower threshold for stricter detection
+                self.mp_face = mp.solutions.face_detection
+                self.face_detector = self.mp_face.FaceDetection(model_selection=0, min_detection_confidence=0.3)
+                logger.info("Using MediaPipe for strict body detection")
             except Exception:
                 self.use_mediapipe = False
                 logger.exception("Failed to initialize MediaPipe, falling back")
 
-        # Fallback: use OpenCV Haar cascade for face detection as a heuristic
+        # OpenCV fallbacks
         self.face_cascade = None
         try:
             haar_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
             if os.path.exists(haar_path):
                 self.face_cascade = cv2.CascadeClassifier(haar_path)
-                logger.info("OpenCV Haar cascade available for fallback face detection")
+                logger.info("OpenCV Haar cascade available for fallback detection")
         except Exception:
-            logger.warning("Haar cascade not available; fallback body detection disabled")
+            logger.warning("Haar cascade not available")
 
     def has_human_body(self, image_path):
+        """STRICT body detection - reject if ANY human parts detected."""
         try:
             img = cv2.imread(str(image_path))
             if img is None or img.size == 0:
-                return False
-            # Quick heuristic: detect faces first (fast)
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                return True  # Conservative: reject corrupted images
+            
+            # Resize for faster processing
+            img_small = cv2.resize(img, (400, 400))
+            gray = cv2.cvtColor(img_small, cv2.COLOR_BGR2GRAY)
+            
+            # 1. Face detection (fastest)
             if self.face_cascade is not None:
-                faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+                faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(20, 20))
                 if len(faces) > 0:
+                    logger.info("REJECTED: Face detected")
                     return True
 
+            # 2. MediaPipe detection (more comprehensive)
             if self.use_mediapipe:
-                img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                results = self.pose.process(img_rgb)
-                if results.pose_landmarks:
-                    visible_landmarks = sum(1 for lm in results.pose_landmarks.landmark if lm.visibility > 0.5)
-                    if visible_landmarks >= 10:
+                img_rgb = cv2.cvtColor(img_small, cv2.COLOR_BGR2RGB)
+                
+                # Face detection with MediaPipe
+                face_results = self.face_detector.process(img_rgb)
+                if face_results.detections:
+                    logger.info("REJECTED: MediaPipe face detected")
+                    return True
+                
+                # Body pose detection
+                pose_results = self.pose.process(img_rgb)
+                if pose_results.pose_landmarks:
+                    visible_landmarks = sum(1 for lm in pose_results.pose_landmarks.landmark if lm.visibility > 0.3)
+                    if visible_landmarks >= 5:  # Very sensitive - any significant body parts
+                        logger.info("REJECTED: Body pose detected (%d landmarks)", visible_landmarks)
                         return True
 
-            # If neither method finds a human, assume product-only
-            return False
+            # 3. Skin tone detection as additional heuristic
+            if self._has_skin_tone(img_small):
+                logger.info("REJECTED: Skin tones detected")
+                return True
+
+            return False  # No body parts detected
+            
         except Exception as e:
             logger.exception("Body detection error: %s", e)
-            # conservative approach: if body detection fails, treat as containing body and skip
-            return True
+            return True  # Conservative: reject if detection fails
+
+    def _has_skin_tone(self, img):
+        """Detect skin tones in image."""
+        try:
+            # Convert to HSV for skin detection
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            
+            # Define skin tone ranges in HSV
+            lower_skin = np.array([0, 20, 70], dtype=np.uint8)
+            upper_skin = np.array([20, 255, 255], dtype=np.uint8)
+            
+            mask = cv2.inRange(hsv, lower_skin, upper_skin)
+            skin_ratio = np.sum(mask > 0) / (img.shape[0] * img.shape[1])
+            
+            return skin_ratio > 0.05  # If more than 5% skin tones
+        except Exception:
+            return False
 
     def __del__(self):
         try:
             if self.use_mediapipe:
                 self.pose.close()
+                self.face_detector.close()
         except Exception:
             pass
 
 # --------------------
-# COLOR DETECTION
+# TEXT DETECTOR - NEW ADDITION
+# --------------------
+class TextDetector:
+    def __init__(self):
+        self.text_detector = None
+        try:
+            # Initialize text detection
+            self.text_detector = cv2.text.OCRBeamSearchDecoder.create()
+            logger.info("Text detector initialized")
+        except Exception:
+            logger.warning("Advanced text detection not available, using simple method")
+    
+    def has_text(self, image_path):
+        """Simple text detection using contour analysis."""
+        try:
+            img = cv2.imread(str(image_path))
+            if img is None:
+                return False
+                
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            
+            # Use morphological operations to find text-like regions
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+            grad = cv2.morphologyEx(gray, cv2.MORPH_GRADIENT, kernel)
+            
+            # Threshold and find contours
+            _, thresh = cv2.threshold(grad, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            # Filter contours that look like text (small, rectangular)
+            text_contours = 0
+            for contour in contours:
+                x, y, w, h = cv2.boundingRect(contour)
+                aspect_ratio = w / h
+                area = w * h
+                
+                # Text typically has specific aspect ratios and sizes
+                if (0.1 < aspect_ratio < 10.0 and 
+                    10 < area < (img.shape[0] * img.shape[1] * 0.1) and
+                    h > 5 and w > 5):
+                    text_contours += 1
+                    
+            # If many text-like contours found, reject image
+            if text_contours > 10:
+                logger.info("REJECTED: Text detected (%d text regions)", text_contours)
+                return True
+                
+            return False
+        except Exception as e:
+            logger.exception("Text detection error: %s", e)
+            return False  # Don't reject if text detection fails
+
+# --------------------
+# REST OF ORIGINAL SCRIPT (with strict validation)
 # --------------------
 class ColorDetector:
     @staticmethod
@@ -376,7 +459,6 @@ class ColorDetector:
     @staticmethod
     def _rgb_to_name(rgb):
         try:
-            # Convert RGB (r,g,b) to LAB using OpenCV (cv2 uses BGR)
             bgr = np.uint8([[[rgb[2], rgb[1], rgb[0]]]])
             lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)[0][0].astype(int)
             min_dist = float('inf')
@@ -390,7 +472,6 @@ class ColorDetector:
                     best_name = name
             return best_name
         except Exception:
-            # Fallback to simple RGB Euclidean
             min_distance = float('inf')
             closest_name = None
             for name, named_rgb in COLOR_NAMES.items():
@@ -400,9 +481,6 @@ class ColorDetector:
                     closest_name = name
             return closest_name
 
-# --------------------
-# WEB SPIDER / CRAWLER
-# --------------------
 class WebSpider:
     def __init__(self):
         self.session = requests.Session()
@@ -539,7 +617,6 @@ class WebSpider:
         return list(self.image_urls)
 
     def _fetch_page(self, url):
-        # Prefer Selenium when available and necessary
         if SELENIUM_AVAILABLE:
             try:
                 if self.driver is None:
@@ -554,7 +631,6 @@ class WebSpider:
                     return self.driver.page_source
             except Exception:
                 logger.exception("Selenium fetch failed for %s. Falling back to requests.", url)
-        # Requests fallback
         try:
             resp = self.session.get(url, timeout=15)
             resp.raise_for_status()
@@ -606,7 +682,7 @@ class WebSpider:
                 if content_length:
                     try:
                         cl = int(content_length)
-                        max_bytes = 10 * 1024 * 1024  # 10 MB guard
+                        max_bytes = 10 * 1024 * 1024
                         if cl > max_bytes:
                             logger.info("Skipping large image (>10MB): %s", image_url)
                             return False
@@ -658,9 +734,6 @@ class WebSpider:
         except Exception:
             return False
 
-# --------------------
-# CSV MANAGER
-# --------------------
 class CatalogCSV:
     CSV_HEADERS = [
         'name', 'clothing_type', 'category', 'brand', 'size',
@@ -686,22 +759,24 @@ class CatalogCSV:
             writer = csv.DictWriter(f, fieldnames=self.CSV_HEADERS)
             writer.writerow(row)
 
-# --------------------
-# MAIN PIPELINE
-# --------------------
 class ClothingScraperPipeline:
     def __init__(self):
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         self.classifier = ClothingClassifier(MODEL_PATH)
         self.body_detector = BodyDetector()
+        self.text_detector = TextDetector()
         self.color_detector = ColorDetector()
         self.spider = WebSpider()
         self.csv_manager = CatalogCSV(CSV_PATH)
-        self.stats = {'total_urls': 0, 'images_scraped': 0, 'images_with_faces': 0, 'images_saved': 0, 'items_added': 0}
+        self.stats = {
+            'total_urls': 0, 'images_scraped': 0, 'images_with_body': 0, 
+            'images_with_text': 0, 'invalid_category': 0, 'images_saved': 0, 
+            'items_added': 0
+        }
 
     def process_urls(self, urls):
         self.stats['total_urls'] = len(urls)
-        logger.info("Starting scraper pipeline | URLs to process: %d", len(urls))
+        logger.info("Starting STRICT scraper pipeline | URLs to process: %d", len(urls))
         for url in urls:
             self._process_url(url)
         self._print_summary()
@@ -727,72 +802,66 @@ class ClothingScraperPipeline:
         timestamp = int(time.time())
         temp_filename = f"temp_{timestamp}_{url_hash}.jpg"
         temp_path = OUTPUT_DIR / temp_filename
+        
         try:
+            # Download image
             if not self.spider.download_image(image_url, temp_path):
                 return
+                
             with self.spider.lock:
                 self.stats['images_scraped'] += 1
             logger.info("Downloaded: %s", image_url[:120])
-            logger.info("Checking for human body/model...")
-            try:
-                if self.body_detector.has_human_body(temp_path):
-                    logger.info("Model/Body detected - skipping")
-                    try:
-                        os.remove(temp_path)
-                    except OSError:
-                        pass
-                    with self.spider.lock:
-                        self.stats['images_with_faces'] += 1
-                    return
-                logger.info("No body detected - product-only image")
-            except Exception as e:
-                logger.exception("Body detection failed: %s", e)
-                try:
-                    os.remove(temp_path)
-                except OSError:
-                    pass
+            
+            # STRICT VALIDATION PIPELINE
+            
+            # 1. Check for body parts
+            logger.info("Checking for body parts...")
+            if self.body_detector.has_human_body(temp_path):
+                with self.spider.lock:
+                    self.stats['images_with_body'] += 1
+                os.remove(temp_path)
                 return
+                
+            # 2. Check for text
+            logger.info("Checking for text...")
+            if self.text_detector.has_text(temp_path):
+                with self.spider.lock:
+                    self.stats['images_with_text'] += 1
+                os.remove(temp_path)
+                return
+                
+            # 3. Classify and validate clothing category
             logger.info("Classifying clothing type...")
-            try:
-                clothing_type, category, confidence = self.classifier.classify(temp_path)
-                logger.info("Classified as: %s (%.2f%%)", clothing_type, confidence * 100)
-            except Exception as e:
-                logger.exception("Classification failed: %s", e)
-                try:
-                    os.remove(temp_path)
-                except OSError:
-                    pass
+            clothing_type, category, confidence = self.classifier.classify(temp_path)
+            
+            if clothing_type == "REJECTED":
+                with self.spider.lock:
+                    self.stats['invalid_category'] += 1
+                os.remove(temp_path)
                 return
-            if category == 'uncategorized' or confidence < MIN_CLASSIFICATION_CONFIDENCE:
-                logger.info("Low confidence or uncategorized (threshold %.0f%%) - skipping", MIN_CLASSIFICATION_CONFIDENCE * 100)
-                try:
-                    os.remove(temp_path)
-                except OSError:
-                    pass
-                return
+                
+            logger.info("Classified as: %s (%.2f%%)", clothing_type, confidence * 100)
+            
+            # 4. Get colors
             colors = self.color_detector.get_dominant_colors(temp_path, n_colors=3)
             primary_color = colors[0] if colors else 'unknown'
             secondary_colors = "|".join(colors[1:3]) if len(colors) > 1 else ''
             logger.info("Colors: %s", ', '.join(colors) if colors else 'unknown')
+            
+            # Save valid image
             final_filename = self._generate_filename(clothing_type, primary_color, timestamp)
             final_path = OUTPUT_DIR / final_filename
+            
             try:
+                shutil.move(str(temp_path), str(final_path))
+            except Exception:
                 try:
-                    shutil.move(str(temp_path), str(final_path))
+                    os.replace(str(temp_path), str(final_path))
                 except Exception:
-                    try:
-                        os.replace(str(temp_path), str(final_path))
-                    except Exception:
-                        shutil.copy2(str(temp_path), str(final_path))
-                        os.remove(str(temp_path))
-            except Exception as e:
-                logger.exception("Failed to move final file: %s", e)
-                try:
-                    if temp_path.exists():
-                        os.remove(temp_path)
-                except Exception:
-                    pass
-                return
+                    shutil.copy2(str(temp_path), str(final_path))
+                    os.remove(str(temp_path))
+                    
+            # Add to catalog
             item_name = f"{primary_color.capitalize()} {clothing_type}"
             item_data = {
                 'name': item_name,
@@ -809,15 +878,19 @@ class ClothingScraperPipeline:
                 'image_filename': final_filename,
                 'privacy': 'public'
             }
+            
             with self.spider.lock:
                 self.csv_manager.add_item(item_data)
                 self.stats['images_saved'] += 1
                 self.stats['items_added'] += 1
+                
             img_hash = self.spider._get_image_hash(image_url)
             self.spider._save_downloaded_hash(img_hash)
             with self.spider.lock:
                 self.spider.downloaded_hashes.add(img_hash)
-            logger.info("Saved as: %s", final_filename)
+                
+            logger.info("APPROVED and saved as: %s", final_filename)
+            
         except Exception as e:
             logger.exception("Error processing image: %s", e)
             if temp_path.exists():
@@ -834,19 +907,17 @@ class ClothingScraperPipeline:
         return f"{clean_color}-{clean_type}-{timestamp}.jpg"
 
     def _print_summary(self):
-        logger.info("SCRAPING SUMMARY")
+        logger.info("STRICT SCRAPING SUMMARY")
         logger.info("URLs processed: %d", self.stats['total_urls'])
         logger.info("Images downloaded: %d", self.stats['images_scraped'])
-        logger.info("Images with models (skipped): %d", self.stats['images_with_faces'])
-        logger.info("Product images saved: %d", self.stats['images_saved'])
+        logger.info("Rejected - body parts: %d", self.stats['images_with_body'])
+        logger.info("Rejected - text: %d", self.stats['images_with_text'])
+        logger.info("Rejected - invalid category: %d", self.stats['invalid_category'])
+        logger.info("APPROVED product images: %d", self.stats['images_saved'])
         logger.info("Items added to catalog: %d", self.stats['items_added'])
         logger.info("Images folder: %s", OUTPUT_DIR)
         logger.info("CSV: %s", CSV_PATH)
-        logger.info("Next steps: 1) Review images 2) Check CSV 3) Run seed script if available")
 
-# --------------------
-# ENTRY POINT
-# --------------------
 def load_urls(urls_file):
     urls = []
     if not urls_file.exists():
@@ -859,9 +930,8 @@ def load_urls(urls_file):
                 urls.append(line)
     return urls
 
-
 def main():
-    logger.info("Clothing Image Spider & Catalog Generator (patched)")
+    logger.info("STRICT Clothing Image Spider - Virtual Environment Enabled")
     if not MODEL_PATH.exists():
         logger.error("Model not found at %s", MODEL_PATH)
         logger.info("Please place your model (state_dict) at: %s", MODEL_PATH)
