@@ -1,4 +1,5 @@
 <template>
+  <MainLayout>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-white shadow">
@@ -241,6 +242,7 @@
       </div>
     </div>
   </div>
+  </MainLayout>
 </template>
 
 <script setup>
@@ -248,6 +250,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js';
 import { signOut } from '../services/auth-service.js';
+import MainLayout from '../components/layouts/MainLayout.vue';
 
 const router = useRouter();
 

@@ -1,4 +1,5 @@
 <template>
+  <MainLayout>
   <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
@@ -265,12 +266,14 @@
       </div>
     </div>
   </div>
+  </MainLayout>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useOutfitGenerationStore } from '@/stores/outfit-generation-store'
 import { WEATHER_CONDITIONS, OCCASIONS } from '@/utils/clothing-constants'
+import MainLayout from '@/components/layouts/MainLayout.vue'
 
 const outfitStore = useOutfitGenerationStore()
 

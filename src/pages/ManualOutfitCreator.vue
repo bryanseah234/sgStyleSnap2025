@@ -1,4 +1,5 @@
 <template>
+  <MainLayout>
   <div class="manual-outfit-creator">
     <!-- Header -->
     <div class="creator-header">
@@ -194,6 +195,7 @@
       </div>
     </Modal>
   </div>
+  </MainLayout>
 </template>
 
 <script setup>
@@ -203,6 +205,7 @@ import OutfitCanvas from '@/components/outfits/OutfitCanvas.vue'
 import ClosetItemsSidebar from '@/components/outfits/ClosetItemsSidebar.vue'
 import Modal from '@/components/ui/Modal.vue'
 import manualOutfitService from '@/services/manual-outfit-service'
+import MainLayout from '@/components/layouts/MainLayout.vue'
 
 const router = useRouter()
 
