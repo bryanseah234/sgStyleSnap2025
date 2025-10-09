@@ -78,27 +78,28 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
 import Button from '../components/ui/Button.vue'
 
-// const router = useRouter()
 const authStore = useAuthStore()
 
 const isLoading = ref(false)
 const errorMessage = ref('')
 
 async function handleGoogleSignIn() {
+  console.log('🔘 Sign in button clicked')
   isLoading.value = true
   errorMessage.value = ''
   
   try {
+    console.log('📞 Calling authStore.login()...')
     await authStore.login()
+    console.log('✅ Login initiated successfully')
     // The auth service will handle the redirect to Google OAuth
     // After successful login, Google will redirect back to /closet
   } catch (error) {
-    console.error('Login error:', error)
-    errorMessage.value = 'Failed to sign in. Please try again.'
+    console.error('❌ Login error:', error)
+    errorMessage.value = error.message || 'Failed to sign in. Please try again.'
     isLoading.value = false
   }
 }

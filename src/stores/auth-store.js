@@ -76,6 +76,7 @@ export const useAuthStore = defineStore('auth', {
      * Initialize auth state from existing session
      */
     async initializeAuth() {
+<<<<<<< HEAD
       this.isLoading = true
       try {
         // MOCK USER FOR LOCAL DEV
@@ -84,6 +85,20 @@ export const useAuthStore = defineStore('auth', {
           name: 'Test User',
           email: 'testuser@example.com',
           avatar_url: 'https://i.pravatar.cc/150?img=3'
+=======
+      console.log('🔄 AuthStore: Initializing auth...')
+      this.loading = true
+      this.error = null
+      try {
+        const session = await authService.getSession()
+        console.log('📦 AuthStore: Session retrieved:', session ? 'Found' : 'Not found')
+        
+        if (session) {
+          console.log('✅ AuthStore: Setting user from session:', session.user.email)
+          this.setUser(session.user)
+        } else {
+          console.log('❌ AuthStore: No session found')
+>>>>>>> 08d50028ace9bda8325c7da46df496fe4a5528f0
         }
         this.isAuthenticated = true
 
@@ -94,11 +109,20 @@ export const useAuthStore = defineStore('auth', {
         //   this.isAuthenticated = true
         // }
       } catch (error) {
+<<<<<<< HEAD
         console.error('Failed to initialize auth:', error)
         this.user = null
         this.isAuthenticated = false
       } finally {
         this.isLoading = false
+=======
+        console.error('❌ AuthStore: Failed to initialize auth:', error)
+        this.error = error.message
+        this.clearUser()
+      } finally {
+        this.loading = false
+        console.log('✅ AuthStore: Auth initialization complete. Authenticated:', this.isAuthenticated)
+>>>>>>> 08d50028ace9bda8325c7da46df496fe4a5528f0
       }
     },
     
@@ -234,12 +258,21 @@ export const useAuthStore = defineStore('auth', {
      * Setup auth state change listener
      */
     setupAuthListener() {
+      console.log('👂 AuthStore: Setting up auth state listener')
       return authService.onAuthStateChange((event, session) => {
+        console.log('🔔 AuthStore: Auth event received:', event, session?.user?.email || 'no session')
+        
         if (event === 'SIGNED_IN' && session) {
+          console.log('✅ AuthStore: User signed in:', session.user.email)
           this.setUser(session.user)
         } else if (event === 'SIGNED_OUT') {
+          console.log('👋 AuthStore: User signed out')
           this.clearUser()
         } else if (event === 'TOKEN_REFRESHED' && session) {
+          console.log('🔄 AuthStore: Token refreshed:', session.user.email)
+          this.setUser(session.user)
+        } else if (event === 'INITIAL_SESSION' && session) {
+          console.log('🎬 AuthStore: Initial session detected:', session.user.email)
           this.setUser(session.user)
         }
       })
