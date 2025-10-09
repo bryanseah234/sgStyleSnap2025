@@ -25,6 +25,7 @@
         to="/closet"
         class="nav-item bottom-nav-item"
         :class="{ active: $route.path === '/closet' || $route.path === '/catalog' }"
+        @click="scrollToTop"
       >
         <span class="nav-icon-wrapper">
           <svg class="nav-icon-svg" fill="currentColor" viewBox="0 0 24 24">
@@ -38,6 +39,7 @@
           to="/notifications"
           class="nav-item bottom-nav-item relative"
           :class="{ active: $route.path === '/notifications' }"
+          @click="scrollToTop"
         >
         <span class="nav-icon-wrapper">
           <svg class="nav-icon-svg" fill="currentColor" viewBox="0 0 24 24">
@@ -56,6 +58,7 @@
         to="/friends"
         class="nav-item bottom-nav-item"
         :class="{ active: $route.path === '/friends' }"
+        @click="scrollToTop"
       >
         <span class="nav-icon-wrapper">
           <svg class="nav-icon-svg" fill="currentColor" viewBox="0 0 24 24">
@@ -80,6 +83,15 @@ const notificationsStore = useNotificationsStore()
 const suggestionsStore = useSuggestionsStore()
 
 const userName = computed(() => authStore.userName)
+
+// Function to scroll to top of page
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: 'smooth'
+  })
+}
 
 onMounted(() => {
   // Initialize notifications when layout mounts
