@@ -2,7 +2,10 @@
   <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
     <div class="flex items-start space-x-3 flex-1">
       <div class="flex-shrink-0 mt-0.5">
-        <component :is="iconComponent" class="w-5 h-5 text-gray-400" />
+        <component
+          :is="iconComponent"
+          class="w-5 h-5 text-gray-400"
+        />
       </div>
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium text-gray-900 dark:text-white">

@@ -7,7 +7,7 @@
           :src="suggesterAvatar"
           :alt="suggesterName"
           class="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-        />
+        >
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             Outfit Suggestion
@@ -23,7 +23,10 @@
     </div>
 
     <!-- Message -->
-    <div v-if="suggestion.message" class="p-6 bg-gray-50 dark:bg-gray-900/50">
+    <div
+      v-if="suggestion.message"
+      class="p-6 bg-gray-50 dark:bg-gray-900/50"
+    >
       <div class="flex gap-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +64,7 @@
             :src="item.image_url"
             :alt="item.name"
             class="w-full h-full object-cover"
-          />
+          >
           <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
             <p class="text-xs text-white font-medium truncate">
               {{ item.name }}
@@ -77,30 +80,66 @@
     <!-- Actions -->
     <div class="p-6 bg-gray-50 dark:bg-gray-900/50 flex gap-3">
       <button
-        @click="handleReject"
         :disabled="processing"
         class="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-400"
+        @click="handleReject"
       >
         <span v-if="!processing">Decline</span>
-        <span v-else class="flex items-center justify-center">
-          <svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <span
+          v-else
+          class="flex items-center justify-center"
+        >
+          <svg
+            class="animate-spin h-5 w-5 mr-2"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+              fill="none"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
           </svg>
           Processing...
         </span>
       </button>
       
       <button
-        @click="handleApprove"
         :disabled="processing"
         class="flex-1 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-lg"
+        @click="handleApprove"
       >
         <span v-if="!processing">Add to My Closet</span>
-        <span v-else class="flex items-center justify-center">
-          <svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <span
+          v-else
+          class="flex items-center justify-center"
+        >
+          <svg
+            class="animate-spin h-5 w-5 mr-2"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+              fill="none"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
           </svg>
           Processing...
         </span>

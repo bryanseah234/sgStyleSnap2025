@@ -15,7 +15,7 @@
       v-if="items.length > 0 && !loading"
       ref="loadMoreTrigger"
       class="load-more-trigger h-4"
-    ></div>
+    />
   </div>
 </template>
 

@@ -4,37 +4,72 @@
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">Most Worn Items</h3>
-          <p class="text-sm text-gray-600 mt-1">Your wardrobe favorites</p>
+          <h3 class="text-lg font-semibold text-gray-900">
+            Most Worn Items
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">
+            Your wardrobe favorites
+          </p>
         </div>
         <select
           v-model="limit"
-          @change="$emit('update:limit', limit)"
           class="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          @change="$emit('update:limit', limit)"
         >
-          <option :value="5">Top 5</option>
-          <option :value="10">Top 10</option>
-          <option :value="15">Top 15</option>
-          <option :value="20">Top 20</option>
+          <option :value="5">
+            Top 5
+          </option>
+          <option :value="10">
+            Top 10
+          </option>
+          <option :value="15">
+            Top 15
+          </option>
+          <option :value="20">
+            Top 20
+          </option>
         </select>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-8">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div
+        v-if="loading"
+        class="text-center py-8"
+      >
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="items.length === 0" class="text-center py-8">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      <div
+        v-else-if="items.length === 0"
+        class="text-center py-8"
+      >
+        <svg
+          class="w-16 h-16 mx-auto text-gray-300 mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+          />
         </svg>
-        <p class="text-gray-600">No data available yet</p>
-        <p class="text-sm text-gray-500 mt-1">Start recording outfits to see analytics</p>
+        <p class="text-gray-600">
+          No data available yet
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          Start recording outfits to see analytics
+        </p>
       </div>
 
       <!-- Chart -->
-      <div v-else class="space-y-4">
+      <div
+        v-else
+        class="space-y-4"
+      >
         <div
           v-for="(item, index) in items"
           :key="item.item_id"
@@ -56,7 +91,7 @@
               :src="item.image_url"
               :alt="item.item_name"
               class="w-16 h-16 rounded-lg object-cover border-2 border-gray-200 group-hover:border-blue-400 transition-colors"
-            />
+            >
           </div>
 
           <!-- Item Info -->
@@ -68,14 +103,21 @@
                 </h4>
                 <p class="text-xs text-gray-500 mt-0.5">
                   {{ capitalizeFirst(item.category) }}
-                  <span v-if="item.last_worn" class="ml-2">
+                  <span
+                    v-if="item.last_worn"
+                    class="ml-2"
+                  >
                     • Last worn {{ formatLastWorn(item.last_worn) }}
                   </span>
                 </p>
               </div>
               <div class="ml-4 text-right flex-shrink-0">
-                <div class="text-lg font-bold text-blue-600">{{ item.times_worn }}</div>
-                <div class="text-xs text-gray-500">times</div>
+                <div class="text-lg font-bold text-blue-600">
+                  {{ item.times_worn }}
+                </div>
+                <div class="text-xs text-gray-500">
+                  times
+                </div>
               </div>
             </div>
 
@@ -85,7 +127,7 @@
                 class="h-full rounded-full transition-all duration-500"
                 :class="getBarClass(index)"
                 :style="{ width: getPercentage(item.times_worn) + '%' }"
-              ></div>
+              />
             </div>
           </div>
         </div>

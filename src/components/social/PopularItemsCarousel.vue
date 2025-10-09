@@ -4,7 +4,11 @@
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-red-400 flex items-center justify-center">
-          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="w-4 h-4 text-white"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
           </svg>
         </div>
@@ -15,10 +19,10 @@
 
       <button
         v-if="items.length > 0"
-        @click="refresh"
         :disabled="loading"
         class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         title="Refresh"
+        @click="refresh"
       >
         <svg
           class="w-5 h-5 text-gray-600 dark:text-gray-400"
@@ -27,13 +31,21 @@
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
         </svg>
       </button>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading && items.length === 0" class="flex gap-4 overflow-hidden">
+    <div
+      v-if="loading && items.length === 0"
+      class="flex gap-4 overflow-hidden"
+    >
       <div
         v-for="i in 5"
         :key="i"
@@ -47,7 +59,11 @@
       class="flex flex-col items-center justify-center py-12 px-4 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600"
     >
       <div class="w-16 h-16 mb-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-        <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+        <svg
+          class="w-8 h-8 text-gray-400"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
         </svg>
       </div>
@@ -57,7 +73,10 @@
     </div>
 
     <!-- Carousel -->
-    <div v-else class="relative group">
+    <div
+      v-else
+      class="relative group"
+    >
       <!-- Scroll Container -->
       <div
         ref="scrollContainer"
@@ -78,14 +97,17 @@
               :alt="item.name"
               class="w-full h-full object-cover"
               loading="lazy"
-            />
+            >
 
             <!-- Gradient Overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/30" />
 
             <!-- Likes Badge -->
             <div class="absolute top-2 right-2 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full flex items-center gap-1 shadow-lg">
-              <svg class="w-3 h-3 fill-current text-red-500" viewBox="0 0 24 24">
+              <svg
+                class="w-3 h-3 fill-current text-red-500"
+                viewBox="0 0 24 24"
+              >
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
               </svg>
               <span class="text-xs font-bold text-gray-900 dark:text-white">
@@ -119,33 +141,56 @@
       <!-- Left Scroll Button -->
       <button
         v-if="showScrollButtons && canScrollLeft"
-        @click="scrollLeft"
         class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:scale-110 z-10"
         aria-label="Scroll left"
+        @click="scrollLeft"
       >
-        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        <svg
+          class="w-5 h-5 text-gray-700 dark:text-gray-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
       </button>
 
       <!-- Right Scroll Button -->
       <button
         v-if="showScrollButtons && canScrollRight"
-        @click="scrollRight"
         class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:scale-110 z-10"
         aria-label="Scroll right"
+        @click="scrollRight"
       >
-        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        <svg
+          class="w-5 h-5 text-gray-700 dark:text-gray-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5l7 7-7 7"
+          />
         </svg>
       </button>
     </div>
 
     <!-- View All Link -->
-    <div v-if="items.length > 0 && showViewAll" class="mt-4 text-center">
+    <div
+      v-if="items.length > 0 && showViewAll"
+      class="mt-4 text-center"
+    >
       <button
-        @click="viewAll"
         class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+        @click="viewAll"
       >
         View All Popular Items →
       </button>
@@ -154,9 +199,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, /* computed */, onMounted, onUnmounted } from 'vue'
 
-const props = defineProps({
+// const props = defineProps({
   items: {
     type: Array,
     required: true,

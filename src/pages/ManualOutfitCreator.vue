@@ -121,14 +121,30 @@
               id="outfit-occasion"
               v-model="outfitForm.occasion"
             >
-              <option value="">Select occasion...</option>
-              <option value="casual">Casual</option>
-              <option value="work">Work</option>
-              <option value="formal">Formal</option>
-              <option value="party">Party</option>
-              <option value="date">Date</option>
-              <option value="workout">Workout</option>
-              <option value="travel">Travel</option>
+              <option value="">
+                Select occasion...
+              </option>
+              <option value="casual">
+                Casual
+              </option>
+              <option value="work">
+                Work
+              </option>
+              <option value="formal">
+                Formal
+              </option>
+              <option value="party">
+                Party
+              </option>
+              <option value="date">
+                Date
+              </option>
+              <option value="workout">
+                Workout
+              </option>
+              <option value="travel">
+                Travel
+              </option>
             </select>
           </div>
 
@@ -137,13 +153,22 @@
             <label for="outfit-weather">Weather</label>
             <select
               id="outfit-weather"
-              v-model="outfitForm.weather"
-            >
-              <option value="">Select weather...</option>
-              <option value="hot">Hot (>25°C)</option>
-              <option value="warm">Warm (15-25°C)</option>
-              <option value="cool">Cool (5-15°C)</option>
-              <option value="cold">Cold (<5°C)</option>
+              v-model="outfitForm.weather">
+              <option value="">
+                Select weather...
+              </option>
+              <option value="hot">
+                Hot (>25°C)
+              </option>
+              <option value="warm">
+                Warm (15-25°C)
+              </option>
+              <option value="cool">
+                Cool (5-15°C)
+              </option>
+              <option value="cold">
+                Cold (&lt;5°C)
+              </option>
             </select>
           </div>
 

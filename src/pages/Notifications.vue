@@ -6,8 +6,8 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <button
-              @click="goBack"
               class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors lg:hidden"
+              @click="goBack"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -17,7 +17,11 @@
                 stroke="currentColor"
                 class="w-6 h-6"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
               </svg>
             </button>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -31,9 +35,9 @@
 
           <button
             v-if="notificationsStore.hasUnread"
-            @click="handleMarkAllRead"
             :disabled="markingAllRead"
             class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="handleMarkAllRead"
           >
             {{ markingAllRead ? 'Marking...' : 'Mark all as read' }}
           </button>
@@ -69,8 +73,8 @@
           >
             <div class="relative">
               <button
-                @click="closeApprovalModal"
                 class="absolute top-4 right-4 z-10 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                @click="closeApprovalModal"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +84,11 @@
                   stroke="currentColor"
                   class="w-6 h-6"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
               

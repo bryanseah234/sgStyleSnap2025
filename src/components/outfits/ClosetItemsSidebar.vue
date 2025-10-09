@@ -93,8 +93,8 @@
       </div>
 
       <div
-        v-else
         v-for="item in filteredItems"
+        v-else
         :key="item.id"
         class="item-card"
         :draggable="true"

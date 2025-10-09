@@ -38,8 +38,12 @@
     <div class="login-container">
       <div class="login-content">
         <div class="logo-section">
-          <h1 class="app-title">StyleSnap</h1>
-          <p class="app-tagline">Your Digital Closet & Outfit Planner</p>
+          <h1 class="app-title">
+            StyleSnap
+          </h1>
+          <p class="app-tagline">
+            Your Digital Closet & Outfit Planner
+          </p>
         </div>
         
         <div class="login-section">
@@ -54,7 +58,10 @@
             <span v-if="!isLoading">Sign in with Google</span>
           </Button>
           
-          <p v-if="errorMessage" class="error-message">
+          <p
+            v-if="errorMessage"
+            class="error-message"
+          >
             {{ errorMessage }}
           </p>
         </div>
@@ -75,7 +82,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
 import Button from '../components/ui/Button.vue'
 
-const router = useRouter()
+// const router = useRouter()
 const authStore = useAuthStore()
 
 const isLoading = ref(false)

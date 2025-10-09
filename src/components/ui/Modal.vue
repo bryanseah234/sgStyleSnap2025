@@ -31,10 +31,26 @@
 <template>
   <teleport to="body">
     <transition name="modal">
-      <div v-if="isOpen" class="modal-overlay" @click="handleBackdropClick">
-        <div class="modal" :class="`modal-${size}`" role="dialog" aria-modal="true" :aria-labelledby="titleId" @click.stop>
+      <div
+        v-if="isOpen"
+        class="modal-overlay"
+        @click="handleBackdropClick"
+      >
+        <div
+          class="modal"
+          :class="`modal-${size}`"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="titleId"
+          @click.stop
+        >
           <div class="modal-header">
-            <h2 :id="titleId" class="modal-title">{{ title }}</h2>
+            <h2
+              :id="titleId"
+              class="modal-title"
+            >
+              {{ title }}
+            </h2>
             <button
               v-if="showCloseButton"
               type="button"
@@ -47,11 +63,14 @@
           </div>
           
           <div class="modal-body">
-            <slot></slot>
+            <slot />
           </div>
           
-          <div v-if="$slots.footer" class="modal-footer">
-            <slot name="footer"></slot>
+          <div
+            v-if="$slots.footer"
+            class="modal-footer"
+          >
+            <slot name="footer" />
           </div>
         </div>
       </div>

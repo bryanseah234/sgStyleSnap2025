@@ -13,26 +13,45 @@
               {{ isEditMode ? 'Edit Outfit Entry' : 'Record Outfit' }}
             </h2>
             <button
-              @click="handleClose"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="handleClose"
             >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
 
           <!-- Form -->
-          <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
+          <form
+            class="p-6 space-y-6"
+            @submit.prevent="handleSubmit"
+          >
             <!-- Selected Items Preview -->
             <div v-if="!isEditMode">
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Selected Items *
               </label>
-              <div v-if="selectedItems.length === 0" class="text-sm text-gray-500 italic">
+              <div
+                v-if="selectedItems.length === 0"
+                class="text-sm text-gray-500 italic"
+              >
                 No items selected. Please select items from your closet first.
               </div>
-              <div v-else class="grid grid-cols-4 gap-2">
+              <div
+                v-else
+                class="grid grid-cols-4 gap-2"
+              >
                 <div
                   v-for="item in selectedItems"
                   :key="item.id"
@@ -42,14 +61,17 @@
                     :src="item.image_url"
                     :alt="item.name"
                     class="w-full h-full object-cover"
-                  />
+                  >
                 </div>
               </div>
             </div>
 
             <!-- Date Worn -->
             <div>
-              <label for="date-worn" class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="date-worn"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Date Worn *
               </label>
               <input
@@ -59,12 +81,15 @@
                 :max="today"
                 required
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              >
             </div>
 
             <!-- Occasion -->
             <div>
-              <label for="occasion" class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="occasion"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Occasion
               </label>
               <select
@@ -72,15 +97,33 @@
                 v-model="formData.occasion"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select occasion</option>
-                <option value="work">Work</option>
-                <option value="casual">Casual</option>
-                <option value="formal">Formal</option>
-                <option value="party">Party</option>
-                <option value="date">Date</option>
-                <option value="sport">Sport</option>
-                <option value="travel">Travel</option>
-                <option value="other">Other</option>
+                <option value="">
+                  Select occasion
+                </option>
+                <option value="work">
+                  Work
+                </option>
+                <option value="casual">
+                  Casual
+                </option>
+                <option value="formal">
+                  Formal
+                </option>
+                <option value="party">
+                  Party
+                </option>
+                <option value="date">
+                  Date
+                </option>
+                <option value="sport">
+                  Sport
+                </option>
+                <option value="travel">
+                  Travel
+                </option>
+                <option value="other">
+                  Other
+                </option>
               </select>
             </div>
 
@@ -94,8 +137,8 @@
                   v-for="star in 5"
                   :key="star"
                   type="button"
-                  @click="formData.rating = star"
                   class="focus:outline-none transition-transform hover:scale-110"
+                  @click="formData.rating = star"
                 >
                   <svg
                     class="w-8 h-8"
@@ -106,7 +149,10 @@
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 </button>
-                <span v-if="formData.rating" class="ml-2 text-sm text-gray-600">
+                <span
+                  v-if="formData.rating"
+                  class="ml-2 text-sm text-gray-600"
+                >
                   {{ formData.rating }}/5
                 </span>
               </div>
@@ -114,7 +160,10 @@
 
             <!-- Weather Temperature -->
             <div>
-              <label for="weather-temp" class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="weather-temp"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Temperature (°F)
               </label>
               <input
@@ -125,12 +174,15 @@
                 max="150"
                 placeholder="e.g., 72"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              >
             </div>
 
             <!-- Weather Condition -->
             <div>
-              <label for="weather-condition" class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="weather-condition"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Weather Condition
               </label>
               <select
@@ -138,18 +190,33 @@
                 v-model="formData.weather_condition"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select condition</option>
-                <option value="sunny">Sunny</option>
-                <option value="cloudy">Cloudy</option>
-                <option value="rainy">Rainy</option>
-                <option value="snowy">Snowy</option>
-                <option value="windy">Windy</option>
+                <option value="">
+                  Select condition
+                </option>
+                <option value="sunny">
+                  Sunny
+                </option>
+                <option value="cloudy">
+                  Cloudy
+                </option>
+                <option value="rainy">
+                  Rainy
+                </option>
+                <option value="snowy">
+                  Snowy
+                </option>
+                <option value="windy">
+                  Windy
+                </option>
               </select>
             </div>
 
             <!-- Notes -->
             <div>
-              <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="notes"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Notes
               </label>
               <textarea
@@ -158,21 +225,26 @@
                 rows="3"
                 placeholder="How did you feel wearing this outfit? Any compliments?"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              ></textarea>
+              />
             </div>
 
             <!-- Error Message -->
-            <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p class="text-sm text-red-600">{{ error }}</p>
+            <div
+              v-if="error"
+              class="p-4 bg-red-50 border border-red-200 rounded-lg"
+            >
+              <p class="text-sm text-red-600">
+                {{ error }}
+              </p>
             </div>
 
             <!-- Action Buttons -->
             <div class="flex items-center justify-end space-x-3 pt-4 border-t">
               <button
                 type="button"
-                @click="handleClose"
                 class="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 :disabled="loading"
+                @click="handleClose"
               >
                 Cancel
               </button>

@@ -18,7 +18,10 @@
 -->
 
 <template>
-  <div class="progress-bar-container" :class="`progress-bar-${size}`">
+  <div
+    class="progress-bar-container"
+    :class="`progress-bar-${size}`"
+  >
     <div 
       class="progress-bar-track" 
       role="progressbar" 
@@ -30,10 +33,12 @@
         class="progress-bar-fill" 
         :class="`progress-bar-${color}`"
         :style="{ width: `${percentage}%` }"
-      >
-      </div>
+      />
     </div>
-    <span v-if="showLabel" class="progress-bar-label">
+    <span
+      v-if="showLabel"
+      class="progress-bar-label"
+    >
       {{ Math.round(percentage) }}%
     </span>
   </div>

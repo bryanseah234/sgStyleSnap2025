@@ -12,7 +12,7 @@
           :alt="item.name"
           class="w-full h-full object-cover"
           loading="lazy"
-        />
+        >
       </div>
       <div
         v-if="remainingCount > 0"
@@ -27,8 +27,18 @@
       <!-- Date and Occasion -->
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center text-sm text-gray-600">
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <svg
+            class="w-4 h-4 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
           {{ formattedDate }}
         </div>
@@ -42,7 +52,10 @@
       </div>
 
       <!-- Rating -->
-      <div v-if="entry.rating" class="flex items-center mb-2">
+      <div
+        v-if="entry.rating"
+        class="flex items-center mb-2"
+      >
         <div class="flex">
           <svg
             v-for="star in 5"
@@ -59,37 +72,56 @@
       </div>
 
       <!-- Weather Info -->
-      <div v-if="entry.weather_temp || entry.weather_condition" class="flex items-center mb-2 text-sm text-gray-600">
-        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+      <div
+        v-if="entry.weather_temp || entry.weather_condition"
+        class="flex items-center mb-2 text-sm text-gray-600"
+      >
+        <svg
+          class="w-4 h-4 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+          />
         </svg>
         <span v-if="entry.weather_temp">{{ entry.weather_temp }}°F</span>
-        <span v-if="entry.weather_temp && entry.weather_condition" class="mx-1">•</span>
+        <span
+          v-if="entry.weather_temp && entry.weather_condition"
+          class="mx-1"
+        >•</span>
         <span v-if="entry.weather_condition">{{ capitalizeFirst(entry.weather_condition) }}</span>
       </div>
 
       <!-- Notes -->
-      <p v-if="entry.notes" class="text-sm text-gray-700 mb-3 line-clamp-2">
+      <p
+        v-if="entry.notes"
+        class="text-sm text-gray-700 mb-3 line-clamp-2"
+      >
         {{ entry.notes }}
       </p>
 
       <!-- Action Buttons -->
       <div class="flex items-center justify-end space-x-2">
         <button
-          @click="$emit('view', entry)"
           class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors"
+          @click="$emit('view', entry)"
         >
           View Details
         </button>
         <button
-          @click="$emit('edit', entry)"
           class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition-colors"
+          @click="$emit('edit', entry)"
         >
           Edit
         </button>
         <button
-          @click="$emit('delete', entry)"
           class="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+          @click="$emit('delete', entry)"
         >
           Delete
         </button>

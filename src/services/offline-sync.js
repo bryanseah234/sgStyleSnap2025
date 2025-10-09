@@ -408,7 +408,7 @@ export async function syncDataOnline(userId) {
  * @param {string} userId - User ID
  * @returns {Promise<void>}
  */
-async function fetchAndCacheClothes(userId) {
+async function fetchAndCacheClothes(/* userId */) {
   try {
     const response = await fetch('/api/clothes', {
       headers: {
@@ -431,7 +431,7 @@ async function fetchAndCacheClothes(userId) {
  * @param {string} userId - User ID
  * @returns {Promise<void>}
  */
-async function fetchAndCacheSuggestions(userId) {
+async function fetchAndCacheSuggestions(_userId) {
   try {
     const response = await fetch('/api/suggestions', {
       headers: {

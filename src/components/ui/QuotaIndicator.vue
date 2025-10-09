@@ -26,7 +26,10 @@
 
 <template>
   <div class="quota-indicator">
-    <div v-if="showDetails" class="quota-header">
+    <div
+      v-if="showDetails"
+      class="quota-header"
+    >
       <span class="quota-count">
         {{ currentCount }} / {{ maxCount }} uploads
       </span>
@@ -46,7 +49,10 @@
       size="md"
     />
     
-    <p v-if="showDetails" class="quota-message">
+    <p
+      v-if="showDetails"
+      class="quota-message"
+    >
       {{ quotaMessage }}
     </p>
   </div>

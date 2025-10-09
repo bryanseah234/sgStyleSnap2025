@@ -1,7 +1,6 @@
 <template>
   <div class="item-like-button relative inline-flex items-center gap-1">
     <button
-      @click="handleToggleLike"
       :disabled="loading"
       class="like-btn p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
       :class="[
@@ -11,6 +10,7 @@
         loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'
       ]"
       :aria-label="isLiked ? 'Unlike this item' : 'Like this item'"
+      @click="handleToggleLike"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -32,8 +32,8 @@
     <!-- Like Count -->
     <button
       v-if="showCount && totalLikes > 0"
-      @click="$emit('show-likers')"
       class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors cursor-pointer"
+      @click="$emit('show-likers')"
     >
       {{ formattedLikeCount }}
     </button>

@@ -101,7 +101,7 @@ export function getDefaultAvatars() {
  * @param {File} file - Image file to upload
  * @returns {Promise<Object>} Updated user profile with new avatar URL
  */
-export async function uploadCustomAvatar(file) {
+export async function uploadCustomAvatar(_file) {
   // TODO: Implement custom avatar upload
   // 1. Validate file type (image/jpeg, image/png)
   // 2. Validate file size (max 2MB)

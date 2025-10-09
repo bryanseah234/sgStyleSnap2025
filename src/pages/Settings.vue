@@ -5,16 +5,28 @@
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
           <button
-            @click="goBack"
             class="flex items-center text-gray-600 hover:text-gray-900"
+            @click="goBack"
           >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <svg
+              class="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             Back
           </button>
-          <h1 class="text-xl font-semibold text-gray-900">Settings</h1>
-          <div class="w-16"></div> <!-- Spacer for centering -->
+          <h1 class="text-xl font-semibold text-gray-900">
+            Settings
+          </h1>
+          <div class="w-16" /> <!-- Spacer for centering -->
         </div>
       </div>
     </div>
@@ -22,26 +34,39 @@
     <!-- Content -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Loading State -->
-      <div v-if="loading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div
+        v-if="loading"
+        class="flex justify-center items-center h-64"
+      >
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p class="text-red-800">{{ error }}</p>
+      <div
+        v-else-if="error"
+        class="bg-red-50 border border-red-200 rounded-lg p-4"
+      >
+        <p class="text-red-800">
+          {{ error }}
+        </p>
         <button
-          @click="loadProfile"
           class="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+          @click="loadProfile"
         >
           Try Again
         </button>
       </div>
 
       <!-- Settings Content -->
-      <div v-else class="space-y-6">
+      <div
+        v-else
+        class="space-y-6"
+      >
         <!-- Profile Information -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Information</h2>
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            Profile Information
+          </h2>
           
           <div class="space-y-4">
             <!-- Username (Read-only) -->
@@ -55,7 +80,7 @@
                   :value="profile.username"
                   readonly
                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-                />
+                >
                 <span class="ml-2 text-xs text-gray-500">
                   (Auto-generated from email)
                 </span>
@@ -73,7 +98,7 @@
                   :value="profile.name"
                   readonly
                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-                />
+                >
                 <span class="ml-2 text-xs text-gray-500">
                   (From Google)
                 </span>
@@ -90,33 +115,38 @@
                 :value="profile.email"
                 readonly
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-              />
+              >
             </div>
           </div>
         </div>
 
         <!-- Profile Photo -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Photo</h2>
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            Profile Photo
+          </h2>
           
           <!-- Current Avatar -->
           <div class="mb-6">
-            <p class="text-sm text-gray-700 mb-2">Current photo:</p>
+            <p class="text-sm text-gray-700 mb-2">
+              Current photo:
+            </p>
             <img
               :src="profile.avatar_url || defaultAvatars[0].url"
               :alt="profile.name"
               class="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
-            />
+            >
           </div>
 
           <!-- Avatar Selection Grid -->
           <div>
-            <p class="text-sm text-gray-700 mb-3">Choose a profile photo:</p>
+            <p class="text-sm text-gray-700 mb-3">
+              Choose a profile photo:
+            </p>
             <div class="grid grid-cols-3 gap-4">
               <button
                 v-for="avatar in defaultAvatars"
                 :key="avatar.id"
-                @click="selectAvatar(avatar.url)"
                 :disabled="updatingAvatar"
                 class="relative group"
                 :class="[
@@ -125,6 +155,7 @@
                     ? 'ring-4 ring-blue-500 ring-offset-2'
                     : 'hover:ring-2 hover:ring-blue-300'
                 ]"
+                @click="selectAvatar(avatar.url)"
               >
                 <img
                   :src="avatar.url"
@@ -133,15 +164,23 @@
                   :class="[
                     updatingAvatar ? 'opacity-50' : 'opacity-100 group-hover:scale-110'
                   ]"
-                />
+                >
                 
                 <!-- Selected Indicator -->
                 <div
                   v-if="profile.avatar_url === avatar.url"
                   class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-20 animate-fade-in"
                 >
-                  <svg class="w-12 h-12 text-blue-600 animate-bounce-subtle" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  <svg
+                    class="w-12 h-12 text-blue-600 animate-bounce-subtle"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
                 </div>
 
@@ -158,13 +197,22 @@
             </div>
 
             <!-- Update Status -->
-            <div v-if="updatingAvatar" class="mt-4 text-center text-sm text-gray-600">
+            <div
+              v-if="updatingAvatar"
+              class="mt-4 text-center text-sm text-gray-600"
+            >
               Updating profile photo...
             </div>
-            <div v-if="updateSuccess" class="mt-4 text-center text-sm text-green-600">
+            <div
+              v-if="updateSuccess"
+              class="mt-4 text-center text-sm text-green-600"
+            >
               ✓ Profile photo updated successfully!
             </div>
-            <div v-if="updateError" class="mt-4 text-center text-sm text-red-600">
+            <div
+              v-if="updateError"
+              class="mt-4 text-center text-sm text-red-600"
+            >
               {{ updateError }}
             </div>
           </div>
@@ -179,11 +227,13 @@
 
         <!-- Sign Out -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Account</h2>
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            Account
+          </h2>
           <button
-            @click="handleSignOut"
             :disabled="signingOut"
             class="w-full sm:w-auto px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            @click="handleSignOut"
           >
             {{ signingOut ? 'Signing out...' : 'Sign Out' }}
           </button>

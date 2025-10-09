@@ -2,14 +2,17 @@
   <div class="collection-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
     <!-- Collection Cover -->
     <div
-      @click="$emit('view', collection)"
       class="relative aspect-[4/3] bg-gradient-to-br"
       :class="coverGradient"
+      @click="$emit('view', collection)"
     >
       <!-- Outfit Preview Grid -->
-      <div v-if="previewOutfits.length > 0" class="absolute inset-0 grid grid-cols-2 gap-0.5 p-2">
+      <div
+        v-if="previewOutfits.length > 0"
+        class="absolute inset-0 grid grid-cols-2 gap-0.5 p-2"
+      >
         <div
-          v-for="(outfit, index) in previewOutfits.slice(0, 4)"
+          v-for="(outfit, _index) in previewOutfits.slice(0, 4)"
           :key="outfit.id"
           class="bg-white rounded overflow-hidden"
         >
@@ -24,16 +27,29 @@
                 :alt="item.name"
                 class="w-full h-full object-cover"
                 loading="lazy"
-              />
+              >
             </div>
           </div>
         </div>
       </div>
 
       <!-- Empty State Icon -->
-      <div v-else class="absolute inset-0 flex items-center justify-center">
-        <svg class="w-16 h-16 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      <div
+        v-else
+        class="absolute inset-0 flex items-center justify-center"
+      >
+        <svg
+          class="w-16 h-16 text-white opacity-50"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
         </svg>
       </div>
 
@@ -45,10 +61,13 @@
       <!-- Favorite Star -->
       <button
         v-if="collection.is_favorite"
-        @click.stop="$emit('toggle-favorite', collection)"
         class="absolute top-2 left-2 bg-white bg-opacity-90 p-1.5 rounded-full hover:bg-opacity-100 transition-all"
+        @click.stop="$emit('toggle-favorite', collection)"
       >
-        <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+        <svg
+          class="w-5 h-5 text-yellow-400 fill-current"
+          viewBox="0 0 20 20"
+        >
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
       </button>
@@ -81,20 +100,29 @@
     </div>
 
     <!-- Collection Info -->
-    <div @click="$emit('view', collection)" class="p-4">
+    <div
+      class="p-4"
+      @click="$emit('view', collection)"
+    >
       <div class="flex items-start justify-between mb-2">
         <div class="flex-1 min-w-0">
           <h3 class="font-semibold text-gray-900 text-lg truncate">
             {{ collection.name }}
           </h3>
-          <p v-if="collection.description" class="text-sm text-gray-600 line-clamp-2 mt-1">
+          <p
+            v-if="collection.description"
+            class="text-sm text-gray-600 line-clamp-2 mt-1"
+          >
             {{ collection.description }}
           </p>
         </div>
       </div>
 
       <!-- Tags -->
-      <div v-if="collection.theme" class="flex flex-wrap gap-2 mt-2">
+      <div
+        v-if="collection.theme"
+        class="flex flex-wrap gap-2 mt-2"
+      >
         <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
           {{ capitalizeFirst(collection.theme) }}
         </span>
@@ -109,9 +137,9 @@
     <!-- Quick Actions (shown on hover) -->
     <div class="p-3 pt-0 flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
       <button
-        @click.stop="$emit('toggle-favorite', collection)"
         class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         :title="collection.is_favorite ? 'Remove from favorites' : 'Add to favorites'"
+        @click.stop="$emit('toggle-favorite', collection)"
       >
         <svg
           class="w-5 h-5"
@@ -120,25 +148,50 @@
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+          />
         </svg>
       </button>
       <button
-        @click.stop="$emit('edit', collection)"
         class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         title="Edit collection"
+        @click.stop="$emit('edit', collection)"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+          />
         </svg>
       </button>
       <button
-        @click.stop="$emit('delete', collection)"
         class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
         title="Delete collection"
+        @click.stop="$emit('delete', collection)"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
         </svg>
       </button>
     </div>

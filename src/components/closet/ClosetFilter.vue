@@ -5,10 +5,12 @@
       <label class="filter-label">Category</label>
       <select
         v-model="localFilters.category"
-        @change="emitFilters"
         class="filter-select"
+        @change="emitFilters"
       >
-        <option value="">All Categories</option>
+        <option value="">
+          All Categories
+        </option>
         <optgroup
           v-for="(items, group) in CATEGORY_GROUPS"
           :key="group"
@@ -30,10 +32,12 @@
       <label class="filter-label">Clothing Type</label>
       <select
         v-model="localFilters.clothing_type"
-        @change="emitFilters"
         class="filter-select"
+        @change="emitFilters"
       >
-        <option value="">All Types</option>
+        <option value="">
+          All Types
+        </option>
         <option
           v-for="type in CLOTHING_TYPES"
           :key="type"
@@ -49,20 +53,26 @@
       <label class="filter-label">Privacy</label>
       <select
         v-model="localFilters.privacy"
-        @change="emitFilters"
         class="filter-select"
+        @change="emitFilters"
       >
-        <option value="">All Items</option>
-        <option value="private">Private Only</option>
-        <option value="friends">Friends Only</option>
+        <option value="">
+          All Items
+        </option>
+        <option value="private">
+          Private Only
+        </option>
+        <option value="friends">
+          Friends Only
+        </option>
       </select>
     </div>
 
     <!-- Clear Filters Button -->
     <button
       v-if="hasActiveFilters"
-      @click="clearFilters"
       class="clear-button"
+      @click="clearFilters"
     >
       Clear Filters
     </button>

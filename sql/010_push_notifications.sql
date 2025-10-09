@@ -42,17 +42,17 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 );
 
 -- Index for finding active subscriptions by user
-CREATE INDEX idx_push_subscriptions_user_active 
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user_active 
   ON push_subscriptions(user_id) 
   WHERE is_active = TRUE;
 
 -- Index for cleanup of failed subscriptions
-CREATE INDEX idx_push_subscriptions_failed 
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_failed 
   ON push_subscriptions(failed_count) 
   WHERE failed_count > 0;
 
 -- Index for finding expired subscriptions
-CREATE INDEX idx_push_subscriptions_expiration 
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_expiration 
   ON push_subscriptions(expiration_time) 
   WHERE expiration_time IS NOT NULL;
 
@@ -128,11 +128,11 @@ CREATE TABLE IF NOT EXISTS notification_delivery_log (
 );
 
 -- Index for finding failed deliveries
-CREATE INDEX idx_notification_delivery_status 
+CREATE INDEX IF NOT EXISTS idx_notification_delivery_status 
   ON notification_delivery_log(status, user_id);
 
 -- Index for recent deliveries
-CREATE INDEX idx_notification_delivery_recent 
+CREATE INDEX IF NOT EXISTS idx_notification_delivery_recent 
   ON notification_delivery_log(sent_at DESC);
 
 COMMENT ON TABLE notification_delivery_log IS 'Log of push notification delivery attempts';
@@ -149,42 +149,51 @@ ALTER TABLE notification_delivery_log ENABLE ROW LEVEL SECURITY;
 
 -- Push Subscriptions Policies
 -- Users can only manage their own subscriptions
+DROP POLICY IF EXISTS push_subscriptions_select_own ON push_subscriptions;
 CREATE POLICY push_subscriptions_select_own 
   ON push_subscriptions FOR SELECT 
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS push_subscriptions_insert_own ON push_subscriptions;
 CREATE POLICY push_subscriptions_insert_own 
   ON push_subscriptions FOR INSERT 
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS push_subscriptions_update_own ON push_subscriptions;
 CREATE POLICY push_subscriptions_update_own 
   ON push_subscriptions FOR UPDATE 
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS push_subscriptions_delete_own ON push_subscriptions;
 CREATE POLICY push_subscriptions_delete_own 
   ON push_subscriptions FOR DELETE 
   USING (user_id = auth.uid());
 
 -- Notification Preferences Policies
 -- Users can only view/update their own preferences
+DROP POLICY IF EXISTS notification_preferences_select_own ON notification_preferences;
 CREATE POLICY notification_preferences_select_own 
   ON notification_preferences FOR SELECT 
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS notification_preferences_insert_own ON notification_preferences;
 CREATE POLICY notification_preferences_insert_own 
   ON notification_preferences FOR INSERT 
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS notification_preferences_update_own ON notification_preferences;
 CREATE POLICY notification_preferences_update_own 
   ON notification_preferences FOR UPDATE 
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS notification_preferences_delete_own ON notification_preferences;
 CREATE POLICY notification_preferences_delete_own 
   ON notification_preferences FOR DELETE 
   USING (user_id = auth.uid());
 
 -- Notification Delivery Log Policies
 -- Users can only view their own delivery logs
+DROP POLICY IF EXISTS notification_delivery_log_select_own ON notification_delivery_log;
 CREATE POLICY notification_delivery_log_select_own 
   ON notification_delivery_log FOR SELECT 
   USING (user_id = auth.uid());
@@ -205,6 +214,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS push_subscriptions_updated_at ON push_subscriptions;
 CREATE TRIGGER push_subscriptions_updated_at
   BEFORE UPDATE ON push_subscriptions
   FOR EACH ROW
@@ -219,6 +229,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS notification_preferences_updated_at ON notification_preferences;
 CREATE TRIGGER notification_preferences_updated_at
   BEFORE UPDATE ON notification_preferences
   FOR EACH ROW
@@ -235,6 +246,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS users_create_notification_preferences ON users;
 CREATE TRIGGER users_create_notification_preferences
   AFTER INSERT ON users
   FOR EACH ROW
@@ -423,15 +435,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- =============================================
 
 -- Index for finding subscriptions by endpoint (for unsubscribe)
-CREATE INDEX idx_push_subscriptions_endpoint 
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_endpoint 
   ON push_subscriptions(endpoint);
 
 -- Index for user preferences lookups
-CREATE INDEX idx_notification_preferences_user 
+CREATE INDEX IF NOT EXISTS idx_notification_preferences_user 
   ON notification_preferences(user_id);
 
 -- Index for delivery log queries by notification
-CREATE INDEX idx_notification_delivery_notification 
+CREATE INDEX IF NOT EXISTS idx_notification_delivery_notification 
   ON notification_delivery_log(notification_id);
 
 -- =============================================

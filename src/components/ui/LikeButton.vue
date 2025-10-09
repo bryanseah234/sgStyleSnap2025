@@ -25,8 +25,8 @@
   <button
     :class="['like-button', `size-${size}`, { liked, loading }]"
     :disabled="loading"
-    @click.stop="handleClick"
     :aria-label="liked ? 'Unlike this item' : 'Like this item'"
+    @click.stop="handleClick"
   >
     <span class="heart-icon">
       <!-- Filled heart when liked -->
@@ -50,17 +50,27 @@
         stroke-width="1.5"
         stroke="currentColor"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+        />
       </svg>
     </span>
     
     <!-- Like count -->
-    <span v-if="showCount && likesCount > 0" class="likes-count">
+    <span
+      v-if="showCount && likesCount > 0"
+      class="likes-count"
+    >
       {{ formatCount(likesCount) }}
     </span>
     
     <!-- Loading spinner -->
-    <span v-if="loading" class="loading-spinner"></span>
+    <span
+      v-if="loading"
+      class="loading-spinner"
+    />
   </button>
 </template>
 

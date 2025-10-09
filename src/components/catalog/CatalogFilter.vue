@@ -1,11 +1,13 @@
 <template>
   <div class="catalog-filter bg-white dark:bg-gray-800 rounded-lg shadow p-4">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        Filters
+      </h2>
       <button
         v-if="hasActiveFilters"
-        @click="emit('clear')"
         class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+        @click="emit('clear')"
       >
         Clear
       </button>
@@ -18,10 +20,12 @@
       </label>
       <select
         v-model="localFilters.category"
-        @change="emitFilters"
         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        @change="emitFilters"
       >
-        <option :value="null">All Categories</option>
+        <option :value="null">
+          All Categories
+        </option>
         <optgroup
           v-for="(items, group) in groupedCategories"
           :key="group"
@@ -45,10 +49,12 @@
       </label>
       <select
         v-model="localFilters.color"
-        @change="emitFilters"
         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        @change="emitFilters"
       >
-        <option :value="null">All Colors</option>
+        <option :value="null">
+          All Colors
+        </option>
         <option
           v-for="color in COLORS"
           :key="color.value"
@@ -66,10 +72,12 @@
       </label>
       <select
         v-model="localFilters.brand"
-        @change="emitFilters"
         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        @change="emitFilters"
       >
-        <option :value="null">All Brands</option>
+        <option :value="null">
+          All Brands
+        </option>
         <option
           v-for="brand in filterOptions.brands"
           :key="brand"
@@ -87,10 +95,12 @@
       </label>
       <select
         v-model="localFilters.season"
-        @change="emitFilters"
         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        @change="emitFilters"
       >
-        <option :value="null">All Seasons</option>
+        <option :value="null">
+          All Seasons
+        </option>
         <option
           v-for="season in SEASONS"
           :key="season.value"
@@ -102,8 +112,13 @@
     </div>
 
     <!-- Active Filters Display -->
-    <div v-if="hasActiveFilters" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-      <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Active Filters:</p>
+    <div
+      v-if="hasActiveFilters"
+      class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+    >
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+        Active Filters:
+      </p>
       <div class="flex flex-wrap gap-2">
         <span
           v-for="(value, key) in activeFilters"

@@ -7,7 +7,9 @@
   <div class="main-layout">
     <header class="main-header">
       <div class="header-content">
-        <h1 class="app-logo">StyleSnap</h1>
+        <h1 class="app-logo">
+          StyleSnap
+        </h1>
         <div class="header-actions">
           <span class="user-greeting">{{ userName }}</span>
         </div>
@@ -15,21 +17,33 @@
     </header>
     
     <main class="main-content">
-      <slot></slot>
+      <slot />
     </main>
     
     <nav class="bottom-nav">
-      <router-link to="/closet" class="nav-item" :class="{ active: $route.path === '/closet' }">
+      <router-link
+        to="/closet"
+        class="nav-item"
+        :class="{ active: $route.path === '/closet' }"
+      >
         <span class="nav-icon">👔</span>
         <span class="nav-label">Closet</span>
       </router-link>
       
-      <router-link to="/catalog" class="nav-item" :class="{ active: $route.path === '/catalog' }">
+      <router-link
+        to="/catalog"
+        class="nav-item"
+        :class="{ active: $route.path === '/catalog' }"
+      >
         <span class="nav-icon">🛍️</span>
         <span class="nav-label">Catalog</span>
       </router-link>
       
-      <router-link to="/suggestions" class="nav-item relative" :class="{ active: $route.path === '/suggestions' }">
+      <router-link
+        to="/suggestions"
+        class="nav-item relative"
+        :class="{ active: $route.path === '/suggestions' }"
+      >
         <span class="nav-icon-wrapper">
           <span class="nav-icon">✨</span>
           <NotificationBadge
@@ -41,7 +55,11 @@
         <span class="nav-label">Suggestions</span>
       </router-link>
       
-      <router-link to="/notifications" class="nav-item relative" :class="{ active: $route.path === '/notifications' }">
+      <router-link
+        to="/notifications"
+        class="nav-item relative"
+        :class="{ active: $route.path === '/notifications' }"
+      >
         <span class="nav-icon-wrapper">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -66,12 +84,20 @@
         <span class="nav-label">Notifications</span>
       </router-link>
       
-      <router-link to="/friends" class="nav-item" :class="{ active: $route.path === '/friends' }">
+      <router-link
+        to="/friends"
+        class="nav-item"
+        :class="{ active: $route.path === '/friends' }"
+      >
         <span class="nav-icon">👥</span>
         <span class="nav-label">Friends</span>
       </router-link>
       
-      <router-link to="/profile" class="nav-item" :class="{ active: $route.path === '/profile' }">
+      <router-link
+        to="/profile"
+        class="nav-item"
+        :class="{ active: $route.path === '/profile' }"
+      >
         <span class="nav-icon">👤</span>
         <span class="nav-label">Profile</span>
       </router-link>

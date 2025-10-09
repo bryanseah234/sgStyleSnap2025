@@ -41,18 +41,31 @@
     @close="handleClose"
   >
     <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center items-center py-12">
+    <div
+      v-if="loading"
+      class="flex justify-center items-center py-12"
+    >
       <Spinner size="lg" />
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="text-center py-12">
-      <p class="text-red-600 mb-4">{{ error }}</p>
-      <Button @click="loadItemDetails">Retry</Button>
+    <div
+      v-else-if="error"
+      class="text-center py-12"
+    >
+      <p class="text-red-600 mb-4">
+        {{ error }}
+      </p>
+      <Button @click="loadItemDetails">
+        Retry
+      </Button>
     </div>
 
     <!-- Item Details -->
-    <div v-else-if="item" class="space-y-6">
+    <div
+      v-else-if="item"
+      class="space-y-6"
+    >
       <!-- Image Section -->
       <div class="relative bg-gray-100 rounded-lg overflow-hidden">
         <img
@@ -60,13 +73,13 @@
           :alt="item.name"
           class="w-full h-auto max-h-[500px] object-contain cursor-zoom-in"
           @click="toggleImageZoom"
-        />
+        >
         
         <!-- Favorite Button Overlay -->
         <button
           class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
-          @click="toggleFavoriteStatus"
           :disabled="favoriting"
+          @click="toggleFavoriteStatus"
         >
           <svg
             class="w-6 h-6 transition-colors"
@@ -89,30 +102,46 @@
       <div class="space-y-4">
         <!-- Basic Info -->
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Information</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            Information
+          </h3>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-500">Category</p>
+              <p class="text-sm text-gray-500">
+                Category
+              </p>
               <p class="text-base font-medium text-gray-900 capitalize">
                 {{ item.category }}
               </p>
             </div>
             <div v-if="item.clothing_type">
-              <p class="text-sm text-gray-500">Type</p>
+              <p class="text-sm text-gray-500">
+                Type
+              </p>
               <p class="text-base font-medium text-gray-900 capitalize">
                 {{ item.clothing_type }}
               </p>
             </div>
             <div v-if="item.brand">
-              <p class="text-sm text-gray-500">Brand</p>
-              <p class="text-base font-medium text-gray-900">{{ item.brand }}</p>
+              <p class="text-sm text-gray-500">
+                Brand
+              </p>
+              <p class="text-base font-medium text-gray-900">
+                {{ item.brand }}
+              </p>
             </div>
             <div v-if="item.size">
-              <p class="text-sm text-gray-500">Size</p>
-              <p class="text-base font-medium text-gray-900">{{ item.size }}</p>
+              <p class="text-sm text-gray-500">
+                Size
+              </p>
+              <p class="text-base font-medium text-gray-900">
+                {{ item.size }}
+              </p>
             </div>
             <div v-if="item.primary_color">
-              <p class="text-sm text-gray-500">Color</p>
+              <p class="text-sm text-gray-500">
+                Color
+              </p>
               <div class="flex items-center gap-2">
                 <div
                   class="w-6 h-6 rounded border border-gray-300"
@@ -124,7 +153,9 @@
               </div>
             </div>
             <div>
-              <p class="text-sm text-gray-500">Privacy</p>
+              <p class="text-sm text-gray-500">
+                Privacy
+              </p>
               <Badge :variant="item.privacy === 'private' ? 'secondary' : 'primary'">
                 {{ item.privacy }}
               </Badge>
@@ -134,40 +165,54 @@
 
         <!-- Statistics -->
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Statistics</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            Statistics
+          </h3>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-500">Days in Closet</p>
+              <p class="text-sm text-gray-500">
+                Days in Closet
+              </p>
               <p class="text-base font-medium text-gray-900">
                 {{ daysInCloset }} days
               </p>
             </div>
             <div v-if="statistics?.times_worn !== undefined">
-              <p class="text-sm text-gray-500">Times Worn</p>
+              <p class="text-sm text-gray-500">
+                Times Worn
+              </p>
               <p class="text-base font-medium text-gray-900">
                 {{ statistics.times_worn }} times
               </p>
             </div>
             <div v-if="statistics?.last_worn">
-              <p class="text-sm text-gray-500">Last Worn</p>
+              <p class="text-sm text-gray-500">
+                Last Worn
+              </p>
               <p class="text-base font-medium text-gray-900">
                 {{ formatDate(statistics.last_worn) }}
               </p>
             </div>
             <div v-if="statistics?.in_outfits !== undefined">
-              <p class="text-sm text-gray-500">In Outfits</p>
+              <p class="text-sm text-gray-500">
+                In Outfits
+              </p>
               <p class="text-base font-medium text-gray-900">
                 {{ statistics.in_outfits }} outfits
               </p>
             </div>
             <div v-if="statistics?.times_shared !== undefined">
-              <p class="text-sm text-gray-500">Times Shared</p>
+              <p class="text-sm text-gray-500">
+                Times Shared
+              </p>
               <p class="text-base font-medium text-gray-900">
                 {{ statistics.times_shared }} times
               </p>
             </div>
             <div>
-              <p class="text-sm text-gray-500">Last Updated</p>
+              <p class="text-sm text-gray-500">
+                Last Updated
+              </p>
               <p class="text-base font-medium text-gray-900">
                 {{ formatDate(item.updated_at) }}
               </p>
@@ -177,7 +222,9 @@
 
         <!-- Tags -->
         <div v-if="item.style_tags && item.style_tags.length > 0">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Tags</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            Tags
+          </h3>
           <div class="flex flex-wrap gap-2">
             <Badge
               v-for="tag in item.style_tags"
@@ -206,8 +253,8 @@
         </Button>
         <Button
           variant="danger"
-          @click="handleDelete"
           :loading="deleting"
+          @click="handleDelete"
         >
           Delete
         </Button>

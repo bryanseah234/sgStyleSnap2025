@@ -25,8 +25,11 @@
     :class="buttonClasses"
     @click="handleClick"
   >
-    <span v-if="loading" class="button-spinner"></span>
-    <slot v-else></slot>
+    <span
+      v-if="loading"
+      class="button-spinner"
+    />
+    <slot v-else />
   </button>
 </template>
 

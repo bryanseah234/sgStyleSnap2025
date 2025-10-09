@@ -11,8 +11,11 @@
     >
       <!-- Canvas Background -->
       <div class="canvas-background">
-        <div class="canvas-grid"></div>
-        <div v-if="items.length === 0" class="empty-state">
+        <div class="canvas-grid" />
+        <div
+          v-if="items.length === 0"
+          class="empty-state"
+        >
           <svg
             class="empty-icon"
             fill="none"
@@ -26,8 +29,12 @@
               d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
             />
           </svg>
-          <p class="empty-text">Drag items here to create your outfit</p>
-          <p class="empty-hint">You can position and layer items freely</p>
+          <p class="empty-text">
+            Drag items here to create your outfit
+          </p>
+          <p class="empty-hint">
+            You can position and layer items freely
+          </p>
         </div>
       </div>
 
@@ -45,16 +52,23 @@
           :src="item.thumbnail_url || item.image_url"
           :alt="item.name"
           draggable="false"
-        />
+        >
         
         <!-- Item Controls -->
-        <div v-if="selectedItemId === item.id" class="item-controls">
+        <div
+          v-if="selectedItemId === item.id"
+          class="item-controls"
+        >
           <button
             class="control-btn"
             title="Bring Forward"
             @click.stop="changeZIndex(item.id, 1)"
           >
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -68,7 +82,11 @@
             title="Send Backward"
             @click.stop="changeZIndex(item.id, -1)"
           >
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -82,7 +100,11 @@
             title="Remove"
             @click.stop="removeItem(item.id)"
           >
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -112,7 +134,11 @@
           :disabled="items.length === 0"
           @click="clearCanvas"
         >
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"

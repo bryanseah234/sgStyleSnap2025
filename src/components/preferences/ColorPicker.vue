@@ -1,11 +1,17 @@
 <template>
   <div class="color-picker">
-    <label v-if="label" class="block text-sm font-medium text-gray-700 mb-2">
+    <label
+      v-if="label"
+      class="block text-sm font-medium text-gray-700 mb-2"
+    >
       {{ label }}
     </label>
     
     <!-- Selected Colors -->
-    <div v-if="modelValue.length > 0" class="flex flex-wrap gap-2 mb-3">
+    <div
+      v-if="modelValue.length > 0"
+      class="flex flex-wrap gap-2 mb-3"
+    >
       <div
         v-for="color in modelValue"
         :key="color"
@@ -14,15 +20,25 @@
         <div
           class="w-4 h-4 rounded-full mr-2 border border-gray-300"
           :style="{ backgroundColor: getColorHex(color) }"
-        ></div>
+        />
         <span class="text-sm text-gray-700">{{ capitalizeFirst(color) }}</span>
         <button
-          @click="removeColor(color)"
           class="ml-2 text-gray-400 hover:text-red-600 transition-colors"
           type="button"
+          @click="removeColor(color)"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -33,7 +49,6 @@
       <button
         v-for="color in availableColors"
         :key="color.name"
-        @click="toggleColor(color.name)"
         type="button"
         class="relative aspect-square rounded-lg border-2 transition-all hover:scale-110"
         :class="[
@@ -45,23 +60,38 @@
         :style="{ backgroundColor: color.hex }"
         :disabled="isDisabled(color.name)"
         :title="capitalizeFirst(color.name)"
+        @click="toggleColor(color.name)"
       >
         <!-- Checkmark for selected colors -->
         <div
           v-if="isSelected(color.name)"
           class="absolute inset-0 flex items-center justify-center"
         >
-          <svg class="w-6 h-6 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          <svg
+            class="w-6 h-6 text-white drop-shadow-lg"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
           </svg>
         </div>
       </button>
     </div>
 
     <!-- Helper Text -->
-    <p v-if="maxColors" class="mt-2 text-xs text-gray-500">
+    <p
+      v-if="maxColors"
+      class="mt-2 text-xs text-gray-500"
+    >
       {{ modelValue.length }}/{{ maxColors }} colors selected
-      <span v-if="modelValue.length >= maxColors" class="text-orange-600 font-medium">
+      <span
+        v-if="modelValue.length >= maxColors"
+        class="text-orange-600 font-medium"
+      >
         (Maximum reached)
       </span>
     </p>
@@ -69,7 +99,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { /* computed */ } from 'vue'
 
 const props = defineProps({
   modelValue: {

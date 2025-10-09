@@ -11,16 +11,22 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="p-6">
+    <div
+      v-if="loading"
+      class="p-6"
+    >
       <div class="animate-pulse space-y-4">
-        <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
       </div>
     </div>
 
     <!-- Content -->
-    <div v-else class="p-6 space-y-6">
+    <div
+      v-else
+      class="p-6 space-y-6"
+    >
       <!-- Master Switch -->
       <div class="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
         <div class="flex-1">
@@ -33,22 +39,22 @@
         </div>
         <button
           v-if="browserPermission === 'default'"
-          @click="requestPermission"
           class="ml-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+          @click="requestPermission"
         >
           Enable
         </button>
         <button
           v-else-if="browserPermission === 'denied'"
-          @click="showPermissionHelp"
           class="ml-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
+          @click="showPermissionHelp"
         >
           Help
         </button>
         <toggle-switch
           v-else
           v-model="preferences.push_enabled"
-          @update:modelValue="savePreferences"
+          @update:model-value="savePreferences"
         />
       </div>
 
@@ -86,7 +92,10 @@
         </div>
       </div>
 
-      <div v-if="browserPermission === 'granted'" class="space-y-4">
+      <div
+        v-if="browserPermission === 'granted'"
+        class="space-y-4"
+      >
         <!-- Notification Types -->
         <div>
           <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
@@ -98,42 +107,42 @@
               label="Friend Requests"
               description="When someone sends you a friend request"
               icon="user-add"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
             <notification-toggle
               v-model="preferences.friend_accepted"
               label="Friend Accepted"
               description="When someone accepts your friend request"
               icon="user-check"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
             <notification-toggle
               v-model="preferences.outfit_likes"
               label="Outfit Likes"
               description="When someone likes your outfit"
               icon="heart"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
             <notification-toggle
               v-model="preferences.outfit_comments"
               label="Outfit Comments"
               description="When someone comments on your outfit"
               icon="chat"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
             <notification-toggle
               v-model="preferences.item_likes"
               label="Item Likes"
               description="When someone likes your closet item"
               icon="star"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
             <notification-toggle
               v-model="preferences.friend_outfit_suggestions"
               label="Outfit Suggestions"
               description="When a friend suggests an outfit for you"
               icon="lightbulb"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
           </div>
         </div>
@@ -149,10 +158,13 @@
               label="Daily Outfit Suggestions"
               description="Get outfit suggestions every day"
               icon="calendar"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             >
               <template #extra>
-                <div v-if="preferences.daily_suggestions" class="mt-2 ml-11">
+                <div
+                  v-if="preferences.daily_suggestions"
+                  class="mt-2 ml-11"
+                >
                   <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">
                     Time
                   </label>
@@ -161,7 +173,7 @@
                     type="time"
                     class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     @change="savePreferences"
-                  />
+                  >
                 </div>
               </template>
             </notification-toggle>
@@ -170,14 +182,14 @@
               label="Weather Alerts"
               description="Outfit suggestions based on weather changes"
               icon="cloud"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
             <notification-toggle
               v-model="preferences.quota_warnings"
               label="Quota Warnings"
               description="When you're close to your upload limit"
               icon="warning"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
           </div>
         </div>
@@ -195,7 +207,7 @@
             </div>
             <toggle-switch
               v-model="preferences.quiet_hours_enabled"
-              @update:modelValue="savePreferences"
+              @update:model-value="savePreferences"
             />
           </div>
           <div
@@ -211,7 +223,7 @@
                 type="time"
                 class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 @change="savePreferences"
-              />
+              >
             </div>
             <div>
               <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">
@@ -222,7 +234,7 @@
                 type="time"
                 class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 @change="savePreferences"
-              />
+              >
             </div>
           </div>
         </div>
@@ -230,9 +242,9 @@
         <!-- Test Notification -->
         <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
-            @click="sendTestNotification"
             :disabled="isSendingTest"
             class="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            @click="sendTestNotification"
           >
             {{ isSendingTest ? 'Sending...' : 'Send Test Notification' }}
           </button>
@@ -246,7 +258,11 @@
         v-if="showSuccess"
         class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2"
       >
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <svg
+          class="w-5 h-5"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
           <path
             fill-rule="evenodd"
             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"

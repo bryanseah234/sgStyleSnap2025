@@ -3,7 +3,9 @@
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Generate Outfit</h1>
+        <h1 class="text-3xl font-bold text-gray-900">
+          Generate Outfit
+        </h1>
         <p class="mt-2 text-gray-600">
           Let AI create the perfect outfit for you
         </p>
@@ -11,7 +13,9 @@
 
       <!-- Generation Parameters -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Outfit Parameters</h2>
+        <h2 class="text-xl font-semibold mb-4">
+          Outfit Parameters
+        </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- Occasion -->
@@ -75,9 +79,9 @@
         <!-- Generate Button -->
         <div class="mt-6">
           <button
-            @click="handleGenerate"
             :disabled="outfitStore.generating"
             class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            @click="handleGenerate"
           >
             <span v-if="outfitStore.generating">
               <svg
@@ -128,7 +132,9 @@
             </svg>
           </div>
           <div class="ml-3">
-            <p class="text-sm text-red-800">{{ outfitStore.error }}</p>
+            <p class="text-sm text-red-800">
+              {{ outfitStore.error }}
+            </p>
           </div>
         </div>
       </div>
@@ -138,7 +144,9 @@
         v-if="outfitStore.hasCurrentOutfit"
         class="bg-white rounded-lg shadow-md p-6 mb-6"
       >
-        <h2 class="text-2xl font-semibold mb-4">Your Generated Outfit</h2>
+        <h2 class="text-2xl font-semibold mb-4">
+          Your Generated Outfit
+        </h2>
 
         <!-- Outfit Items Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -151,7 +159,7 @@
               :src="item.thumbnail_url || item.image_url"
               :alt="item.name"
               class="w-full h-32 object-cover rounded-md mb-2"
-            />
+            >
             <p class="text-sm font-medium text-gray-900 truncate">
               {{ item.name }}
             </p>
@@ -166,19 +174,25 @@
         <!-- Outfit Details -->
         <div class="grid grid-cols-3 gap-4 mb-6 text-center">
           <div class="bg-gray-50 rounded-lg p-3">
-            <p class="text-sm text-gray-600">Color Scheme</p>
+            <p class="text-sm text-gray-600">
+              Color Scheme
+            </p>
             <p class="text-lg font-semibold text-gray-900 capitalize">
               {{ outfitStore.currentOutfit.color_scheme }}
             </p>
           </div>
           <div class="bg-gray-50 rounded-lg p-3">
-            <p class="text-sm text-gray-600">Style</p>
+            <p class="text-sm text-gray-600">
+              Style
+            </p>
             <p class="text-lg font-semibold text-gray-900 capitalize">
               {{ outfitStore.currentOutfit.style_theme }}
             </p>
           </div>
           <div class="bg-gray-50 rounded-lg p-3">
-            <p class="text-sm text-gray-600">AI Score</p>
+            <p class="text-sm text-gray-600">
+              AI Score
+            </p>
             <p class="text-lg font-semibold text-gray-900">
               {{ outfitStore.outfitScore }}/100
             </p>
@@ -188,26 +202,26 @@
         <!-- Actions -->
         <div class="flex flex-wrap gap-3">
           <button
-            @click="handleRate(5)"
             class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors"
+            @click="handleRate(5)"
           >
             👍 Love It
           </button>
           <button
-            @click="handleRate(1)"
             class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors"
+            @click="handleRate(1)"
           >
             👎 Not For Me
           </button>
           <button
-            @click="handleSave"
             class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            @click="handleSave"
           >
             💾 Save
           </button>
           <button
-            @click="handleGenerate"
             class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+            @click="handleGenerate"
           >
             🔄 Generate Another
           </button>
@@ -219,7 +233,9 @@
         v-if="outfitStore.history.length > 0"
         class="bg-white rounded-lg shadow-md p-6"
       >
-        <h2 class="text-xl font-semibold mb-4">Previous Suggestions</h2>
+        <h2 class="text-xl font-semibold mb-4">
+          Previous Suggestions
+        </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
             v-for="outfit in outfitStore.history.slice(0, 4)"
@@ -242,7 +258,7 @@
                 :src="item.thumbnail_url || item.image_url"
                 :alt="item.name"
                 class="w-16 h-16 object-cover rounded"
-              />
+              >
             </div>
           </div>
         </div>

@@ -3,13 +3,25 @@
     <!-- Header with Filters -->
     <div class="mb-6 space-y-4">
       <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-gray-900">Outfit Feed</h2>
+        <h2 class="text-2xl font-bold text-gray-900">
+          Outfit Feed
+        </h2>
         <button
-          @click="showShareModal = true"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+          @click="showShareModal = true"
         >
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           Share Outfit
         </button>
@@ -20,11 +32,11 @@
         <button
           v-for="filter in visibilityFilters"
           :key="filter.value"
-          @click="changeVisibilityFilter(filter.value)"
           class="px-4 py-2 font-medium text-sm transition-colors relative"
           :class="activeVisibilityFilter === filter.value 
             ? 'text-blue-600 border-b-2 border-blue-600' 
             : 'text-gray-600 hover:text-gray-900'"
+          @click="changeVisibilityFilter(filter.value)"
         >
           {{ filter.label }}
         </button>
@@ -32,30 +44,53 @@
     </div>
 
     <!-- Loading State (Initial) -->
-    <div v-if="loading && feed.length === 0" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      <p class="mt-4 text-gray-600">Loading outfit feed...</p>
+    <div
+      v-if="loading && feed.length === 0"
+      class="text-center py-12"
+    >
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      <p class="mt-4 text-gray-600">
+        Loading outfit feed...
+      </p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!loading && feed.length === 0" class="text-center py-12">
-      <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    <div
+      v-else-if="!loading && feed.length === 0"
+      class="text-center py-12"
+    >
+      <svg
+        class="w-24 h-24 mx-auto text-gray-300 mb-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+        />
       </svg>
-      <h3 class="text-xl font-semibold text-gray-900 mb-2">No Outfits Yet</h3>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">
+        No Outfits Yet
+      </h3>
       <p class="text-gray-600 mb-6">
         {{ emptyStateMessage }}
       </p>
       <button
-        @click="showShareModal = true"
         class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        @click="showShareModal = true"
       >
         Share Your First Outfit
       </button>
     </div>
 
     <!-- Feed Grid -->
-    <div v-else class="space-y-6">
+    <div
+      v-else
+      class="space-y-6"
+    >
       <SharedOutfitCard
         v-for="outfit in feed"
         :key="outfit.id"
@@ -67,23 +102,34 @@
     </div>
 
     <!-- Load More Button -->
-    <div v-if="hasMore && !loading" class="mt-8 text-center">
+    <div
+      v-if="hasMore && !loading"
+      class="mt-8 text-center"
+    >
       <button
-        @click="loadMore"
         class="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        @click="loadMore"
       >
         Load More
       </button>
     </div>
 
     <!-- Loading More Indicator -->
-    <div v-if="loading && feed.length > 0" class="mt-8 text-center">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <div
+      v-if="loading && feed.length > 0"
+      class="mt-8 text-center"
+    >
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
     </div>
 
     <!-- Error Message -->
-    <div v-if="error" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-      <p class="text-sm text-red-600">{{ error }}</p>
+    <div
+      v-if="error"
+      class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+    >
+      <p class="text-sm text-red-600">
+        {{ error }}
+      </p>
     </div>
 
     <!-- Share Modal -->

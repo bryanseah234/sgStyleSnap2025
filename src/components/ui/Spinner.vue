@@ -15,8 +15,14 @@
 -->
 
 <template>
-  <div class="spinner-container" :class="`spinner-${size}`">
-    <div class="spinner" :class="`spinner-${color}`"></div>
+  <div
+    class="spinner-container"
+    :class="`spinner-${size}`"
+  >
+    <div
+      class="spinner"
+      :class="`spinner-${color}`"
+    />
   </div>
 </template>
 

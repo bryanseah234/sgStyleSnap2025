@@ -7,20 +7,31 @@
           :src="outfit.profile_picture || defaultAvatar"
           :alt="outfit.username"
           class="w-10 h-10 rounded-full object-cover"
-        />
+        >
         <div>
-          <h3 class="font-semibold text-gray-900">{{ outfit.username }}</h3>
-          <p class="text-xs text-gray-500">{{ timeAgo }}</p>
+          <h3 class="font-semibold text-gray-900">
+            {{ outfit.username }}
+          </h3>
+          <p class="text-xs text-gray-500">
+            {{ timeAgo }}
+          </p>
         </div>
       </div>
       
       <!-- More Options Menu -->
-      <div class="relative" v-if="isOwnOutfit">
+      <div
+        v-if="isOwnOutfit"
+        class="relative"
+      >
         <button
-          @click="showMenu = !showMenu"
           class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          @click="showMenu = !showMenu"
         >
-          <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg
+            class="w-5 h-5 text-gray-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
           </svg>
         </button>
@@ -32,14 +43,14 @@
           class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10"
         >
           <button
-            @click="$emit('edit', outfit)"
             class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700"
+            @click="$emit('edit', outfit)"
           >
             Edit
           </button>
           <button
-            @click="$emit('delete', outfit)"
             class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+            @click="$emit('delete', outfit)"
           >
             Delete
           </button>
@@ -48,9 +59,12 @@
     </div>
 
     <!-- Outfit Images Grid -->
-    <div class="outfit-images grid gap-1 bg-gray-50" :class="gridClass">
+    <div
+      class="outfit-images grid gap-1 bg-gray-50"
+      :class="gridClass"
+    >
       <div
-        v-for="(item, index) in displayItems"
+        v-for="(item, _index) in displayItems"
         :key="item.id"
         class="aspect-square bg-white overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
         @click="$emit('view-outfit', outfit)"
@@ -60,7 +74,7 @@
           :alt="item.name"
           class="w-full h-full object-cover"
           loading="lazy"
-        />
+        >
       </div>
       <div
         v-if="remainingCount > 0"
@@ -76,9 +90,9 @@
       <!-- Like and Comment Buttons -->
       <div class="flex items-center space-x-4">
         <button
-          @click="handleLikeToggle"
           class="flex items-center space-x-2 transition-all hover:scale-110"
           :disabled="likeLoading"
+          @click="handleLikeToggle"
         >
           <svg
             class="w-6 h-6 transition-colors"
@@ -94,16 +108,24 @@
               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
             />
           </svg>
-          <span class="font-semibold text-sm" :class="isLiked ? 'text-red-500' : 'text-gray-900'">
+          <span
+            class="font-semibold text-sm"
+            :class="isLiked ? 'text-red-500' : 'text-gray-900'"
+          >
             {{ localLikesCount }}
           </span>
         </button>
 
         <button
-          @click="toggleComments"
           class="flex items-center space-x-2 hover:text-blue-600 transition-colors"
+          @click="toggleComments"
         >
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="w-6 h-6 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -116,7 +138,12 @@
 
         <!-- Share Button (placeholder) -->
         <button class="ml-auto hover:text-blue-600 transition-colors">
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="w-6 h-6 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -129,7 +156,10 @@
 
       <!-- Caption and Occasion -->
       <div>
-        <p v-if="outfit.caption" class="text-gray-900 text-sm mb-1">
+        <p
+          v-if="outfit.caption"
+          class="text-gray-900 text-sm mb-1"
+        >
           <span class="font-semibold">{{ outfit.username }}</span>
           {{ outfit.caption }}
         </p>
@@ -145,8 +175,8 @@
       <!-- View All Comments Link -->
       <button
         v-if="localCommentsCount > 0 && !showComments"
-        @click="toggleComments"
         class="text-sm text-gray-500 hover:text-gray-700"
+        @click="toggleComments"
       >
         View all {{ localCommentsCount }} comment{{ localCommentsCount === 1 ? '' : 's' }}
       </button>
@@ -175,7 +205,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['edit', 'delete', 'view-outfit'])
+// const emit = defineEmits(['edit', 'delete', 'view-outfit'])
 
 const sharedOutfitsStore = useSharedOutfitsStore()
 const authStore = useAuthStore()

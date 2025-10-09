@@ -37,15 +37,24 @@
 -->
 
 <template>
-  <div class="suggestion-card" @click="handleClick">
+  <div
+    class="suggestion-card"
+    @click="handleClick"
+  >
     <!-- New indicator for unread received suggestions -->
-    <div v-if="mode === 'received' && !suggestion.is_read" class="new-badge">
+    <div
+      v-if="mode === 'received' && !suggestion.is_read"
+      class="new-badge"
+    >
       New
     </div>
     
     <!-- Preview Area -->
     <div class="preview-area">
-      <div v-if="suggestion.items && suggestion.items.length > 0" class="items-preview">
+      <div
+        v-if="suggestion.items && suggestion.items.length > 0"
+        class="items-preview"
+      >
         <div 
           v-for="(item, index) in previewItems" 
           :key="item.id"
@@ -57,13 +66,19 @@
             :src="item.image_url" 
             :alt="item.name"
             class="item-image"
-          />
-          <div v-else class="item-placeholder">
+          >
+          <div
+            v-else
+            class="item-placeholder"
+          >
             <span class="placeholder-icon">👕</span>
           </div>
         </div>
       </div>
-      <div v-else class="no-items">
+      <div
+        v-else
+        class="no-items"
+      >
         <span class="no-items-icon">✨</span>
         <span class="no-items-text">No items</span>
       </div>
@@ -78,22 +93,36 @@
             :src="userAvatar" 
             :alt="userName"
             class="avatar-image"
-          />
-          <span v-else class="avatar-placeholder">{{ userInitial }}</span>
+          >
+          <span
+            v-else
+            class="avatar-placeholder"
+          >{{ userInitial }}</span>
         </div>
         <div class="user-details">
-          <div class="user-name">{{ userName }}</div>
-          <div class="timestamp">{{ relativeTime }}</div>
+          <div class="user-name">
+            {{ userName }}
+          </div>
+          <div class="timestamp">
+            {{ relativeTime }}
+          </div>
         </div>
       </div>
       
       <!-- Message preview if exists -->
-      <div v-if="suggestion.message" class="message-preview">
+      <div
+        v-if="suggestion.message"
+        class="message-preview"
+      >
         "{{ suggestion.message }}"
       </div>
       
       <!-- Status badge for sent suggestions -->
-      <div v-if="mode === 'sent'" class="status-badge" :class="statusClass">
+      <div
+        v-if="mode === 'sent'"
+        class="status-badge"
+        :class="statusClass"
+      >
         {{ statusText }}
       </div>
       
@@ -107,11 +136,22 @@
     <button 
       v-if="mode === 'sent'" 
       class="delete-btn"
-      @click.stop="handleDelete"
       title="Delete suggestion"
+      @click.stop="handleDelete"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="delete-icon">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="delete-icon"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+        />
       </svg>
     </button>
   </div>

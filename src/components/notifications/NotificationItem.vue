@@ -8,7 +8,7 @@
     <div
       v-if="!notification.is_read"
       class="absolute top-4 left-2 w-2 h-2 bg-blue-500 rounded-full"
-    ></div>
+    />
 
     <div class="flex gap-4 pl-2">
       <!-- Actor Avatar -->
@@ -17,7 +17,7 @@
           :src="actorAvatar"
           :alt="actorName"
           class="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-        />
+        >
       </div>
 
       <!-- Content -->
@@ -29,7 +29,10 @@
         </p>
 
         <!-- Type-Specific Content -->
-        <div v-if="hasPreview" class="mt-2">
+        <div
+          v-if="hasPreview"
+          class="mt-2"
+        >
           <!-- Friend Outfit Suggestion Preview -->
           <div
             v-if="notification.type === 'friend_outfit_suggestion'"
@@ -63,7 +66,7 @@
               :src="previewImage"
               alt="Outfit"
               class="w-full h-full object-cover"
-            />
+            >
           </div>
 
           <!-- Item Like Preview -->
@@ -75,7 +78,7 @@
               :src="previewImage"
               alt="Item"
               class="w-full h-full object-cover"
-            />
+            >
           </div>
         </div>
 

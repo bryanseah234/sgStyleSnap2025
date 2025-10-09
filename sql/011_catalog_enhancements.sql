@@ -121,20 +121,44 @@ END $$;
 -- UPDATE RLS POLICIES
 -- ============================================
 
--- Drop old policy
-DO $$ BEGIN
+-- Drop old policies (if they exist)
+DO $$ 
+BEGIN
   DROP POLICY IF EXISTS "Anyone can view active catalog items" ON catalog_items;
-  EXCEPTION WHEN undefined_table THEN NULL;
+EXCEPTION 
+  WHEN undefined_table THEN NULL;
+  WHEN undefined_object THEN NULL;
+END $$;
+
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Anyone can view active public catalog items" ON catalog_items;
+EXCEPTION 
+  WHEN undefined_table THEN NULL;
+  WHEN undefined_object THEN NULL;
 END $$;
 
 -- Create new policy: Anyone can view active public catalog items
-CREATE POLICY "Anyone can view active public catalog items"
-ON catalog_items FOR SELECT
-USING (is_active = true AND privacy = 'public');
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+      AND tablename = 'catalog_items' 
+      AND policyname = 'Anyone can view active public catalog items'
+  ) THEN
+    CREATE POLICY "Anyone can view active public catalog items"
+    ON catalog_items FOR SELECT
+    USING (is_active = true AND privacy = 'public');
+  END IF;
+END $$;
 
 -- ============================================
 -- CREATE RPC FUNCTION: Get Catalog Items Excluding Owned
 -- ============================================
+
+-- Drop existing function if it exists (handles signature changes)
+DROP FUNCTION IF EXISTS get_catalog_excluding_owned(UUID, VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER);
 
 -- Function to get catalog items that user doesn't already own
 -- This prevents showing duplicate suggestions to users
@@ -233,6 +257,13 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- Recreate trigger to ensure it uses the updated function
+DROP TRIGGER IF EXISTS catalog_items_search_vector_update ON catalog_items;
+CREATE TRIGGER catalog_items_search_vector_update
+  BEFORE INSERT OR UPDATE ON catalog_items
+  FOR EACH ROW
+  EXECUTE FUNCTION update_catalog_search_vector();
 
 -- ============================================
 -- COMMENTS

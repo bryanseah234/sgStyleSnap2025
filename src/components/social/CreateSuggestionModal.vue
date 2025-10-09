@@ -1,6 +1,14 @@
 <template>
-  <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog as="div" @close="closeModal" class="relative z-50">
+  <TransitionRoot
+    appear
+    :show="isOpen"
+    as="template"
+  >
+    <Dialog
+      as="div"
+      class="relative z-50"
+      @close="closeModal"
+    >
       <TransitionChild
         as="template"
         enter="duration-300 ease-out"
@@ -46,44 +54,57 @@
                     <button
                       v-for="category in categories"
                       :key="category.value"
-                      @click="selectedCategory = category.value"
                       class="px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors"
                       :class="
                         selectedCategory === category.value
                           ? 'bg-indigo-600 text-white'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                       "
+                      @click="selectedCategory = category.value"
                     >
                       {{ category.label }}
                     </button>
                   </div>
 
                   <!-- Items Grid -->
-                  <div v-if="loading" class="grid grid-cols-3 gap-4">
-                    <div v-for="i in 6" :key="i" class="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                  <div
+                    v-if="loading"
+                    class="grid grid-cols-3 gap-4"
+                  >
+                    <div
+                      v-for="i in 6"
+                      :key="i"
+                      class="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+                    />
                   </div>
 
-                  <div v-else-if="filteredItems.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <div
+                    v-else-if="filteredItems.length === 0"
+                    class="text-center py-8 text-gray-500 dark:text-gray-400"
+                  >
                     No items found in this category
                   </div>
 
-                  <div v-else class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                  <div
+                    v-else
+                    class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto"
+                  >
                     <button
                       v-for="item in filteredItems"
                       :key="item.id"
-                      @click="toggleItem(item)"
                       class="relative aspect-square rounded-lg overflow-hidden border-2 transition-all"
                       :class="
                         isItemSelected(item.id)
                           ? 'border-indigo-600 ring-2 ring-indigo-600'
                           : 'border-gray-200 dark:border-gray-700 hover:border-indigo-400'
                       "
+                      @click="toggleItem(item)"
                     >
                       <img
                         :src="item.thumbnail_url || item.image_url"
                         :alt="item.name"
                         class="w-full h-full object-cover"
-                      />
+                      >
                       <div
                         v-if="isItemSelected(item.id)"
                         class="absolute inset-0 bg-indigo-600 bg-opacity-20 flex items-center justify-center"
@@ -102,14 +123,19 @@
                         </svg>
                       </div>
                       <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
-                        <p class="text-xs text-white truncate">{{ item.name }}</p>
+                        <p class="text-xs text-white truncate">
+                          {{ item.name }}
+                        </p>
                       </div>
                     </button>
                   </div>
                 </div>
 
                 <!-- Selected Items Preview -->
-                <div v-if="selectedItems.length > 0" class="mb-6">
+                <div
+                  v-if="selectedItems.length > 0"
+                  class="mb-6"
+                >
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Selected Items ({{ selectedItems.length }})
                   </label>
@@ -123,10 +149,10 @@
                         :src="item.thumbnail_url || item.image_url"
                         :alt="item.name"
                         class="w-full h-full object-cover"
-                      />
+                      >
                       <button
-                        @click="removeItem(item.id)"
                         class="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-1 hover:bg-red-600 transition-colors"
+                        @click="removeItem(item.id)"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -161,25 +187,30 @@
                 </div>
 
                 <!-- Error Message -->
-                <div v-if="error" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                <div
+                  v-if="error"
+                  class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+                >
+                  <p class="text-sm text-red-600 dark:text-red-400">
+                    {{ error }}
+                  </p>
                 </div>
               </div>
 
               <div class="mt-6 flex justify-end gap-3">
                 <button
                   type="button"
-                  @click="closeModal"
                   :disabled="submitting"
                   class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                  @click="closeModal"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  @click="handleSubmit"
                   :disabled="selectedItems.length === 0 || submitting"
                   class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  @click="handleSubmit"
                 >
                   {{ submitting ? 'Sending...' : 'Send Suggestion' }}
                 </button>

@@ -44,16 +44,20 @@
               {{ userInitial }}
             </div>
             <div class="user-details">
-              <h2 class="user-name">{{ userName }}</h2>
-              <p class="user-email">{{ userEmail }}</p>
+              <h2 class="user-name">
+                {{ userName }}
+              </h2>
+              <p class="user-email">
+                {{ userEmail }}
+              </p>
             </div>
           </div>
           
           <div class="profile-actions">
             <Button
               variant="danger"
-              @click="handleLogout"
               :loading="isLoggingOut"
+              @click="handleLogout"
             >
               Logout
             </Button>
@@ -74,7 +78,10 @@
               @click="activeTab = 'liked'"
             >
               Liked Items
-              <span v-if="likesStore.totalLikedItems > 0" class="badge">
+              <span
+                v-if="likesStore.totalLikedItems > 0"
+                class="badge"
+              >
                 {{ likesStore.totalLikedItems }}
               </span>
             </button>
@@ -83,7 +90,10 @@
               @click="activeTab = 'history'"
             >
               Outfit History
-              <span v-if="outfitHistoryStore.totalOutfits > 0" class="badge">
+              <span
+                v-if="outfitHistoryStore.totalOutfits > 0"
+                class="badge"
+              >
                 {{ outfitHistoryStore.totalOutfits }}
               </span>
             </button>
@@ -92,7 +102,10 @@
               @click="activeTab = 'collections'"
             >
               Collections
-              <span v-if="collectionsStore.collections.length > 0" class="badge">
+              <span
+                v-if="collectionsStore.collections.length > 0"
+                class="badge"
+              >
                 {{ collectionsStore.collections.length }}
               </span>
             </button>
@@ -108,12 +121,20 @@
         <!-- Tab Content -->
         <div class="tab-content">
           <!-- My Closet Tab -->
-          <div v-if="activeTab === 'closet'" class="tab-panel">
-            <p class="placeholder-text">Your closet items will appear here</p>
+          <div
+            v-if="activeTab === 'closet'"
+            class="tab-panel"
+          >
+            <p class="placeholder-text">
+              Your closet items will appear here
+            </p>
           </div>
 
           <!-- Liked Items Tab -->
-          <div v-if="activeTab === 'liked'" class="tab-panel">
+          <div
+            v-if="activeTab === 'liked'"
+            class="tab-panel"
+          >
             <LikedItemsGrid
               :items="likedItems"
               :loading="loadingLikedItems"
@@ -127,12 +148,18 @@
           </div>
 
           <!-- Outfit History Tab -->
-          <div v-if="activeTab === 'history'" class="tab-panel">
+          <div
+            v-if="activeTab === 'history'"
+            class="tab-panel"
+          >
             <OutfitHistoryList />
           </div>
 
           <!-- Collections Tab -->
-          <div v-if="activeTab === 'collections'" class="tab-panel">
+          <div
+            v-if="activeTab === 'collections'"
+            class="tab-panel"
+          >
             <CollectionsList
               v-if="!selectedCollection"
               @view-collection="handleViewCollection"
@@ -145,7 +172,10 @@
           </div>
 
           <!-- Preferences Tab -->
-          <div v-if="activeTab === 'preferences'" class="tab-panel">
+          <div
+            v-if="activeTab === 'preferences'"
+            class="tab-panel"
+          >
             <StylePreferencesEditor />
           </div>
         </div>

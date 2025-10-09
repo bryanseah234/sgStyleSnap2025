@@ -71,7 +71,7 @@ export async function uploadImage(file) {
     const data = await response.json()
     
     // Generate optimized URLs with Cloudinary transformations
-    const baseUrl = data.secure_url
+    const /* baseUrl */ = data.secure_url
     const publicId = data.public_id
     
     // Full size image URL (WebP, quality optimized)
@@ -96,7 +96,7 @@ export async function uploadImage(file) {
  * @param {string} url - Cloudinary URL
  * @returns {string} Public ID
  */
-function extractPublicId(url) {
+function /* extractPublicId */(url) {
   // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
   const parts = url.split('/')
   const filename = parts[parts.length - 1]

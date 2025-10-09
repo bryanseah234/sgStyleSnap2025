@@ -1,7 +1,10 @@
 <template>
   <div class="outfit-comments-list">
     <!-- Comments List -->
-    <div v-if="comments.length > 0" class="space-y-3 mb-4 max-h-96 overflow-y-auto">
+    <div
+      v-if="comments.length > 0"
+      class="space-y-3 mb-4 max-h-96 overflow-y-auto"
+    >
       <div
         v-for="comment in comments"
         :key="comment.id"
@@ -11,18 +14,22 @@
           :src="comment.profile_picture || defaultAvatar"
           :alt="comment.username"
           class="w-8 h-8 rounded-full object-cover flex-shrink-0"
-        />
+        >
         <div class="flex-1 min-w-0">
           <div class="bg-gray-100 rounded-lg px-3 py-2">
-            <p class="text-sm font-semibold text-gray-900">{{ comment.username }}</p>
-            <p class="text-sm text-gray-700">{{ comment.comment_text }}</p>
+            <p class="text-sm font-semibold text-gray-900">
+              {{ comment.username }}
+            </p>
+            <p class="text-sm text-gray-700">
+              {{ comment.comment_text }}
+            </p>
           </div>
           <div class="flex items-center space-x-3 mt-1 px-3">
             <span class="text-xs text-gray-500">{{ formatCommentTime(comment.created_at) }}</span>
             <button
               v-if="canDeleteComment(comment)"
-              @click="handleDeleteComment(comment.id)"
               class="text-xs text-red-600 hover:text-red-800 font-medium"
+              @click="handleDeleteComment(comment.id)"
             >
               Delete
             </button>
@@ -32,13 +39,21 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading && comments.length === 0" class="text-center py-4">
-      <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+    <div
+      v-if="loading && comments.length === 0"
+      class="text-center py-4"
+    >
+      <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
     </div>
 
     <!-- Empty State -->
-    <div v-if="!loading && comments.length === 0" class="text-center py-4">
-      <p class="text-sm text-gray-500">No comments yet. Be the first to comment!</p>
+    <div
+      v-if="!loading && comments.length === 0"
+      class="text-center py-4"
+    >
+      <p class="text-sm text-gray-500">
+        No comments yet. Be the first to comment!
+      </p>
     </div>
 
     <!-- Add Comment Form -->
@@ -47,8 +62,11 @@
         :src="currentUserAvatar"
         alt="You"
         class="w-8 h-8 rounded-full object-cover flex-shrink-0"
-      />
-      <form @submit.prevent="handleAddComment" class="flex-1 flex items-center space-x-2">
+      >
+      <form
+        class="flex-1 flex items-center space-x-2"
+        @submit.prevent="handleAddComment"
+      >
         <input
           v-model="newComment"
           type="text"
@@ -56,7 +74,7 @@
           maxlength="500"
           class="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           :disabled="addingComment"
-        />
+        >
         <button
           type="submit"
           :disabled="!newComment.trim() || addingComment"
@@ -68,8 +86,13 @@
     </div>
 
     <!-- Error Message -->
-    <div v-if="error" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-      <p class="text-sm text-red-600">{{ error }}</p>
+    <div
+      v-if="error"
+      class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg"
+    >
+      <p class="text-sm text-red-600">
+        {{ error }}
+      </p>
     </div>
   </div>
 </template>
