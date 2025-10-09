@@ -219,14 +219,6 @@ __pycache__/
 *.so
 .Python
 
-# PyTorch models (large binary files)
-*.pth
-*.pt
-*.ckpt
-*.h5
-*.pkl
-*.pickle
-
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 *.ipynb_checkpoints/
