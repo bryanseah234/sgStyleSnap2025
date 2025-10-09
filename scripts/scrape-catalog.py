@@ -283,78 +283,71 @@ class ClothingClassifier:
 # --------------------
 class BodyDetector:
     def __init__(self):
-        self.use_mediapipe = MEDIAPIPE_AVAILABLE
-        if self.use_mediapipe:
-            try:
-                self.mp_pose = mp.solutions.pose
-                self.pose = self.mp_pose.Pose(static_image_mode=True, model_complexity=1, min_detection_confidence=0.3)  # Lower threshold for stricter detection
-                self.mp_face = mp.solutions.face_detection
-                self.face_detector = self.mp_face.FaceDetection(model_selection=0, min_detection_confidence=0.3)
-                logger.info("Using MediaPipe for strict body detection")
-            except Exception:
-                self.use_mediapipe = False
-                logger.exception("Failed to initialize MediaPipe, falling back")
-
+        # Disable MediaPipe for stability
+        self.use_mediapipe = False
+        logger.info("MediaPipe disabled for stability, using OpenCV only")
+        
         # OpenCV fallbacks
         self.face_cascade = None
         try:
             haar_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
             if os.path.exists(haar_path):
                 self.face_cascade = cv2.CascadeClassifier(haar_path)
-                logger.info("OpenCV Haar cascade available for fallback detection")
-        except Exception:
-            logger.warning("Haar cascade not available")
+                logger.info("OpenCV Haar cascade available for face detection")
+                
+            # Load additional body detection cascades if available
+            upper_body_path = cv2.data.haarcascades + 'haarcascade_upperbody.xml'
+            if os.path.exists(upper_body_path):
+                self.upper_body_cascade = cv2.CascadeClassifier(upper_body_path)
+                logger.info("OpenCV upper body cascade available")
+            else:
+                self.upper_body_cascade = None
+                
+        except Exception as e:
+            logger.warning("OpenCV cascades not available: %s", e)
 
     def has_human_body(self, image_path):
-        """STRICT body detection - reject if ANY human parts detected."""
+        """STRICT body detection using OpenCV only."""
         try:
             img = cv2.imread(str(image_path))
             if img is None or img.size == 0:
-                return True  # Conservative: reject corrupted images
-            
-            # Resize for faster processing
+                return True
+                
+            # Resize for processing
             img_small = cv2.resize(img, (400, 400))
             gray = cv2.cvtColor(img_small, cv2.COLOR_BGR2GRAY)
             
-            # 1. Face detection (fastest)
+            # 1. Face detection
             if self.face_cascade is not None:
                 faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(20, 20))
                 if len(faces) > 0:
                     logger.info("REJECTED: Face detected")
                     return True
 
-            # 2. MediaPipe detection (more comprehensive)
-            if self.use_mediapipe:
-                img_rgb = cv2.cvtColor(img_small, cv2.COLOR_BGR2RGB)
-                
-                # Face detection with MediaPipe
-                face_results = self.face_detector.process(img_rgb)
-                if face_results.detections:
-                    logger.info("REJECTED: MediaPipe face detected")
+            # 2. Upper body detection
+            if self.upper_body_cascade is not None:
+                upper_bodies = self.upper_body_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 30))
+                if len(upper_bodies) > 0:
+                    logger.info("REJECTED: Upper body detected")
                     return True
-                
-                # Body pose detection
-                pose_results = self.pose.process(img_rgb)
-                if pose_results.pose_landmarks:
-                    visible_landmarks = sum(1 for lm in pose_results.pose_landmarks.landmark if lm.visibility > 0.3)
-                    if visible_landmarks >= 5:  # Very sensitive - any significant body parts
-                        logger.info("REJECTED: Body pose detected (%d landmarks)", visible_landmarks)
-                        return True
 
-            # 3. Skin tone detection as additional heuristic
+            # 3. Skin tone detection
             if self._has_skin_tone(img_small):
                 logger.info("REJECTED: Skin tones detected")
                 return True
 
-            return False  # No body parts detected
+            return False
             
         except Exception as e:
             logger.exception("Body detection error: %s", e)
-            return True  # Conservative: reject if detection fails
+            return True
 
     def _has_skin_tone(self, img):
-        """Detect skin tones in image."""
+        """Detect skin tones in image with better validation."""
         try:
+            if img is None or img.size == 0:
+                return False
+                
             # Convert to HSV for skin detection
             hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
             
@@ -363,8 +356,13 @@ class BodyDetector:
             upper_skin = np.array([20, 255, 255], dtype=np.uint8)
             
             mask = cv2.inRange(hsv, lower_skin, upper_skin)
-            skin_ratio = np.sum(mask > 0) / (img.shape[0] * img.shape[1])
+            skin_pixels = np.sum(mask > 0)
+            total_pixels = img.shape[0] * img.shape[1]
             
+            if total_pixels == 0:
+                return False
+                
+            skin_ratio = skin_pixels / total_pixels
             return skin_ratio > 0.05  # If more than 5% skin tones
         except Exception:
             return False
@@ -688,36 +686,55 @@ class WebSpider:
                             return False
                     except ValueError:
                         pass
-                with open(output_path, 'wb') as f:
+                
+                # Use temporary file during download to avoid locking issues
+                temp_output = output_path.with_suffix('.tmp')
+                with open(temp_output, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         if chunk:
                             f.write(chunk)
-                img = Image.open(output_path)
-                img.verify()
-                img = Image.open(output_path)
-                width, height = img.size
-                if width < MIN_IMAGE_SIZE or height < MIN_IMAGE_SIZE:
-                    os.remove(output_path)
-                    return False
-                if width > MAX_IMAGE_SIZE or height > MAX_IMAGE_SIZE:
-                    img.thumbnail((MAX_IMAGE_SIZE, MAX_IMAGE_SIZE), Image.Resampling.LANCZOS)
-                    if img.mode in ('RGBA', 'P', 'LA'):
+                
+                # Verify and process the image
+                try:
+                    img = Image.open(temp_output)
+                    img.verify()
+                    img = Image.open(temp_output)
+                    width, height = img.size
+                    if width < MIN_IMAGE_SIZE or height < MIN_IMAGE_SIZE:
+                        os.remove(temp_output)
+                        return False
+                    if width > MAX_IMAGE_SIZE or height > MAX_IMAGE_SIZE:
+                        img.thumbnail((MAX_IMAGE_SIZE, MAX_IMAGE_SIZE), Image.Resampling.LANCZOS)
+                        if img.mode in ('RGBA', 'P', 'LA'):
+                            img = img.convert('RGB')
+                        img.save(output_path, 'JPEG', quality=85, optimize=True)
+                        os.remove(temp_output)
+                    elif img.mode not in ('RGB', 'L'):
                         img = img.convert('RGB')
-                    img.save(output_path, 'JPEG', quality=85, optimize=True)
-                elif img.mode not in ('RGB', 'L'):
-                    img = img.convert('RGB')
-                    img.save(output_path, 'JPEG', quality=90)
-                return True
+                        img.save(output_path, 'JPEG', quality=90)
+                        os.remove(temp_output)
+                    else:
+                        # Move temp file to final location
+                        os.replace(temp_output, output_path)
+                    return True
+                except Exception as img_error:
+                    if temp_output.exists():
+                        os.remove(temp_output)
+                    raise img_error
+                    
             except Exception as e:
                 logger.warning("Download attempt %d failed for %s: %s", attempt + 1, image_url, e)
+                # Clean up any temporary files
+                temp_files = [output_path.with_suffix('.tmp'), output_path]
+                for temp_file in temp_files:
+                    if temp_file.exists():
+                        try:
+                            os.remove(temp_file)
+                        except:
+                            pass
                 if attempt < max_retries:
                     time.sleep(1)
                     continue
-                if output_path.exists():
-                    try:
-                        os.remove(output_path)
-                    except OSError:
-                        pass
                 return False
         return False
 
@@ -819,7 +836,7 @@ class ClothingScraperPipeline:
             if self.body_detector.has_human_body(temp_path):
                 with self.spider.lock:
                     self.stats['images_with_body'] += 1
-                os.remove(temp_path)
+                self._safe_delete(temp_path)  # FIXED: Use safe delete method
                 return
                 
             # 2. Check for text
@@ -827,7 +844,7 @@ class ClothingScraperPipeline:
             if self.text_detector.has_text(temp_path):
                 with self.spider.lock:
                     self.stats['images_with_text'] += 1
-                os.remove(temp_path)
+                self._safe_delete(temp_path)  # FIXED: Use safe delete method
                 return
                 
             # 3. Classify and validate clothing category
@@ -837,7 +854,7 @@ class ClothingScraperPipeline:
             if clothing_type == "REJECTED":
                 with self.spider.lock:
                     self.stats['invalid_category'] += 1
-                os.remove(temp_path)
+                self._safe_delete(temp_path)  # FIXED: Use safe delete method
                 return
                 
             logger.info("Classified as: %s (%.2f%%)", clothing_type, confidence * 100)
@@ -859,8 +876,8 @@ class ClothingScraperPipeline:
                     os.replace(str(temp_path), str(final_path))
                 except Exception:
                     shutil.copy2(str(temp_path), str(final_path))
-                    os.remove(str(temp_path))
-                    
+                    self._safe_delete(temp_path)  # FIXED: Use safe delete after copy
+            
             # Add to catalog
             item_name = f"{primary_color.capitalize()} {clothing_type}"
             item_data = {
@@ -893,13 +910,32 @@ class ClothingScraperPipeline:
             
         except Exception as e:
             logger.exception("Error processing image: %s", e)
-            if temp_path.exists():
-                try:
-                    os.remove(temp_path)
-                except OSError:
-                    pass
+            self._safe_delete(temp_path)  # FIXED: Use safe delete method
         finally:
             gc.collect()
+
+    def _safe_delete(self, file_path):
+        """Safely delete a file with retries and error handling."""
+        if not file_path.exists():
+            return
+            
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                os.remove(str(file_path))
+                break
+            except PermissionError as e:
+                if attempt < max_retries - 1:
+                    time.sleep(0.1)  # Wait 100ms before retry
+                    continue
+                else:
+                    logger.warning("Could not delete file %s after %d attempts: %s", 
+                                 file_path, max_retries, e)
+            except FileNotFoundError:
+                break  # File already deleted
+            except Exception as e:
+                logger.warning("Error deleting file %s: %s", file_path, e)
+                break
 
     def _generate_filename(self, clothing_type, color, timestamp):
         clean_type = re.sub(r'[^\w\-]', '', clothing_type.lower().replace(' ', '-'))
