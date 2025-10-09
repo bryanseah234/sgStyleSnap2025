@@ -22,7 +22,7 @@
 
 <template>
   <MainLayout>
-    <div class="analytics-page">
+    <div class="analytics-page min-h-screen" style="background-color: var(--bg-primary);">
       <WardrobeAnalytics />
     </div>
   </MainLayout>

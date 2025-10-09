@@ -27,8 +27,8 @@
   <MainLayout>
     <div class="friends-page">
       <div class="friends-header">
-        <h1>Friends</h1>
-        <p class="subtitle">
+        <h1 class="text-gray-900 dark:text-white">Friends</h1>
+        <p class="subtitle text-gray-600 dark:text-gray-300">
           Connect with friends and share outfits
         </p>
       </div>
@@ -348,7 +348,7 @@ function getFriendshipStatusText(status) {
 .friends-page {
   min-height: 100vh;
   padding: 1rem;
-  background-color: #f9fafb;
+  background-color: var(--bg-primary);
 }
 
 .friends-header {
@@ -592,15 +592,15 @@ function getFriendshipStatusText(status) {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .friends-page {
-    background-color: #111827;
+    background-color: var(--bg-primary);
   }
   
   .tab-panel {
-    background: #1f2937;
+    background: var(--bg-secondary);
   }
   
   .friends-header h1 {
-    color: white;
+    color: var(--text-primary);
   }
   
   .subtitle {

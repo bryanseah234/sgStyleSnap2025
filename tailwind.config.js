@@ -4,22 +4,23 @@ export default {
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
+  darkMode: 'class', // Enable dark mode with class strategy
   theme: {
     extend: {
       colors: {
-        // Primary brand colors
+        // Primary brand colors - Purple theme
         primary: {
-          50: '#f5f7ff',
-          100: '#ebedff',
-          200: '#d6dbff',
-          300: '#b8c0ff',
-          400: '#8b97ff',
-          500: '#667eea',
-          600: '#5568d3',
-          700: '#4553b8',
-          800: '#3a4597',
-          900: '#313b7a',
-          DEFAULT: '#667eea'
+          50: '#faf7ff',
+          100: '#f3f0ff',
+          200: '#e9e5ff',
+          300: '#d6c7ff',
+          400: '#c4b5fd',
+          500: '#a78bfa',
+          600: '#8b5cf6',
+          700: '#7c3aed',
+          800: '#6d28d9',
+          900: '#5b21b6',
+          DEFAULT: '#8b5cf6'
         },
         secondary: {
           50: '#f8f5ff',

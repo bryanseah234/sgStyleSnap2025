@@ -69,6 +69,7 @@ import { ref, onMounted, watch } from 'vue'
 import { isSupabaseConfigured } from './config/supabase'
 import { useAuthStore } from './stores/auth-store'
 import { useLikesStore } from './stores/likes-store'
+import { useThemeStore } from './stores/theme-store'
 
 const isConfigured = ref(isSupabaseConfigured)
 
@@ -76,6 +77,12 @@ const isConfigured = ref(isSupabaseConfigured)
 if (isConfigured.value) {
   const authStore = useAuthStore()
   const likesStore = useLikesStore()
+  const themeStore = useThemeStore()
+
+  // Initialize theme on app mount
+  onMounted(() => {
+    themeStore.initializeTheme()
+  })
 
   // Initialize auth state on app mount
   onMounted(async () => {

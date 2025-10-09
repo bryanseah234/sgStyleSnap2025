@@ -128,10 +128,14 @@ function clearFilters() {
   flex-wrap: wrap;
   align-items: flex-end;
   padding: 1rem;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--shadow-primary);
   margin-bottom: 1rem;
+}
+
+.dark .closet-filter {
+  background: var(--bg-secondary);
 }
 
 .filter-section {
@@ -143,25 +147,29 @@ function clearFilters() {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
+}
+
+.dark .filter-label {
+  color: var(--text-primary);
 }
 
 .filter-select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-primary);
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  background-color: white;
-  color: #111827;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--accent-primary);
   ring: 2px;
-  ring-color: #3b82f6;
+  ring-color: var(--accent-primary);
 }
 
 .clear-button {
@@ -181,19 +189,5 @@ function clearFilters() {
 }
 
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .closet-filter {
-    background: #1f2937;
-  }
-
-  .filter-label {
-    color: #d1d5db;
-  }
-
-  .filter-select {
-    background-color: #374151;
-    color: #f9fafb;
-    border-color: #4b5563;
-  }
-}
+/* Dark mode styles moved above to be properly scoped */
 </style>

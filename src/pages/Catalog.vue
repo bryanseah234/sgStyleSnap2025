@@ -1,10 +1,10 @@
 <template>
-  <div class="catalog-browse min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="catalog-browse min-h-screen" style="background-color: var(--bg-primary);">
     <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+    <header class="sticky top-0 z-10" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-primary);">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between mb-4">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-2xl font-bold" style="color: var(--text-primary);">
             Browse Catalog
           </h1>
           <button

@@ -12,10 +12,10 @@
  * - / (redirect to /closet if authenticated, /login if not)
  * - /login - Login page with Google SSO (public, guest only)
  * - /register - Register page with Google SSO (public, guest only)
- * - /closet - Main closet page (protected, home after login, has settings icon)
+ * - /closet - Main closet page (protected, home after login)
  * - /friends - Friends list (protected)
  * - /suggestions - Outfit suggestions (protected)
- * - /settings - User settings with avatar selection (protected)
+ * - /profile - User profile with settings and avatar selection (protected)
  * 
  * Route Guards:
  * - requiresAuth: Check authentication before allowing access
@@ -36,8 +36,8 @@ import Closet from './pages/Closet.vue'
 import Catalog from './pages/Catalog.vue'
 import Friends from './pages/Friends.vue'
 import Suggestions from './pages/Suggestions.vue'
-import Settings from './pages/Settings.vue' // Profile settings with avatar selection
 import Analytics from './pages/Analytics.vue'
+import Profile from './pages/Profile.vue' // User profile with settings
 import OutfitGenerator from './pages/OutfitGenerator.vue'
 import ManualOutfitCreator from './pages/ManualOutfitCreator.vue' // Manual outfit creation
 import Notifications from './pages/Notifications.vue' // Notifications page
@@ -93,9 +93,9 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/settings',
-    name: 'Settings',
-    component: Settings,
+    path: '/profile',
+    name: 'Profile',
+    component: Profile,
     meta: { requiresAuth: true }
   },
   {

@@ -115,6 +115,12 @@
             >
               Preferences
             </button>
+            <button
+              :class="['tab', { active: activeTab === 'settings' }]"
+              @click="activeTab = 'settings'"
+            >
+              Settings
+            </button>
           </div>
         </div>
 
@@ -178,6 +184,253 @@
           >
             <StylePreferencesEditor />
           </div>
+
+          <!-- Settings Tab -->
+          <div
+            v-if="activeTab === 'settings'"
+            class="tab-panel"
+          >
+            <div class="space-y-6">
+              <!-- Theme Settings - Always Show First -->
+              <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                  Appearance
+                </h2>
+                
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <!-- Theme Icon -->
+                    <div class="flex-shrink-0">
+                      <svg
+                        v-if="themeStore.isDarkMode"
+                        class="w-6 h-6 text-yellow-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <svg
+                        v-else
+                        class="w-6 h-6 text-gray-600 dark:text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                      </svg>
+                    </div>
+                    
+                    <!-- Theme Label -->
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {{ themeStore.getThemeLabel() }}
+                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Switch between light and dark themes
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- Toggle Switch -->
+                  <button
+                    @click="themeStore.toggleTheme()"
+                    :class="[
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                      themeStore.isDarkMode ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                    ]"
+                  >
+                    <span
+                      :class="[
+                        'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                        themeStore.isDarkMode ? 'translate-x-6' : 'translate-x-1'
+                      ]"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Loading State -->
+              <div
+                v-if="settingsLoading"
+                class="flex justify-center items-center h-32"
+              >
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              </div>
+
+              <!-- Profile Information -->
+              <div
+                v-else
+                class="space-y-6"
+              >
+                <!-- Profile Information -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    Profile Information
+                  </h2>
+                  
+                  <div class="space-y-4">
+                    <!-- Username (Read-only) -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Username
+                      </label>
+                      <div class="flex items-center">
+                        <input
+                          type="text"
+                          :value="profile.username"
+                          readonly
+                          class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed"
+                        >
+                        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                          (Auto-generated from email)
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Name (Read-only) -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Name
+                      </label>
+                      <div class="flex items-center">
+                        <input
+                          type="text"
+                          :value="profile.name"
+                          readonly
+                          class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed"
+                        >
+                        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                          (From Google)
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Email (Read-only) -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        :value="profile.email"
+                        readonly
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed"
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Profile Photo -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    Profile Photo
+                  </h2>
+                  
+                  <!-- Current Avatar -->
+                  <div class="mb-6">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      Current photo:
+                    </p>
+                    <img
+                      :src="profile.avatar_url || defaultAvatars[0].url"
+                      :alt="profile.name"
+                      class="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+                    >
+                  </div>
+
+                  <!-- Avatar Selection Grid -->
+                  <div>
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                      Choose a profile photo:
+                    </p>
+                    <div class="grid grid-cols-3 gap-4">
+                      <button
+                        v-for="avatar in defaultAvatars"
+                        :key="avatar.id"
+                        :disabled="updatingAvatar"
+                        class="relative group"
+                        :class="[
+                          'rounded-lg overflow-hidden transition-all',
+                          profile.avatar_url === avatar.url
+                            ? 'ring-4 ring-blue-500 ring-offset-2'
+                            : 'hover:ring-2 hover:ring-blue-300'
+                        ]"
+                        @click="selectAvatar(avatar.url)"
+                      >
+                        <img
+                          :src="avatar.url"
+                          :alt="avatar.alt"
+                          class="w-full h-auto aspect-square object-cover transition-transform duration-300"
+                          :class="[
+                            updatingAvatar ? 'opacity-50' : 'opacity-100 group-hover:scale-110'
+                          ]"
+                        >
+                        
+                        <!-- Selected Indicator -->
+                        <div
+                          v-if="profile.avatar_url === avatar.url"
+                          class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-20 animate-fade-in"
+                        >
+                          <svg
+                            class="w-12 h-12 text-blue-600 animate-bounce-subtle"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+
+                        <!-- Hover Overlay -->
+                        <div
+                          v-if="profile.avatar_url !== avatar.url && !updatingAvatar"
+                          class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all"
+                        >
+                          <span class="text-white text-sm font-medium opacity-0 group-hover:opacity-100">
+                            Select
+                          </span>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Update Status -->
+                    <div
+                      v-if="updatingAvatar"
+                      class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400"
+                    >
+                      Updating profile photo...
+                    </div>
+                    <div
+                      v-if="updateSuccess"
+                      class="mt-4 text-center text-sm text-green-600 dark:text-green-400"
+                    >
+                      ✓ Profile photo updated successfully!
+                    </div>
+                    <div
+                      v-if="updateError"
+                      class="mt-4 text-center text-sm text-red-600 dark:text-red-400"
+                    >
+                      {{ updateError }}
+                    </div>
+                  </div>
+
+                  <!-- Future: Custom Upload -->
+                  <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+                      Custom photo uploads coming soon!
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -191,6 +444,9 @@ import { useAuthStore } from '../stores/auth-store'
 import { useLikesStore } from '../stores/likes-store'
 import { useOutfitHistoryStore } from '../stores/outfit-history-store'
 import { useCollectionsStore } from '../stores/collections-store'
+import { useThemeStore } from '../stores/theme-store'
+import { getUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
+import { signOut } from '../services/auth-service.js'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import Button from '../components/ui/Button.vue'
 import LikedItemsGrid from '../components/closet/LikedItemsGrid.vue'
@@ -204,6 +460,7 @@ const authStore = useAuthStore()
 const likesStore = useLikesStore()
 const outfitHistoryStore = useOutfitHistoryStore()
 const collectionsStore = useCollectionsStore()
+const themeStore = useThemeStore()
 
 const isLoggingOut = ref(false)
 const activeTab = ref('closet')
@@ -213,6 +470,16 @@ const likedItems = ref([])
 const currentPage = ref(0)
 const itemsPerPage = 20
 const selectedCollection = ref(null)
+
+// Settings-related state
+const settingsLoading = ref(false)
+const settingsError = ref(null)
+const profile = ref({})
+const defaultAvatars = ref(getDefaultAvatars())
+const updatingAvatar = ref(false)
+const updateSuccess = ref(false)
+const updateError = ref(null)
+const signingOut = ref(false)
 
 const userName = computed(() => authStore.userName)
 const userEmail = computed(() => authStore.userEmail)
@@ -230,6 +497,9 @@ onMounted(async () => {
   if (authStore.isLoggedIn) {
     await loadLikedItems()
   }
+  
+  // Load profile for settings tab
+  await loadProfile()
 })
 
 async function loadLikedItems() {
@@ -296,6 +566,79 @@ async function handleLogout() {
     } finally {
       isLoggingOut.value = false
     }
+  }
+}
+
+// Settings functions
+async function loadProfile() {
+  settingsLoading.value = true
+  settingsError.value = null
+  
+  try {
+    profile.value = await getUserProfile()
+  } catch (err) {
+    console.error('Failed to load profile:', err)
+    // Don't show error message, just use default data
+    settingsError.value = null
+    profile.value = {
+      username: authStore.userName || 'User',
+      name: authStore.userName || 'User',
+      email: authStore.userEmail || 'user@example.com',
+      avatar_url: null
+    }
+  } finally {
+    settingsLoading.value = false
+  }
+}
+
+// Select avatar
+async function selectAvatar(avatarUrl) {
+  if (profile.value.avatar_url === avatarUrl) {
+    return; // Already selected
+  }
+  
+  updatingAvatar.value = true
+  updateSuccess.value = false
+  updateError.value = null
+  
+  try {
+    const updatedProfile = await updateUserAvatar(avatarUrl)
+    profile.value = updatedProfile
+    updateSuccess.value = true
+    
+    // Hide success message after 3 seconds
+    setTimeout(() => {
+      updateSuccess.value = false
+    }, 3000)
+  } catch (err) {
+    console.error('Failed to update avatar:', err)
+    updateError.value = err.message || 'Failed to update profile photo. Please try again.'
+    
+    // Hide error message after 5 seconds
+    setTimeout(() => {
+      updateError.value = null
+    }, 5000)
+  } finally {
+    updatingAvatar.value = false
+  }
+}
+
+// Handle sign out
+async function handleSignOut() {
+  if (!confirm('Are you sure you want to sign out?')) {
+    return
+  }
+  
+  signingOut.value = true
+  
+  try {
+    await signOut()
+    router.push('/login')
+  } catch (err) {
+    console.error('Failed to sign out:', err)
+    alert('Failed to sign out. Please try again.')
+  } finally {
+    signingOut.value = false
   }
 }
 </script>
@@ -463,35 +806,63 @@ async function handleLogout() {
   font-size: 0.875rem;
 }
 
+/* Purple theme support */
+.profile-page {
+  background-color: var(--bg-primary);
+}
+
+.profile-card,
+.tabs-container,
+.tab-content {
+  background: var(--bg-secondary);
+}
+
+.profile-header h1,
+.user-name {
+  color: var(--text-primary);
+}
+
+.tab {
+  color: var(--text-secondary);
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.tab.active {
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .profile-page {
-    background-color: #111827;
-  }
-  
-  .profile-card,
-  .tabs-container,
-  .tab-content {
-    background: #1f2937;
-  }
-  
-  .profile-header h1,
-  .user-name {
-    color: white;
-  }
-  
-  .tab {
-    color: #9ca3af;
-  }
-  
-  .tab:hover {
-    color: white;
-    background-color: #374151;
-  }
-  
-  .tab.active {
-    color: #818cf8;
-    background-color: #312e81;
-  }
+.dark .profile-page {
+  background-color: var(--bg-primary);
+}
+
+.dark .profile-card,
+.dark .tabs-container,
+.dark .tab-content {
+  background: var(--bg-secondary);
+}
+
+.dark .profile-header h1,
+.dark .user-name {
+  color: var(--text-primary);
+}
+
+.dark .tab {
+  color: var(--text-secondary);
+}
+
+.dark .tab:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.dark .tab.active {
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
 }
 </style>

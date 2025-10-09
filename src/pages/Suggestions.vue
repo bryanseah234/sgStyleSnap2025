@@ -29,8 +29,8 @@
   <MainLayout>
     <div class="suggestions-page">
       <div class="suggestions-header">
-        <h1>Outfit Suggestions</h1>
-        <p class="subtitle">
+        <h1 class="text-gray-900 dark:text-white">Outfit Suggestions</h1>
+        <p class="subtitle text-gray-600 dark:text-gray-300">
           Share outfit ideas with friends
         </p>
       </div>
@@ -51,7 +51,11 @@ import SuggestionList from '../components/social/SuggestionList.vue'
 .suggestions-page {
   min-height: 100vh;
   padding: 1rem;
-  background-color: #f9fafb;
+  background-color: var(--bg-primary);
+}
+
+.dark .suggestions-page {
+  background-color: var(--bg-primary);
 }
 
 .suggestions-header {

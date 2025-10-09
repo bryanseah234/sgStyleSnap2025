@@ -1,7 +1,7 @@
 <template>
-  <div class="notifications-page min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="notifications-page min-h-screen" style="background-color: var(--bg-primary);">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20">
+    <div class="sticky top-0 z-20" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-primary);">
       <div class="max-w-4xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -24,7 +24,7 @@
                 />
               </svg>
             </button>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 class="text-2xl font-bold" style="color: var(--text-primary);">
               Notifications
             </h1>
             <NotificationBadge
@@ -47,7 +47,7 @@
 
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto">
-      <div class="bg-white dark:bg-gray-800 shadow-sm min-h-[calc(100vh-80px)]">
+      <div class="shadow-sm min-h-[calc(100vh-80px)]" style="background-color: var(--bg-secondary);">
         <NotificationsList
           :notifications="notificationsStore.notifications"
           :unread-count="notificationsStore.unreadCount"

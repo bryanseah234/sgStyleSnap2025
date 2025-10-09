@@ -315,11 +315,11 @@ import OutfitHistoryCard from './OutfitHistoryCard.vue'
 import RecordOutfitModal from './RecordOutfitModal.vue'
 
 // const props = defineProps({
-  selectedItems: {
-    type: Array,
-    default: () => []
-  }
-})
+//   selectedItems: {
+//     type: Array,
+//     default: () => []
+//   }
+// })
 
 const outfitHistoryStore = useOutfitHistoryStore()
 

@@ -134,16 +134,26 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: var(--bg-primary);
+}
+
+.dark .main-layout {
+  background-color: var(--bg-primary);
 }
 
 .main-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  box-shadow: 0 1px 3px var(--shadow-primary);
+}
+
+.dark .main-header {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-primary);
+  box-shadow: 0 1px 3px var(--shadow-primary);
 }
 
 .header-content {
@@ -158,8 +168,12 @@ onMounted(() => {
 .app-logo {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #3b82f6;
+  color: var(--accent-primary);
   margin: 0;
+}
+
+.dark .app-logo {
+  color: var(--accent-primary);
 }
 
 .header-actions {
@@ -170,7 +184,11 @@ onMounted(() => {
 
 .user-greeting {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
+}
+
+.dark .user-greeting {
+  color: var(--text-secondary);
 }
 
 .main-content {
@@ -186,13 +204,19 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: white;
-  border-top: 1px solid #e5e7eb;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-around;
   padding: 0.5rem 0;
   z-index: 100;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -1px 3px var(--shadow-primary);
+}
+
+.dark .bottom-nav {
+  background-color: var(--bg-secondary);
+  border-top-color: var(--border-primary);
+  box-shadow: 0 -1px 3px var(--shadow-primary);
 }
 
 .nav-item {
@@ -202,18 +226,30 @@ onMounted(() => {
   gap: 0.25rem;
   padding: 0.5rem 1rem;
   text-decoration: none;
-  color: #6b7280;
+  color: var(--text-secondary);
   transition: all 0.2s;
   border-radius: 0.5rem;
   min-width: 4rem;
 }
 
+.dark .nav-item {
+  color: var(--text-secondary);
+}
+
 .nav-item:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-tertiary);
+}
+
+.dark .nav-item:hover {
+  background-color: var(--bg-tertiary);
 }
 
 .nav-item.active {
-  color: #3b82f6;
+  color: var(--accent-primary);
+}
+
+.dark .nav-item.active {
+  color: var(--accent-primary);
 }
 
 .nav-icon {

@@ -18,6 +18,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TODO: Add CSS custom properties for theme colors, spacing, and typography */
-/* TODO: Add global typography styles */
-/* TODO: Add any global resets or normalizations */
+/* CSS Custom Properties for Theme Colors */
+:root {
+  /* Light purple theme colors */
+  --bg-primary: #faf7ff;
+  --bg-secondary: #f3f0ff;
+  --bg-tertiary: #ede9fe;
+  --text-primary: #2d1b69;
+  --text-secondary: #5b4b8a;
+  --text-tertiary: #7c6ba8;
+  --border-primary: #e0d7ff;
+  --border-secondary: #c4b5fd;
+  --shadow-primary: rgba(139, 92, 246, 0.1);
+  --shadow-secondary: rgba(139, 92, 246, 0.05);
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #a78bfa;
+  --accent-tertiary: #c4b5fd;
+}
+
+.dark {
+  /* Dark purple theme colors */
+  --bg-primary: #1a0b2e;
+  --bg-secondary: #2d1b69;
+  --bg-tertiary: #4c1d95;
+  --text-primary: #f3f0ff;
+  --text-secondary: #e0d7ff;
+  --text-tertiary: #c4b5fd;
+  --border-primary: #4c1d95;
+  --border-secondary: #7c3aed;
+  --shadow-primary: rgba(139, 92, 246, 0.3);
+  --shadow-secondary: rgba(139, 92, 246, 0.2);
+  --accent-primary: #a78bfa;
+  --accent-secondary: #c4b5fd;
+  --accent-tertiary: #ddd6fe;
+}
+
+/* Global Typography Styles */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global Resets and Normalizations */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Dark mode focus styles */
+.dark *:focus {
+  outline-color: #8b97ff;
+}
+
+/* Selection styles */
+::selection {
+  background-color: #667eea;
+  color: white;
+}
+
+.dark ::selection {
+  background-color: #8b97ff;
+  color: #1a202c;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
