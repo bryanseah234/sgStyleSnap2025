@@ -1,4 +1,5 @@
 <template>
+  <MainLayout>
   <div class="catalog-browse min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
     <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
@@ -133,6 +134,7 @@
     <!-- Item Detail Modal (future enhancement) -->
     <!-- <CatalogItemModal v-if="selectedItem" :item="selectedItem" @close="selectedItem = null" /> -->
   </div>
+  </MainLayout>
 </template>
 
 <script setup>
@@ -142,6 +144,7 @@ import { useClosetStore } from '@/stores/closet-store'
 import CatalogSearch from '@/components/catalog/CatalogSearch.vue'
 import CatalogFilter from '@/components/catalog/CatalogFilter.vue'
 import CatalogGrid from '@/components/catalog/CatalogGrid.vue'
+import MainLayout from '@/components/layouts/MainLayout.vue'
 
 const catalogStore = useCatalogStore()
 const closetStore = useClosetStore()
@@ -150,6 +153,8 @@ const searchQuery = ref('')
 const selectedItem = ref(null)
 
 onMounted(async () => {
+  // Scroll to top when page loads
+  window.scrollTo(0, 0)
   await catalogStore.fetchCatalog()
   await catalogStore.fetchFilterOptions()
 })

@@ -76,19 +76,29 @@ export const useAuthStore = defineStore('auth', {
      * Initialize auth state from existing session
      */
     async initializeAuth() {
-      this.loading = true
-      this.error = null
+      this.isLoading = true
       try {
-        const session = await authService.getSession()
-        if (session) {
-          this.setUser(session.user)
+        // MOCK USER FOR LOCAL DEV
+        this.user = {
+          id: 'mock-user-123',
+          name: 'Test User',
+          email: 'testuser@example.com',
+          avatar_url: 'https://i.pravatar.cc/150?img=3'
         }
+        this.isAuthenticated = true
+
+        // If you want, skip calling authService entirely
+        // const session = await authService.getSession()
+        // if (session) {
+        //   this.user = session.user
+        //   this.isAuthenticated = true
+        // }
       } catch (error) {
         console.error('Failed to initialize auth:', error)
-        this.error = error.message
-        this.clearUser()
+        this.user = null
+        this.isAuthenticated = false
       } finally {
-        this.loading = false
+        this.isLoading = false
       }
     },
     
