@@ -390,7 +390,7 @@ button:active {
 
 .fab {
   position: fixed;
-  bottom: calc(100px + var(--safe-area-bottom));
+  bottom: calc(80px + var(--safe-area-bottom));
   right: 1rem;
   width: 56px;
   height: 56px;
