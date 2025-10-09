@@ -6,7 +6,7 @@ A Progressive Web App for managing your wardrobe and getting AI-powered outfit s
 
 ## 🤖 For LLM Agents: Quick Start Guide
 
-**📖 Read the Complete Guide**: [LLM_AGENT_GUIDE.md](LLM_AGENT_GUIDE.md) - Comprehensive documentation navigation for AI assistants
+**📖 Read the Complete Guide**: [docs/LLM_AGENT_GUIDE.md](docs/LLM_AGENT_GUIDE.md) - Comprehensive documentation navigation for AI assistants
 
 ### Step 1: Understand the Project Structure
 
