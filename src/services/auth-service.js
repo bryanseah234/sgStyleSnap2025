@@ -57,22 +57,45 @@
  * - Supabase Auth docs: https://supabase.com/docs/guides/auth
  */
 
-import { supabase } from '../config/supabase'
+import { supabase, isSupabaseConfigured } from '../config/supabase'
 
 /**
  * Sign in with Google OAuth
  * @returns {Promise<void>}
  */
 export async function signInWithGoogle() {
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured || !supabase) {
+    console.error('❌ Supabase is not configured!')
+    console.error('📝 Please check your environment variables:')
+    console.error('   - VITE_SUPABASE_URL')
+    console.error('   - VITE_SUPABASE_ANON_KEY')
+    throw new Error('Supabase is not configured. Please check your environment variables.')
+  }
+
+  console.log('🔐 Starting Google OAuth sign-in...')
+  console.log('📍 Redirect URL:', `${window.location.origin}/closet`)
+  
   const result = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/closet`
+      redirectTo: `${window.location.origin}/closet`,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent'
+      }
     }
   })
   
+  console.log('📤 OAuth result:', result)
+  
   if (result?.error) {
+    console.error('❌ Google sign-in error:', result.error)
     throw new Error(`Google sign-in failed: ${result.error.message}`)
+  }
+  
+  if (result?.data?.url) {
+    console.log('✅ Redirecting to Google OAuth:', result.data.url)
   }
   
   return result
