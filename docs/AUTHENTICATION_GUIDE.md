@@ -3,6 +3,8 @@
 ## Overview
 StyleSnap uses **Google OAuth 2.0 exclusively** for authentication via Supabase Auth. No email/password, magic links, or other authentication methods are supported.
 
+📘 **For comprehensive OAuth documentation, including detailed flow explanations, setup guides, security details, and testing strategies, see:** [`OAUTH_COMPLETE_GUIDE.md`](OAUTH_COMPLETE_GUIDE.md)
+
 ---
 
 ## Features

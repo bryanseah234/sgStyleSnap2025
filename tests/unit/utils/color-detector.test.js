@@ -5,13 +5,13 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import ColorDetector from '@/utils/color-detector'
+import colorDetector from '@/utils/color-detector'
 
 describe('Color Detector Utility', () => {
   let detector
 
   beforeEach(() => {
-    detector = new ColorDetector()
+    detector = colorDetector
 
     // Mock Canvas API
     const mockCanvas = {

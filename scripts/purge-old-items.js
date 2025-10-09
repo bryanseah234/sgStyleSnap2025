@@ -47,61 +47,181 @@
  * - .github/workflows/ for GitHub Actions scheduling
  */
 
-// TODO: Import required libraries
-// import { createClient } from '@supabase/supabase-js'
-// import { v2 as cloudinary } from 'cloudinary'
-// import { isItemExpired, extractCloudinaryPublicId } from '../src/utils/maintenance-helpers.js'
+import { createClient } from '@supabase/supabase-js'
+import { v2 as cloudinary } from 'cloudinary'
+import { extractCloudinaryPublicId } from '../src/utils/maintenance-helpers.js'
+import * as readline from 'readline'
 
-// TODO: Configuration
-const MAX_AGE_DAYS = process.env.MAX_AGE_DAYS || 730
+// Configuration
+const MAX_AGE_DAYS = parseInt(process.env.MAX_AGE_DAYS) || 730
 const DRY_RUN = process.argv.includes('--dry-run')
 const BATCH_SIZE = 50
 
-// TODO: Initialize Supabase with service role key
-// const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
+// Validate environment variables
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+  console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_KEY must be set')
+  process.exit(1)
+}
 
-// TODO: Initialize Cloudinary
-// cloudinary.config({
-//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//   api_key: process.env.CLOUDINARY_API_KEY,
-//   api_secret: process.env.CLOUDINARY_API_SECRET
-// })
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.error('Error: Cloudinary credentials must be set')
+  process.exit(1)
+}
+
+// Initialize Supabase with service role key
+const supabase = createClient(
+  process.env.SUPABASE_URL, 
+  process.env.SUPABASE_SERVICE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
+
+// Initialize Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+})
+
+/**
+ * Prompts user for confirmation
+ */
+async function confirm(question) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close()
+      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes')
+    })
+  })
+}
 
 async function purgeOldItems() {
-  console.log(`Starting purge script (DRY_RUN: ${DRY_RUN})`)
+  console.log('='.repeat(50))
+  console.log('StyleSnap - Purge Old Items Script')
+  console.log('='.repeat(50))
+  console.log(`Mode: ${DRY_RUN ? 'DRY RUN (preview only)' : 'LIVE'}`)
   console.log(`Max age: ${MAX_AGE_DAYS} days`)
+  console.log()
   
   try {
-    // TODO: Query for old items
-    // const cutoffDate = new Date()
-    // cutoffDate.setDate(cutoffDate.getDate() - MAX_AGE_DAYS)
+    // Calculate cutoff date
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - MAX_AGE_DAYS)
+    console.log(`Cutoff date: ${cutoffDate.toISOString()}`)
     
-    // TODO: Fetch items older than cutoff date
-    // const { data: oldItems, error } = await supabase
-    //   .from('closet_items')
-    //   .select('*')
-    //   .lt('created_at', cutoffDate.toISOString())
+    // Fetch items older than cutoff date
+    const { data: oldItems, error } = await supabase
+      .from('closet_items')
+      .select('id, user_id, name, image_url, created_at')
+      .lt('created_at', cutoffDate.toISOString())
+      .order('created_at', { ascending: true })
     
-    // TODO: If DRY_RUN, just log what would be deleted
-    // if (DRY_RUN) {
-    //   console.log(`Would delete ${oldItems.length} items`)
-    //   return
-    // }
+    if (error) {
+      throw new Error(`Failed to fetch old items: ${error.message}`)
+    }
     
-    // TODO: Confirm deletion
-    // TODO: Process items in batches
-    // TODO: For each item:
-    //   - Delete from Cloudinary
-    //   - Delete from database
-    //   - Log result
+    console.log(`Found ${oldItems.length} items older than ${MAX_AGE_DAYS} days`)
     
-    // TODO: Print summary
-    console.log('Purge complete!')
+    if (oldItems.length === 0) {
+      console.log('No items to purge. Exiting.')
+      return
+    }
+    
+    // If DRY_RUN, just log what would be deleted
+    if (DRY_RUN) {
+      console.log('\nDRY RUN - Preview of items that would be deleted:')
+      oldItems.slice(0, 10).forEach(item => {
+        const age = Math.floor((new Date() - new Date(item.created_at)) / (1000 * 60 * 60 * 24))
+        console.log(`  - ${item.name} (${age} days old, user: ${item.user_id})`)
+      })
+      if (oldItems.length > 10) {
+        console.log(`  ... and ${oldItems.length - 10} more items`)
+      }
+      console.log('\nRun without --dry-run to actually delete these items.')
+      return
+    }
+    
+    // Confirm deletion
+    console.log('\n⚠️  WARNING: This will permanently delete items and their images!')
+    const confirmed = await confirm(`Delete ${oldItems.length} items? (y/n): `)
+    
+    if (!confirmed) {
+      console.log('Deletion cancelled.')
+      return
+    }
+    
+    // Process items in batches
+    let deletedCount = 0
+    let errorCount = 0
+    const errors = []
+    
+    console.log('\nProcessing items...')
+    
+    for (let i = 0; i < oldItems.length; i += BATCH_SIZE) {
+      const batch = oldItems.slice(i, i + BATCH_SIZE)
+      console.log(`\nBatch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(oldItems.length / BATCH_SIZE)}`)
+      
+      for (const item of batch) {
+        try {
+          // Delete from Cloudinary if image exists
+          if (item.image_url) {
+            const publicId = extractCloudinaryPublicId(item.image_url)
+            if (publicId) {
+              await cloudinary.uploader.destroy(publicId)
+              console.log(`  ✓ Deleted image: ${publicId}`)
+            }
+          }
+          
+          // Delete from database
+          const { error: deleteError } = await supabase
+            .from('closet_items')
+            .delete()
+            .eq('id', item.id)
+          
+          if (deleteError) {
+            throw deleteError
+          }
+          
+          deletedCount++
+          console.log(`  ✓ Deleted item: ${item.name} (ID: ${item.id})`)
+        } catch (error) {
+          errorCount++
+          const errorMsg = `Failed to delete item ${item.id}: ${error.message}`
+          errors.push(errorMsg)
+          console.error(`  ✗ ${errorMsg}`)
+        }
+      }
+    }
+    
+    // Print summary
+    console.log('\n' + '='.repeat(50))
+    console.log('Purge Summary')
+    console.log('='.repeat(50))
+    console.log(`Total items found: ${oldItems.length}`)
+    console.log(`Successfully deleted: ${deletedCount}`)
+    console.log(`Errors: ${errorCount}`)
+    
+    if (errors.length > 0) {
+      console.log('\nErrors:')
+      errors.forEach(err => console.log(`  - ${err}`))
+    }
+    
+    console.log('\nPurge complete!')
   } catch (error) {
-    console.error('Purge failed:', error)
+    console.error('\n❌ Purge failed:', error.message)
+    console.error(error)
     process.exit(1)
   }
 }
 
-// TODO: Run the script
-// purgeOldItems()
+// Run the script
+purgeOldItems()

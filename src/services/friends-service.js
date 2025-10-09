@@ -169,35 +169,54 @@ export async function getPendingRequests() {
 }
 
 /**
- * Send friend request by email
- * @param {string} email - Target user's email
+ * Send friend request by email or user ID
+ * @param {string} emailOrUserId - Target user's email or user ID
  * @returns {Promise<Object>} Created request object
  */
-export async function sendFriendRequest(email) {
+export async function sendFriendRequest(emailOrUserId) {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
     
-    // Can't send request to yourself
-    if (email === user.email) {
-      throw new Error('You cannot send a friend request to yourself')
-    }
+    let targetUserId = null
     
-    // Find target user by email
-    const { data: targetUser, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .single()
-    
-    if (userError || !targetUser) {
-      // For security, return success even if user doesn't exist (prevent email enumeration)
-      return { id: null, status: 'pending', message: 'Friend request sent successfully' }
+    // Check if input is a UUID (user ID) or email
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (uuidRegex.test(emailOrUserId)) {
+      // Input is a user ID
+      targetUserId = emailOrUserId
+      
+      // Can't send request to yourself
+      if (targetUserId === user.id) {
+        throw new Error('You cannot send a friend request to yourself')
+      }
+    } else {
+      // Input is an email
+      const email = emailOrUserId
+      
+      // Can't send request to yourself
+      if (email === user.email) {
+        throw new Error('You cannot send a friend request to yourself')
+      }
+      
+      // Find target user by email
+      const { data: targetUser, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .single()
+      
+      if (userError || !targetUser) {
+        // For security, return success even if user doesn't exist (prevent email enumeration)
+        return { id: null, status: 'pending', message: 'Friend request sent successfully' }
+      }
+      
+      targetUserId = targetUser.id
     }
     
     // Ensure canonical ordering (smaller ID first)
-    const requesterId = user.id < targetUser.id ? user.id : targetUser.id
-    const receiverId = user.id < targetUser.id ? targetUser.id : user.id
+    const requesterId = user.id < targetUserId ? user.id : targetUserId
+    const receiverId = user.id < targetUserId ? targetUserId : user.id
     
     // Check if friendship already exists
     const { data: existing } = await supabase

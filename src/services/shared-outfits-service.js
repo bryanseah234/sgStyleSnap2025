@@ -190,9 +190,10 @@ export default {
   /**
    * Get comments for outfit
    * @param {string} outfitId - Outfit ID
+   * @param {number} limit - Max number of comments (default: 100)
    * @returns {Promise<Array>} Comments
    */
-  async getComments(outfitId) {
+  async getComments(outfitId, limit = 100) {
     const { data, error } = await supabase
       .from('outfit_comments')
       .select(`
@@ -201,6 +202,7 @@ export default {
       `)
       .eq('outfit_id', outfitId)
       .order('created_at', { ascending: true })
+      .limit(limit)
     
     if (error) throw error
     return data || []

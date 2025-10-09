@@ -7,6 +7,9 @@ import { vi, beforeAll } from 'vitest'
 
 // Set up test environment variables before all tests
 beforeAll(() => {
+  // For unit tests: use mock values
+  // For integration tests: these will be overridden by actual .env values
+  // Integration tests use TestTransaction helpers from tests/helpers/db-transactions.js
   vi.stubEnv('VITE_SUPABASE_URL', 'https://test.supabase.co')
   vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key')
   vi.stubEnv('VITE_CLOUDINARY_CLOUD_NAME', 'test-cloud')

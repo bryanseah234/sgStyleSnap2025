@@ -175,8 +175,8 @@ export const likesService = {
     }
   },
 
-  /**
-   * Get likers for an item
+    /**
+   * Get list of users who liked an item
    * @param {string} itemId - UUID of the item
    * @param {number} limit - Max likers to return
    * @returns {Promise<Array>}
@@ -190,6 +190,7 @@ export const likesService = {
         })
       
       if (error) throw error
+      
       return data || []
     } catch (error) {
       console.error('Error fetching item likers:', error)

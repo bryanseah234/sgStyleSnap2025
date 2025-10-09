@@ -31,19 +31,37 @@
             <h1>My Closet</h1>
             <p class="quota-text">
               {{ quotaUsed }} / 50 uploads ({{ totalItems }} total items)
-              <span v-if="quotaUsed >= 45" class="quota-warning">⚠️ Near limit!</span>
+              <span
+                v-if="quotaUsed >= 45"
+                class="quota-warning"
+              >⚠️ Near limit!</span>
             </p>
           </div>
           
           <!-- Settings Icon -->
           <button
-            @click="goToSettings"
             class="settings-button transition-all duration-300 ease-out hover:scale-110 active:scale-95"
             title="Settings"
+            @click="goToSettings"
           >
-            <svg class="w-6 h-6 transition-transform duration-500 hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <svg
+              class="w-6 h-6 transition-transform duration-500 hover:rotate-180"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
             </svg>
           </button>
         </div>
@@ -58,43 +76,27 @@
       </div>
       
       <div class="closet-content">
-        <!-- Loading State -->
-        <div v-if="closetStore.loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Loading your closet...</p>
-        </div>
-
-        <!-- Empty State -->
-        <div v-else-if="items.length === 0" class="empty-state">
-          <div class="empty-icon">👔</div>
-          <p class="empty-message">
-            {{ hasFilters ? 'No items match your filters' : 'Your closet is empty. Add your first item!' }}
-          </p>
-          <button v-if="!hasFilters" @click="handleAddItem" class="add-first-button">
-            Add Item
-          </button>
-        </div>
-        
-        <!-- Items Grid -->
-        <div v-else class="items-grid">
-          <div 
-            v-for="item in items" 
-            :key="item.id" 
-            class="item-card"
-            @click="handleItemClick(item)"
+        <!-- Closet Grid with all animations and features -->
+        <ClosetGrid
+          :items="items"
+          :loading="closetStore.loading"
+          :empty-message="hasFilters ? 'No items match your filters' : 'Your closet is empty. Add your first item!'"
+          :show-favorites="true"
+          @item-click="handleItemClick"
+          @favorite-click="handleFavoriteClick"
+        >
+          <template
+            v-if="!hasFilters"
+            #empty-action
           >
-            <div class="item-image">
-              <img v-if="item.image_url" :src="item.thumbnail_url || item.image_url" :alt="item.name" />
-              <div v-else class="item-image-placeholder">
-                {{ item.name }}
-              </div>
-            </div>
-            <div class="item-info">
-              <h3 class="item-name">{{ item.name }}</h3>
-              <p class="item-category">{{ getCategoryLabel(item.category) }}</p>
-            </div>
-          </div>
-        </div>
+            <button
+              class="add-first-button"
+              @click="handleAddItem"
+            >
+              Add Item
+            </button>
+          </template>
+        </ClosetGrid>
       </div>
       
       <!-- FAB -->
@@ -106,8 +108,8 @@
           'active:scale-95',
           quotaUsed >= 45 ? 'animate-pulse-slow' : ''
         ]"
-        @click="handleAddItem" 
-        title="Add new item"
+        title="Add new item" 
+        @click="handleAddItem"
       >
         <span class="plus-icon transition-transform duration-300">+</span>
       </button>
@@ -132,8 +134,8 @@ import { useRouter } from 'vue-router'
 import { useClosetStore } from '../stores/closet-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import ClosetFilter from '../components/closet/ClosetFilter.vue'
+import ClosetGrid from '../components/closet/ClosetGrid.vue'
 import ItemDetailModal from '../components/closet/ItemDetailModal.vue'
-import { getCategoryLabel } from '@/config/constants'
 
 const router = useRouter()
 const closetStore = useClosetStore()
@@ -175,12 +177,6 @@ const quotaUsed = computed(() => closetStore.quota?.used || 0)
 const totalItems = computed(() => closetStore.quota?.totalItems || 0)
 const hasFilters = computed(() => filters.value.category || filters.value.clothing_type || filters.value.privacy || filters.value.is_favorite)
 
-const availableCategories = computed(() => {
-  // Get unique categories from user's items
-  const categories = [...new Set(closetStore.items.map(item => item.category))]
-  return categories.filter(Boolean).sort()
-})
-
 onMounted(() => {
   closetStore.fetchItems()
 })
@@ -208,12 +204,12 @@ function closeDetailModal() {
   selectedItemId.value = null
 }
 
-function handleItemUpdated(updatedItem) {
+function handleItemUpdated() {
   // Item updated in modal, refresh the closet
   closetStore.fetchItems()
 }
 
-function handleItemDeleted(deletedItemId) {
+function handleItemDeleted() {
   // Item deleted, refresh the closet
   closetStore.fetchItems()
 }
@@ -226,6 +222,14 @@ function handleEditItem(item) {
 function handleShareItem(item) {
   // TODO: Open share dialog
   alert(`Share item: ${item.name}`)
+}
+
+async function handleFavoriteClick(item) {
+  try {
+    await closetStore.toggleFavorite(item.id)
+  } catch (error) {
+    console.error('Failed to toggle favorite:', error)
+  }
 }
 </script>
 
@@ -298,42 +302,7 @@ function handleShareItem(item) {
   font-weight: 600;
 }
 
-.loading-state {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.spinner {
-  display: inline-block;
-  width: 3rem;
-  height: 3rem;
-  border: 4px solid #e5e7eb;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-.empty-message {
-  color: #9ca3af;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-}
-
+/* Add First Button (for empty state) */
 .add-first-button {
   padding: 0.75rem 1.5rem;
   background-color: #3b82f6;
@@ -343,76 +312,26 @@ function handleShareItem(item) {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .add-first-button:hover {
   background-color: #2563eb;
-}
-
-.items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.item-card {
-  background: white;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-}
-
-.item-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.item-image {
-  aspect-ratio: 1;
-  overflow: hidden;
+.add-first-button:active {
+  transform: translateY(0);
 }
 
-.item-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+@media (prefers-reduced-motion: reduce) {
+  .add-first-button:hover {
+    transform: none;
+  }
 }
 
-.item-image-placeholder {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f3f4f6;
-  font-size: 0.875rem;
-  color: #6b7280;
-  padding: 1rem;
-  text-align: center;
-}
-
-.item-info {
-  padding: 0.75rem;
-}
-
-.item-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 0.25rem 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.item-category {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin: 0;
-}
-
+/* FAB - Floating Action Button */
 .fab {
   position: fixed;
   bottom: 6rem;
@@ -428,24 +347,49 @@ function handleShareItem(item) {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
   z-index: 50;
 }
 
+/* FAB Hover with Rotate and Scale */
 .fab:hover {
   background-color: #2563eb;
-  transform: scale(1.05);
 }
 
+/* Plus Icon Rotation on Hover */
 .plus-icon {
   font-size: 2rem;
   line-height: 1;
 }
 
-@media (max-width: 640px) {
-  .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.75rem;
+/* Pulse Animation for Near-Quota Warning */
+@keyframes pulse-slow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .fab {
+    transition: background-color 0.2s ease;
+  }
+  
+  .fab:hover {
+    transform: none;
+  }
+  
+  .animate-pulse-slow {
+    animation: none;
+    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.4);
   }
 }
 </style>

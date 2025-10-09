@@ -29,8 +29,15 @@
         <span class="nav-label">Catalog</span>
       </router-link>
       
-      <router-link to="/suggestions" class="nav-item" :class="{ active: $route.path === '/suggestions' }">
-        <span class="nav-icon">✨</span>
+      <router-link to="/suggestions" class="nav-item relative" :class="{ active: $route.path === '/suggestions' }">
+        <span class="nav-icon-wrapper">
+          <span class="nav-icon">✨</span>
+          <NotificationBadge
+            v-if="suggestionsStore.newSuggestionsCount > 0"
+            :count="suggestionsStore.newSuggestionsCount"
+            :pulse="false"
+          />
+        </span>
         <span class="nav-label">Suggestions</span>
       </router-link>
       
@@ -76,10 +83,12 @@
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth-store'
 import { useNotificationsStore } from '../../stores/notifications-store'
+import { useSuggestionsStore } from '../../stores/suggestions-store'
 import NotificationBadge from '../notifications/NotificationBadge.vue'
 
 const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
+const suggestionsStore = useSuggestionsStore()
 
 const userName = computed(() => authStore.userName)
 
@@ -88,6 +97,9 @@ onMounted(() => {
   if (!notificationsStore.initialized) {
     notificationsStore.initialize()
   }
+  
+  // Fetch unread suggestions count
+  suggestionsStore.fetchUnreadCount()
 })
 </script>
 

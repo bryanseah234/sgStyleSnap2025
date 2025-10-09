@@ -8,8 +8,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 // Mock Supabase
-vi.mock('../../src/services/auth-service', () => ({
+vi.mock('../../src/config/supabase', () => ({
   supabase: {
+    auth: {
+      getUser: vi.fn(),
+      user: vi.fn()
+    },
     from: vi.fn(),
     rpc: vi.fn()
   }
@@ -18,11 +22,19 @@ vi.mock('../../src/services/auth-service', () => ({
 import sharedOutfitsService from '../../src/services/shared-outfits-service'
 
 // Get mock instance
-import { supabase as mockSupabase } from '../../src/services/auth-service'
+import { supabase as mockSupabase } from '../../src/config/supabase'
 
 describe('Shared Outfits Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    
+    // Setup default auth mock
+    mockSupabase.auth.getUser.mockResolvedValue({
+      data: {
+        user: { id: 'user-123' }
+      },
+      error: null
+    })
   })
 
   describe('shareOutfit', () => {
@@ -117,12 +129,9 @@ describe('Shared Outfits Service', () => {
       const mockQuery = {
         select: vi.fn().mockReturnThis(),
         order: vi.fn().mockReturnThis(),
+        range: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        range: vi.fn().mockResolvedValue({
-          data: [],
-          error: null,
-          count: 0
-        })
+        then: vi.fn((resolve) => resolve({ data: [], error: null, count: 0 }))
       }
       mockSupabase.from.mockReturnValue(mockQuery)
 
@@ -204,7 +213,7 @@ describe('Shared Outfits Service', () => {
       }
       mockSupabase.from.mockReturnValue(mockQuery)
 
-      const result = await sharedOutfitsService.updateOutfit('shared-1', updates)
+      const result = await sharedOutfitsService.updateSharedOutfit('shared-1', updates)
 
       expect(result).toEqual(mockUpdated)
       expect(mockQuery.update).toHaveBeenCalledWith(updates)
@@ -212,7 +221,7 @@ describe('Shared Outfits Service', () => {
     })
   })
 
-  describe('deleteOutfit', () => {
+  describe('deleteSharedOutfit', () => {
     it('should delete shared outfit', async () => {
       const mockQuery = {
         delete: vi.fn().mockReturnThis(),
@@ -221,7 +230,7 @@ describe('Shared Outfits Service', () => {
       mockQuery.eq.mockResolvedValue({ error: null })
       mockSupabase.from.mockReturnValue(mockQuery)
 
-      await sharedOutfitsService.deleteOutfit('shared-1')
+      await sharedOutfitsService.deleteSharedOutfit('shared-1')
 
       expect(mockSupabase.from).toHaveBeenCalledWith('shared_outfits')
       expect(mockQuery.delete).toHaveBeenCalled()
@@ -268,7 +277,9 @@ describe('Shared Outfits Service', () => {
         delete: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis()
       }
-      mockQuery.eq.mockResolvedValue({ error: null })
+      mockQuery.eq.mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ error: null })
+      })
       mockSupabase.from.mockReturnValue(mockQuery)
 
       await sharedOutfitsService.unlikeOutfit('shared-1')

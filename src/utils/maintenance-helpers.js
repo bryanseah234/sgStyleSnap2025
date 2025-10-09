@@ -53,9 +53,11 @@ const DEFAULT_MAX_AGE_DAYS = 730 // 2 years
  * @returns {number} Age in days
  */
 export function calculateItemAge(createdAt) {
-  // TODO: Convert to Date object if string
-  // TODO: Calculate difference from now
-  // TODO: Return days
+  const createdDate = typeof createdAt === 'string' ? new Date(createdAt) : createdAt
+  const now = new Date()
+  const diffMs = now - createdDate
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  return diffDays
 }
 
 /**
@@ -65,9 +67,8 @@ export function calculateItemAge(createdAt) {
  * @returns {boolean} True if item is expired
  */
 export function isItemExpired(createdAt, maxAgeDays = DEFAULT_MAX_AGE_DAYS) {
-  // TODO: Calculate age
-  // TODO: Compare with maxAgeDays
-  // TODO: Return result
+  const age = calculateItemAge(createdAt)
+  return age > maxAgeDays
 }
 
 /**
@@ -80,10 +81,31 @@ export function isItemExpired(createdAt, maxAgeDays = DEFAULT_MAX_AGE_DAYS) {
  * Output: "sample"
  */
 export function extractCloudinaryPublicId(url) {
-  // TODO: Parse URL
-  // TODO: Extract public ID from path
-  // TODO: Remove file extension
-  // TODO: Return public ID
+  if (!url) return ''
+  
+  // Cloudinary URL format: https://res.cloudinary.com/{cloud_name}/image/upload/{transformations}/v{version}/{public_id}.{format}
+  // Or: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
+  // Or: https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}.{format}
+  try {
+    const urlParts = url.split('/')
+    const uploadIndex = urlParts.findIndex(part => part === 'upload')
+    
+    if (uploadIndex === -1) return ''
+    
+    // Get parts after 'upload'
+    const afterUpload = urlParts.slice(uploadIndex + 1)
+    
+    // Find the last part (which contains the public_id and extension)
+    const lastPart = afterUpload[afterUpload.length - 1]
+    
+    // Remove file extension
+    const publicId = lastPart.split('.')[0]
+    
+    return publicId
+  } catch (error) {
+    console.error('Error extracting Cloudinary public ID:', error)
+    return ''
+  }
 }
 
 /**
@@ -93,7 +115,13 @@ export function extractCloudinaryPublicId(url) {
  * @returns {string} Formatted size
  */
 export function formatBytes(bytes, decimals = 2) {
-  // TODO: Handle zero case
-  // TODO: Calculate appropriate unit (KB, MB, GB)
-  // TODO: Return formatted string
+  if (bytes === 0) return '0 Bytes'
+  
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }

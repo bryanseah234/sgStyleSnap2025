@@ -37,6 +37,7 @@
     "@playwright/test": "^1.40.0",
     "@vitejs/plugin-vue": "^5.0.0",
     "@vitest/ui": "^3.2.4",
+    "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.0",
     "eslint": "^8.55.0",
     "eslint-plugin-vue": "^9.19.0",

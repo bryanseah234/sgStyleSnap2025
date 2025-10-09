@@ -64,16 +64,18 @@ import { supabase } from '../config/supabase'
  * @returns {Promise<void>}
  */
 export async function signInWithGoogle() {
-  const { error } = await supabase.auth.signInWithOAuth({
+  const result = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: `${window.location.origin}/closet`
     }
   })
   
-  if (error) {
-    throw new Error(`Google sign-in failed: ${error.message}`)
+  if (result?.error) {
+    throw new Error(`Google sign-in failed: ${result.error.message}`)
   }
+  
+  return result
 }
 
 /**
@@ -93,13 +95,13 @@ export async function signOut() {
  * @returns {Promise<Object|null>}
  */
 export async function getCurrentUser() {
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const result = await supabase.auth.getUser()
   
-  if (error) {
-    throw new Error(`Failed to get user: ${error.message}`)
+  if (result?.error) {
+    throw new Error(`Failed to get user: ${result.error.message}`)
   }
   
-  return user
+  return result?.data?.user || null
 }
 
 /**
@@ -107,13 +109,13 @@ export async function getCurrentUser() {
  * @returns {Promise<Object|null>}
  */
 export async function getSession() {
-  const { data: { session }, error } = await supabase.auth.getSession()
+  const result = await supabase.auth.getSession()
   
-  if (error) {
-    throw new Error(`Failed to get session: ${error.message}`)
+  if (result?.error) {
+    throw new Error(`Failed to get session: ${result.error.message}`)
   }
   
-  return session
+  return result?.data?.session || null
 }
 
 /**
@@ -121,13 +123,13 @@ export async function getSession() {
  * @returns {Promise<Object|null>}
  */
 export async function refreshSession() {
-  const { data: { session }, error } = await supabase.auth.refreshSession()
+  const result = await supabase.auth.refreshSession()
   
-  if (error) {
-    throw new Error(`Failed to refresh session: ${error.message}`)
+  if (result?.error) {
+    throw new Error(`Failed to refresh session: ${result.error.message}`)
   }
   
-  return session
+  return result?.data?.session || null
 }
 
 /**

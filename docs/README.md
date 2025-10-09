@@ -40,6 +40,8 @@ Step 7: Implement & test (./TESTS_GUIDE.md)
 | Need to... | Go to... |
 |------------|----------|
 | Understand auth flow | `AUTHENTICATION_GUIDE.md` |
+| **Learn OAuth 2.0 in-depth** | **`OAUTH_COMPLETE_GUIDE.md`** 🆕 |
+| **Test OAuth authentication** | **`OAUTH_COMPLETE_GUIDE.md` + `TESTS_GUIDE.md`** 🆕 |
 | Work with closet/items | `CLOSET_GUIDE.md` |
 | Implement catalog browsing | `CATALOG_GUIDE.md` |
 | Add color detection | `COLOR_DETECTION_GUIDE.md` |
@@ -76,6 +78,18 @@ Google OAuth 2.0 Authentication:
 - User profile creation
 - Row Level Security integration
 - Environment setup
+
+#### [OAUTH_COMPLETE_GUIDE.md](./OAUTH_COMPLETE_GUIDE.md) 🆕
+
+**Comprehensive Google OAuth Guide**:
+
+- OAuth 2.0 fundamentals & flow explanation
+- Complete setup guide (Google Console + Supabase)
+- Step-by-step configuration with screenshots
+- Security model (PKCE, state, token handling)
+- OAuth testing strategies (unit, integration, e2e)
+- Troubleshooting common OAuth errors
+- Best practices & code examples
 
 #### [CLOSET_GUIDE.md](./CLOSET_GUIDE.md)
 

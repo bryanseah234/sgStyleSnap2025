@@ -129,8 +129,47 @@ export const useLikesStore = defineStore('likes', {
 
       try {
         this.loading = true
-        const likedItemIds = await likesService.initializeUserLikes()
-        this.likedItemIds = new Set(likedItemIds)
+        this.error = null
+        
+        // Fetch all initialization data in parallel
+        // Note: Don't catch errors here - let them bubble up to the outer catch
+        const [likedItems, popularItems, stats] = await Promise.all([
+          likesService.getUserLikedItems(authStore.user.id, 50, 0),
+          likesService.getPopularItemsFromFriends(20),
+          likesService.getUserLikesStats(authStore.user.id)
+        ])
+        
+        // Set liked items
+        this.myLikedItems = likedItems || []
+        this.likedItemIds = new Set((likedItems || []).map(item => item.item_id))
+        
+        // Set popular items
+        this.popularItems = popularItems || []
+        
+        // Update likes counts cache
+        if (likedItems && likedItems.length > 0) {
+          likedItems.forEach(item => {
+            this.likeCounts[item.item_id] = item.likes_count
+          })
+        }
+        if (popularItems && popularItems.length > 0) {
+          popularItems.forEach(item => {
+            this.likeCounts[item.item_id] = item.likes_count
+          })
+        }
+        
+        // Set stats
+        if (stats) {
+          this.stats = {
+            totalItems: stats.total_items || 0,
+            totalLikesReceived: stats.total_likes_received || 0,
+            avgLikesPerItem: stats.avg_likes_per_item || 0,
+            mostLikedItemId: stats.most_liked_item_id,
+            mostLikedItemName: stats.most_liked_item_name,
+            mostLikedItemLikes: stats.most_liked_item_likes || 0
+          }
+        }
+        
         this.initialized = true
       } catch (error) {
         console.error('Error initializing likes:', error)
@@ -211,10 +250,30 @@ export const useLikesStore = defineStore('likes', {
     async toggleLike(itemId) {
       const isLiked = this.isLiked(itemId)
       
-      if (isLiked) {
-        return await this.unlikeItem(itemId)
-      } else {
-        return await this.likeItem(itemId)
+      try {
+        this.liking[itemId] = true
+        
+        // Use service's toggleLike method
+        const result = await likesService.toggleLike(itemId, isLiked)
+        
+        // Update state based on result
+        if (result.liked) {
+          this.likedItemIds.add(itemId)
+        } else {
+          this.likedItemIds.delete(itemId)
+          // Remove from myLikedItems if exists
+          this.myLikedItems = this.myLikedItems.filter(item => item.item_id !== itemId)
+        }
+        
+        this.likeCounts[itemId] = result.likesCount
+        
+        return result
+      } catch (error) {
+        console.error('Error toggling like:', error)
+        this.error = error.message
+        throw error
+      } finally {
+        this.liking[itemId] = false
       }
     },
 
@@ -227,24 +286,28 @@ export const useLikesStore = defineStore('likes', {
 
       try {
         this.loading = true
-        const items = await likesService.getUserLikedItems(authStore.userId, limit, offset)
+        this.error = null
+        const items = await likesService.getUserLikedItems(authStore.user.id, limit, offset)
         
         if (offset === 0) {
           this.myLikedItems = items
+          // Reset liked item IDs when fetching from start
+          this.likedItemIds = new Set()
         } else {
           this.myLikedItems = [...this.myLikedItems, ...items]
         }
         
-        // Update likes counts cache
+        // Update likes counts cache and liked IDs
         items.forEach(item => {
           this.likeCounts[item.item_id] = item.likes_count
+          this.likedItemIds.add(item.item_id)
         })
         
         return items
       } catch (error) {
         console.error('Error fetching liked items:', error)
         this.error = error.message
-        throw error
+        // Don't throw - let caller handle error state
       } finally {
         this.loading = false
       }
@@ -275,14 +338,16 @@ export const useLikesStore = defineStore('likes', {
       try {
         this.loading = true
         const items = await likesService.getPopularItemsFromFriends(limit)
-        this.popularItems = items
+        this.popularItems = items || []
         
         // Update likes counts cache
-        items.forEach(item => {
-          this.likeCounts[item.item_id] = item.likes_count
-        })
+        if (items && items.length > 0) {
+          items.forEach(item => {
+            this.likeCounts[item.item_id] = item.likes_count
+          })
+        }
         
-        return items
+        return items || []
       } catch (error) {
         console.error('Error fetching popular items:', error)
         this.error = error.message

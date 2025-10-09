@@ -259,41 +259,49 @@ const colors = await catalogService.getColors()
 
 ### How User Uploads Become Catalog Items
 
-When a user uploads an item, it's **automatically added to the catalog** in the background:
+When a user uploads an item, it's **automatically added to the catalog** via a **database trigger** (no application code needed):
 
-```javascript
-// In clothes-service.js
-async function createItem(itemData) {
-  // 1. Create user's closet item
-  const item = await supabase.from('clothes').insert(itemData).single()
-  
-  // 2. Silently add to catalog (no await, background)
-  addToCatalogInBackground(item)
-  
-  return item
-}
+```sql
+-- Database trigger in sql/005_catalog_system.sql
+-- Runs AFTER INSERT on clothes table
+CREATE TRIGGER auto_contribute_to_catalog_trigger
+  AFTER INSERT ON clothes
+  FOR EACH ROW
+  EXECUTE FUNCTION auto_contribute_to_catalog();
 
-function addToCatalogInBackground(item) {
-  setTimeout(async () => {
-    try {
-      await supabase.from('catalog_items').insert({
-        name: item.name,
-        category: item.category,
-        clothing_type: item.clothing_type,
-        image_url: item.image_url,
-        thumbnail_url: item.thumbnail_url,
-        style: item.style_tags,
-        brand: item.brand,
-        color: item.primary_color,
-        season: 'all-season'  // Default
-      })
-    } catch (error) {
-      // Silent fail - don't block user upload
-      console.error('Background catalog add failed:', error)
-    }
-  }, 0)
-}
+-- Trigger function
+CREATE FUNCTION auto_contribute_to_catalog() RETURNS TRIGGER AS $$
+BEGIN
+  -- Only auto-contribute if:
+  -- 1. New item (INSERT operation)
+  -- 2. Not already linked to catalog (catalog_item_id IS NULL)
+  -- 3. Has valid image URLs
+  IF (NEW.catalog_item_id IS NULL AND 
+      NEW.image_url IS NOT NULL) THEN
+    
+    -- Insert into catalog (anonymous, no owner_id)
+    INSERT INTO catalog_items (
+      name, category, image_url, thumbnail_url,
+      tags, brand, color, season, style, is_active
+    ) VALUES (
+      NEW.name, NEW.category, NEW.image_url, NEW.thumbnail_url,
+      NEW.style_tags, NEW.brand, NEW.primary_color, 
+      'all-season', NEW.style_tags, true
+    )
+    ON CONFLICT (image_url) DO NOTHING; -- Prevent duplicates
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 ```
+
+**Key Points:**
+- ✅ **Fully automatic** - No application code required
+- ✅ **Silent operation** - User never prompted or notified
+- ✅ **Duplicate prevention** - `UNIQUE(image_url)` constraint
+- ✅ **Anonymous** - No `owner_id` field in catalog_items
+- ✅ **Non-blocking** - AFTER INSERT trigger doesn't delay response
 
 ### Privacy Preservation
 
@@ -305,6 +313,86 @@ function addToCatalogInBackground(item) {
 | Traceability | ✅ Can see own items | ❌ Cannot trace back |
 
 **Result**: User uploads are shared anonymously to benefit all users.
+
+---
+
+## Smart Filtering (Exclude Owned Items)
+
+### Database Function: `get_catalog_excluding_owned()`
+
+The catalog automatically **excludes items the user already owns** to prevent showing duplicates:
+
+```sql
+-- In sql/005_catalog_system.sql
+CREATE FUNCTION get_catalog_excluding_owned(
+  user_id_param UUID,
+  category_filter VARCHAR(50),
+  color_filter VARCHAR(50),
+  brand_filter VARCHAR(50),
+  season_filter VARCHAR(20),
+  page_limit INTEGER,
+  page_offset INTEGER
+) RETURNS TABLE (...) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT ci.*
+  FROM catalog_items ci
+  WHERE ci.is_active = true
+    -- Apply filters
+    AND (category_filter IS NULL OR ci.category = category_filter)
+    AND (color_filter IS NULL OR ci.color = color_filter)
+    AND (brand_filter IS NULL OR ci.brand ILIKE '%' || brand_filter || '%')
+    AND (season_filter IS NULL OR ci.season = season_filter)
+    -- EXCLUDE OWNED ITEMS
+    AND (
+      user_id_param IS NULL
+      OR NOT EXISTS (
+        SELECT 1 FROM clothes c
+        WHERE c.owner_id = user_id_param
+          AND c.removed_at IS NULL
+          AND (
+            c.catalog_item_id = ci.id       -- Match by catalog link
+            OR c.image_url = ci.image_url   -- Match by image URL
+          )
+      )
+    )
+  ORDER BY ci.created_at DESC
+  LIMIT page_limit OFFSET page_offset;
+END;
+$$;
+```
+
+### How It Works
+
+1. **Check Ownership**: For each catalog item, check if user owns it
+2. **Two Match Methods**:
+   - `catalog_item_id = ci.id` - Direct catalog link
+   - `image_url = ci.image_url` - Image URL match (for old items)
+3. **Exclude Matches**: If found in user's closet, don't show in catalog
+4. **Result**: User only sees items they don't already own
+
+### Example Scenario
+
+```javascript
+// User's closet:
+// - Blue Denim Jacket (from catalog, catalog_item_id = 'abc-123')
+// - White T-Shirt (uploaded, image_url matches catalog item)
+
+// Catalog browse results:
+catalogService.browse({ category: 'outerwear' })
+// Returns: All outerwear EXCEPT Blue Denim Jacket
+//         (already owned via catalog_item_id)
+
+catalogService.browse({ category: 'top' })
+// Returns: All tops EXCEPT White T-Shirt
+//         (already owned via image_url match)
+```
+
+**Benefits:**
+- ✅ No duplicate suggestions
+- ✅ Cleaner catalog browsing experience
+- ✅ Works for both catalog adds AND user uploads
+- ✅ Automatic - no manual tracking needed
 
 ---
 

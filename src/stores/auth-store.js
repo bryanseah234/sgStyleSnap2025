@@ -38,6 +38,7 @@ import * as authService from '../services/auth-service'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
+    profile: null,
     isAuthenticated: false,
     loading: false,
     error: null
@@ -164,6 +165,40 @@ export const useAuthStore = defineStore('auth', {
     },
     
     /**
+     * Fetch user profile from database
+     */
+    async fetchUserProfile() {
+      // Don't fetch if not authenticated
+      if (!this.isAuthenticated) {
+        return
+      }
+
+      this.loading = true
+      this.error = null
+      try {
+        const { supabase: supabaseClient } = await import('../config/supabase')
+        const { data, error } = await supabaseClient
+          .from('users')
+          .select('*')
+          .eq('id', this.user.id)
+          .single()
+
+        if (error) {
+          throw error
+        }
+
+        this.profile = data
+        return data
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error)
+        this.error = error.message
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    /**
      * Refresh auth session
      */
     async refreshSession() {
@@ -189,7 +224,7 @@ export const useAuthStore = defineStore('auth', {
      * Setup auth state change listener
      */
     setupAuthListener() {
-      const { data } = authService.onAuthStateChange((event, session) => {
+      return authService.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' && session) {
           this.setUser(session.user)
         } else if (event === 'SIGNED_OUT') {
@@ -198,7 +233,6 @@ export const useAuthStore = defineStore('auth', {
           this.setUser(session.user)
         }
       })
-      return data
     }
   }
 })

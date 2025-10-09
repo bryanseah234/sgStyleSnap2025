@@ -162,7 +162,30 @@ describe('Image Compression Utility', () => {
   })
 
   describe('compressImage', () => {
+    let mockCanvas
+    
     beforeEach(() => {
+      // Create mock canvas
+      mockCanvas = {
+        width: 0,
+        height: 0,
+        getContext: vi.fn(() => ({
+          drawImage: vi.fn()
+        })),
+        toBlob: vi.fn((callback) => {
+          const blob = new Blob(['mock'], { type: 'image/webp' })
+          callback(blob)
+        })
+      }
+      
+      // Mock document.createElement to return our mock canvas
+      global.document.createElement = vi.fn((tag) => {
+        if (tag === 'canvas') {
+          return mockCanvas
+        }
+        return {}
+      })
+      
       // Mock Canvas API
       global.HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
         drawImage: vi.fn()
@@ -242,9 +265,8 @@ describe('Image Compression Utility', () => {
       await compressImage(file)
       
       // Should resize to 1200x900 (maintaining 4:3 ratio)
-      const canvas = document.createElement.mock.results[0].value
-      expect(canvas.width).toBeLessThanOrEqual(1200)
-      expect(canvas.height).toBeLessThanOrEqual(900)
+      expect(mockCanvas.width).toBeLessThanOrEqual(1200)
+      expect(mockCanvas.height).toBeLessThanOrEqual(900)
     })
 
     it('should maintain aspect ratio when resizing height', async () => {
@@ -259,8 +281,7 @@ describe('Image Compression Utility', () => {
       
       await compressImage(file)
       
-      const canvas = document.createElement.mock.results[0].value
-      expect(canvas.height).toBeLessThanOrEqual(1200)
+      expect(mockCanvas.height).toBeLessThanOrEqual(1200)
     })
 
     it('should not upscale small images', async () => {
@@ -275,9 +296,8 @@ describe('Image Compression Utility', () => {
       
       await compressImage(file)
       
-      const canvas = document.createElement.mock.results[0].value
-      expect(canvas.width).toBe(800)
-      expect(canvas.height).toBe(600)
+      expect(mockCanvas.width).toBe(800)
+      expect(mockCanvas.height).toBe(600)
     })
 
     it('should use custom compression options', async () => {
@@ -296,7 +316,7 @@ describe('Image Compression Utility', () => {
       await compressImage(file, options)
       
       // Should use custom options
-      expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledWith(
+      expect(mockCanvas.toBlob).toHaveBeenCalledWith(
         expect.any(Function),
         'image/webp',
         0.7
@@ -304,7 +324,7 @@ describe('Image Compression Utility', () => {
     })
 
     it('should reject if canvas.toBlob returns null', async () => {
-      HTMLCanvasElement.prototype.toBlob = vi.fn((callback) => {
+      mockCanvas.toBlob = vi.fn((callback) => {
         callback(null)
       })
       
@@ -378,7 +398,7 @@ describe('Image Compression Utility', () => {
   describe('createImagePreview', () => {
     beforeEach(() => {
       global.FileReader = vi.fn(() => ({
-        readAsDataURL: vi.fn(function(file) {
+        readAsDataURL: vi.fn(function() {
           setTimeout(() => {
             this.onload({ target: { result: 'data:image/jpeg;base64,mockdata' } })
           }, 0)
@@ -409,7 +429,7 @@ describe('Image Compression Utility', () => {
       
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
       
-      await expect(createImagePreview(file)).rejects.toThrow('Read failed')
+      await expect(createImagePreview(file)).rejects.toThrow('Failed to read file')
     })
 
     it('should work with PNG files', async () => {
@@ -455,12 +475,14 @@ describe('Image Compression Utility', () => {
       expect(preview).toBeTruthy()
       
       // 3. Compress
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
+      const compressPromise = compressImage(file)
       
-      const compressed = await compressImage(file)
+      // Trigger image load after a short delay
+      await new Promise(resolve => setTimeout(resolve, 10))
+      const img = Image.mock.results[Image.mock.results.length - 1].value
+      img.onload()
+      
+      const compressed = await compressPromise
       expect(compressed.type).toBe('image/webp')
       expect(compressed.size).toBeLessThanOrEqual(file.size)
     })

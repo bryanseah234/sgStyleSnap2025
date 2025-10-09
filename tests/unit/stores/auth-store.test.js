@@ -8,9 +8,19 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth-store'
 
-// Mock Supabase
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
+// Mock auth service
+vi.mock('@/services/auth-service', () => ({
+  signInWithGoogle: vi.fn(),
+  signOut: vi.fn(),
+  getCurrentUser: vi.fn(),
+  getSession: vi.fn(),
+  refreshSession: vi.fn(),
+  onAuthStateChange: vi.fn()
+}))
+
+// Mock Supabase config
+vi.mock('@/config/supabase', () => ({
+  supabase: {
     auth: {
       getSession: vi.fn(),
       getUser: vi.fn(),
@@ -25,12 +35,16 @@ vi.mock('@supabase/supabase-js', () => ({
       eq: vi.fn().mockReturnThis(),
       single: vi.fn()
     }))
-  }))
+  }
 }))
 
 describe('Auth Store', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     setActivePinia(createPinia())
+    // Reset all mocks before each test
+    vi.clearAllMocks()
+    const { supabase } = await import('@/config/supabase')
+    supabase.from.mockClear()
   })
 
   describe('Initial State', () => {
@@ -89,29 +103,22 @@ describe('Auth Store', () => {
 
   describe('loginWithGoogle', () => {
     it('should call Supabase OAuth with Google provider', async () => {
-      const store = useAuthStore()
-      const mockSignInWithOAuth = vi.fn().mockResolvedValue({ error: null })
+      const { signInWithGoogle } = await import('@/services/auth-service')
+      signInWithGoogle.mockResolvedValue({ error: null })
       
-      store.$patch({ supabase: { auth: { signInWithOAuth: mockSignInWithOAuth } } })
-
+      const store = useAuthStore()
       await store.loginWithGoogle()
 
-      expect(mockSignInWithOAuth).toHaveBeenCalledWith({
-        provider: 'google',
-        options: expect.objectContaining({
-          redirectTo: expect.any(String)
-        })
-      })
+      expect(signInWithGoogle).toHaveBeenCalled()
     })
 
     it('should set loading state during login', async () => {
-      const store = useAuthStore()
-      const mockSignInWithOAuth = vi.fn(() => 
+      const { signInWithGoogle } = await import('@/services/auth-service')
+      signInWithGoogle.mockImplementation(() => 
         new Promise(resolve => setTimeout(() => resolve({ error: null }), 100))
       )
       
-      store.$patch({ supabase: { auth: { signInWithOAuth: mockSignInWithOAuth } } })
-
+      const store = useAuthStore()
       const promise = store.loginWithGoogle()
       expect(store.loading).toBe(true)
 
@@ -120,26 +127,21 @@ describe('Auth Store', () => {
     })
 
     it('should handle login errors', async () => {
-      const store = useAuthStore()
-      const mockError = new Error('OAuth failed')
-      const mockSignInWithOAuth = vi.fn().mockResolvedValue({ 
-        error: mockError 
-      })
+      const { signInWithGoogle } = await import('@/services/auth-service')
+      signInWithGoogle.mockRejectedValue(new Error('OAuth failed'))
       
-      store.$patch({ supabase: { auth: { signInWithOAuth: mockSignInWithOAuth } } })
-
+      const store = useAuthStore()
       await expect(store.loginWithGoogle()).rejects.toThrow('OAuth failed')
       expect(store.error).toBeTruthy()
       expect(store.loading).toBe(false)
     })
 
     it('should clear previous errors before login', async () => {
+      const { signInWithGoogle } = await import('@/services/auth-service')
+      signInWithGoogle.mockResolvedValue({ error: null })
+      
       const store = useAuthStore()
       store.error = 'Previous error'
-      const mockSignInWithOAuth = vi.fn().mockResolvedValue({ error: null })
-      
-      store.$patch({ supabase: { auth: { signInWithOAuth: mockSignInWithOAuth } } })
-
       await store.loginWithGoogle()
 
       expect(store.error).toBeNull()
@@ -148,24 +150,22 @@ describe('Auth Store', () => {
 
   describe('logout', () => {
     it('should call Supabase signOut', async () => {
-      const store = useAuthStore()
-      const mockSignOut = vi.fn().mockResolvedValue({ error: null })
+      const { signOut } = await import('@/services/auth-service')
+      signOut.mockResolvedValue()
       
-      store.$patch({ supabase: { auth: { signOut: mockSignOut } } })
+      const store = useAuthStore()
       store.setUser({ id: '123', email: 'test@example.com' })
-
       await store.logout()
 
-      expect(mockSignOut).toHaveBeenCalled()
+      expect(signOut).toHaveBeenCalled()
     })
 
     it('should clear user data on logout', async () => {
-      const store = useAuthStore()
-      const mockSignOut = vi.fn().mockResolvedValue({ error: null })
+      const { signOut } = await import('@/services/auth-service')
+      signOut.mockResolvedValue()
       
-      store.$patch({ supabase: { auth: { signOut: mockSignOut } } })
+      const store = useAuthStore()
       store.setUser({ id: '123', email: 'test@example.com' })
-
       await store.logout()
 
       expect(store.user).toBeNull()
@@ -173,23 +173,20 @@ describe('Auth Store', () => {
     })
 
     it('should handle logout errors', async () => {
-      const store = useAuthStore()
-      const mockError = new Error('Logout failed')
-      const mockSignOut = vi.fn().mockResolvedValue({ error: mockError })
+      const { signOut } = await import('@/services/auth-service')
+      signOut.mockRejectedValue(new Error('Logout failed'))
       
-      store.$patch({ supabase: { auth: { signOut: mockSignOut } } })
-
+      const store = useAuthStore()
       await expect(store.logout()).rejects.toThrow('Logout failed')
     })
 
     it('should set loading state during logout', async () => {
-      const store = useAuthStore()
-      const mockSignOut = vi.fn(() => 
-        new Promise(resolve => setTimeout(() => resolve({ error: null }), 100))
+      const { signOut } = await import('@/services/auth-service')
+      signOut.mockImplementation(() => 
+        new Promise(resolve => setTimeout(() => resolve(), 100))
       )
       
-      store.$patch({ supabase: { auth: { signOut: mockSignOut } } })
-
+      const store = useAuthStore()
       const promise = store.logout()
       expect(store.loading).toBe(true)
 
@@ -200,7 +197,7 @@ describe('Auth Store', () => {
 
   describe('fetchUserProfile', () => {
     it('should fetch user profile from database', async () => {
-      const store = useAuthStore()
+      const { supabase } = await import('@/config/supabase')
       const mockProfile = {
         id: 'user-123',
         username: 'testuser',
@@ -208,45 +205,41 @@ describe('Auth Store', () => {
         avatar_url: 'avatar-1.png'
       }
       
-      const mockFrom = vi.fn(() => ({
+      supabase.from.mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: mockProfile, error: null })
-      }))
+      })
       
-      store.$patch({ supabase: { from: mockFrom } })
+      const store = useAuthStore()
       store.setUser({ id: 'user-123', email: 'test@example.com' })
-
       await store.fetchUserProfile()
 
       expect(store.profile).toEqual(mockProfile)
     })
 
     it('should handle profile fetch errors', async () => {
-      const store = useAuthStore()
+      const { supabase } = await import('@/config/supabase')
       const mockError = new Error('Profile not found')
       
-      const mockFrom = vi.fn(() => ({
+      supabase.from.mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: null, error: mockError })
-      }))
+      })
       
-      store.$patch({ supabase: { from: mockFrom } })
+      const store = useAuthStore()
       store.setUser({ id: 'user-123', email: 'test@example.com' })
-
       await expect(store.fetchUserProfile()).rejects.toThrow('Profile not found')
     })
 
     it('should not fetch profile if not authenticated', async () => {
-      const store = useAuthStore()
-      const mockFrom = vi.fn()
+      const { supabase } = await import('@/config/supabase')
       
-      store.$patch({ supabase: { from: mockFrom } })
-
+      const store = useAuthStore()
       await store.fetchUserProfile()
 
-      expect(mockFrom).not.toHaveBeenCalled()
+      expect(supabase.from).not.toHaveBeenCalled()
     })
   })
 
@@ -296,57 +289,47 @@ describe('Auth Store', () => {
 
   describe('Auth State Persistence', () => {
     it('should initialize session on store creation', async () => {
-      const mockGetSession = vi.fn().mockResolvedValue({
-        data: {
-          session: {
-            user: { id: '123', email: 'test@example.com' }
-          }
-        },
-        error: null
+      const { getSession } = await import('@/services/auth-service')
+      getSession.mockResolvedValue({
+        user: { id: '123', email: 'test@example.com' }
       })
 
       const store = useAuthStore()
-      store.$patch({ supabase: { auth: { getSession: mockGetSession } } })
-
       await store.initializeSession()
 
-      expect(mockGetSession).toHaveBeenCalled()
+      expect(getSession).toHaveBeenCalled()
     })
 
-    it('should set up auth state change listener', () => {
-      const mockOnAuthStateChange = vi.fn(() => ({
+    it('should set up auth state change listener', async () => {
+      const { onAuthStateChange } = await import('@/services/auth-service')
+      onAuthStateChange.mockReturnValue({
         data: { subscription: { unsubscribe: vi.fn() } }
-      }))
+      })
 
       const store = useAuthStore()
-      store.$patch({ supabase: { auth: { onAuthStateChange: mockOnAuthStateChange } } })
-
       store.setupAuthListener()
 
-      expect(mockOnAuthStateChange).toHaveBeenCalled()
+      expect(onAuthStateChange).toHaveBeenCalled()
     })
   })
 
   describe('Error Handling', () => {
     it('should clear error on successful operation', async () => {
+      const { signInWithGoogle } = await import('@/services/auth-service')
+      signInWithGoogle.mockResolvedValue({ error: null })
+      
       const store = useAuthStore()
       store.error = 'Previous error'
-      
-      const mockSignInWithOAuth = vi.fn().mockResolvedValue({ error: null })
-      store.$patch({ supabase: { auth: { signInWithOAuth: mockSignInWithOAuth } } })
-
       await store.loginWithGoogle()
 
       expect(store.error).toBeNull()
     })
 
     it('should set error on failed operation', async () => {
-      const store = useAuthStore()
-      const mockError = new Error('Operation failed')
+      const { signInWithGoogle } = await import('@/services/auth-service')
+      signInWithGoogle.mockRejectedValue(new Error('Operation failed'))
       
-      const mockSignInWithOAuth = vi.fn().mockResolvedValue({ error: mockError })
-      store.$patch({ supabase: { auth: { signInWithOAuth: mockSignInWithOAuth } } })
-
+      const store = useAuthStore()
       await expect(store.loginWithGoogle()).rejects.toThrow()
       expect(store.error).toBeTruthy()
     })

@@ -662,6 +662,657 @@ npm test -- --coverage --coverage.statements=80
 
 ---
 
+## 🔐 OAuth Authentication Testing
+
+### Overview
+
+OAuth testing requires special considerations since it involves third-party authentication providers (Google). This section covers strategies for testing OAuth flows at all levels.
+
+**For comprehensive OAuth documentation, see:** [`docs/OAUTH_COMPLETE_GUIDE.md`](OAUTH_COMPLETE_GUIDE.md)
+
+### Unit Testing OAuth Service
+
+**File:** `tests/unit/auth-service.test.js`
+
+```javascript
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { signInWithGoogle, getSession, signOut } from '@/services/auth-service'
+
+// Mock Supabase client
+vi.mock('@/config/supabase', () => ({
+  supabase: {
+    auth: {
+      signInWithOAuth: vi.fn(),
+      getSession: vi.fn(),
+      signOut: vi.fn(),
+      onAuthStateChange: vi.fn()
+    }
+  }
+}))
+
+import { supabase } from '@/config/supabase'
+
+describe('Auth Service - OAuth', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('signInWithGoogle', () => {
+    it('should initiate Google OAuth flow with correct provider', async () => {
+      supabase.auth.signInWithOAuth.mockResolvedValue({
+        data: { url: 'https://accounts.google.com/o/oauth2/v2/auth?...' },
+        error: null
+      })
+
+      await signInWithGoogle()
+
+      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+        provider: 'google',
+        options: expect.any(Object)
+      })
+    })
+
+    it('should include redirectTo URL in options', async () => {
+      supabase.auth.signInWithOAuth.mockResolvedValue({
+        data: { url: 'https://accounts.google.com/...' },
+        error: null
+      })
+
+      await signInWithGoogle()
+
+      const callOptions = supabase.auth.signInWithOAuth.mock.calls[0][0].options
+      expect(callOptions.redirectTo).toBeDefined()
+      expect(callOptions.redirectTo).toMatch(/\/closet$/)
+    })
+
+    it('should include query params for offline access', async () => {
+      supabase.auth.signInWithOAuth.mockResolvedValue({
+        data: { url: 'https://accounts.google.com/...' },
+        error: null
+      })
+
+      await signInWithGoogle()
+
+      const callOptions = supabase.auth.signInWithOAuth.mock.calls[0][0].options
+      expect(callOptions.queryParams).toEqual({
+        access_type: 'offline',
+        prompt: 'consent'
+      })
+    })
+
+    it('should throw error when OAuth initiation fails', async () => {
+      const error = new Error('OAuth configuration error')
+      supabase.auth.signInWithOAuth.mockResolvedValue({
+        data: null,
+        error
+      })
+
+      await expect(signInWithGoogle()).rejects.toThrow('OAuth configuration error')
+    })
+
+    it('should return OAuth URL on success', async () => {
+      const mockUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=...'
+      supabase.auth.signInWithOAuth.mockResolvedValue({
+        data: { url: mockUrl },
+        error: null
+      })
+
+      const result = await signInWithGoogle()
+
+      expect(result.url).toBe(mockUrl)
+    })
+  })
+
+  describe('getSession', () => {
+    it('should return current session when authenticated', async () => {
+      const mockSession = {
+        access_token: 'mock_access_token',
+        refresh_token: 'mock_refresh_token',
+        user: {
+          id: 'user_123',
+          email: 'test@example.com',
+          user_metadata: {
+            name: 'Test User',
+            avatar_url: 'https://example.com/avatar.jpg'
+          }
+        }
+      }
+
+      supabase.auth.getSession.mockResolvedValue({
+        data: { session: mockSession },
+        error: null
+      })
+
+      const session = await getSession()
+
+      expect(session).toEqual(mockSession)
+      expect(session.user.email).toBe('test@example.com')
+    })
+
+    it('should return null when not authenticated', async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: { session: null },
+        error: null
+      })
+
+      const session = await getSession()
+
+      expect(session).toBeNull()
+    })
+
+    it('should throw error on session retrieval failure', async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: null,
+        error: new Error('Session error')
+      })
+
+      await expect(getSession()).rejects.toThrow('Session error')
+    })
+  })
+
+  describe('signOut', () => {
+    it('should call Supabase signOut', async () => {
+      supabase.auth.signOut.mockResolvedValue({ error: null })
+
+      await signOut()
+
+      expect(supabase.auth.signOut).toHaveBeenCalled()
+    })
+
+    it('should throw error on sign out failure', async () => {
+      supabase.auth.signOut.mockResolvedValue({
+        error: new Error('Sign out failed')
+      })
+
+      await expect(signOut()).rejects.toThrow('Sign out failed')
+    })
+  })
+})
+```
+
+### Integration Testing OAuth Flow
+
+**File:** `tests/integration/oauth-user-creation.test.js`
+
+```javascript
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { TestTransaction } from '../helpers/db-transactions.js'
+
+let transaction
+let supabase
+
+describe('OAuth User Creation', () => {
+  beforeEach(async () => {
+    transaction = new TestTransaction()
+    supabase = await transaction.begin()
+  })
+
+  afterEach(async () => {
+    await transaction.rollback()
+  })
+
+  it('should create user profile on first OAuth sign-in', async () => {
+    // Simulate OAuth user data from Google
+    const oauthUser = {
+      email: `test_${transaction.testId}@example.com`,
+      name: 'Test OAuth User',
+      avatar_url: 'https://lh3.googleusercontent.com/test-avatar',
+      google_id: `google_${transaction.testId}`
+    }
+
+    // Simulate user creation (normally done by Supabase trigger)
+    const { data: user, error } = await supabase
+      .from('users')
+      .insert({
+        email: oauthUser.email,
+        username: oauthUser.email.split('@')[0],
+        name: oauthUser.name,
+        avatar_url: oauthUser.avatar_url,
+        google_id: oauthUser.google_id
+      })
+      .select()
+      .single()
+
+    expect(error).toBeNull()
+    expect(user).toBeDefined()
+    expect(user.email).toBe(oauthUser.email)
+    expect(user.name).toBe(oauthUser.name)
+    expect(user.google_id).toBe(oauthUser.google_id)
+    expect(user.username).toBe(oauthUser.email.split('@')[0])
+  })
+
+  it('should prevent duplicate users with same email', async () => {
+    const email = `test_${transaction.testId}@example.com`
+    const googleId = `google_${transaction.testId}`
+
+    // First sign-in
+    await supabase
+      .from('users')
+      .insert({
+        email,
+        username: email.split('@')[0],
+        name: 'Test User',
+        google_id: googleId
+      })
+
+    // Second sign-in (should fail - unique constraint)
+    const { error } = await supabase
+      .from('users')
+      .insert({
+        email,
+        username: email.split('@')[0],
+        name: 'Test User',
+        google_id: googleId
+      })
+
+    expect(error).not.toBeNull()
+    expect(error.code).toBe('23505') // PostgreSQL unique violation
+  })
+
+  it('should link Google ID to user profile', async () => {
+    const user = await transaction.createTestUser({
+      email: `test_${transaction.testId}@example.com`,
+      google_id: `google_${transaction.testId}`
+    })
+
+    const { data: fetchedUser } = await supabase
+      .from('users')
+      .select('google_id')
+      .eq('id', user.id)
+      .single()
+
+    expect(fetchedUser.google_id).toBe(user.google_id)
+  })
+
+  it('should store OAuth provider metadata', async () => {
+    const user = await transaction.createTestUser({
+      email: `test_${transaction.testId}@example.com`,
+      name: 'OAuth Test User',
+      avatar_url: 'https://lh3.googleusercontent.com/avatar.jpg',
+      google_id: `google_${transaction.testId}`
+    })
+
+    // Verify OAuth data is stored
+    const { data } = await supabase
+      .from('users')
+      .select('name, avatar_url, google_id')
+      .eq('id', user.id)
+      .single()
+
+    expect(data.name).toBe('OAuth Test User')
+    expect(data.avatar_url).toContain('googleusercontent.com')
+    expect(data.google_id).toBeTruthy()
+  })
+
+  it('should generate username from email on OAuth sign-in', async () => {
+    const email = `john.doe.${transaction.testId}@gmail.com`
+    
+    const { data: user } = await supabase
+      .from('users')
+      .insert({
+        email,
+        username: email.split('@')[0],
+        google_id: `google_${transaction.testId}`
+      })
+      .select()
+      .single()
+
+    expect(user.username).toBe(`john.doe.${transaction.testId}`)
+  })
+})
+```
+
+### Component Testing OAuth UI
+
+**File:** `tests/unit/components/Login.test.js`
+
+```javascript
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
+import Login from '@/pages/Login.vue'
+import { signInWithGoogle } from '@/services/auth-service'
+
+vi.mock('@/services/auth-service')
+
+describe('Login Component - OAuth', () => {
+  let wrapper
+  let pinia
+
+  beforeEach(() => {
+    pinia = createPinia()
+    vi.clearAllMocks()
+  })
+
+  it('should render Google sign-in button', () => {
+    wrapper = mount(Login, {
+      global: {
+        plugins: [pinia]
+      }
+    })
+
+    const googleButton = wrapper.find('[data-test="google-signin-button"]')
+    expect(googleButton.exists()).toBe(true)
+    expect(googleButton.text()).toContain('Sign in with Google')
+  })
+
+  it('should call signInWithGoogle when button clicked', async () => {
+    signInWithGoogle.mockResolvedValue({
+      url: 'https://accounts.google.com/...'
+    })
+
+    wrapper = mount(Login, {
+      global: {
+        plugins: [pinia]
+      }
+    })
+
+    const googleButton = wrapper.find('[data-test="google-signin-button"]')
+    await googleButton.trigger('click')
+
+    expect(signInWithGoogle).toHaveBeenCalledTimes(1)
+  })
+
+  it('should show loading state during OAuth initiation', async () => {
+    signInWithGoogle.mockImplementation(() => 
+      new Promise(resolve => setTimeout(resolve, 100))
+    )
+
+    wrapper = mount(Login, {
+      global: {
+        plugins: [pinia]
+      }
+    })
+
+    const googleButton = wrapper.find('[data-test="google-signin-button"]')
+    await googleButton.trigger('click')
+
+    // Button should be disabled during loading
+    expect(googleButton.attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[data-test="loading-spinner"]').exists()).toBe(true)
+  })
+
+  it('should display error message on OAuth failure', async () => {
+    signInWithGoogle.mockRejectedValue(new Error('OAuth failed'))
+
+    wrapper = mount(Login, {
+      global: {
+        plugins: [pinia]
+      }
+    })
+
+    const googleButton = wrapper.find('[data-test="google-signin-button"]')
+    await googleButton.trigger('click')
+
+    await wrapper.vm.$nextTick()
+
+    const errorMessage = wrapper.find('[data-test="error-message"]')
+    expect(errorMessage.exists()).toBe(true)
+    expect(errorMessage.text()).toContain('failed')
+  })
+})
+```
+
+### E2E Testing OAuth Flow
+
+**File:** `tests/e2e/oauth-flow.test.js`
+
+```javascript
+import { test, expect } from '@playwright/test'
+
+test.describe('Google OAuth Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:5173/login')
+  })
+
+  test('should show Google sign-in button on login page', async ({ page }) => {
+    const googleButton = page.locator('button:has-text("Sign in with Google")')
+    await expect(googleButton).toBeVisible()
+  })
+
+  test('should redirect to Google on sign-in button click', async ({ page, context }) => {
+    // Click Google sign-in button
+    const googleButton = page.locator('button:has-text("Sign in with Google")')
+    
+    // Wait for popup/redirect to Google
+    const [popup] = await Promise.all([
+      context.waitForEvent('page'),
+      googleButton.click()
+    ])
+
+    // Wait for navigation to Google OAuth
+    await popup.waitForLoadState()
+    const url = popup.url()
+    
+    // Verify redirect to Google OAuth endpoint
+    expect(url).toContain('accounts.google.com')
+    expect(url).toContain('oauth2')
+    
+    await popup.close()
+  })
+
+  test('should include correct OAuth parameters in redirect', async ({ page, context }) => {
+    const googleButton = page.locator('button:has-text("Sign in with Google")')
+    
+    const [popup] = await Promise.all([
+      context.waitForEvent('page'),
+      googleButton.click()
+    ])
+
+    await popup.waitForLoadState()
+    const url = new URL(popup.url())
+
+    // Verify OAuth parameters
+    expect(url.searchParams.get('client_id')).toBeTruthy()
+    expect(url.searchParams.get('redirect_uri')).toContain('supabase.co')
+    expect(url.searchParams.get('response_type')).toBe('code')
+    
+    // Verify scopes
+    const scope = url.searchParams.get('scope')
+    expect(scope).toContain('openid')
+    expect(scope).toContain('email')
+    expect(scope).toContain('profile')
+    
+    // Verify security parameters
+    expect(url.searchParams.get('state')).toBeTruthy() // CSRF protection
+    expect(url.searchParams.get('code_challenge')).toBeTruthy() // PKCE
+    
+    await popup.close()
+  })
+
+  test('should block access to protected routes when not authenticated', async ({ page }) => {
+    // Try to access protected route
+    await page.goto('http://localhost:5173/closet')
+    
+    // Should redirect to login
+    await expect(page).toHaveURL(/\/login/)
+  })
+
+  // Note: Cannot automate actual Google login due to reCAPTCHA and security measures
+  // Use test users in Google Console for manual testing
+})
+```
+
+### Mocking OAuth Callbacks
+
+For testing OAuth callback handling:
+
+```javascript
+// tests/integration/oauth-callback.test.js
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import App from '@/App.vue'
+import { createRouter, createWebHistory } from 'vue-router'
+import routes from '@/router.js'
+
+describe('OAuth Callback Handling', () => {
+  it('should parse OAuth tokens from URL hash', async () => {
+    // Simulate OAuth callback URL
+    const mockLocation = {
+      hash: '#access_token=mock_token_123&expires_in=3600&refresh_token=refresh_123&token_type=bearer',
+      origin: 'http://localhost:5173',
+      pathname: '/closet'
+    }
+
+    // Mock window.location
+    Object.defineProperty(window, 'location', {
+      value: mockLocation,
+      writable: true
+    })
+
+    const router = createRouter({
+      history: createWebHistory(),
+      routes
+    })
+
+    const wrapper = mount(App, {
+      global: {
+        plugins: [router]
+      }
+    })
+
+    await wrapper.vm.$nextTick()
+
+    // Verify tokens were parsed from URL
+    // (Implementation depends on your auth store)
+  })
+})
+```
+
+### Testing OAuth Session Management
+
+```javascript
+// tests/unit/stores/auth-store.test.js
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
+import { useAuthStore } from '@/stores/auth-store'
+import { getSession } from '@/services/auth-service'
+
+vi.mock('@/services/auth-service')
+
+describe('Auth Store - OAuth Session', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  it('should load OAuth session on initialization', async () => {
+    const mockSession = {
+      access_token: 'mock_token',
+      user: {
+        id: 'user_123',
+        email: 'test@example.com'
+      }
+    }
+
+    getSession.mockResolvedValue(mockSession)
+
+    const authStore = useAuthStore()
+    await authStore.initializeAuth()
+
+    expect(authStore.session).toEqual(mockSession)
+    expect(authStore.user).toBeDefined()
+    expect(authStore.user.email).toBe('test@example.com')
+  })
+
+  it('should handle missing OAuth session gracefully', async () => {
+    getSession.mockResolvedValue(null)
+
+    const authStore = useAuthStore()
+    await authStore.initializeAuth()
+
+    expect(authStore.session).toBeNull()
+    expect(authStore.user).toBeNull()
+  })
+
+  it('should clear session on sign out', async () => {
+    const authStore = useAuthStore()
+    authStore.session = { access_token: 'token' }
+    authStore.user = { id: 'user_123' }
+
+    await authStore.signOut()
+
+    expect(authStore.session).toBeNull()
+    expect(authStore.user).toBeNull()
+  })
+})
+```
+
+### Manual Testing Checklist
+
+For comprehensive manual OAuth testing:
+
+**1. Fresh User Sign-Up**
+- [ ] Open incognito window
+- [ ] Navigate to login page
+- [ ] Click "Sign in with Google"
+- [ ] Verify redirect to Google consent screen
+- [ ] Select Google account (new user)
+- [ ] Verify consent screen shows correct scopes
+- [ ] Click "Allow"
+- [ ] Verify redirect to /closet
+- [ ] Check user created in Supabase Dashboard
+- [ ] Verify user profile data (name, avatar, email)
+
+**2. Existing User Sign-In**
+- [ ] Sign out
+- [ ] Click "Sign in with Google"
+- [ ] Verify quick redirect (no consent screen)
+- [ ] Verify logged in with correct account
+
+**3. Session Persistence**
+- [ ] Log in
+- [ ] Refresh page - verify still logged in
+- [ ] Close tab and reopen - verify still logged in
+- [ ] Clear localStorage - verify redirected to login
+
+**4. Multiple Accounts**
+- [ ] Log in with Account A
+- [ ] Sign out
+- [ ] Log in with Account B
+- [ ] Verify Account B data shown
+- [ ] Sign out and log in with Account A again
+
+**5. Error Scenarios**
+- [ ] Click "Cancel" on Google consent screen - verify error handling
+- [ ] Test with invalid client ID - verify error message
+- [ ] Test with blocked third-party cookies - verify fallback
+
+### OAuth Testing Best Practices
+
+1. **Use Test Google Accounts**
+   - Add test users in Google Console
+   - Don't use personal accounts for automated testing
+
+2. **Separate Test and Production OAuth Clients**
+   - Create separate OAuth clients for dev/test/prod
+   - Use different redirect URLs
+
+3. **Mock OAuth in Unit Tests**
+   - Never make real OAuth calls in unit tests
+   - Mock Supabase auth methods
+
+4. **Test OAuth Errors**
+   - User denies consent
+   - Invalid credentials
+   - Network failures
+   - Token expiration
+
+5. **Verify Security Features**
+   - State parameter (CSRF protection)
+   - PKCE implementation
+   - Token storage security
+   - Session expiration
+
+6. **Monitor OAuth Failures**
+   - Log OAuth errors
+   - Track failed sign-in attempts
+   - Alert on configuration issues
+
+For more OAuth details, see: [`docs/OAUTH_COMPLETE_GUIDE.md`](OAUTH_COMPLETE_GUIDE.md)
+
+---
+
 ## 🎯 Best Practices
 
 ### DO's ✅

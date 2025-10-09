@@ -39,30 +39,88 @@ node scripts/populate-catalog.js
 ---
 
 ### 2. `cloudinary-cleanup.js`
-Cleans up unused images from Cloudinary storage.
+Finds and deletes orphaned images in Cloudinary (images with no database record).
+
+**Purpose:**
+- Removes images that were uploaded but never saved to database
+- Frees up Cloudinary storage quota
+- 7-day grace period to avoid deleting recent uploads
 
 **Usage:**
 ```bash
+# Preview what would be deleted (dry run)
+node scripts/cloudinary-cleanup.js --dry-run
+
+# Actually delete orphaned images
 node scripts/cloudinary-cleanup.js
 ```
 
 **Requirements:**
+- Supabase service role key in `.env` (not anon key!)
 - Cloudinary API credentials in `.env`
+- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+
+**What it does:**
+1. Fetches all images from Cloudinary
+2. Fetches all image URLs from database
+3. Compares lists to find orphans
+4. Filters orphans by grace period (7 days)
+5. Deletes orphaned images in batches
+6. Reports storage freed
+
+**Safety Features:**
+- Dry run mode (preview before deletion)
+- 7-day grace period for new uploads
+- Confirmation prompt before deletion
+- Batch processing to avoid API limits
+- Detailed logging and error handling
 
 ---
 
 ### 3. `purge-old-items.js`
-Archives or permanently deletes soft-deleted items older than a specified threshold.
+Permanently deletes clothing items older than 2 years (configurable).
+
+**Purpose:**
+- Removes stale items to keep database clean
+- Deletes both database records and Cloudinary images
+- Configurable age threshold (default: 730 days / 2 years)
 
 **Usage:**
 ```bash
-node scripts/purge-old-items.js [--days=90] [--dry-run]
+# Preview what would be deleted (dry run)
+node scripts/purge-old-items.js --dry-run
+
+# Actually delete old items
+node scripts/purge-old-items.js
+
+# Custom age threshold (1 year)
+MAX_AGE_DAYS=365 node scripts/purge-old-items.js
 ```
 
-**Options:**
-- `--days=N`: Delete items removed more than N days ago (default: 90)
-- `--dry-run`: Preview what would be deleted without actually deleting
+**Requirements:**
+- Supabase service role key in `.env` (not anon key!)
+- Cloudinary API credentials in `.env`
+- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+
+**Environment Variables:**
+- `MAX_AGE_DAYS`: Age threshold in days (default: 730)
+
+**What it does:**
+1. Calculates cutoff date (now - MAX_AGE_DAYS)
+2. Queries items older than cutoff date
+3. For each old item:
+   - Deletes image from Cloudinary
+   - Deletes item from database
+4. Reports deletion summary
+
+**Safety Features:**
+- Dry run mode (preview before deletion)
+- Confirmation prompt before deletion
+- Batch processing
+- Transaction-safe deletion
+- Detailed logging and error handling
 
 ---
 
@@ -124,20 +182,134 @@ node scripts/populate-catalog.js
 # Navigate to: Table Editor > catalog_items
 ```
 
+## Scheduling Maintenance Scripts
+
+The `purge-old-items.js` and `cloudinary-cleanup.js` scripts should be run automatically on a schedule.
+
+### Option 1: GitHub Actions (Recommended)
+
+Create `.github/workflows/maintenance.yml`:
+
+```yaml
+name: Scheduled Maintenance
+
+on:
+  schedule:
+    # Run purge script monthly (1st of month at 2 AM UTC)
+    - cron: '0 2 1 * *'
+    # Run cleanup script weekly (every Sunday at 3 AM UTC)
+    - cron: '0 3 * * 0'
+  workflow_dispatch: # Allow manual runs
+
+jobs:
+  purge-old-items:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 1 * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - name: Purge old items
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: node scripts/purge-old-items.js
+
+  cleanup-cloudinary:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * 0' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - name: Cleanup Cloudinary
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: node scripts/cloudinary-cleanup.js
+```
+
+**Setup:**
+1. Add secrets to GitHub repository settings
+2. Navigate to: Settings > Secrets and variables > Actions
+3. Add these secrets:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_KEY` (service role key, not anon key!)
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+
+### Option 2: Cron Jobs (Linux Server)
+
+Add to crontab (`crontab -e`):
+
+```bash
+# Purge old items - Monthly (1st of month at 2 AM)
+0 2 1 * * cd /path/to/sgStyleSnap2025 && node scripts/purge-old-items.js >> /var/log/stylesnap-purge.log 2>&1
+
+# Cleanup Cloudinary - Weekly (every Sunday at 3 AM)
+0 3 * * 0 cd /path/to/sgStyleSnap2025 && node scripts/cloudinary-cleanup.js >> /var/log/stylesnap-cleanup.log 2>&1
+```
+
+**Setup:**
+1. Set environment variables in `~/.bashrc` or `~/.profile`
+2. Ensure log directory exists: `sudo mkdir -p /var/log && sudo chmod 755 /var/log`
+3. Test manually first: `node scripts/purge-old-items.js --dry-run`
+
+### Option 3: Render Cron Jobs (Render.com)
+
+If hosting on Render.com, use their Cron Jobs feature:
+
+1. Create new Cron Job in Render dashboard
+2. Command: `node scripts/purge-old-items.js`
+3. Schedule: `0 2 1 * *` (monthly)
+4. Add environment variables
+5. Create another for `cloudinary-cleanup.js` with schedule `0 3 * * 0`
+
+### Recommended Schedule
+
+| Script | Frequency | Schedule | Reason |
+|--------|-----------|----------|--------|
+| `purge-old-items.js` | Monthly | 1st at 2 AM | Items older than 2 years, infrequent |
+| `cloudinary-cleanup.js` | Weekly | Sunday at 3 AM | Failed uploads, more frequent |
+
+**Testing scheduled jobs:**
+```bash
+# Test purge script (dry run)
+node scripts/purge-old-items.js --dry-run
+
+# Test cleanup script (dry run)
+node scripts/cloudinary-cleanup.js --dry-run
+
+# Verify environment variables are loaded
+node -e "console.log(process.env.SUPABASE_SERVICE_KEY ? 'OK' : 'MISSING')"
+```
+
 ## Maintenance
 
 ### Weekly Tasks
-- Run `cloudinary-cleanup.js` to remove orphaned images
+- `cloudinary-cleanup.js` runs automatically (scheduled)
 - Check catalog item popularity and add trending items
 
 ### Monthly Tasks
-- Run `purge-old-items.js` to clean up soft-deleted items
+- `purge-old-items.js` runs automatically (scheduled)
 - Review and update catalog items based on user feedback
 
 ### Quarterly Tasks
 - Audit catalog for outdated items
 - Add seasonal collections
 - Update image URLs if needed
+- Review maintenance script logs for errors
 
 ## Troubleshooting
 

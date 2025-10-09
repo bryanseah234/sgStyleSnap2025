@@ -267,6 +267,35 @@ export const useClosetStore = defineStore('closet', {
     },
     
     /**
+     * Toggle favorite status of an item
+     */
+    async toggleFavorite(id) {
+      try {
+        // Find the item to get its current favorite status
+        const item = this.items.find(item => item.id === id)
+        if (!item) {
+          throw new Error('Item not found')
+        }
+        
+        const newFavoriteStatus = !item.is_favorite
+        
+        const clothesService = await import('../services/clothes-service')
+        await clothesService.toggleFavorite(id, newFavoriteStatus)
+        
+        // Update local state optimistically
+        const index = this.items.findIndex(item => item.id === id)
+        if (index !== -1) {
+          this.items[index].is_favorite = newFavoriteStatus
+        }
+      } catch (error) {
+        console.error('Failed to toggle favorite:', error)
+        // Revert the change
+        await this.fetchItems()
+        throw error
+      }
+    },
+    
+    /**
      * Set current item for viewing/editing
      */
     setCurrentItem(item) {

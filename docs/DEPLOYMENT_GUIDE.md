@@ -123,11 +123,7 @@ VITE_CLOUDINARY_UPLOAD_PRESET=your-preset
 
 # Push Notifications
 VITE_VAPID_PUBLIC_KEY=BKxYjz3Q9YVs...
-```
 
-### Optional Secrets
-
-```bash
 # Weather API (only if using weather features)
 VITE_OPENWEATHER_API_KEY=your-api-key
 ```

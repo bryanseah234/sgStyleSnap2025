@@ -6,9 +6,25 @@
 -- DROP EXISTING OBJECTS (in reverse dependency order)
 -- ============================================
 DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'auto_contribute_to_catalog_trigger') THEN
+    DROP TRIGGER auto_contribute_to_catalog_trigger ON clothes CASCADE;
+  END IF;
+END $$;
+
+DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_catalog_items_updated_at') THEN
     DROP TRIGGER update_catalog_items_updated_at ON catalog_items CASCADE;
   END IF;
+END $$;
+
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS auto_contribute_to_catalog() CASCADE;
+  EXCEPTION WHEN undefined_function THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  DROP FUNCTION IF EXISTS get_catalog_excluding_owned(UUID, VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER) CASCADE;
+  EXCEPTION WHEN undefined_function THEN NULL;
 END $$;
 
 DO $$ BEGIN
@@ -28,6 +44,10 @@ END $$;
 
 DO $$ BEGIN
   DROP TABLE IF EXISTS catalog_items CASCADE;
+  EXCEPTION WHEN undefined_table THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP INDEX IF EXISTS idx_catalog_image_url CASCADE;
   EXCEPTION WHEN undefined_table THEN NULL;
 END $$;
 DO $$ BEGIN
@@ -85,7 +105,7 @@ CREATE TABLE catalog_items (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(255) NOT NULL,
   category VARCHAR(50) NOT NULL CHECK (category IN ('top', 'bottom', 'outerwear', 'shoes', 'accessory')),
-  image_url TEXT NOT NULL,
+  image_url TEXT NOT NULL UNIQUE, -- Unique to prevent duplicate images in catalog
   thumbnail_url TEXT NOT NULL,
   tags TEXT[],
   brand VARCHAR(100),
@@ -109,6 +129,9 @@ ALTER TABLE clothes
 -- ============================================
 -- INDEXES FOR PERFORMANCE
 -- ============================================
+
+-- Unique index on image_url to prevent duplicates
+CREATE UNIQUE INDEX idx_catalog_image_url ON catalog_items(image_url);
 
 -- Category filter (most common)
 CREATE INDEX idx_catalog_category ON catalog_items(category);
@@ -175,6 +198,73 @@ USING (is_active = true);
 -- ============================================
 -- FUNCTIONS
 -- ============================================
+
+-- Function to get catalog items excluding items user already owns
+-- This prevents showing duplicate items in catalog browse
+CREATE OR REPLACE FUNCTION get_catalog_excluding_owned(
+  user_id_param UUID,
+  category_filter VARCHAR(50) DEFAULT NULL,
+  color_filter VARCHAR(50) DEFAULT NULL,
+  brand_filter VARCHAR(100) DEFAULT NULL,
+  season_filter VARCHAR(20) DEFAULT NULL,
+  page_limit INTEGER DEFAULT 20,
+  page_offset INTEGER DEFAULT 0
+)
+RETURNS TABLE (
+  id UUID,
+  name VARCHAR(255),
+  category VARCHAR(50),
+  image_url TEXT,
+  thumbnail_url TEXT,
+  tags TEXT[],
+  brand VARCHAR(100),
+  color VARCHAR(50),
+  season VARCHAR(20),
+  style TEXT[]
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    ci.id,
+    ci.name,
+    ci.category,
+    ci.image_url,
+    ci.thumbnail_url,
+    ci.tags,
+    ci.brand,
+    ci.color,
+    ci.season,
+    ci.style
+  FROM catalog_items ci
+  WHERE 
+    ci.is_active = true
+    -- Apply filters
+    AND (category_filter IS NULL OR ci.category = category_filter)
+    AND (color_filter IS NULL OR ci.color = color_filter)
+    AND (brand_filter IS NULL OR ci.brand ILIKE '%' || brand_filter || '%')
+    AND (season_filter IS NULL OR ci.season = season_filter)
+    -- Exclude items user already owns (by catalog_item_id OR image_url)
+    AND (
+      user_id_param IS NULL
+      OR NOT EXISTS (
+        SELECT 1 FROM clothes c
+        WHERE c.owner_id = user_id_param
+          AND c.removed_at IS NULL
+          AND (
+            c.catalog_item_id = ci.id
+            OR c.image_url = ci.image_url
+          )
+      )
+    )
+  ORDER BY ci.created_at DESC
+  LIMIT page_limit
+  OFFSET page_offset;
+END;
+$$;
+
+COMMENT ON FUNCTION get_catalog_excluding_owned IS 'Get catalog items excluding items user already owns. Filters by catalog_item_id or image_url match.';
 
 -- Function to search catalog with full-text search
 CREATE OR REPLACE FUNCTION search_catalog(
@@ -333,6 +423,75 @@ CREATE TRIGGER update_catalog_items_updated_at
   BEFORE UPDATE ON catalog_items
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- AUTO-CONTRIBUTION TO CATALOG
+-- ============================================
+
+-- Function to automatically add user uploads to catalog (anonymous, background)
+-- This happens silently after successful upload without user prompt
+CREATE OR REPLACE FUNCTION auto_contribute_to_catalog()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Only auto-contribute if:
+  -- 1. This is a new item (INSERT)
+  -- 2. It's not already linked to a catalog item (catalog_item_id IS NULL)
+  -- 3. It has valid image URLs
+  IF (TG_OP = 'INSERT' AND 
+      NEW.catalog_item_id IS NULL AND 
+      NEW.image_url IS NOT NULL AND 
+      NEW.thumbnail_url IS NOT NULL) THEN
+    
+    -- Check if this exact image already exists in catalog
+    -- (prevents duplicate catalog entries for same image)
+    IF NOT EXISTS (
+      SELECT 1 FROM catalog_items 
+      WHERE image_url = NEW.image_url
+    ) THEN
+      -- Insert into catalog (without owner_id for anonymity)
+      INSERT INTO catalog_items (
+        name,
+        category,
+        image_url,
+        thumbnail_url,
+        tags,
+        brand,
+        color,
+        season,
+        style,
+        is_active
+      ) VALUES (
+        NEW.name,
+        NEW.category,
+        NEW.image_url,
+        NEW.thumbnail_url,
+        NEW.style_tags,
+        NEW.brand,
+        NEW.primary_color,
+        'all-season', -- Default season
+        NEW.style_tags, -- Use style_tags as style array
+        true
+      )
+      ON CONFLICT (image_url) DO NOTHING; -- Safety: prevent duplicates
+    END IF;
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Trigger to auto-contribute uploads to catalog (after insert)
+-- This runs AFTER INSERT so the clothes record is fully created first
+DROP TRIGGER IF EXISTS auto_contribute_to_catalog_trigger ON clothes;
+CREATE TRIGGER auto_contribute_to_catalog_trigger
+  AFTER INSERT ON clothes
+  FOR EACH ROW
+  EXECUTE FUNCTION auto_contribute_to_catalog();
+
+COMMENT ON FUNCTION auto_contribute_to_catalog IS 'Automatically adds user uploads to catalog_items table (anonymous, no owner_id). Prevents duplicates by checking image_url.';
+COMMENT ON TRIGGER auto_contribute_to_catalog_trigger ON clothes IS 'Auto-contribute user uploads to catalog in background without user prompt';
 
 -- ============================================
 -- SAMPLE DATA (Optional - for testing)

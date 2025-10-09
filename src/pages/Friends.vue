@@ -28,12 +28,59 @@
     <div class="friends-page">
       <div class="friends-header">
         <h1>Friends</h1>
-        <p class="subtitle">Connect with friends and share outfits</p>
+        <p class="subtitle">
+          Connect with friends and share outfits
+        </p>
+      </div>
+      
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button
+            :class="['tab', { active: activeTab === 'popular' }]"
+            @click="activeTab = 'popular'"
+          >
+            Popular
+          </button>
+          <button
+            :class="['tab', { active: activeTab === 'friends' }]"
+            @click="activeTab = 'friends'"
+          >
+            My Friends
+            <span
+              v-if="friendsStore.friendsCount > 0"
+              class="badge"
+            >
+              {{ friendsStore.friendsCount }}
+            </span>
+          </button>
+          <button
+            :class="['tab', { active: activeTab === 'requests' }]"
+            @click="activeTab = 'requests'"
+          >
+            Requests
+            <span
+              v-if="friendsStore.hasPendingRequests"
+              class="badge"
+            >
+              {{ friendsStore.incomingRequestsCount }}
+            </span>
+          </button>
+          <button
+            :class="['tab', { active: activeTab === 'search' }]"
+            @click="activeTab = 'search'"
+          >
+            Find Friends
+          </button>
+        </div>
       </div>
       
       <div class="friends-content">
-        <!-- Popular Items Carousel -->
-        <div class="carousel-section">
+        <!-- Popular Items Tab -->
+        <div
+          v-if="activeTab === 'popular'"
+          class="tab-panel"
+        >
           <PopularItemsCarousel
             :items="popularItems"
             :loading="loadingPopular"
@@ -45,15 +92,128 @@
           />
         </div>
 
-        <!-- Friends List Placeholder -->
-        <div class="friends-list-section">
-          <p class="placeholder-text">Friends feature coming soon!</p>
-          <p class="detail-text">You'll be able to:</p>
-          <ul class="feature-list">
-            <li>Connect with friends</li>
-            <li>Share outfit suggestions</li>
-            <li>View friend's closets</li>
-          </ul>
+        <!-- Friends List Tab -->
+        <div
+          v-if="activeTab === 'friends'"
+          class="tab-panel"
+        >
+          <FriendsList />
+        </div>
+
+        <!-- Requests Tab -->
+        <div
+          v-if="activeTab === 'requests'"
+          class="tab-panel"
+        >
+          <FriendRequest />
+        </div>
+
+        <!-- Search Tab -->
+        <div
+          v-if="activeTab === 'search'"
+          class="tab-panel"
+        >
+          <div class="search-section">
+            <h2 class="section-title">
+              Find Friends
+            </h2>
+            
+            <div class="search-box">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search by name or email (min 3 characters)..."
+                class="search-input"
+                @input="handleSearch"
+              >
+            </div>
+
+            <!-- Search Results -->
+            <div
+              v-if="searchQuery.length >= 3"
+              class="search-results"
+            >
+              <div
+                v-if="searching"
+                class="loading"
+              >
+                <p>Searching...</p>
+              </div>
+              
+              <div
+                v-else-if="searchResults.users && searchResults.users.length === 0"
+                class="empty-state"
+              >
+                <p class="empty-message">
+                  No users found matching "{{ searchQuery }}"
+                </p>
+              </div>
+              
+              <div
+                v-else-if="searchResults.users"
+                class="results-list"
+              >
+                <div
+                  v-for="user in searchResults.users"
+                  :key="user.id"
+                  class="user-card"
+                >
+                  <div class="user-avatar">
+                    <img
+                      v-if="user.avatar_url"
+                      :src="user.avatar_url"
+                      :alt="user.name"
+                    >
+                    <div
+                      v-else
+                      class="avatar-placeholder"
+                    >
+                      {{ getInitial(user.name) }}
+                    </div>
+                  </div>
+                  
+                  <div class="user-info">
+                    <h3 class="user-name">
+                      {{ user.name }}
+                    </h3>
+                    <p class="friendship-status">
+                      {{ getFriendshipStatusText(user.friendship_status) }}
+                    </p>
+                  </div>
+                  
+                  <button
+                    v-if="user.friendship_status === 'none'"
+                    class="add-friend-btn"
+                    :disabled="sendingRequest === user.id"
+                    @click="sendRequest(user)"
+                  >
+                    {{ sendingRequest === user.id ? 'Sending...' : 'Add Friend' }}
+                  </button>
+                  <button
+                    v-else-if="user.friendship_status === 'pending_sent'"
+                    class="pending-btn"
+                    disabled
+                  >
+                    Request Sent
+                  </button>
+                  <button
+                    v-else-if="user.friendship_status === 'accepted'"
+                    class="friends-btn"
+                    disabled
+                  >
+                    Already Friends
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div
+              v-else
+              class="search-hint"
+            >
+              <p>Enter at least 3 characters to search for users</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -62,21 +222,29 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useFriendsStore } from '../stores/friends-store'
 import { useLikesStore } from '../stores/likes-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import PopularItemsCarousel from '../components/social/PopularItemsCarousel.vue'
+import FriendsList from '../components/social/FriendsList.vue'
+import FriendRequest from '../components/social/FriendRequest.vue'
 
-const router = useRouter()
 const friendsStore = useFriendsStore()
 const likesStore = useLikesStore()
 
+const activeTab = ref('popular')
 const popularItems = ref([])
 const loadingPopular = ref(false)
+const searchQuery = ref('')
+const searchResults = ref({})
+const searching = ref(false)
+const sendingRequest = ref(null)
+
+let searchTimeout = null
 
 onMounted(async () => {
-  friendsStore.fetchFriends()
+  await friendsStore.fetchFriends()
+  await friendsStore.fetchPendingRequests()
   await loadPopularItems()
 })
 
@@ -107,6 +275,73 @@ function viewAllPopular() {
   console.log('View all popular items')
   // TODO: Create dedicated popular items page
 }
+
+// Handle search with debouncing
+function handleSearch() {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  
+  if (searchQuery.value.length < 3) {
+    searchResults.value = {}
+    return
+  }
+  
+  searchTimeout = setTimeout(async () => {
+    searching.value = true
+    try {
+      const results = await friendsStore.searchUsers(searchQuery.value)
+      searchResults.value = results
+    } catch (error) {
+      console.error('Search failed:', error)
+      searchResults.value = { users: [], count: 0, has_more: false }
+    } finally {
+      searching.value = false
+    }
+  }, 500)
+}
+
+// Send friend request
+async function sendRequest(user) {
+  sendingRequest.value = user.id
+  try {
+    await friendsStore.sendFriendRequest(user.id)
+    
+    // Update user's friendship status in search results
+    const userIndex = searchResults.value.users.findIndex(u => u.id === user.id)
+    if (userIndex !== -1) {
+      searchResults.value.users[userIndex].friendship_status = 'pending_sent'
+    }
+    
+    alert('Friend request sent!')
+  } catch (error) {
+    console.error('Failed to send request:', error)
+    alert('Failed to send friend request. Please try again.')
+  } finally {
+    sendingRequest.value = null
+  }
+}
+
+// Get initial from name
+function getInitial(name) {
+  return name ? name.charAt(0).toUpperCase() : '?'
+}
+
+// Get friendship status text
+function getFriendshipStatusText(status) {
+  switch (status) {
+    case 'none':
+      return 'Not friends'
+    case 'pending_sent':
+      return 'Request sent'
+    case 'pending_received':
+      return 'Wants to be friends'
+    case 'accepted':
+      return 'Friends'
+    default:
+      return ''
+  }
+}
 </script>
 
 <style scoped>
@@ -117,7 +352,7 @@ function viewAllPopular() {
 }
 
 .friends-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .friends-header h1 {
@@ -132,55 +367,226 @@ function viewAllPopular() {
   color: #6b7280;
 }
 
+/* Tabs */
+.tabs-container {
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #6b7280;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #374151;
+}
+
+.tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.375rem;
+  background: #3b82f6;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
 .friends-content {
+  min-height: 400px;
+}
+
+.tab-panel {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Search Section */
+.search-section {
+  width: 100%;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.search-box {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-message {
+  color: #6b7280;
+}
+
+.search-hint {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+}
+
+/* Search Results */
+.results-list {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0.75rem;
 }
 
-/* Popular Items Carousel Section */
-.carousel-section {
-  background: white;
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
 }
 
-/* Friends List Section */
-.friends-list-section {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.user-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.placeholder-text {
-  text-align: center;
-  padding: 2rem 1rem 1rem;
-  color: #374151;
-  font-size: 1.125rem;
-  font-weight: 500;
+.user-avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
 }
 
-.detail-text {
-  text-align: center;
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friendship-status {
+  font-size: 0.75rem;
   color: #6b7280;
-  margin-bottom: 0.5rem;
 }
 
-.feature-list {
-  list-style: none;
-  padding: 0;
-  max-width: 300px;
-  margin: 1rem auto;
-}
-
-.feature-list li {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  background-color: #f9fafb;
+.add-friend-btn,
+.pending-btn,
+.friends-btn {
+  padding: 0.5rem 1rem;
+  border: none;
   border-radius: 0.5rem;
-  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.add-friend-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.add-friend-btn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.add-friend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pending-btn {
+  background: #fbbf24;
+  color: #78350f;
+  cursor: default;
+}
+
+.friends-btn {
+  background: #10b981;
+  color: white;
+  cursor: default;
 }
 
 /* Dark mode support */
@@ -189,8 +595,7 @@ function viewAllPopular() {
     background-color: #111827;
   }
   
-  .carousel-section,
-  .friends-list-section {
+  .tab-panel {
     background: #1f2937;
   }
   
@@ -202,17 +607,23 @@ function viewAllPopular() {
     color: #9ca3af;
   }
   
-  .placeholder-text {
-    color: #d1d5db;
+  .section-title {
+    color: white;
   }
   
-  .detail-text {
-    color: #9ca3af;
+  .search-input {
+    background: #374151;
+    border-color: #4b5563;
+    color: white;
   }
   
-  .feature-list li {
-    background-color: #374151;
-    color: #d1d5db;
+  .user-card {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .user-name {
+    color: white;
   }
 }
 </style>

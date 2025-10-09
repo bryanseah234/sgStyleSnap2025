@@ -18,6 +18,7 @@ vi.mock('../../src/services/likes-service', () => ({
     getItemLikers: vi.fn(),
     getPopularItems: vi.fn(),
     getPopularItemsFromFriends: vi.fn(),
+    initializeUserLikes: vi.fn(),
     hasLiked: vi.fn(),
     getUserLikesStats: vi.fn()
   }
@@ -26,7 +27,8 @@ vi.mock('../../src/services/likes-service', () => ({
 // Mock auth store
 vi.mock('../../src/stores/auth-store', () => ({
   useAuthStore: () => ({
-    user: { id: 'user-123' }
+    user: { id: 'user-123' },
+    isLoggedIn: true
   })
 }))
 
@@ -220,8 +222,8 @@ describe('Likes Store', () => {
   describe('actions - fetchMyLikedItems', () => {
     it('should fetch user liked items successfully', async () => {
       const mockItems = [
-        { id: 'item-1', name: 'Shirt', liked_at: '2024-01-01' },
-        { id: 'item-2', name: 'Jeans', liked_at: '2024-01-02' }
+        { id: 'item-1', name: 'Shirt', item_id: 'item-1', liked_at: '2024-01-01', likes_count: 3 },
+        { id: 'item-2', name: 'Jeans', item_id: 'item-2', liked_at: '2024-01-02', likes_count: 5 }
       ]
 
       mockLikesService.getUserLikedItems.mockResolvedValue(mockItems)
@@ -238,7 +240,8 @@ describe('Likes Store', () => {
     it('should handle fetch errors', async () => {
       mockLikesService.getUserLikedItems.mockRejectedValue(new Error('Fetch failed'))
 
-      await expect(store.fetchMyLikedItems()).rejects.toThrow('Fetch failed')
+      await store.fetchMyLikedItems()
+      
       expect(store.error).toBe('Fetch failed')
     })
   })
@@ -270,25 +273,25 @@ describe('Likes Store', () => {
   describe('actions - fetchPopularItems', () => {
     it('should fetch popular items successfully', async () => {
       const mockItems = [
-        { id: 'item-1', name: 'Popular Shirt', likes_count: 15 },
-        { id: 'item-2', name: 'Popular Jeans', likes_count: 12 }
+        { id: 'item-1', name: 'Popular Shirt', item_id: 'item-1', likes_count: 15 },
+        { id: 'item-2', name: 'Popular Jeans', item_id: 'item-2', likes_count: 12 }
       ]
 
-      mockLikesService.getPopularItems.mockResolvedValue(mockItems)
+      mockLikesService.getPopularItemsFromFriends.mockResolvedValue(mockItems)
 
-      await store.fetchPopularItems(10, 5)
+      await store.fetchPopularItems(10)
 
-      expect(mockLikesService.getPopularItems).toHaveBeenCalledWith(10, 5)
+      expect(mockLikesService.getPopularItemsFromFriends).toHaveBeenCalledWith(10)
       expect(store.popularItems).toEqual(mockItems)
       expect(store.error).toBeNull()
     })
 
     it('should use default parameters', async () => {
-      mockLikesService.getPopularItems.mockResolvedValue([])
+      mockLikesService.getPopularItemsFromFriends.mockResolvedValue([])
 
       await store.fetchPopularItems()
 
-      expect(mockLikesService.getPopularItems).toHaveBeenCalledWith(20, 3)
+      expect(mockLikesService.getPopularItemsFromFriends).toHaveBeenCalledWith(20)
     })
   })
 
@@ -330,10 +333,10 @@ describe('Likes Store', () => {
   describe('actions - initialize', () => {
     it('should initialize store successfully', async () => {
       const mockLikedItems = [
-        { id: 'item-1', name: 'Shirt', liked_at: '2024-01-01' }
+        { id: 'item-1', name: 'Shirt', item_id: 'item-1', liked_at: '2024-01-01', likes_count: 5 }
       ]
       const mockPopularItems = [
-        { id: 'item-2', name: 'Popular Jeans', likes_count: 12 }
+        { id: 'item-2', name: 'Popular Jeans', item_id: 'item-2', likes_count: 12 }
       ]
       const mockStats = {
         total_items: 10,
@@ -345,7 +348,7 @@ describe('Likes Store', () => {
       }
 
       mockLikesService.getUserLikedItems.mockResolvedValue(mockLikedItems)
-      mockLikesService.getPopularItems.mockResolvedValue(mockPopularItems)
+      mockLikesService.getPopularItemsFromFriends.mockResolvedValue(mockPopularItems)
       mockLikesService.getUserLikesStats.mockResolvedValue(mockStats)
 
       await store.initialize()

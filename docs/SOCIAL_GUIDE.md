@@ -1,11 +1,159 @@
-# 👥 Social Feed: Friends-Only Documentation
+# 👥 Social Features & Privacy Documentation
 
 ## Overview
-The social feed displays outfits shared by accepted friends only, sorted chronologically (newest first). Real-time friend status changes automatically update the feed - when a user unfriends someone, their outfits immediately disappear.
+The social features enable users to connect with friends, share outfit suggestions, and view friends' closets while maintaining strict privacy controls. All friend relationships are bidirectional and privacy settings are enforced at both the database and application levels.
 
 ---
 
-## Features
+## Friend Management System
+
+### Features
+- **Secure User Search**: Anti-scraping measures protect user data
+- **Friend Requests**: Send, accept, reject, and cancel friend requests
+- **Privacy Enforcement**: Friends-only access to closet items
+- **Bidirectional Friendships**: Canonical ordering prevents duplicates
+- **Real-time Updates**: Automatic feed updates on friendship changes
+
+### Anti-Scraping Security Measures
+To prevent database enumeration and protect user privacy:
+
+1. **Minimum Query Length**: 3 characters required
+2. **Result Limiting**: Maximum 10 users per search
+3. **Random Ordering**: Results shuffled (no pagination)
+4. **Email Protection**: Emails never exposed in search results
+5. **Rate Limiting**: 20 searches per minute (enforced at API level)
+6. **No Enumeration**: `has_more` always false
+
+### Friendship States
+- `none`: No relationship exists
+- `pending_sent`: Current user sent request
+- `pending_received`: Current user received request
+- `accepted`: Active friendship (mutual)
+- `rejected`: Request denied (not shown in UI)
+
+### UI Components
+
+#### FriendsList.vue
+Displays all accepted friends with search functionality.
+
+**Features**:
+- Friends grid with avatars and names
+- Local search/filter (no API calls)
+- Click to view friend profile
+- Suggest outfit button for each friend
+- Friend count display
+
+**Usage**:
+```vue
+<FriendsList />
+```
+
+#### FriendProfile.vue
+Shows a friend's profile and their shared closet items.
+
+**Features**:
+- Friend's profile information
+- Grid of friend's items (privacy='friends' only)
+- Suggest outfit button
+- Unfriend button with confirmation
+- Empty state when no shared items
+
+**Props**:
+- `friendId`: User ID of friend (required)
+
+**Usage**:
+```vue
+<FriendProfile :friendId="selectedFriendId" />
+```
+
+#### FriendRequest.vue
+Manages incoming and outgoing friend requests.
+
+**Features**:
+- Tabs for incoming vs outgoing requests
+- Accept/reject buttons for incoming
+- Cancel button for outgoing
+- Real-time request counts
+- Success notifications
+
+**Usage**:
+```vue
+<FriendRequest />
+```
+
+### API Service (friends-service.js)
+
+**Functions**:
+
+1. `getFriends()` - Fetch all accepted friendships
+   - Returns: Array of friend objects with user details
+
+2. `getPendingRequests()` - Fetch pending requests
+   - Returns: `{ incoming: Array, outgoing: Array }`
+
+3. `sendFriendRequest(emailOrUserId)` - Send friend request
+   - Accepts: Email string or user ID (UUID)
+   - Returns: Request object
+   - Note: Returns success even for non-existent users (security)
+
+4. `acceptFriendRequest(requestId)` - Accept incoming request
+   - Returns: Updated friendship object
+
+5. `rejectFriendRequest(requestId)` - Reject incoming request
+   - Returns: Success response
+
+6. `cancelFriendRequest(requestId)` - Cancel outgoing request
+   - Returns: Success response
+
+7. `unfriend(friendshipId)` - Remove accepted friendship
+   - Returns: Success response
+
+8. `searchUsers(query)` - **SECURE** user search
+   - Min 3 characters, max 10 results, random order
+   - Returns: `{ users: Array, count: number, has_more: false }`
+   - Never returns email addresses
+
+9. `getFriendProfile(friendId)` - Get friend's profile and items
+   - Requires: Accepted friendship
+   - Returns: `{ user: Object, items: Array }` (privacy='friends' only)
+
+### Pinia Store (friends-store.js)
+
+**State**:
+```javascript
+{
+  friends: [],              // Accepted friendships
+  pendingRequests: {
+    incoming: [],           // Requests received
+    outgoing: []            // Requests sent
+  },
+  currentFriend: null,      // Selected friend's profile
+  searchResults: [],        // User search results
+  isLoading: false
+}
+```
+
+**Getters**:
+- `friendsCount`: Total accepted friends
+- `incomingRequestsCount`: Pending incoming requests
+- `outgoingRequestsCount`: Pending outgoing requests
+- `hasPendingRequests`: Boolean for notification badge
+
+**Actions**:
+- `fetchFriends()`, `fetchPendingRequests()`
+- `sendFriendRequest(emailOrUserId)`, `acceptRequest(requestId)`
+- `rejectRequest(requestId)`, `cancelRequest(requestId)`
+- `unfriend(friendshipId)`, `searchUsers(query)`
+- `fetchFriendProfile(friendId)`, `clearCurrentFriend()`
+
+---
+
+## Social Feed
+
+### Overview
+The social feed displays outfits shared by accepted friends only, sorted chronologically (newest first). Real-time friend status changes automatically update the feed - when a user unfriends someone, their outfits immediately disappear.
+
+### Features
 - Friends-only filtering (accepted friendships)
 - Automatic exclusion on unfriend
 - Chronological sorting (newest first)
