@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """
-Clothing Image Scraper & Catalog Generator
+Clothing Image Spider & Catalog Generator
 
-Scrapes clothing images from websites, classifies them using a trained ResNet50 model,
-detects colors, filters out images with faces, and generates a CSV catalog.
+Web spider that crawls e-commerce sites, collects clothing images, classifies them 
+using a trained ResNet50 model, detects colors, filters out faces, and generates a CSV catalog.
+
+Features:
+- Spider mode: Automatically crawls multiple pages on the same domain
+- CDN support: Downloads images from any domain (CDN/external hosts allowed)
+- Face detection: Filters out model photos automatically
+- AI classification: 20 clothing types with confidence scoring
+- Color detection: Automatic primary and secondary color detection
+- Supported formats: JPG, JPEG, PNG, WEBP (no GIF or AVIF)
 
 Usage:
-    1. Add URLs to scripts/scrape-urls.txt (one per line)
+    1. Add starting URLs to scripts/scrape-urls.txt (one per line)
     2. Run: python scripts/scrape-catalog.py
-    3. Check results in catalog-data/images/ and catalog-data/scraped-items.csv
+    3. Spider crawls pages on same domain, collects images from any domain
+    4. Check results in catalog-data/images/ and catalog-data/scraped-items.csv
 """
 
 import os
@@ -18,15 +27,17 @@ import time
 import hashlib
 import re
 from pathlib import Path
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, parse_qs, urlunparse
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue
+import threading
 
 import requests
 from bs4 import BeautifulSoup
 import cv2
 import numpy as np
 from PIL import Image
-import pillow_avif
 
 import torch
 import torch.nn as nn
@@ -101,10 +112,27 @@ COLOR_NAMES = {
 }
 
 # Scraping settings
-IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp'}
+IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp'}  # No GIF or AVIF
 MIN_IMAGE_SIZE = 100  # Minimum width/height in pixels
 MAX_IMAGE_SIZE = 2000  # Maximum width/height in pixels
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
+# Spider/Crawler settings
+MAX_PAGES_PER_DOMAIN = 20  # Maximum pages to crawl per domain
+MAX_DEPTH = 3  # Maximum crawl depth from start URL
+CRAWL_DELAY = 1.0  # Delay between page requests (seconds)
+MAX_WORKERS = 5  # Number of parallel workers for image processing
+IGNORE_ROBOTS_TXT = True  # Ignore robots.txt restrictions
+
+# Downloaded images tracking
+DOWNLOADED_IMAGES_FILE = PROJECT_ROOT / "catalog-data" / ".downloaded_hashes.txt"
+
+# URL cleaning - remove tracking parameters
+TRACKING_PARAMS = {
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+    'fbclid', 'gclid', 'msclkid', 'ref', 'referrer', 'source', 'campaign',
+    '_ga', '_gl', 'mc_cid', 'mc_eid'
+}
 
 # ============================================================================
 # MODEL SETUP
@@ -291,107 +319,315 @@ class ColorDetector:
         return closest_name
 
 # ============================================================================
-# WEB SCRAPER
+# WEB SPIDER/CRAWLER
 # ============================================================================
 
-class ImageScraper:
-    """Scrapes images from websites."""
+class WebSpider:
+    """Web spider that crawls pages on the same domain and collects images."""
     
     def __init__(self):
-        """Initialize scraper."""
+        """Initialize spider."""
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': USER_AGENT})
+        self.visited_urls = set()  # Track visited pages
+        self.image_urls = set()    # Track collected image URLs
+        self.downloaded_hashes = self._load_downloaded_hashes()  # Track downloaded images
+        self.image_queue = Queue()  # Queue for parallel processing
+        self.lock = threading.Lock()  # Thread safety for stats
     
-    def scrape_images(self, url, max_images=50):
+    def _load_downloaded_hashes(self):
+        """Load previously downloaded image hashes."""
+        hashes = set()
+        if DOWNLOADED_IMAGES_FILE.exists():
+            with open(DOWNLOADED_IMAGES_FILE, 'r') as f:
+                hashes = set(line.strip() for line in f if line.strip())
+        return hashes
+    
+    def _save_downloaded_hash(self, image_hash):
+        """Save a downloaded image hash to file."""
+        DOWNLOADED_IMAGES_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(DOWNLOADED_IMAGES_FILE, 'a') as f:
+            f.write(f"{image_hash}\n")
+    
+    def _get_image_hash(self, url):
+        """Generate hash from cleaned image URL."""
+        cleaned_url = self._clean_url(url)
+        return hashlib.md5(cleaned_url.encode()).hexdigest()
+    
+    @staticmethod
+    def _clean_url(url):
+        """Remove tracking parameters and clean URL."""
+        try:
+            parsed = urlparse(url)
+            
+            # Parse query parameters
+            query_params = parse_qs(parsed.query)
+            
+            # Remove tracking parameters
+            cleaned_params = {
+                k: v for k, v in query_params.items() 
+                if k.lower() not in TRACKING_PARAMS
+            }
+            
+            # Rebuild query string
+            if cleaned_params:
+                from urllib.parse import urlencode
+                query_string = urlencode(cleaned_params, doseq=True)
+            else:
+                query_string = ''
+            
+            # Rebuild URL without tracking params
+            cleaned = urlunparse((
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                parsed.params,
+                query_string,
+                ''  # Remove fragment
+            ))
+            
+            return cleaned
+        except:
+            return url
+    
+    def get_domain(self, url):
+        """Extract domain from URL."""
+        parsed = urlparse(url)
+        return f"{parsed.scheme}://{parsed.netloc}"
+    
+    def is_same_domain(self, url1, url2):
+        """Check if two URLs are on the same domain."""
+        return urlparse(url1).netloc == urlparse(url2).netloc
+    
+    def is_valid_page_url(self, url):
+        """Check if URL is a valid page to crawl."""
+        try:
+            parsed = urlparse(url)
+            path = parsed.path.lower()
+            
+            # Skip common non-page URLs
+            skip_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.pdf', '.zip', 
+                             '.css', '.js', '.xml', '.json', '.webp', '.avif'}
+            if any(path.endswith(ext) for ext in skip_extensions):
+                return False
+            
+            # Skip common non-crawlable paths
+            skip_paths = {'#', 'javascript:', 'mailto:', 'tel:'}
+            if any(url.startswith(skip) for skip in skip_paths):
+                return False
+            
+            return True
+        except:
+            return False
+    
+    def crawl(self, start_url, max_images=200):
         """
-        Scrape image URLs from a webpage.
+        Crawl pages starting from start_url and collect images.
         
         Args:
-            url: Website URL to scrape
+            start_url: Starting URL to begin crawling
             max_images: Maximum number of images to collect
             
         Returns:
-            list: List of image URLs
+            list: List of unique image URLs
         """
-        print(f"\n🌐 Scraping {url}...")
+        print(f"\n🕷️  Starting spider crawl from: {start_url}")
         
-        try:
-            # Fetch webpage
-            response = self.session.get(url, timeout=10)
-            response.raise_for_status()
+        base_domain = self.get_domain(start_url)
+        to_visit = [(start_url, 0)]  # Queue of (url, depth) tuples
+        pages_crawled = 0
+        
+        while to_visit and pages_crawled < MAX_PAGES_PER_DOMAIN and len(self.image_urls) < max_images:
+            current_url, depth = to_visit.pop(0)
             
-            # Parse HTML
-            soup = BeautifulSoup(response.text, 'lxml')
+            # Skip if already visited or too deep
+            if current_url in self.visited_urls or depth > MAX_DEPTH:
+                continue
             
-            # Find all image tags
-            img_tags = soup.find_all('img')
+            self.visited_urls.add(current_url)
+            pages_crawled += 1
             
-            image_urls = []
-            for img in img_tags[:max_images * 2]:  # Get extra to account for filtering
-                # Get image URL from various attributes
-                img_url = img.get('src') or img.get('data-src') or img.get('data-lazy-src')
+            print(f"\n📄 [{pages_crawled}/{MAX_PAGES_PER_DOMAIN}] Crawling: {current_url} (depth: {depth})")
+            
+            try:
+                # Fetch page
+                response = self.session.get(current_url, timeout=15)
+                response.raise_for_status()
                 
-                if not img_url:
-                    continue
+                # Parse HTML
+                soup = BeautifulSoup(response.text, 'lxml')
                 
-                # Convert relative URLs to absolute
-                img_url = urljoin(url, img_url)
+                # Collect images from this page
+                images_found = self._extract_images(soup, current_url)
+                print(f"   🖼️  Found {images_found} images on this page")
                 
-                # Check if it's a valid image URL
-                if self._is_valid_image_url(img_url):
-                    image_urls.append(img_url)
+                # Find links to other pages on same domain
+                if depth < MAX_DEPTH:
+                    links_found = self._extract_links(soup, current_url, base_domain, depth)
+                    to_visit.extend(links_found)
+                    print(f"   🔗 Found {len(links_found)} new links to crawl")
                 
-                if len(image_urls) >= max_images:
-                    break
-            
-            print(f"✅ Found {len(image_urls)} image URLs")
-            return image_urls
-            
-        except Exception as e:
-            print(f"❌ Error scraping {url}: {e}")
-            return []
+                # Rate limiting
+                time.sleep(CRAWL_DELAY)
+                
+            except Exception as e:
+                print(f"   ❌ Error crawling page: {e}")
+                continue
+        
+        print(f"\n✅ Crawling complete!")
+        print(f"   📄 Pages crawled: {pages_crawled}")
+        print(f"   🖼️  Unique images found: {len(self.image_urls)}")
+        
+        return list(self.image_urls)
     
-    def download_image(self, image_url, output_path):
+    def _extract_images(self, soup, page_url):
+        """Extract image URLs from a page."""
+        images_found = 0
+        
+        # Find all image tags
+        img_tags = soup.find_all('img')
+        
+        for img in img_tags:
+            # Get image URL from various attributes
+            img_url = (img.get('src') or 
+                      img.get('data-src') or 
+                      img.get('data-lazy-src'))
+            
+            if not img_url or img_url.startswith('data:'):
+                continue
+            
+            # Convert relative URLs to absolute
+            img_url = urljoin(page_url, img_url)
+            
+            # Clean URL (remove tracking params)
+            cleaned_url = self._clean_url(img_url)
+            
+            # Get hash for duplicate checking
+            img_hash = self._get_image_hash(cleaned_url)
+            
+            # Skip if already downloaded in previous runs
+            if img_hash in self.downloaded_hashes:
+                continue
+            
+            # Check if it's a valid image URL (images can be from ANY domain/CDN)
+            if self._is_valid_image_url(cleaned_url) and cleaned_url not in self.image_urls:
+                self.image_urls.add(cleaned_url)
+                images_found += 1
+        
+        return images_found
+    
+    def _extract_links(self, soup, page_url, base_domain, current_depth):
+        """Extract links to other pages on the same domain."""
+        new_links = []
+        
+        # Find all anchor tags
+        for link in soup.find_all('a', href=True):
+            href = link.get('href')
+            
+            if not href:
+                continue
+            
+            # Convert relative URLs to absolute
+            full_url = urljoin(page_url, href)
+            
+            # Remove fragment
+            full_url = full_url.split('#')[0]
+            
+            # Check if valid and on same domain
+            if (self.is_valid_page_url(full_url) and 
+                self.is_same_domain(full_url, base_domain) and
+                full_url not in self.visited_urls):
+                new_links.append((full_url, current_depth + 1))
+        
+        return new_links
+    
+    def scrape_images(self, url, max_images=200):
+        """
+        Main entry point - crawls pages and collects images.
+        
+        Args:
+            url: Starting URL to begin crawling
+            max_images: Maximum number of images to collect
+            
+        Returns:
+            list: List of unique image URLs
+        """
+        # Reset state for new crawl
+        self.visited_urls.clear()
+        self.image_urls.clear()
+        
+        # Start crawling
+        return self.crawl(url, max_images)
+    
+    def download_image(self, image_url, output_path, max_retries=2):
         """
         Download an image from URL.
         
         Args:
             image_url: URL of image
             output_path: Path to save image
+            max_retries: Number of retry attempts
             
         Returns:
             bool: True if successful, False otherwise
         """
-        try:
-            response = self.session.get(image_url, timeout=10, stream=True)
-            response.raise_for_status()
-            
-            # Save image
-            with open(output_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            
-            # Verify it's a valid image
-            img = Image.open(output_path)
-            width, height = img.size
-            
-            # Check size constraints
-            if width < MIN_IMAGE_SIZE or height < MIN_IMAGE_SIZE:
-                os.remove(output_path)
+        for attempt in range(max_retries + 1):
+            try:
+                response = self.session.get(image_url, timeout=15, stream=True)
+                response.raise_for_status()
+                
+                # Check content type
+                content_type = response.headers.get('content-type', '').lower()
+                if 'image' not in content_type and attempt == 0:
+                    # Skip if not an image on first attempt
+                    return False
+                
+                # Save image
+                with open(output_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                
+                # Verify it's a valid image
+                img = Image.open(output_path)
+                img.verify()  # Verify image integrity
+                
+                # Reopen after verify
+                img = Image.open(output_path)
+                width, height = img.size
+                
+                # Check size constraints
+                if width < MIN_IMAGE_SIZE or height < MIN_IMAGE_SIZE:
+                    os.remove(output_path)
+                    return False
+                
+                if width > MAX_IMAGE_SIZE or height > MAX_IMAGE_SIZE:
+                    # Resize if too large
+                    img.thumbnail((MAX_IMAGE_SIZE, MAX_IMAGE_SIZE), Image.Resampling.LANCZOS)
+                    # Convert to RGB if needed
+                    if img.mode in ('RGBA', 'P', 'LA'):
+                        img = img.convert('RGB')
+                    img.save(output_path, 'JPEG', quality=85, optimize=True)
+                elif img.mode not in ('RGB', 'L'):
+                    # Convert to RGB for consistency
+                    img = img.convert('RGB')
+                    img.save(output_path, 'JPEG', quality=90)
+                
+                return True
+                
+            except Exception as e:
+                if attempt < max_retries:
+                    time.sleep(1)  # Wait before retry
+                    continue
+                # Clean up failed download
+                if output_path.exists():
+                    try:
+                        os.remove(output_path)
+                    except OSError:
+                        pass
                 return False
-            
-            if width > MAX_IMAGE_SIZE or height > MAX_IMAGE_SIZE:
-                # Resize if too large
-                img.thumbnail((MAX_IMAGE_SIZE, MAX_IMAGE_SIZE), Image.Resampling.LANCZOS)
-                img.save(output_path)
-            
-            return True
-            
-        except Exception as e:
-            # Clean up failed download
-            if output_path.exists():
-                os.remove(output_path)
-            return False
+        
+        return False
     
     @staticmethod
     def _is_valid_image_url(url):
@@ -470,7 +706,7 @@ class ClothingScraperPipeline:
         self.classifier = ClothingClassifier(MODEL_PATH)
         self.face_detector = FaceDetector()
         self.color_detector = ColorDetector()
-        self.scraper = ImageScraper()
+        self.spider = WebSpider()
         self.csv_manager = CatalogCSV(CSV_PATH)
         
         # Statistics
@@ -505,13 +741,21 @@ class ClothingScraperPipeline:
         self._print_summary()
     
     def _process_url(self, url):
-        """Process a single URL."""
-        # Scrape image URLs
-        image_urls = self.scraper.scrape_images(url)
+        """Process a single URL - spider crawls pages and collects images."""
+        # Spider crawls pages on same domain and collects images
+        image_urls = self.spider.scrape_images(url)
         
-        for img_url in image_urls:
+        if not image_urls:
+            print(f"⚠️  No valid images found on this page")
+            return
+        
+        for idx, img_url in enumerate(image_urls, 1):
+            print(f"\n[{idx}/{len(image_urls)}]")
             self._process_image(img_url)
-            time.sleep(0.5)  # Be polite to servers
+            
+            # Rate limiting - be polite to servers
+            if idx < len(image_urls):
+                time.sleep(0.3)
     
     def _process_image(self, image_url):
         """Process a single image."""
@@ -523,16 +767,19 @@ class ClothingScraperPipeline:
         
         try:
             # Download image
-            if not self.scraper.download_image(image_url, temp_path):
+            if not self.spider.download_image(image_url, temp_path):
                 return
             
             self.stats['images_scraped'] += 1
             print(f"📥 Downloaded: {image_url[:80]}...")
             
-            # Check for faces
+            # Check for faces (fast check first)
             if self.face_detector.has_face(temp_path):
                 print(f"   👤 Face detected - skipping")
-                os.remove(temp_path)
+                try:
+                    os.remove(temp_path)
+                except OSError:
+                    pass
                 self.stats['images_with_faces'] += 1
                 return
             
@@ -543,7 +790,10 @@ class ClothingScraperPipeline:
             # Skip if classification is uncertain
             if category == 'uncategorized' or confidence < 0.3:
                 print(f"   ⚠️  Low confidence - skipping")
-                os.remove(temp_path)
+                try:
+                    os.remove(temp_path)
+                except OSError:
+                    pass
                 return
             
             # Detect colors
@@ -551,14 +801,20 @@ class ClothingScraperPipeline:
             primary_color = colors[0] if colors else "unknown"
             secondary_colors = "|".join(colors[1:3]) if len(colors) > 1 else ""
             
-            print(f"   🎨 Colors: {', '.join(colors)}")
+            print(f"   🎨 Colors: {', '.join(colors) if colors else 'unknown'}")
             
             # Generate final filename
             final_filename = self._generate_filename(clothing_type, primary_color, timestamp)
             final_path = OUTPUT_DIR / final_filename
             
             # Rename to final filename
-            os.rename(temp_path, final_path)
+            try:
+                os.rename(temp_path, final_path)
+            except OSError:
+                # If rename fails, copy and delete
+                import shutil
+                shutil.copy2(temp_path, final_path)
+                os.remove(temp_path)
             
             # Generate item name
             item_name = f"{primary_color.capitalize()} {clothing_type}"
@@ -590,7 +846,10 @@ class ClothingScraperPipeline:
         except Exception as e:
             print(f"   ❌ Error processing image: {e}")
             if temp_path.exists():
-                os.remove(temp_path)
+                try:
+                    os.remove(temp_path)
+                except OSError:
+                    pass
     
     def _generate_filename(self, clothing_type, color, timestamp):
         """Generate a unique filename for the image."""
@@ -645,7 +904,7 @@ def load_urls(urls_file):
 def main():
     """Main entry point."""
     print("\n" + "="*60)
-    print("🛍️  CLOTHING IMAGE SCRAPER & CATALOG GENERATOR")
+    print("�️  CLOTHING IMAGE SPIDER & CATALOG GENERATOR")
     print("="*60 + "\n")
     
     # Check if model exists

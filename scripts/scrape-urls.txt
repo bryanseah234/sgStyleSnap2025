@@ -17,5 +17,17 @@
 # Add your URLs below:
 # 
 # Test URL (uncomment to test):
-# https://www.uniqlo.com/us/en/men/tops
-
+https://www.zara.com/sg/en/man-shirts-denim-l748.html
+https://www.zara.com/sg/en/man-tshirts-l855.html
+https://www.zara.com/sg/en/man-shirts-l737.html
+https://www2.hm.com/en_us/women/products/jeans.html
+https://www2.hm.com/en_us/women/products/tops.html
+https://www2.hm.com/en_us/women/products/cardigans-sweaters.html
+https://www2.hm.com/en_us/women/products/jackets-coats.html
+https://www.uniqlo.com/sg/en/women/outerwear
+https://www.uniqlo.com/sg/en/men/outerwear
+https://www.uniqlo.com/sg/en/women/dresses-and-skirts
+https://www.cos.com/en-us/women/accessories
+https://www.cos.com/en-us/men/accessories
+https://www.cos.com/en-us/men/view-all
+https://www.cos.com/en-us/women/view-all
