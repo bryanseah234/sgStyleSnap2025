@@ -250,11 +250,15 @@ async function staleWhileRevalidate(request, cacheName, rule = {}) {
   const fetchPromise = fetch(request)
     .then(async (response) => {
       if (response.ok) {
-        const cache = await caches.open(cacheName);
-        cache.put(request, response.clone());
-        
-        if (rule.maxEntries) {
-          await enforceMaxEntries(cacheName, rule.maxEntries);
+        // Only cache http and https requests (not chrome-extension or other schemes)
+        const url = new URL(request.url);
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+          const cache = await caches.open(cacheName);
+          cache.put(request, response.clone());
+          
+          if (rule.maxEntries) {
+            await enforceMaxEntries(cacheName, rule.maxEntries);
+          }
         }
       }
       return response;
@@ -664,7 +668,7 @@ self.addEventListener('notificationclick', (event) => {
   
   // Open or focus app
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
         // Check if app is already open at target URL
         for (const client of clientList) {
@@ -688,8 +692,8 @@ self.addEventListener('notificationclick', (event) => {
         }
         
         // Open new window
-        if (clients.openWindow) {
-          return clients.openWindow(url);
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(url);
         }
       })
       .catch(err => {
