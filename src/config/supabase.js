@@ -30,19 +30,30 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase credentials. Please check your .env file.')
-  console.error('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY')
+// Check for missing credentials and provide helpful error message
+const hasCredentials = supabaseUrl && supabaseAnonKey
+
+if (!hasCredentials) {
+  console.error('⚠️  Missing Supabase credentials!')
+  console.error('📝 Please create a .env file with:')
+  console.error('   VITE_SUPABASE_URL=https://your-project.supabase.co')
+  console.error('   VITE_SUPABASE_ANON_KEY=your-anon-key')
+  console.error('💡 Copy .env.example to .env and fill in your values')
 }
 
 /**
  * Supabase client instance
  * @type {import('@supabase/supabase-js').SupabaseClient}
  */
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
-})
+export const supabase = hasCredentials 
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    })
+  : null // Return null if no credentials - app will show error page
+
+// Export flag for checking if Supabase is configured
+export const isSupabaseConfigured = hasCredentials

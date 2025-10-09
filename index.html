@@ -29,7 +29,8 @@
   
   <!-- Service Worker Registration -->
   <script>
-    if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    // Register service worker in production only
+    if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
           .then(registration => console.log('SW registered:', registration))
