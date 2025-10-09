@@ -84,7 +84,7 @@ const suggestionsStore = useSuggestionsStore()
 
 const userName = computed(() => authStore.userName)
 
-// Function to scroll to top of page
+// Function to scroll to top when toolbar icon is clicked
 function scrollToTop() {
   window.scrollTo({
     top: 0,
