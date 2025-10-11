@@ -196,15 +196,16 @@ export const useNotificationsStore = defineStore('notifications', {
     /**
      * Start real-time subscription for new notifications
      */
-    startRealtimeSubscription() {
-      const currentUser = supabase.auth.user()
-      if (!currentUser) return
+    async startRealtimeSubscription() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
       
       // Unsubscribe if already subscribed
       this.stopRealtimeSubscription()
       
       this.subscription = notificationsService.subscribeToNotifications(
-        currentUser.id,
+        user.id,
         async (payload) => {
           // Add new notification to the beginning
           const newNotification = payload.new
@@ -240,6 +241,9 @@ export const useNotificationsStore = defineStore('notifications', {
           this.playNotificationSound()
         }
       )
+      } catch (error) {
+        console.error('Failed to start realtime subscription:', error)
+      }
     },
 
     /**
