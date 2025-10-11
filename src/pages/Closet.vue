@@ -163,6 +163,7 @@ const showDetailModal = ref(false)
 const showAddItemModal = ref(false)
 
 const items = computed(() => {
+  console.log('🖼️ Closet page - closetStore.items:', closetStore.items)
   let filtered = closetStore.items
 
   if (filters.value.category) {
@@ -176,11 +177,12 @@ const items = computed(() => {
   if (filters.value.privacy) {
     filtered = filtered.filter(item => item.privacy === filters.value.privacy)
   }
-
+  
   if (filters.value.is_favorite) {
     filtered = filtered.filter(item => item.is_favorite === true)
   }
-
+  
+  console.log('🖼️ Closet page - final filtered items:', filtered)
   return filtered
 })
 
@@ -245,6 +247,7 @@ async function handleFavoriteClick(item) {
 
 // Add item modal handlers
 function handleAddItemSuccess() {
+  console.log('🎉 Add item success - refreshing closet...')
   showAddItemModal.value = false
   closetStore.fetchItems()
 }

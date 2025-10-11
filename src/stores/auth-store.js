@@ -260,9 +260,9 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       
       try {
-        // Create a mock user object
+        // Create a mock user object with proper UUID format
         const mockUser = {
-          id: 'mock-user-123',
+          id: '123e4567-e89b-12d3-a456-426614174000', // Valid UUID format
           email: 'dev@stylesnap.com',
           name: 'Dev User',
           avatar_url: 'https://i.pravatar.cc/150?img=3',
