@@ -249,6 +249,47 @@ export const useAuthStore = defineStore('auth', {
           this.setUser(session.user)
         }
       })
+    },
+
+    /**
+     * Mock login for development
+     */
+    async mockLogin() {
+      console.log('🚀 AuthStore: Mock login initiated')
+      this.loading = true
+      this.error = null
+      
+      try {
+        // Create a mock user object
+        const mockUser = {
+          id: 'mock-user-123',
+          email: 'dev@stylesnap.com',
+          name: 'Dev User',
+          avatar_url: 'https://i.pravatar.cc/150?img=3',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+        
+        // Simulate login delay
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Set the mock user
+        this.setUser(mockUser)
+        
+        console.log('✅ AuthStore: Mock login successful')
+        
+        // Navigate to closet
+        if (this.router) {
+          this.router.push('/closet')
+        }
+        
+      } catch (error) {
+        console.error('❌ AuthStore: Mock login failed:', error)
+        this.error = error.message
+        this.clearUser()
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

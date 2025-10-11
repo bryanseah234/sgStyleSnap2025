@@ -41,12 +41,13 @@ const response = await fetch('https://your-space.hf.space/api/predict', {
     data: [imageBase64],
     fn_index: 0
   })
-});
+})
 ```
 
 ## Categories
 
 The model can classify these 20 clothing types:
+
 - T-Shirt, Shirt, Blouse, Polo, Top, Body, Longsleeve, Undershirt
 - Pants, Shorts, Dress, Skirt, Shoes, Hat
 - Blazer, Hoodie, Outwear, Other, Not sure, Skip
