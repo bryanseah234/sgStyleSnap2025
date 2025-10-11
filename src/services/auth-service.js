@@ -106,11 +106,15 @@ export async function signInWithGoogle() {
  * @returns {Promise<void>}
  */
 export async function signOut() {
+  console.log('🚪 Signing out user...')
   const result = await supabase.auth.signOut()
   
   if (result?.error) {
+    console.error('❌ Sign out error:', result.error)
     throw new Error(`Sign out failed: ${result.error.message}`)
   }
+  
+  console.log('✅ User signed out successfully')
 }
 
 /**
@@ -118,13 +122,17 @@ export async function signOut() {
  * @returns {Promise<Object|null>}
  */
 export async function getCurrentUser() {
+  console.log('👤 Getting current user...')
   const result = await supabase.auth.getUser()
   
   if (result?.error) {
+    console.error('❌ Get user error:', result.error)
     throw new Error(`Failed to get user: ${result.error.message}`)
   }
   
-  return result?.data?.user || null
+  const user = result?.data?.user || null
+  console.log('👤 Current user:', user ? user.email : 'No user')
+  return user
 }
 
 /**
@@ -132,13 +140,17 @@ export async function getCurrentUser() {
  * @returns {Promise<Object|null>}
  */
 export async function getSession() {
+  console.log('🔑 Getting current session...')
   const result = await supabase.auth.getSession()
   
   if (result?.error) {
+    console.error('❌ Get session error:', result.error)
     throw new Error(`Failed to get session: ${result.error.message}`)
   }
   
-  return result?.data?.session || null
+  const session = result?.data?.session || null
+  console.log('🔑 Session status:', session ? 'Active' : 'No session')
+  return session
 }
 
 /**
@@ -146,13 +158,17 @@ export async function getSession() {
  * @returns {Promise<Object|null>}
  */
 export async function refreshSession() {
+  console.log('🔄 Refreshing session...')
   const result = await supabase.auth.refreshSession()
   
   if (result?.error) {
+    console.error('❌ Refresh session error:', result.error)
     throw new Error(`Failed to refresh session: ${result.error.message}`)
   }
   
-  return result?.data?.session || null
+  const session = result?.data?.session || null
+  console.log('🔄 Session refreshed:', session ? 'Success' : 'Failed')
+  return session
 }
 
 /**
@@ -162,6 +178,12 @@ export async function refreshSession() {
  */
 export function onAuthStateChange(callback) {
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    console.log('🔄 Auth state change:', event, session ? 'Session exists' : 'No session')
+    if (session) {
+      console.log('👤 User authenticated:', session.user.email)
+    } else {
+      console.log('🚪 User signed out')
+    }
     callback(event, session)
   })
   
