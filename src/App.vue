@@ -70,6 +70,7 @@ import { useRouter } from 'vue-router'
 import { isSupabaseConfigured } from './config/supabase'
 import { useAuthStore } from './stores/auth-store'
 import { useLikesStore } from './stores/likes-store'
+import './utils/debug-auth' // Import debug utilities
 
 const isConfigured = ref(isSupabaseConfigured)
 const router = useRouter()

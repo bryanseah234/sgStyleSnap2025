@@ -59,8 +59,10 @@ export const useAuthStore = defineStore('auth', {
      * @param {Object|null} userData - User object or null to clear
      */
     setUser(userData) {
+      console.log('🔧 AuthStore: Setting user:', userData ? userData.email : 'null')
       this.user = userData
       this.isAuthenticated = !!userData
+      console.log('🔧 AuthStore: isAuthenticated set to:', this.isAuthenticated)
     },
     
     /**
@@ -244,9 +246,14 @@ export const useAuthStore = defineStore('auth', {
         } else if (event === 'TOKEN_REFRESHED' && session) {
           console.log('🔄 AuthStore: Token refreshed:', session.user.email)
           this.setUser(session.user)
-        } else if (event === 'INITIAL_SESSION' && session) {
-          console.log('🎬 AuthStore: Initial session detected:', session.user.email)
-          this.setUser(session.user)
+        } else if (event === 'INITIAL_SESSION') {
+          if (session) {
+            console.log('🎬 AuthStore: Initial session detected:', session.user.email)
+            this.setUser(session.user)
+          } else {
+            console.log('🎬 AuthStore: Initial session - no user')
+            this.clearUser()
+          }
         }
       })
     }

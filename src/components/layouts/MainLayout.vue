@@ -175,6 +175,7 @@ onMounted(() => {
 
 .main-content {
   flex: 1;
+  padding-top: 0.5rem;
   padding-bottom: 5rem;
   max-width: 1200px;
   width: 100%;

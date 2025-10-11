@@ -5,7 +5,9 @@
 -- DROP EXISTING POLICIES
 -- ============================================
 DROP POLICY IF EXISTS "Users can view own data" ON users;
+DROP POLICY IF EXISTS "Users can search other users" ON users;
 DROP POLICY IF EXISTS "Users can update own data" ON users;
+DROP POLICY IF EXISTS "Admin can insert users" ON users;
 
 DROP POLICY IF EXISTS "Users can view own clothes" ON clothes;
 DROP POLICY IF EXISTS "Users can insert own clothes" ON clothes;
@@ -53,6 +55,10 @@ CREATE POLICY "Users can search other users" ON users
 
 CREATE POLICY "Users can update own data" ON users
     FOR UPDATE USING (auth.uid() = id);
+
+-- Admin can insert users (for test data creation, etc.)
+CREATE POLICY "Admin can insert users" ON users
+    FOR INSERT WITH CHECK (true);
 
 -- ============================================
 -- CLOTHES POLICIES
@@ -181,3 +187,112 @@ CREATE POLICY "Users can delete own suggestions" ON suggestions
 --
 -- CREATE POLICY "Users can delete own likes" ON likes
 --     FOR DELETE USING (auth.uid() = user_id);
+
+-- ============================================
+-- TEST ADMIN USER CREATION
+-- ============================================
+-- Create a test admin user for testing purposes
+-- This user can be used to create other test users
+
+-- Insert test admin user (only if it doesn't exist)
+INSERT INTO users (id, email, username, name, avatar_url, created_at, updated_at)
+VALUES (
+    '00000000-0000-0000-0000-000000000001'::uuid,  -- Fixed UUID for test admin
+    'admin@test.com',
+    'test_admin',
+    'Test Admin User',
+    null,
+    NOW(),
+    NOW()
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- Insert 6 additional test users for friends feature testing
+INSERT INTO users (id, email, username, name, avatar_url, created_at, updated_at)
+VALUES 
+    ('00000000-0000-0000-0000-000000000002'::uuid, 'alice.johnson@test.com', 'alice_johnson', 'Alice Johnson', null, NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000003'::uuid, 'bob.smith@test.com', 'bob_smith', 'Bob Smith', null, NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000004'::uuid, 'carol.davis@test.com', 'carol_davis', 'Carol Davis', null, NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000005'::uuid, 'david.wilson@test.com', 'david_wilson', 'David Wilson', null, NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000006'::uuid, 'emma.brown@test.com', 'emma_brown', 'Emma Brown', null, NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000007'::uuid, 'frank.miller@test.com', 'frank_miller', 'Frank Miller', null, NOW(), NOW())
+ON CONFLICT (email) DO NOTHING;
+
+-- Add comment for the test users
+COMMENT ON TABLE users IS 'Test users created: admin@test.com, alice.johnson@test.com, bob.smith@test.com, carol.davis@test.com, david.wilson@test.com, emma.brown@test.com, frank.miller@test.com';
+
+-- ============================================
+-- AUTH FUNCTION: AUTO-CREATE PUBLIC USER
+-- ============================================
+-- This function creates a public.users entry when called
+-- CRITICAL: This fixes the issue where users can log in but don't exist in public.users table
+-- NOTE: Trigger on auth.users requires superuser privileges, so we'll use a different approach
+
+-- Function to handle new user creation (can be called from client-side)
+CREATE OR REPLACE FUNCTION create_public_user(
+  user_id UUID,
+  user_email TEXT,
+  user_name TEXT DEFAULT NULL,
+  user_avatar_url TEXT DEFAULT NULL,
+  user_google_id TEXT DEFAULT NULL
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  -- Extract username from email (part before @)
+  -- Use provided name or extract from email as fallback
+  INSERT INTO public.users (id, email, username, name, avatar_url, google_id, created_at, updated_at)
+  VALUES (
+    user_id,
+    user_email,
+    COALESCE(
+      split_part(user_email, '@', 1),  -- Use part before @ as username
+      'user_' || substr(user_id::text, 1, 8)  -- Fallback: user_ + first 8 chars of UUID
+    ),
+    COALESCE(
+      user_name,  -- Use provided name
+      split_part(user_email, '@', 1)  -- Fallback: use email prefix
+    ),
+    user_avatar_url,  -- Use provided avatar URL
+    user_google_id,   -- Use provided Google ID
+    NOW(),
+    NOW()
+  )
+  ON CONFLICT (id) DO NOTHING;  -- Prevent duplicate creation
+  
+  RETURN TRUE;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log error but don't fail
+    RAISE WARNING 'Failed to create public user for %: %', user_email, SQLERRM;
+    RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add comment explaining the function
+COMMENT ON FUNCTION create_public_user IS 'Creates public.users entry for authenticated user. Call this from client-side after successful OAuth login.';
+
+-- ============================================
+-- ALTERNATIVE: WEBHOOK APPROACH (RECOMMENDED)
+-- ============================================
+-- Since we can't create triggers on auth.users, we'll use a webhook approach
+-- This requires setting up a webhook in Supabase Dashboard
+
+-- Function to handle webhook user creation
+CREATE OR REPLACE FUNCTION handle_auth_webhook()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- This function will be called by a webhook when a user signs up
+  -- The webhook will be configured in Supabase Dashboard
+  PERFORM create_public_user(
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'name', NEW.raw_user_meta_data->>'full_name'),
+    NEW.raw_user_meta_data->>'avatar_url',
+    NEW.raw_user_meta_data->>'sub'
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+COMMENT ON FUNCTION handle_auth_webhook IS 'Webhook handler for user creation. Configure webhook in Supabase Dashboard to call this function.';

@@ -150,7 +150,67 @@ export async function getSession() {
   
   const session = result?.data?.session || null
   console.log('🔑 Session status:', session ? 'Active' : 'No session')
+  
+  // If we have a session, ensure the user exists in public.users table
+  if (session?.user) {
+    await ensurePublicUser(session.user)
+  }
+  
   return session
+}
+
+/**
+ * Ensure user exists in public.users table
+ * @param {Object} user - Supabase auth user object
+ */
+async function ensurePublicUser(user) {
+  try {
+    console.log('🔍 Checking if user exists in public.users table...')
+    
+    // Check if user already exists in public.users
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+    
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('❌ Error checking user existence:', checkError)
+      return
+    }
+    
+    if (existingUser) {
+      console.log('✅ User already exists in public.users table')
+      return
+    }
+    
+    console.log('🔧 User not found in public.users, creating entry...')
+    
+    // Extract user data from auth user
+    const userMetadata = user.user_metadata || {}
+    const userName = userMetadata.name || userMetadata.full_name || user.email.split('@')[0]
+    const userAvatar = userMetadata.avatar_url || userMetadata.picture || null
+    const userGoogleId = userMetadata.sub || null
+    
+    // Call the database function to create the user
+    const { data, error } = await supabase.rpc('create_public_user', {
+      user_id: user.id,
+      user_email: user.email,
+      user_name: userName,
+      user_avatar_url: userAvatar,
+      user_google_id: userGoogleId
+    })
+    
+    if (error) {
+      console.error('❌ Error creating public user:', error)
+      return
+    }
+    
+    console.log('✅ Successfully created user in public.users table')
+    
+  } catch (error) {
+    console.error('❌ Error ensuring public user:', error)
+  }
 }
 
 /**

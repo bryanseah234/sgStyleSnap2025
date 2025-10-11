@@ -349,6 +349,7 @@ function getFriendshipStatusText(status) {
   min-height: 100vh;
   padding: 1rem;
   background-color: #f9fafb;
+  overflow-x: hidden;
 }
 
 .friends-header {
@@ -376,7 +377,9 @@ function getFriendshipStatusText(status) {
   display: flex;
   gap: 0.5rem;
   border-bottom: 2px solid #e5e7eb;
-  overflow-x: auto;
+  overflow-x: hidden;
+  overflow: hidden;
+  flex-wrap: wrap;
 }
 
 .tab {
@@ -590,7 +593,7 @@ function getFriendshipStatusText(status) {
 }
 
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
+/*@media (prefers-color-scheme: dark) {
   .friends-page {
     background-color: #111827;
   }
@@ -625,5 +628,5 @@ function getFriendshipStatusText(status) {
   .user-name {
     color: white;
   }
-}
+}*/
 </style>
