@@ -121,12 +121,7 @@ interface = gr.Interface(
         gr.Label(label="All Predictions", num_top_classes=3)
     ],
     title="FashionRNN Clothing Classifier",
-    description="Upload a clothing image to classify it using FashionRNN",
-    examples=[
-        ["example1.jpg"],
-        ["example2.jpg"],
-        ["example3.jpg"]
-    ]
+    description="Upload a clothing image to classify it using FashionRNN"
 )
 
 if __name__ == "__main__":
