@@ -495,6 +495,28 @@ class WebSpider:
         self.lock = threading.Lock()
         self.driver = None
 
+    def _safe_delete(self, file_path):
+        """Safely delete a file with retries and error handling."""
+        if file_path is None or not file_path.exists():
+            return
+            
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                os.remove(str(file_path))
+                break
+            except PermissionError:
+                if attempt < max_retries - 1:
+                    time.sleep(0.2)  # Wait 200ms before retry
+                    continue
+                else:
+                    logger.warning("Could not delete file %s after %d attempts", file_path, max_retries)
+            except FileNotFoundError:
+                break  # File already deleted
+            except Exception as e:
+                logger.warning("Error deleting file %s: %s", file_path, e)
+                break
+
     def _init_selenium(self):
         if self.driver is not None or not SELENIUM_AVAILABLE:
             return
@@ -673,9 +695,12 @@ class WebSpider:
 
     def download_image(self, image_url, output_path, max_retries=2):
         for attempt in range(max_retries + 1):
+            temp_output = output_path.with_suffix('.tmp')
             try:
                 response = self.session.get(image_url, timeout=15, stream=True)
                 response.raise_for_status()
+                
+                # Check content length
                 content_length = response.headers.get('Content-Length') or response.headers.get('content-length')
                 if content_length:
                     try:
@@ -683,12 +708,12 @@ class WebSpider:
                         max_bytes = 10 * 1024 * 1024
                         if cl > max_bytes:
                             logger.info("Skipping large image (>10MB): %s", image_url)
+                            self._safe_delete(temp_output)
                             return False
                     except ValueError:
                         pass
                 
-                # Use temporary file during download to avoid locking issues
-                temp_output = output_path.with_suffix('.tmp')
+                # Download to temporary file
                 with open(temp_output, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         if chunk:
@@ -696,46 +721,53 @@ class WebSpider:
                 
                 # Verify and process the image
                 try:
-                    img = Image.open(temp_output)
-                    img.verify()
-                    img = Image.open(temp_output)
-                    width, height = img.size
-                    if width < MIN_IMAGE_SIZE or height < MIN_IMAGE_SIZE:
-                        os.remove(temp_output)
-                        return False
-                    if width > MAX_IMAGE_SIZE or height > MAX_IMAGE_SIZE:
-                        img.thumbnail((MAX_IMAGE_SIZE, MAX_IMAGE_SIZE), Image.Resampling.LANCZOS)
-                        if img.mode in ('RGBA', 'P', 'LA'):
+                    with Image.open(temp_output) as img:
+                        img.verify()  # Verify it's a valid image
+                    
+                    # Re-open for processing
+                    with Image.open(temp_output) as img:
+                        width, height = img.size
+                        
+                        # Check minimum size
+                        if width < MIN_IMAGE_SIZE or height < MIN_IMAGE_SIZE:
+                            logger.info("Image too small: %dx%d", width, height)
+                            self._safe_delete(temp_output)
+                            return False
+                        
+                        # Convert and resize if needed
+                        if img.mode != 'RGB':
                             img = img.convert('RGB')
+                        
+                        # Resize if too large
+                        if width > MAX_IMAGE_SIZE or height > MAX_IMAGE_SIZE:
+                            img.thumbnail((MAX_IMAGE_SIZE, MAX_IMAGE_SIZE), Image.Resampling.LANCZOS)
+                        
+                        # Save final image
                         img.save(output_path, 'JPEG', quality=85, optimize=True)
-                        os.remove(temp_output)
-                    elif img.mode not in ('RGB', 'L'):
-                        img = img.convert('RGB')
-                        img.save(output_path, 'JPEG', quality=90)
-                        os.remove(temp_output)
-                    else:
-                        # Move temp file to final location
-                        os.replace(temp_output, output_path)
+                        
+                    # Clean up temp file
+                    self._safe_delete(temp_output)
                     return True
+                    
                 except Exception as img_error:
-                    if temp_output.exists():
-                        os.remove(temp_output)
-                    raise img_error
+                    logger.warning("Image processing failed: %s", img_error)
+                    self._safe_delete(temp_output)
+                    self._safe_delete(output_path)
+                    if attempt < max_retries:
+                        time.sleep(1)
+                        continue
+                    return False
                     
             except Exception as e:
                 logger.warning("Download attempt %d failed for %s: %s", attempt + 1, image_url, e)
                 # Clean up any temporary files
-                temp_files = [output_path.with_suffix('.tmp'), output_path]
-                for temp_file in temp_files:
-                    if temp_file.exists():
-                        try:
-                            os.remove(temp_file)
-                        except:
-                            pass
+                self._safe_delete(temp_output)
+                self._safe_delete(output_path)
                 if attempt < max_retries:
                     time.sleep(1)
                     continue
                 return False
+        
         return False
 
     @staticmethod
@@ -821,8 +853,14 @@ class ClothingScraperPipeline:
         temp_path = OUTPUT_DIR / temp_filename
         
         try:
-            # Download image
+            # Download image - check if successful
             if not self.spider.download_image(image_url, temp_path):
+                logger.info("Download failed for: %s", image_url[:120])
+                return
+                
+            # Verify the file was actually created and is not a .tmp file
+            if not temp_path.exists():
+                logger.info("Downloaded file not found: %s", temp_path)
                 return
                 
             with self.spider.lock:
@@ -916,7 +954,7 @@ class ClothingScraperPipeline:
 
     def _safe_delete(self, file_path):
         """Safely delete a file with retries and error handling."""
-        if not file_path.exists():
+        if file_path is None or not file_path.exists():
             return
             
         max_retries = 3
@@ -924,13 +962,12 @@ class ClothingScraperPipeline:
             try:
                 os.remove(str(file_path))
                 break
-            except PermissionError as e:
+            except PermissionError:
                 if attempt < max_retries - 1:
-                    time.sleep(0.1)  # Wait 100ms before retry
+                    time.sleep(0.2)  # Wait 200ms before retry
                     continue
                 else:
-                    logger.warning("Could not delete file %s after %d attempts: %s", 
-                                 file_path, max_retries, e)
+                    logger.warning("Could not delete file %s after %d attempts", file_path, max_retries)
             except FileNotFoundError:
                 break  # File already deleted
             except Exception as e:
