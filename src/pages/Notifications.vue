@@ -1,17 +1,62 @@
 <template>
-  <MainLayout>
   <div class="notifications-page min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20">
+      <div class="max-w-4xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button
+              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors lg:hidden"
+              @click="goBack"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
+              </svg>
+            </button>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              Notifications
+            </h1>
+            <NotificationBadge
+              v-if="notificationsStore.unreadCount > 0"
+              :count="notificationsStore.unreadCount"
+            />
+          </div>
+
+          <button
+            v-if="notificationsStore.hasUnread"
+            :disabled="markingAllRead"
+            class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="handleMarkAllRead"
+          >
+            {{ markingAllRead ? 'Marking...' : 'Mark all as read' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content -->
-    <div class="notifications-content">
-      <NotificationsList
-        :notifications="notificationsStore.notifications"
-        :unread-count="notificationsStore.unreadCount"
-        :loading="notificationsStore.loading"
-        :has-more="hasMore"
-        @notification-click="handleNotificationClick"
-        @suggestion-click="handleSuggestionClick"
-        @load-more="handleLoadMore"
-      />
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white dark:bg-gray-800 shadow-sm min-h-[calc(100vh-80px)]">
+        <NotificationsList
+          :notifications="notificationsStore.notifications"
+          :unread-count="notificationsStore.unreadCount"
+          :loading="notificationsStore.loading"
+          :has-more="hasMore"
+          @notification-click="handleNotificationClick"
+          @load-more="handleLoadMore"
+        />
+      </div>
     </div>
 
     <!-- Suggestion Approval Modal -->
@@ -58,7 +103,6 @@
       </Transition>
     </Teleport>
   </div>
-  </MainLayout>
 </template>
 
 <script setup>
@@ -69,11 +113,11 @@ import { friendSuggestionsService } from '../services/friend-suggestions-service
 import NotificationsList from '../components/notifications/NotificationsList.vue'
 import NotificationBadge from '../components/notifications/NotificationBadge.vue'
 import SuggestionApprovalCard from '../components/social/SuggestionApprovalCard.vue'
-import MainLayout from '../components/layouts/MainLayout.vue'
 
 const router = useRouter()
 const notificationsStore = useNotificationsStore()
 
+const markingAllRead = ref(false)
 const showApprovalModal = ref(false)
 const currentSuggestion = ref(null)
 const loadingSuggestion = ref(false)
@@ -95,7 +139,21 @@ onUnmounted(() => {
   // The store manages its own lifecycle
 })
 
+const goBack = () => {
+  router.back()
+}
 
+const handleMarkAllRead = async () => {
+  markingAllRead.value = true
+  try {
+    await notificationsStore.markAllAsRead()
+  } catch (error) {
+    console.error('Failed to mark all as read:', error)
+    alert('Failed to mark all notifications as read. Please try again.')
+  } finally {
+    markingAllRead.value = false
+  }
+}
 
 const handleLoadMore = async () => {
   try {
@@ -134,21 +192,6 @@ const handleNotificationClick = async (notification) => {
     default:
       console.log('Unknown notification type:', notification.type)
   }
-}
-
-const handleSuggestionClick = async (suggestion) => {
-  // Mark as read if not already read
-  if (!suggestion.is_read) {
-    try {
-      const suggestionsStore = (await import('../stores/suggestions-store')).useSuggestionsStore()
-      await suggestionsStore.markAsRead(suggestion.id)
-    } catch (error) {
-      console.error('Failed to mark suggestion as read:', error)
-    }
-  }
-
-  // Open suggestion approval modal
-  await openSuggestionApproval(suggestion.id)
 }
 
 const openSuggestionApproval = async (suggestionId) => {
@@ -213,12 +256,6 @@ const handleRejectSuggestion = async (suggestionId) => {
 </script>
 
 <style scoped>
-.notifications-content {
-  min-height: 100vh;
-  padding: 1rem;
-  background-color: #f9fafb;
-}
-
 /* Modal transitions */
 .modal-enter-active,
 .modal-leave-active {
@@ -259,12 +296,5 @@ const handleRejectSuggestion = async (suggestionId) => {
 
 .dark .overflow-y-auto::-webkit-scrollbar-thumb {
   background: rgb(75, 85, 99);
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .notifications-content {
-    background-color: #111827;
-  }
 }
 </style>

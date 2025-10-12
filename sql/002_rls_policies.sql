@@ -220,3 +220,79 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Add comment for the test users
 COMMENT ON TABLE users IS 'Test users created: admin@test.com, alice.johnson@test.com, bob.smith@test.com, carol.davis@test.com, david.wilson@test.com, emma.brown@test.com, frank.miller@test.com';
+
+-- ============================================
+-- AUTH FUNCTION: AUTO-CREATE PUBLIC USER
+-- ============================================
+-- This function creates a public.users entry when called
+-- CRITICAL: This fixes the issue where users can log in but don't exist in public.users table
+-- NOTE: Trigger on auth.users requires superuser privileges, so we'll use a different approach
+
+-- Function to handle new user creation (can be called from client-side)
+CREATE OR REPLACE FUNCTION create_public_user(
+  user_id UUID,
+  user_email TEXT,
+  user_name TEXT DEFAULT NULL,
+  user_avatar_url TEXT DEFAULT NULL,
+  user_google_id TEXT DEFAULT NULL
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  -- Extract username from email (part before @)
+  -- Use provided name or extract from email as fallback
+  INSERT INTO public.users (id, email, username, name, avatar_url, google_id, created_at, updated_at)
+  VALUES (
+    user_id,
+    user_email,
+    COALESCE(
+      split_part(user_email, '@', 1),  -- Use part before @ as username
+      'user_' || substr(user_id::text, 1, 8)  -- Fallback: user_ + first 8 chars of UUID
+    ),
+    COALESCE(
+      user_name,  -- Use provided name
+      split_part(user_email, '@', 1)  -- Fallback: use email prefix
+    ),
+    user_avatar_url,  -- Use provided avatar URL
+    user_google_id,   -- Use provided Google ID
+    NOW(),
+    NOW()
+  )
+  ON CONFLICT (id) DO NOTHING;  -- Prevent duplicate creation
+  
+  RETURN TRUE;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log error but don't fail
+    RAISE WARNING 'Failed to create public user for %: %', user_email, SQLERRM;
+    RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add comment explaining the function
+COMMENT ON FUNCTION create_public_user IS 'Creates public.users entry for authenticated user. Call this from client-side after successful OAuth login.';
+
+-- ============================================
+-- ALTERNATIVE: WEBHOOK APPROACH (RECOMMENDED)
+-- ============================================
+-- Since we can't create triggers on auth.users, we'll use a webhook approach
+-- This requires setting up a webhook in Supabase Dashboard
+
+-- Function to handle webhook user creation
+CREATE OR REPLACE FUNCTION handle_auth_webhook()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- This function will be called by a webhook when a user signs up
+  -- The webhook will be configured in Supabase Dashboard
+  PERFORM create_public_user(
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'name', NEW.raw_user_meta_data->>'full_name'),
+    NEW.raw_user_meta_data->>'avatar_url',
+    NEW.raw_user_meta_data->>'sub'
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+COMMENT ON FUNCTION handle_auth_webhook IS 'Webhook handler for user creation. Configure webhook in Supabase Dashboard to call this function.';

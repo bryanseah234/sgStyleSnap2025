@@ -197,15 +197,15 @@ export const useNotificationsStore = defineStore('notifications', {
      * Start real-time subscription for new notifications
      */
     async startRealtimeSubscription() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
+      const { data: { session } } = await supabase.auth.getSession()
+      const currentUser = session?.user
+      if (!currentUser) return
       
       // Unsubscribe if already subscribed
       this.stopRealtimeSubscription()
       
       this.subscription = notificationsService.subscribeToNotifications(
-        user.id,
+        currentUser.id,
         async (payload) => {
           // Add new notification to the beginning
           const newNotification = payload.new
@@ -214,7 +214,7 @@ export const useNotificationsStore = defineStore('notifications', {
           if (newNotification.actor_id) {
             const { data: actor } = await supabase
               .from('users')
-              .select('id, username, avatar')
+              .select('id, username, avatar_url')
               .eq('id', newNotification.actor_id)
               .single()
             
@@ -241,9 +241,6 @@ export const useNotificationsStore = defineStore('notifications', {
           this.playNotificationSound()
         }
       )
-      } catch (error) {
-        console.error('Failed to start realtime subscription:', error)
-      }
     },
 
     /**

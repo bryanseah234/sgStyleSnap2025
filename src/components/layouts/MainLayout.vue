@@ -23,49 +23,83 @@
     <nav class="bottom-nav">
       <router-link
         to="/closet"
-        class="nav-item bottom-nav-item"
-        :class="{ active: $route.path === '/closet' || $route.path === '/catalog' }"
-        @click="scrollToTop"
+        class="nav-item"
+        :class="{ active: $route.path === '/closet' }"
       >
-        <span class="nav-icon-wrapper">
-          <svg class="nav-icon-svg" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M16 4l4-2v3l-4 2v13H8V7L4 5V2l4 2h2V3c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v1h2z"/>
-          </svg>
-        </span>
-        <span class="nav-label bottom-nav-item-label">Closet</span>
+        <span class="nav-icon">👔</span>
+        <span class="nav-label">Closet</span>
       </router-link>
       
-        <router-link
-          to="/notifications"
-          class="nav-item bottom-nav-item relative"
-          :class="{ active: $route.path === '/notifications' }"
-          @click="scrollToTop"
-        >
+      <router-link
+        to="/catalog"
+        class="nav-item"
+        :class="{ active: $route.path === '/catalog' }"
+      >
+        <span class="nav-icon">🛍️</span>
+        <span class="nav-label">Catalog</span>
+      </router-link>
+      
+      <router-link
+        to="/suggestions"
+        class="nav-item relative"
+        :class="{ active: $route.path === '/suggestions' }"
+      >
         <span class="nav-icon-wrapper">
-          <svg class="nav-icon-svg" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-          </svg>
+          <span class="nav-icon">✨</span>
           <NotificationBadge
             v-if="suggestionsStore.newSuggestionsCount > 0"
             :count="suggestionsStore.newSuggestionsCount"
             :pulse="false"
           />
         </span>
-        <span class="nav-label bottom-nav-item-label">Notifications</span>
+        <span class="nav-label">Suggestions</span>
+      </router-link>
+      
+      <router-link
+        to="/notifications"
+        class="nav-item relative"
+        :class="{ active: $route.path === '/notifications' }"
+      >
+        <span class="nav-icon-wrapper">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="nav-icon-svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+            />
+          </svg>
+          <NotificationBadge
+            v-if="notificationsStore.unreadCount > 0"
+            :count="notificationsStore.unreadCount"
+            :pulse="notificationsStore.hasUnread"
+          />
+        </span>
+        <span class="nav-label">Notifications</span>
       </router-link>
       
       <router-link
         to="/friends"
-        class="nav-item bottom-nav-item"
+        class="nav-item"
         :class="{ active: $route.path === '/friends' }"
-        @click="scrollToTop"
       >
-        <span class="nav-icon-wrapper">
-          <svg class="nav-icon-svg" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-          </svg>
-        </span>
-        <span class="nav-label bottom-nav-item-label">Friends</span>
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Friends</span>
+      </router-link>
+      
+      <router-link
+        to="/profile"
+        class="nav-item"
+        :class="{ active: $route.path === '/profile' }"
+      >
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
       </router-link>
     </nav>
   </div>
@@ -83,15 +117,6 @@ const notificationsStore = useNotificationsStore()
 const suggestionsStore = useSuggestionsStore()
 
 const userName = computed(() => authStore.userName)
-
-// Function to scroll to top when toolbar icon is clicked
-function scrollToTop() {
-  window.scrollTo({
-    top: 0,
-    left: 0,
-    behavior: 'smooth'
-  })
-}
 
 onMounted(() => {
   // Initialize notifications when layout mounts
@@ -150,6 +175,7 @@ onMounted(() => {
 
 .main-content {
   flex: 1;
+  padding-top: 0.5rem;
   padding-bottom: 5rem;
   max-width: 1200px;
   width: 100%;
@@ -164,30 +190,23 @@ onMounted(() => {
   background-color: white;
   border-top: 1px solid #e5e7eb;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 60px;
-  padding: 0 0;
+  justify-content: space-around;
+  padding: 0.5rem 0;
   z-index: 100;
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
-  max-width: 100vw;
-  overflow: hidden;
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 0.25rem;
-  padding: 0 0;
+  padding: 0.5rem 1rem;
   text-decoration: none;
   color: #6b7280;
   transition: all 0.2s;
   border-radius: 0.5rem;
-  text-align: center;
-  flex: 1 1 0;
-  min-width: 0;
+  min-width: 4rem;
 }
 
 .nav-item:hover {
@@ -198,11 +217,8 @@ onMounted(() => {
   color: #3b82f6;
 }
 
-.nav-icon-svg {
-  width: 1.6rem;
-  height: 1.6rem;
-  margin-bottom: 0.35rem;
-  display: block;
+.nav-icon {
+  font-size: 1.5rem;
 }
 
 .nav-icon-wrapper {
@@ -210,7 +226,6 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
 }
 
 .nav-icon-svg {
@@ -219,31 +234,18 @@ onMounted(() => {
 }
 
 .nav-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  display: block;
-  width: 100%;
-  text-align: center;
 }
 
 @media (max-width: 640px) {
   .nav-label {
-    font-size: 0.6rem;
+    font-size: 0.625rem;
   }
   
   .nav-item {
-    padding: 0;
-  }
-}
-
-@media (max-width: 360px) {
-  .nav-icon-svg {
-    width: 1.45rem;
-    height: 1.45rem;
-    margin-bottom: 0.3rem;
-  }
-  .nav-label {
-    font-size: 0.55rem;
+    padding: 0.5rem 0.5rem;
+    min-width: 3rem;
   }
 }
 </style>

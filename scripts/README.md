@@ -4,7 +4,79 @@ This directory contains utility scripts for database management, maintenance, an
 
 ## Available Scripts
 
-### 1. `populate-catalog.js`
+### 🆕 1. `scrape-catalog.py` (NEW!)
+**AI-powered web scraper** that automatically downloads clothing images from websites, classifies them with machine learning, detects colors, and generates catalog entries.
+
+**Purpose:**
+- Automate catalog creation from e-commerce websites
+- AI classification using trained ResNet50 model
+- Face detection to filter out model photos
+- Automatic color detection
+- Generate ready-to-upload CSV
+
+**Usage:**
+```bash
+# 1. Add URLs to scrape
+vim scripts/scrape-urls.txt
+
+# 2. Run scraper
+python scripts/scrape-catalog.py
+
+# 3. Upload to Supabase
+node scripts/seed-catalog-from-csv.js catalog-data/scraped-items.csv catalog-data/images/
+```
+
+**Features:**
+- 🌐 Scrapes images from any website URL
+- 👤 Filters images with faces (no model shots)
+- 🧠 AI classification (20 clothing types)
+- 🎨 Auto color detection (18 colors)
+- 💾 Smart filename generation
+- 📝 CSV generation with required fields
+
+**See:** [SCRAPER_GUIDE.md](./SCRAPER_GUIDE.md) for complete documentation
+
+---
+
+### 2. `populate-test-users.js` (NEW!)
+Creates test users for testing the friends feature and other social functionality.
+
+**Purpose:**
+- Creates 10+ test users with realistic names and emails
+- Includes diverse name patterns for search testing
+- Creates some test friendships between users
+- Provides comprehensive testing instructions
+
+**Usage:**
+```bash
+node scripts/populate-test-users.js
+```
+
+**Requirements:**
+- Supabase project set up
+- Environment variables configured (`.env` file)
+- Database migrations applied
+- **Service role key** (recommended) or anon key for bypassing RLS policies
+
+**What it does:**
+1. Creates test users with @test.com email addresses
+2. Skips users that already exist
+3. Creates sample friendships between users
+4. Displays detailed testing instructions
+
+**Test Users Created:**
+- Alice Johnson, Bob Smith, Carol Davis, etc.
+- Diverse names for testing search functionality
+- Realistic email addresses for testing
+
+**Cleanup:**
+```bash
+node scripts/cleanup-test-users.js
+```
+
+---
+
+### 3. `populate-catalog.js`
 Populates the catalog database with curated clothing items for users to browse and add to their virtual closets.
 
 **Purpose:**
@@ -38,7 +110,7 @@ node scripts/populate-catalog.js
 
 ---
 
-### 2. `cloudinary-cleanup.js`
+### 4. `cloudinary-cleanup.js`
 Finds and deletes orphaned images in Cloudinary (images with no database record).
 
 **Purpose:**
@@ -78,7 +150,7 @@ node scripts/cloudinary-cleanup.js
 
 ---
 
-### 3. `purge-old-items.js`
+### 5. `purge-old-items.js`
 Permanently deletes clothing items older than 2 years (configurable).
 
 **Purpose:**
@@ -124,7 +196,7 @@ MAX_AGE_DAYS=365 node scripts/purge-old-items.js
 
 ---
 
-### 4. `setup-database.sh`
+### 6. `setup-database.sh`
 Bash script to run all SQL migrations in order.
 
 **Usage:**
@@ -138,7 +210,7 @@ Bash script to run all SQL migrations in order.
 
 ---
 
-### 5. `validate-migrations.js`
+### 7. `validate-migrations.js`
 Validates that all SQL migration files are syntactically correct and in proper order.
 
 **Usage:**
@@ -160,6 +232,7 @@ npm install @supabase/supabase-js dotenv
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-key  # Required for admin operations like creating test users
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret

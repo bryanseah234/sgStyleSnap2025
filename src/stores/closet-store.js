@@ -131,13 +131,11 @@ export const useClosetStore = defineStore('closet', {
       try {
         const clothesService = await import('../services/clothes-service')
         const items = await clothesService.getItems(this.filters)
-        console.log('📦 ClosetStore: Setting items:', items)
         this.items = items
         
         // Count only user uploads (catalog_item_id is null) for quota
         this.quota.used = items.filter(item => !item.catalog_item_id).length
         this.quota.totalItems = items.length
-        console.log('📊 ClosetStore: Quota updated:', this.quota)
       } catch (error) {
         console.error('Failed to fetch items:', error)
         throw error

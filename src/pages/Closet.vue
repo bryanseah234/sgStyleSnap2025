@@ -25,19 +25,6 @@
 <template>
   <MainLayout>
     <div class="closet-page">
-      <!-- Greeting Section -->
-      <div class="greeting-section">
-        <div class="flex items-center gap-4">
-          <div class="w-20 h-20 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
-            <span class="text-gray-500 dark:text-gray-400 text-3xl">👤</span>
-          </div>
-          <div>
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Hello, {{ userName }}</h2>
-            <p class="text-lg text-gray-600 dark:text-gray-400">{{ weatherText }}</p>
-          </div>
-        </div>
-      </div>
-
       <div class="closet-header">
         <div class="header-content">
           <div>
@@ -102,78 +89,30 @@
             v-if="!hasFilters"
             #empty-action
           >
-            <div class="add-first-container">
-              <button
-                class="add-first-button"
-                @click="toggleDropdown"
-              >
-                Add Item
-              </button>
-              
-              <!-- Dropdown Menu for Add Item -->
-              <div v-if="showDropdown" class="add-first-dropdown">
-                <button 
-                  class="dropdown-item"
-                  @click="handleScanUpload"
-                >
-                  <svg class="dropdown-icon" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 18l3-3h-2V7h-2v8H9l3 3zm8-5v8c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-8h2v8h12v-8h2z"/>
-                  </svg>
-                  Scan/Upload Item
-                </button>
-                <button 
-                  class="dropdown-item"
-                  @click="handleAddFromCatalog"
-                >
-                  <svg class="dropdown-icon" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2V4.07c3.25 1.19 5.5 4.37 5.5 7.93 0 2.02-.84 3.84-2.19 5.19l-.01.01z"/>
-                  </svg>
-                  Add from Catalogue
-                </button>
-              </div>
-            </div>
+            <button
+              class="add-first-button"
+              @click="handleAddItem"
+            >
+              Add Item
+            </button>
           </template>
         </ClosetGrid>
       </div>
       
-      <!-- FAB with Dropdown -->
-      <div class="fab-container">
-        <button 
-          class="fab"
-          :class="[
-            'transition-all duration-300 ease-out',
-            'hover:scale-110 hover:rotate-90 hover:shadow-2xl',
-            'active:scale-95',
-            quotaUsed >= 45 ? 'animate-pulse-slow' : ''
-          ]"
-          title="Add new item" 
-          @click="toggleDropdown"
-        >
-          <span class="plus-icon transition-transform duration-300">+</span>
-        </button>
-        
-        <!-- Dropdown Menu -->
-        <div v-if="showDropdown" class="fab-dropdown">
-          <button 
-            class="dropdown-item"
-            @click="handleScanUpload"
-          >
-            <svg class="dropdown-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 18l3-3h-2V7h-2v8H9l3 3zm8-5v8c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-8h2v8h12v-8h2z"/>
-            </svg>
-            Scan/Upload Item
-          </button>
-          <button 
-            class="dropdown-item"
-            @click="handleAddFromCatalog"
-          >
-            <svg class="dropdown-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2V4.07c3.25 1.19 5.5 4.37 5.5 7.93 0 2.02-.84 3.84-2.19 5.19l-.01.01z"/>
-            </svg>
-            Add from Catalogue
-          </button>
-        </div>
-      </div>
+      <!-- FAB -->
+      <button 
+        class="fab"
+        :class="[
+          'transition-all duration-300 ease-out',
+          'hover:scale-110 hover:rotate-90 hover:shadow-2xl',
+          'active:scale-95',
+          quotaUsed >= 45 ? 'animate-pulse-slow' : ''
+        ]"
+        title="Add new item" 
+        @click="handleAddItem"
+      >
+        <span class="plus-icon transition-transform duration-300">+</span>
+      </button>
 
       <!-- Item Detail Modal -->
       <ItemDetailModal
@@ -185,13 +124,6 @@
         @edit="handleEditItem"
         @share="handleShareItem"
       />
-      
-      <!-- Add Item Modal -->
-      <AddItemModal
-        :is-open="showAddItemModal"
-        @close="showAddItemModal = false"
-        @success="handleAddItemSuccess"
-      />
     </div>
   </MainLayout>
 </template>
@@ -200,101 +132,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClosetStore } from '../stores/closet-store'
-import { useAuthStore } from '../stores/auth-store'
-import { getCurrentWeather } from '../services/weather-service'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import ClosetFilter from '../components/closet/ClosetFilter.vue'
 import ClosetGrid from '../components/closet/ClosetGrid.vue'
 import ItemDetailModal from '../components/closet/ItemDetailModal.vue'
-import AddItemModal from '../components/closet/AddItemModal.vue'
 
 const router = useRouter()
 const closetStore = useClosetStore()
-const authStore = useAuthStore()
-
-// User name for greeting
-const userName = computed(() => {
-  return authStore.user?.name || 'User'
-})
-
-// Weather data
-const weatherData = ref(null)
-const weatherLoading = ref(false)
-const weatherError = ref(null)
-
-// Singapore coordinates as default
-const SINGAPORE_COORDS = {
-  lat: 1.3521,
-  lon: 103.8198
-}
-
-// Weather display text
-const weatherText = computed(() => {
-  if (weatherLoading.value) {
-    return 'Checking weather...'
-  }
-  
-  if (weatherError.value) {
-    return 'Get inspired by your friends'
-  }
-  
-  if (!weatherData.value) {
-    return 'Get inspired by your friends'
-  }
-  
-  const { temp, condition, description } = weatherData.value
-  const tempCelsius = Math.round((temp - 32) * 5/9) // Convert from Fahrenheit to Celsius
-  
-  // Create communicative weather text
-  const weatherEmoji = getWeatherEmoji(condition)
-  const weatherMood = getWeatherMood(tempCelsius, condition)
-  
-  return `${weatherEmoji} ${tempCelsius}°C ${description} - ${weatherMood}`
-})
-
-// Get weather emoji based on condition
-function getWeatherEmoji(condition) {
-  const conditionMap = {
-    'clear': '☀️',
-    'clouds': '☁️',
-    'rain': '🌧️',
-    'drizzle': '🌦️',
-    'thunderstorm': '⛈️',
-    'snow': '❄️',
-    'mist': '🌫️',
-    'fog': '🌫️'
-  }
-  return conditionMap[condition.toLowerCase()] || '🌤️'
-}
-
-// Get weather mood/advice
-function getWeatherMood(temp, condition) {
-  if (temp < 20) {
-    return 'Perfect for cozy layers!'
-  } else if (temp < 25) {
-    return 'Great weather for light layers'
-  } else if (temp < 30) {
-    return 'Perfect for comfortable outfits'
-  } else {
-    return 'Time for light, breathable clothes'
-  }
-}
-
-// Fetch weather data
-async function fetchWeather() {
-  weatherLoading.value = true
-  weatherError.value = null
-  
-  try {
-    const weather = await getCurrentWeather(SINGAPORE_COORDS.lat, SINGAPORE_COORDS.lon)
-    weatherData.value = weather
-  } catch (error) {
-    console.error('Failed to fetch weather:', error)
-    weatherError.value = error.message
-  } finally {
-    weatherLoading.value = false
-  }
-}
 
 const filters = ref({
   category: '',
@@ -307,14 +151,7 @@ const filters = ref({
 const selectedItemId = ref(null)
 const showDetailModal = ref(false)
 
-// FAB dropdown state
-const showDropdown = ref(false)
-
-// Add item modal state
-const showAddItemModal = ref(false)
-
 const items = computed(() => {
-  console.log('🖼️ Closet page - closetStore.items:', closetStore.items)
   let filtered = closetStore.items
 
   if (filters.value.category) {
@@ -328,12 +165,11 @@ const items = computed(() => {
   if (filters.value.privacy) {
     filtered = filtered.filter(item => item.privacy === filters.value.privacy)
   }
-  
+
   if (filters.value.is_favorite) {
     filtered = filtered.filter(item => item.is_favorite === true)
   }
-  
-  console.log('🖼️ Closet page - final filtered items:', filtered)
+
   return filtered
 })
 
@@ -343,25 +179,10 @@ const hasFilters = computed(() => filters.value.category || filters.value.clothi
 
 onMounted(() => {
   closetStore.fetchItems()
-  fetchWeather()
 })
 
-function toggleDropdown() {
-  showDropdown.value = !showDropdown.value
-}
-
-function handleScanUpload() {
-  showDropdown.value = false
-  showAddItemModal.value = true
-}
-
-function handleAddFromCatalog() {
-  showDropdown.value = false
-  router.push('/catalog')
-}
-
 function handleAddItem() {
-  showAddItemModal.value = true
+  alert('Add item functionality coming soon!')
 }
 
 function handleFilterChange(newFilters) {
@@ -410,13 +231,6 @@ async function handleFavoriteClick(item) {
     console.error('Failed to toggle favorite:', error)
   }
 }
-
-// Add item modal handlers
-function handleAddItemSuccess() {
-  console.log('🎉 Add item success - refreshing closet...')
-  showAddItemModal.value = false
-  closetStore.fetchItems()
-}
 </script>
 
 <style scoped>
@@ -424,10 +238,6 @@ function handleAddItemSuccess() {
   min-height: 100vh;
   padding: 1rem;
   background-color: #f9fafb;
-}
-
-.greeting-section {
-  margin-bottom: 2rem;
 }
 
 .closet-header {
@@ -492,12 +302,6 @@ function handleAddItemSuccess() {
   font-weight: 600;
 }
 
-/* Add First Button Container (for empty state) */
-.add-first-container {
-  position: relative;
-  display: inline-block;
-}
-
 /* Add First Button (for empty state) */
 .add-first-button {
   padding: 0.75rem 1.5rem;
@@ -509,22 +313,6 @@ function handleAddItemSuccess() {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Add First Dropdown */
-.add-first-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 0.5rem;
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  overflow: hidden;
-  animation: slideUp 0.2s ease-out;
-  z-index: 100;
 }
 
 .add-first-button:hover {
@@ -543,19 +331,11 @@ function handleAddItemSuccess() {
   }
 }
 
-/* FAB Container */
-.fab-container {
-  position: fixed !important;
-  bottom: 5.5rem !important;
-  right: 2rem !important;
-  z-index: 50;
-}
-
 /* FAB - Floating Action Button */
 .fab {
-  position: fixed !important;
-  bottom: 5.5rem !important;
-  right: 2rem !important;
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 50%;
@@ -567,62 +347,7 @@ function handleAddItemSuccess() {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
-}
-
-/* FAB Dropdown */
-.fab-dropdown {
-  position: absolute;
-  bottom: 4rem;
-  right: 0;
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  overflow: hidden;
-  animation: slideUp 0.2s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 0.875rem;
-  color: #374151;
-  min-height: 2.5rem;
-  line-height: 1.5;
-}
-
-.dropdown-item:hover {
-  background-color: #f3f4f6;
-}
-
-.dropdown-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 50;
 }
 
 /* FAB Hover with Rotate and Scale */
