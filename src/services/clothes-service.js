@@ -27,6 +27,7 @@
 
 import { supabase } from '../config/supabase'
 import { compressImage } from '../utils/image-compression'
+import { useAuthStore } from '../stores/auth-store'
 
 /**
  * Upload image to Cloudinary with WebP optimization
@@ -51,8 +52,8 @@ export async function uploadImage(file) {
     formData.append('file', compressedFile)
     formData.append('upload_preset', uploadPreset)
     formData.append('folder', 'closet-items') // Organize uploads
-    formData.append('format', 'webp') // Force WebP format
-    formData.append('quality', 'auto:good') // Auto quality optimization
+    // Note: format and quality parameters are not allowed with unsigned uploads
+    // These will be applied via URL transformations instead
     
     // Upload to Cloudinary
     const response = await fetch(
@@ -75,10 +76,10 @@ export async function uploadImage(file) {
     const publicId = data.public_id
     
     // Full size image URL (WebP, quality optimized)
-    const fullImageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good/${publicId}.webp`
+    const fullImageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good/${publicId}`
     
     // Thumbnail URL (400x400, WebP, quality optimized)
-    const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/${publicId}.webp`
+    const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/${publicId}`
     
     return {
       url: fullImageUrl,
@@ -112,6 +113,63 @@ export async function uploadImage(file) {
  */
 export async function getItems(filters = {}) {
   try {
+    // Check if this is a mock user
+    const authStore = useAuthStore()
+    const user = authStore.user
+    const isMockUser = user && user.id === '123e4567-e89b-12d3-a456-426614174000'
+    
+    if (isMockUser) {
+      // For mock users, get items from localStorage
+      console.log('🔧 Mock user detected - fetching local items')
+      const mockItems = JSON.parse(localStorage.getItem('mock-closet-items') || '[]')
+      
+      // Apply filters to mock items
+      let filteredItems = mockItems
+      
+      if (filters.category && filters.category !== 'all') {
+        filteredItems = filteredItems.filter(item => item.category === filters.category)
+      }
+      
+      if (filters.clothing_type && filters.clothing_type !== 'all') {
+        filteredItems = filteredItems.filter(item => item.clothing_type === filters.clothing_type)
+      }
+      
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase()
+        filteredItems = filteredItems.filter(item => 
+          item.name.toLowerCase().includes(searchLower) || 
+          (item.brand && item.brand.toLowerCase().includes(searchLower))
+        )
+      }
+      
+      // Apply sorting
+      if (filters.sort === 'name') {
+        filteredItems.sort((a, b) => a.name.localeCompare(b.name))
+      } else if (filters.sort === 'newest') {
+        filteredItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      } else if (filters.sort === 'oldest') {
+        filteredItems.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+      }
+      
+      console.log(`✅ Found ${filteredItems.length} mock items:`, filteredItems)
+      
+      // Debug: Check if items have required fields
+      if (filteredItems.length > 0) {
+        const firstItem = filteredItems[0]
+        console.log('🔍 First mock item structure:', {
+          id: firstItem.id,
+          name: firstItem.name,
+          category: firstItem.category,
+          clothing_type: firstItem.clothing_type,
+          image_url: firstItem.image_url,
+          thumbnail_url: firstItem.thumbnail_url,
+          hasAllRequiredFields: !!(firstItem.id && firstItem.name && firstItem.category)
+        })
+      }
+      
+      return filteredItems
+    }
+    
     let query = supabase
       .from('clothes')
       .select('*')
@@ -197,10 +255,46 @@ export async function getItem(id) {
 export async function createItem(itemData) {
   try {
     // Get current user from session
-    const { data: { user } } = await supabase.auth.getUser()
+    // Get user from auth store (works with both real and mock authentication)
+    const authStore = useAuthStore()
+    const user = authStore.user
     
-    if (!user) {
+    if (!user || !authStore.isAuthenticated) {
       throw new Error('User not authenticated')
+    }
+    
+    // Check if this is a mock user (for development)
+    const isMockUser = user.id === '123e4567-e89b-12d3-a456-426614174000'
+    
+    if (isMockUser) {
+      // For mock users, create a local-only item (don't save to database)
+      console.log('🔧 Mock user detected - creating local item only')
+      const mockItem = {
+        id: `mock-item-${Date.now()}`,
+        owner_id: user.id,
+        name: itemData.name,
+        category: itemData.category,
+        clothing_type: itemData.clothing_type || 'other', // Add missing field
+        image_url: itemData.image_url,
+        thumbnail_url: itemData.thumbnail_url || itemData.image_url,
+        style_tags: itemData.style_tags || [],
+        privacy: itemData.privacy || 'friends',
+        size: itemData.size || null,
+        brand: itemData.brand || null,
+        primary_color: itemData.primary_color || null,
+        secondary_colors: itemData.secondary_colors || [],
+        is_favorite: false, // Add missing field
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      
+      // Store in localStorage for mock mode
+      const existingItems = JSON.parse(localStorage.getItem('mock-closet-items') || '[]')
+      existingItems.push(mockItem)
+      localStorage.setItem('mock-closet-items', JSON.stringify(existingItems))
+      
+      console.log('✅ Mock item created and stored locally')
+      return mockItem
     }
     
     // Prepare item data
@@ -273,7 +367,27 @@ export async function updateItem(id, itemData) {
  */
 export async function deleteItem(id) {
   try {
-    // Soft delete by setting removed_at
+    // Check if this is a mock user
+    const authStore = useAuthStore()
+    const user = authStore.user
+    const isMockUser = user && user.id === '123e4567-e89b-12d3-a456-426614174000'
+    
+    if (isMockUser) {
+      // For mock users, remove item from localStorage
+      console.log('🔧 Mock user detected - deleting item from localStorage')
+      const mockItems = JSON.parse(localStorage.getItem('mock-closet-items') || '[]')
+      const updatedItems = mockItems.filter(item => item.id !== id)
+      
+      if (updatedItems.length === mockItems.length) {
+        throw new Error('Item not found')
+      }
+      
+      localStorage.setItem('mock-closet-items', JSON.stringify(updatedItems))
+      console.log('✅ Mock item deleted from localStorage')
+      return
+    }
+    
+    // For real users, soft delete by setting removed_at
     const { error } = await supabase
       .from('clothes')
       .update({ removed_at: new Date().toISOString() })
@@ -299,6 +413,31 @@ export async function deleteItem(id) {
  */
 export async function toggleFavorite(id, isFavorite) {
   try {
+    // Check if this is a mock user
+    const authStore = useAuthStore()
+    const user = authStore.user
+    const isMockUser = user && user.id === '123e4567-e89b-12d3-a456-426614174000'
+    
+    if (isMockUser) {
+      // For mock users, update item in localStorage
+      console.log('🔧 Mock user detected - toggling favorite in localStorage')
+      const mockItems = JSON.parse(localStorage.getItem('mock-closet-items') || '[]')
+      const itemIndex = mockItems.findIndex(item => item.id === id)
+      
+      if (itemIndex === -1) {
+        throw new Error('Item not found')
+      }
+      
+      // Update the item
+      mockItems[itemIndex].is_favorite = isFavorite
+      mockItems[itemIndex].updated_at = new Date().toISOString()
+      
+      localStorage.setItem('mock-closet-items', JSON.stringify(mockItems))
+      console.log('✅ Mock item favorite status updated in localStorage')
+      return mockItems[itemIndex]
+    }
+    
+    // For real users, update in database
     const { data, error } = await supabase
       .from('clothes')
       .update({ 
@@ -328,7 +467,36 @@ export async function toggleFavorite(id, isFavorite) {
  */
 export async function getItemDetails(id) {
   try {
-    // Get item details
+    // Check if this is a mock user
+    const authStore = useAuthStore()
+    const user = authStore.user
+    const isMockUser = user && user.id === '123e4567-e89b-12d3-a456-426614174000'
+    
+    if (isMockUser) {
+      // For mock users, get item from localStorage
+      console.log('🔧 Mock user detected - getting item details from localStorage')
+      const mockItems = JSON.parse(localStorage.getItem('mock-closet-items') || '[]')
+      const item = mockItems.find(item => item.id === id)
+      
+      if (!item) {
+        throw new Error('Item not found')
+      }
+      
+      // Create mock statistics
+      const statistics = {
+        days_in_closet: Math.floor((Date.now() - new Date(item.created_at).getTime()) / (1000 * 60 * 60 * 24)),
+        is_favorite: item.is_favorite || false,
+        times_worn: 0,
+        last_worn: null,
+        in_outfits: 0,
+        times_shared: 0
+      }
+      
+      console.log('✅ Mock item details found:', item.name)
+      return { item, statistics }
+    }
+    
+    // For real users, query the database
     const { data: item, error } = await supabase
       .from('clothes')
       .select('*')
@@ -493,4 +661,13 @@ export async function getQuota() {
     isFull: used >= max,
     isNearLimit: used >= (max * 0.9)
   }
+}
+
+
+/**
+ * Clear all mock items (for debugging)
+ */
+export function clearMockItems() {
+  localStorage.removeItem('mock-closet-items')
+  console.log('🧹 Mock wardrobe cleared!')
 }

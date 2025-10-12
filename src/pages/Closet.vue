@@ -185,6 +185,13 @@
         @edit="handleEditItem"
         @share="handleShareItem"
       />
+      
+      <!-- Add Item Modal -->
+      <AddItemModal
+        :is-open="showAddItemModal"
+        @close="showAddItemModal = false"
+        @success="handleAddItemSuccess"
+      />
     </div>
   </MainLayout>
 </template>
@@ -199,6 +206,7 @@ import MainLayout from '../components/layouts/MainLayout.vue'
 import ClosetFilter from '../components/closet/ClosetFilter.vue'
 import ClosetGrid from '../components/closet/ClosetGrid.vue'
 import ItemDetailModal from '../components/closet/ItemDetailModal.vue'
+import AddItemModal from '../components/closet/AddItemModal.vue'
 
 const router = useRouter()
 const closetStore = useClosetStore()
@@ -302,7 +310,11 @@ const showDetailModal = ref(false)
 // FAB dropdown state
 const showDropdown = ref(false)
 
+// Add item modal state
+const showAddItemModal = ref(false)
+
 const items = computed(() => {
+  console.log('🖼️ Closet page - closetStore.items:', closetStore.items)
   let filtered = closetStore.items
 
   if (filters.value.category) {
@@ -316,11 +328,12 @@ const items = computed(() => {
   if (filters.value.privacy) {
     filtered = filtered.filter(item => item.privacy === filters.value.privacy)
   }
-
+  
   if (filters.value.is_favorite) {
     filtered = filtered.filter(item => item.is_favorite === true)
   }
-
+  
+  console.log('🖼️ Closet page - final filtered items:', filtered)
   return filtered
 })
 
@@ -339,12 +352,16 @@ function toggleDropdown() {
 
 function handleScanUpload() {
   showDropdown.value = false
-  alert('Scan/Upload functionality coming soon!')
+  showAddItemModal.value = true
 }
 
 function handleAddFromCatalog() {
   showDropdown.value = false
   router.push('/catalog')
+}
+
+function handleAddItem() {
+  showAddItemModal.value = true
 }
 
 function handleFilterChange(newFilters) {
@@ -392,6 +409,13 @@ async function handleFavoriteClick(item) {
   } catch (error) {
     console.error('Failed to toggle favorite:', error)
   }
+}
+
+// Add item modal handlers
+function handleAddItemSuccess() {
+  console.log('🎉 Add item success - refreshing closet...')
+  showAddItemModal.value = false
+  closetStore.fetchItems()
 }
 </script>
 

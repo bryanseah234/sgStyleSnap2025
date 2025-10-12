@@ -58,6 +58,28 @@
             <span v-if="!isLoading">Sign in with Google</span>
           </Button>
           
+          <!-- Development Mock Login -->
+          <div v-if="isDevelopment" class="dev-login-section">
+            <div class="dev-divider">
+              <span class="dev-divider-text">Development Only</span>
+            </div>
+            <Button
+              variant="secondary"
+              size="lg"
+              :loading="isLoading"
+              :disabled="isLoading"
+              full-width
+              @click="handleMockLogin"
+              class="mock-login-button"
+            >
+              <svg class="mock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              🚀 Mock Login (Dev)
+            </Button>
+            <p class="dev-note">Skip OAuth for local development</p>
+          </div>
+          
           <p
             v-if="errorMessage"
             class="error-message"
@@ -88,6 +110,9 @@ const authStore = useAuthStore()
 const isLoading = ref(false)
 const errorMessage = ref('')
 
+// Development mode detection
+const isDevelopment = import.meta.env.DEV
+
 async function handleGoogleSignIn() {
   isLoading.value = true
   errorMessage.value = ''
@@ -99,6 +124,23 @@ async function handleGoogleSignIn() {
   } catch (error) {
     console.error('Login error:', error)
     errorMessage.value = 'Failed to sign in. Please try again.'
+    isLoading.value = false
+  }
+}
+
+async function handleMockLogin() {
+  console.log('🚀 Mock login button clicked')
+  isLoading.value = true
+  errorMessage.value = ''
+  
+  try {
+    // Use the mock authentication from auth store
+    await authStore.mockLogin()
+    console.log('✅ Mock login successful')
+    // The auth store will handle redirecting to /closet
+  } catch (error) {
+    console.error('❌ Mock login error:', error)
+    errorMessage.value = error.message || 'Failed to mock login. Please try again.'
     isLoading.value = false
   }
 }
@@ -166,6 +208,62 @@ async function handleGoogleSignIn() {
   font-size: 0.75rem;
   color: #9ca3af;
   line-height: 1.5;
+}
+
+/* Development Mock Login Styles */
+.dev-login-section {
+  margin-top: 1.5rem;
+}
+
+.dev-divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.dev-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e5e7eb;
+}
+
+.dev-divider-text {
+  background-color: white;
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.mock-login-button {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.mock-login-button:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-1px);
+}
+
+.mock-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.dev-note {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+  font-style: italic;
+  margin: 0;
 }
 
 @media (max-width: 640px) {
