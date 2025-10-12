@@ -100,13 +100,7 @@ export const useAuthStore = defineStore('auth', {
         console.log('✅ AuthStore: Auth initialization complete. Authenticated:', this.isAuthenticated)
       }
     },
-    
-    /**
-     * Initialize session (alias for initializeAuth)
-     */
-    async initializeSession() {
-      return this.initializeAuth()
-    },
+
     
     /**
      * Login with Google OAuth

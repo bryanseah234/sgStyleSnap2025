@@ -27,7 +27,7 @@
   <MainLayout>
     <div class="friends-page">
       <div class="friends-header">
-        <h1>test</h1>
+        <h1>Friends</h1>
         <p class="subtitle">
           Connect with friends and share outfits
         </p>
