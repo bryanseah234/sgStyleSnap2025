@@ -16,7 +16,8 @@ export const friendSuggestionsService = {
    */
   async createSuggestion({ friendId, outfitItems, message }) {
     try {
-      const currentUser = supabase.auth.user()
+      const { data: { session } } = await supabase.auth.getSession()
+      const currentUser = session?.user
       if (!currentUser) throw new Error('Not authenticated')
       
       // Validate outfit items belong to friend's closet

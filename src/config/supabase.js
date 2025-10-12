@@ -55,5 +55,7 @@ export const supabase = hasCredentials
     })
   : null // Return null if no credentials - app will show error page
 
+if (supabase) window.supabase = supabase
+
 // Export flag for checking if Supabase is configured
 export const isSupabaseConfigured = hasCredentials

@@ -27,7 +27,7 @@
   <MainLayout>
     <div class="friends-page">
       <div class="friends-header">
-        <h1>Friends</h1>
+        <h1>test</h1>
         <p class="subtitle">
           Connect with friends and share outfits
         </p>
@@ -241,6 +241,8 @@ const searching = ref(false)
 const sendingRequest = ref(null)
 
 let searchTimeout = null
+
+console.log('🟢 Friends.vue loaded at', new Date().toISOString())
 
 onMounted(async () => {
   await friendsStore.fetchFriends()

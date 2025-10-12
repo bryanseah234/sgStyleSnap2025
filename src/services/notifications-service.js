@@ -23,7 +23,7 @@ export const notificationsService = {
           actor:users!notifications_actor_id_fkey (
             id,
             username,
-            avatar
+            avatar_url
           )
         `, { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -213,7 +213,7 @@ export const notificationsService = {
               suggester:users!friend_outfit_suggestions_suggester_id_fkey (
                 id,
                 username,
-                avatar
+                avatar_url
               )
             `)
             .eq('id', referenceId)

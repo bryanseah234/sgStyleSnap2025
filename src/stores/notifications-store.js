@@ -196,8 +196,9 @@ export const useNotificationsStore = defineStore('notifications', {
     /**
      * Start real-time subscription for new notifications
      */
-    startRealtimeSubscription() {
-      const currentUser = supabase.auth.user()
+    async startRealtimeSubscription() {
+      const { data: { session } } = await supabase.auth.getSession()
+      const currentUser = session?.user
       if (!currentUser) return
       
       // Unsubscribe if already subscribed
@@ -213,7 +214,7 @@ export const useNotificationsStore = defineStore('notifications', {
           if (newNotification.actor_id) {
             const { data: actor } = await supabase
               .from('users')
-              .select('id, username, avatar')
+              .select('id, username, avatar_url')
               .eq('id', newNotification.actor_id)
               .single()
             
