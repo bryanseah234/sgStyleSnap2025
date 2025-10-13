@@ -96,3 +96,4 @@ Ensure your Supabase OAuth redirect URLs include:
 - ✅ `src/App.vue` (removed duplicate init, fixed watcher)
 
 
+
