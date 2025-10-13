@@ -77,21 +77,18 @@ if (isConfigured.value) {
   const authStore = useAuthStore()
   const likesStore = useLikesStore()
 
-  // Initialize auth state on app mount
-  onMounted(async () => {
-    await authStore.initializeAuth()
-  })
-
   // Initialize likes when user logs in
+  // Note: Auth is initialized in main.js before mounting
   watch(
-    () => authStore.isLoggedIn,
-    async isLoggedIn => {
-      if (isLoggedIn) {
+    () => authStore.isAuthenticated,
+    async isAuthenticated => {
+      if (isAuthenticated) {
         await likesStore.initializeLikes()
       } else {
         likesStore.resetStore()
       }
-    }
+    },
+    { immediate: true }
   )
 }
 </script>

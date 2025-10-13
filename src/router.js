@@ -136,17 +136,33 @@ const router = createRouter({
 })
 
 // Global navigation guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // Wait for auth initialization if it's still loading
+  if (authStore.loading) {
+    console.log('⏳ Router: Waiting for auth initialization...')
+    // Wait for auth to finish loading
+    const maxWait = 50 // 50 iterations = 5 seconds max
+    let waited = 0
+    while (authStore.loading && waited < maxWait) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      waited++
+    }
+    console.log('✅ Router: Auth initialization complete')
+  }
 
   // Check if route requires authentication
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    console.log('🔒 Router: Protected route, redirecting to login')
     // Redirect to login if not authenticated
     next('/login')
   } else if (to.meta.guestOnly && authStore.isAuthenticated) {
+    console.log('👤 Router: Guest-only route, redirecting to closet')
     // Redirect to closet if already authenticated (e.g., on login page)
     next('/closet')
   } else {
+    console.log('✅ Router: Navigation allowed to:', to.path)
     // Allow navigation
     next()
   }

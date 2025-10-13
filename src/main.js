@@ -35,6 +35,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { pinia } from './stores'
+import { useAuthStore } from './stores/auth-store'
 
 // Create app instance
 const app = createApp(App)
@@ -45,8 +46,22 @@ app.use(pinia)
 // Use Vue Router for navigation
 app.use(router)
 
-// Mount app to DOM
-app.mount('#app')
+// Initialize auth state before mounting
+const authStore = useAuthStore()
+
+// Setup auth listener for real-time auth state changes
+authStore.setupAuthListener()
+
+// Initialize auth and mount app
+authStore.initializeAuth().then(() => {
+  console.log('✅ Auth initialized, mounting app')
+  // Mount app to DOM
+  app.mount('#app')
+}).catch(error => {
+  console.error('❌ Auth initialization failed:', error)
+  // Mount app anyway to show error/login page
+  app.mount('#app')
+})
 
 // Register service worker for PWA (if in production)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
