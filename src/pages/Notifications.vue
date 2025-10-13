@@ -106,7 +106,6 @@
         </div>
       </Transition>
     </Teleport>
-  </div>
   </MainLayout>
 </template>
 
