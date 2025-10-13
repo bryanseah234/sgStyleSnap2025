@@ -1,11 +1,11 @@
 /**
  * User Service
- * 
+ *
  * Handles user profile management operations:
  * - Profile retrieval
  * - Avatar updates (default avatars)
  * - Future: Custom avatar uploads
- * 
+ *
  * Profile Fields:
  * - username: Auto-generated from email (part before @), immutable
  * - name: From Google OAuth (first + last name), immutable
@@ -13,7 +13,7 @@
  * - avatar_url: Can be changed by user (6 default options)
  */
 
-import { supabase } from '../config/supabase.js';
+import { supabase } from '../config/supabase.js'
 
 /**
  * Get current user's profile
@@ -21,24 +21,27 @@ import { supabase } from '../config/supabase.js';
  */
 export async function getUserProfile() {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError) throw authError;
-    if (!user) throw new Error('Not authenticated');
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
+    if (authError) throw authError
+    if (!user) throw new Error('Not authenticated')
+
     // Get user profile from users table
     const { data, error } = await supabase
       .from('users')
       .select('id, email, username, name, avatar_url, created_at')
       .eq('id', user.id)
-      .single();
-    
-    if (error) throw error;
-    
-    return data;
+      .single()
+
+    if (error) throw error
+
+    return data
   } catch (error) {
-    console.error('Failed to get user profile:', error);
-    throw error;
+    console.error('Failed to get user profile:', error)
+    throw error
   }
 }
 
@@ -50,34 +53,39 @@ export async function getUserProfile() {
 export async function updateUserAvatar(avatarUrl) {
   try {
     // Validate avatar URL format
-    const defaultAvatarPattern = /^\/avatars\/default-[1-6]\.png$/;
-    
+    const defaultAvatarPattern = /^\/avatars\/default-[1-6]\.png$/
+
     if (!defaultAvatarPattern.test(avatarUrl)) {
-      throw new Error('Invalid avatar URL. Please select from default avatars (default-1.png through default-6.png)');
+      throw new Error(
+        'Invalid avatar URL. Please select from default avatars (default-1.png through default-6.png)'
+      )
     }
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError) throw authError;
-    if (!user) throw new Error('Not authenticated');
-    
+
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
+    if (authError) throw authError
+    if (!user) throw new Error('Not authenticated')
+
     // Update avatar in users table
     const { data, error } = await supabase
       .from('users')
-      .update({ 
+      .update({
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString()
       })
       .eq('id', user.id)
       .select('id, email, username, name, avatar_url')
-      .single();
-    
-    if (error) throw error;
-    
-    return data;
+      .single()
+
+    if (error) throw error
+
+    return data
   } catch (error) {
-    console.error('Failed to update avatar:', error);
-    throw error;
+    console.error('Failed to update avatar:', error)
+    throw error
   }
 }
 
@@ -93,7 +101,7 @@ export function getDefaultAvatars() {
     { id: 4, url: '/avatars/default-4.png', alt: 'Avatar 4' },
     { id: 5, url: '/avatars/default-5.png', alt: 'Avatar 5' },
     { id: 6, url: '/avatars/default-6.png', alt: 'Avatar 6' }
-  ];
+  ]
 }
 
 /**
@@ -109,6 +117,6 @@ export async function uploadCustomAvatar(_file) {
   // 4. Get Cloudinary URL
   // 5. Update users.avatar_url with Cloudinary URL
   // 6. Return updated user profile
-  
-  throw new Error('Custom avatar upload not yet implemented');
+
+  throw new Error('Custom avatar upload not yet implemented')
 }

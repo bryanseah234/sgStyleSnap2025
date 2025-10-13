@@ -37,7 +37,7 @@
               >⚠️ Near limit!</span>
             </p>
           </div>
-          
+
           <!-- Settings Icon -->
           <button
             class="settings-button transition-all duration-300 ease-out hover:scale-110 active:scale-95"
@@ -74,13 +74,17 @@
           @update:filters="handleFilterChange"
         />
       </div>
-      
+
       <div class="closet-content">
         <!-- Closet Grid with all animations and features -->
         <ClosetGrid
           :items="items"
           :loading="closetStore.loading"
-          :empty-message="hasFilters ? 'No items match your filters' : 'Your closet is empty. Add your first item!'"
+          :empty-message="
+            hasFilters
+              ? 'No items match your filters'
+              : 'Your closet is empty. Add your first item!'
+          "
           :show-favorites="true"
           @item-click="handleItemClick"
           @favorite-click="handleFavoriteClick"
@@ -98,9 +102,9 @@
           </template>
         </ClosetGrid>
       </div>
-      
+
       <!-- FAB -->
-      <button 
+      <button
         class="fab"
         :class="[
           'transition-all duration-300 ease-out',
@@ -108,7 +112,7 @@
           'active:scale-95',
           quotaUsed >= 45 ? 'animate-pulse-slow' : ''
         ]"
-        title="Add new item" 
+        title="Add new item"
         @click="handleAddItem"
       >
         <span class="plus-icon transition-transform duration-300">+</span>
@@ -175,7 +179,13 @@ const items = computed(() => {
 
 const quotaUsed = computed(() => closetStore.quota?.used || 0)
 const totalItems = computed(() => closetStore.quota?.totalItems || 0)
-const hasFilters = computed(() => filters.value.category || filters.value.clothing_type || filters.value.privacy || filters.value.is_favorite)
+const hasFilters = computed(
+  () =>
+    filters.value.category ||
+    filters.value.clothing_type ||
+    filters.value.privacy ||
+    filters.value.is_favorite
+)
 
 onMounted(() => {
   closetStore.fetchItems()
@@ -363,7 +373,8 @@ async function handleFavoriteClick(item) {
 
 /* Pulse Animation for Near-Quota Warning */
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
@@ -382,11 +393,11 @@ async function handleFavoriteClick(item) {
   .fab {
     transition: background-color 0.2s ease;
   }
-  
+
   .fab:hover {
     transform: none;
   }
-  
+
   .animate-pulse-slow {
     animation: none;
     box-shadow: 0 4px 6px rgba(245, 158, 11, 0.4);

@@ -1,13 +1,13 @@
 /**
  * Vue Router Configuration - StyleSnap
- * 
+ *
  * Purpose: Define application routes and navigation logic
- * 
+ *
  * Authentication: Google SSO Only
  * - Login and Register pages both use Google OAuth
  * - No email/password authentication
  * - After successful auth, redirect to /closet (home page)
- * 
+ *
  * Routes:
  * - / (redirect to /closet if authenticated, /login if not)
  * - /login - Login page with Google SSO (public, guest only)
@@ -16,11 +16,11 @@
  * - /friends - Friends list (protected)
  * - /suggestions - Outfit suggestions (protected)
  * - /settings - User settings with avatar selection (protected)
- * 
+ *
  * Route Guards:
  * - requiresAuth: Check authentication before allowing access
  * - guestOnly: Redirect to /closet if already authenticated
- * 
+ *
  * Reference:
  * - requirements/frontend-components.md for page specifications
  * - utils/auth-guard.js for authentication checking
@@ -62,12 +62,6 @@ const routes = [
     name: 'Register',
     component: Register,
     meta: { requiresAuth: false, guestOnly: true }
-  },
-  {
-    path: '/debug-auth',
-    name: 'DebugAuth',
-    component: DebugAuth,
-    meta: { requiresAuth: false }
   },
   {
     path: '/closet',
@@ -123,6 +117,12 @@ const routes = [
     component: Notifications,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/debug-auth',
+    name: 'DebugAuth',
+    component: DebugAuth,
+    meta: { requiresAuth: false }
+  },
   // Catch-all 404 route
   {
     path: '/:pathMatch(.*)*',
@@ -136,27 +136,17 @@ const router = createRouter({
 })
 
 // Global navigation guard
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
-  // If auth hasn't been initialized yet, initialize it
-  // This is crucial for OAuth callbacks where the session is in the URL
-  if (!authStore.isAuthenticated && !authStore.loading) {
-    console.log('🔄 Router: Initializing auth before navigation...')
-    await authStore.initializeAuth()
-  }
-  
+
   // Check if route requires authentication
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('🔒 Router: Route requires auth, redirecting to login')
     // Redirect to login if not authenticated
     next('/login')
   } else if (to.meta.guestOnly && authStore.isAuthenticated) {
-    console.log('✅ Router: User authenticated, redirecting to closet')
     // Redirect to closet if already authenticated (e.g., on login page)
     next('/closet')
   } else {
-    console.log('✅ Router: Navigation allowed to', to.path)
     // Allow navigation
     next()
   }

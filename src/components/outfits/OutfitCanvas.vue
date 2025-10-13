@@ -53,7 +53,7 @@
           :alt="item.name"
           draggable="false"
         >
-        
+
         <!-- Item Controls -->
         <div
           v-if="selectedItemId === item.id"
@@ -200,7 +200,7 @@ const sortedItems = computed(() => {
  */
 function handleDrop(event) {
   event.preventDefault()
-  
+
   // Check if we already have 10 items
   if (props.items.length >= 10) {
     alert('Maximum 10 items allowed per outfit')
@@ -212,7 +212,7 @@ function handleDrop(event) {
 
   try {
     const item = JSON.parse(itemData)
-    
+
     // Check if item already exists
     if (props.items.some(i => i.id === item.id)) {
       alert('This item is already in the outfit')
@@ -246,7 +246,7 @@ function handleDrop(event) {
 function startDrag(item, event) {
   event.preventDefault()
   draggingItem.value = item
-  
+
   const rect = canvasRef.value.getBoundingClientRect()
   dragOffset.value = {
     x: event.clientX - rect.left - item.position.x,
@@ -355,7 +355,7 @@ function clearCanvas() {
 .canvas-grid {
   width: 100%;
   height: 100%;
-  background-image: 
+  background-image:
     linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
@@ -397,7 +397,9 @@ function clearCanvas() {
   border-radius: 0.5rem;
   background: white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
 }
 
 .canvas-item:hover {

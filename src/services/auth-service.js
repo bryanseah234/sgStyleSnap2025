@@ -1,15 +1,15 @@
 /**
  * Auth Service - StyleSnap
- * 
+ *
  * Purpose: Authentication API calls and session management using Supabase Auth
- * 
+ *
  * **CRITICAL: Google OAuth 2.0 (SSO) ONLY**
  * - Authentication Method: Google OAuth exclusively
  * - No email/password, magic links, or other auth methods
  * - Pages: /login and /register both use signInWithGoogle()
  * - After successful auth: Redirect to /closet (home page)
  * - User profile auto-created in users table on first sign-in
- * 
+ *
  * Functions:
  * - signInWithGoogle(): Initiates Google OAuth flow (used by both login and register)
  * - signOut(): Signs out current user
@@ -17,7 +17,7 @@
  * - getSession(): Gets current Supabase session
  * - refreshSession(): Refreshes auth token
  * - onAuthStateChange(callback): Subscribe to auth state changes
- * 
+ *
  * Authentication Flow (Login & Register):
  * 1. User clicks "Sign in with Google" or "Sign up with Google"
  * 2. signInWithGoogle() redirects to Google OAuth consent screen
@@ -28,29 +28,29 @@
  * 7. Database trigger creates entry in public.users table
  * 8. User redirected to /closet (home page)
  * 9. Session stored securely (IndexedDB with localStorage fallback)
- * 
+ *
  * Session Management:
  * - Tokens stored in IndexedDB by Supabase (localStorage fallback)
  * - Access token expires after 1 hour
  * - Refresh token used to get new access token
  * - Auto-refresh handled by Supabase client
- * 
+ *
  * Usage:
  * import { signInWithGoogle, getCurrentUser } from '../config/supabase'
- * 
+ *
  * // Used in both Login.vue and Register.vue
  * await signInWithGoogle() // Same function for both pages
  * const user = await getCurrentUser()
- * 
+ *
  * Environment Variables Required (.env):
  * - VITE_SUPABASE_URL: Supabase project URL
  * - VITE_SUPABASE_ANON_KEY: Supabase anon/public key
- * 
+ *
  * Supabase Setup:
  * - Enable Google provider in Authentication > Providers
  * - Configure Google OAuth credentials from Google Cloud Console
  * - Set redirect URL: https://YOUR-PROJECT.supabase.co/auth/v1/callback
- * 
+ *
  * Reference:
  * - tasks/02-authentication-database.md for auth setup
  * - requirements/security.md for security requirements
@@ -75,7 +75,7 @@ export async function signInWithGoogle() {
 
   console.log('🔐 Starting Google OAuth sign-in...')
   console.log('📍 Redirect URL:', `${window.location.origin}/closet`)
-  
+
   const result = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -86,18 +86,18 @@ export async function signInWithGoogle() {
       }
     }
   })
-  
+
   console.log('📤 OAuth result:', result)
-  
+
   if (result?.error) {
     console.error('❌ Google sign-in error:', result.error)
     throw new Error(`Google sign-in failed: ${result.error.message}`)
   }
-  
+
   if (result?.data?.url) {
     console.log('✅ Redirecting to Google OAuth:', result.data.url)
   }
-  
+
   return result
 }
 
@@ -108,12 +108,12 @@ export async function signInWithGoogle() {
 export async function signOut() {
   console.log('🚪 Signing out user...')
   const result = await supabase.auth.signOut()
-  
+
   if (result?.error) {
     console.error('❌ Sign out error:', result.error)
     throw new Error(`Sign out failed: ${result.error.message}`)
   }
-  
+
   console.log('✅ User signed out successfully')
 }
 
@@ -124,12 +124,12 @@ export async function signOut() {
 export async function getCurrentUser() {
   console.log('👤 Getting current user...')
   const result = await supabase.auth.getUser()
-  
+
   if (result?.error) {
     console.error('❌ Get user error:', result.error)
     throw new Error(`Failed to get user: ${result.error.message}`)
   }
-  
+
   const user = result?.data?.user || null
   console.log('👤 Current user:', user ? user.email : 'No user')
   return user
@@ -142,20 +142,20 @@ export async function getCurrentUser() {
 export async function getSession() {
   console.log('🔑 Getting current session...')
   const result = await supabase.auth.getSession()
-  
+
   if (result?.error) {
     console.error('❌ Get session error:', result.error)
     throw new Error(`Failed to get session: ${result.error.message}`)
   }
-  
+
   const session = result?.data?.session || null
   console.log('🔑 Session status:', session ? 'Active' : 'No session')
-  
+
   // If we have a session, ensure the user exists in public.users table
   if (session?.user) {
     await ensurePublicUser(session.user)
   }
-  
+
   return session
 }
 
@@ -166,32 +166,33 @@ export async function getSession() {
 async function ensurePublicUser(user) {
   try {
     console.log('🔍 Checking if user exists in public.users table...')
-    
+
     // Check if user already exists in public.users
     const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('id')
       .eq('id', user.id)
       .single()
-    
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      // PGRST116 = no rows returned
       console.error('❌ Error checking user existence:', checkError)
       return
     }
-    
+
     if (existingUser) {
       console.log('✅ User already exists in public.users table')
       return
     }
-    
+
     console.log('🔧 User not found in public.users, creating entry...')
-    
+
     // Extract user data from auth user
     const userMetadata = user.user_metadata || {}
     const userName = userMetadata.name || userMetadata.full_name || user.email.split('@')[0]
     const userAvatar = userMetadata.avatar_url || userMetadata.picture || null
     const userGoogleId = userMetadata.sub || null
-    
+
     // Call the database function to create the user
     const { data, error } = await supabase.rpc('create_public_user', {
       user_id: user.id,
@@ -200,14 +201,13 @@ async function ensurePublicUser(user) {
       user_avatar_url: userAvatar,
       user_google_id: userGoogleId
     })
-    
+
     if (error) {
       console.error('❌ Error creating public user:', error)
       return
     }
-    
+
     console.log('✅ Successfully created user in public.users table')
-    
   } catch (error) {
     console.error('❌ Error ensuring public user:', error)
   }
@@ -220,12 +220,12 @@ async function ensurePublicUser(user) {
 export async function refreshSession() {
   console.log('🔄 Refreshing session...')
   const result = await supabase.auth.refreshSession()
-  
+
   if (result?.error) {
     console.error('❌ Refresh session error:', result.error)
     throw new Error(`Failed to refresh session: ${result.error.message}`)
   }
-  
+
   const session = result?.data?.session || null
   console.log('🔄 Session refreshed:', session ? 'Success' : 'Failed')
   return session
@@ -246,6 +246,6 @@ export function onAuthStateChange(callback) {
     }
     callback(event, session)
   })
-  
+
   return data
 }

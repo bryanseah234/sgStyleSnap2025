@@ -160,7 +160,7 @@ async function loadSuggestions() {
 async function handleSuggestionClick(suggestion) {
   selectedSuggestion.value = suggestion
   showDetailModal.value = true
-  
+
   // Mark as read if it's a received suggestion and not already read
   if (activeTab.value === 'received' && !suggestion.is_read) {
     try {
@@ -180,15 +180,15 @@ async function handleDelete(suggestionId) {
   if (!confirm('Are you sure you want to delete this suggestion?')) {
     return
   }
-  
+
   try {
     await suggestionsStore.deleteSuggestion(suggestionId)
-    
+
     // Close modal if it's open
     if (showDetailModal.value && selectedSuggestion.value?.id === suggestionId) {
       closeDetailModal()
     }
-    
+
     // Reload suggestions
     await loadSuggestions()
   } catch (error) {

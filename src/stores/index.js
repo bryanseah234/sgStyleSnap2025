@@ -1,23 +1,23 @@
 /**
  * Pinia Store Index - StyleSnap
- * 
+ *
  * Purpose: Central Pinia store configuration and initialization
- * 
+ *
  * Setup:
  * - Creates and exports Pinia instance
  * - Imports and registers all store modules
  * - Configures store plugins (if any)
- * 
+ *
  * Store Modules:
  * - auth-store.js: Authentication and user session
  * - closet-store.js: Closet items and quota management
  * - friends-store.js: Friends and friend requests
  * - suggestions-store.js: Outfit suggestions
- * 
+ *
  * Usage in main.js:
  * import { pinia } from './stores'
  * app.use(pinia)
- * 
+ *
  * Reference: https://pinia.vuejs.org/
  */
 
@@ -38,3 +38,4 @@ export { useSharedOutfitsStore } from './shared-outfits-store'
 export { useCollectionsStore } from './collections-store'
 export { useStylePreferencesStore } from './style-preferences-store'
 export { useAnalyticsStore } from './analytics-store'
+export { useNotificationsStore } from './notifications-store'

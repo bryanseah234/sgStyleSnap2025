@@ -153,7 +153,8 @@
             <label for="outfit-weather">Weather</label>
             <select
               id="outfit-weather"
-              v-model="outfitForm.weather">
+              v-model="outfitForm.weather"
+            >
               <option value="">
                 Select weather...
               </option>

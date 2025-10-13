@@ -33,9 +33,11 @@
           v-for="filter in visibilityFilters"
           :key="filter.value"
           class="px-4 py-2 font-medium text-sm transition-colors relative"
-          :class="activeVisibilityFilter === filter.value 
-            ? 'text-blue-600 border-b-2 border-blue-600' 
-            : 'text-gray-600 hover:text-gray-900'"
+          :class="
+            activeVisibilityFilter === filter.value
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-900'
+          "
           @click="changeVisibilityFilter(filter.value)"
         >
           {{ filter.label }}
@@ -195,9 +197,9 @@ const fetchFeed = async () => {
   })
 }
 
-const changeVisibilityFilter = async (filter) => {
+const changeVisibilityFilter = async filter => {
   if (activeVisibilityFilter.value === filter) return
-  
+
   activeVisibilityFilter.value = filter
   await fetchFeed()
 }
@@ -206,14 +208,14 @@ const loadMore = async () => {
   await sharedOutfitsStore.loadMore()
 }
 
-const viewOutfit = (outfit) => {
+const viewOutfit = outfit => {
   // Could navigate to a detailed view page
   console.log('View outfit:', outfit)
 }
 
-const editOutfit = async (outfit) => {
+const editOutfit = async outfit => {
   const newCaption = prompt('Edit caption:', outfit.caption || '')
-  
+
   if (newCaption !== null) {
     try {
       await sharedOutfitsStore.updateSharedOutfit(outfit.id, {
@@ -226,7 +228,7 @@ const editOutfit = async (outfit) => {
   }
 }
 
-const deleteOutfit = async (outfit) => {
+const deleteOutfit = async outfit => {
   if (confirm('Are you sure you want to delete this shared outfit?')) {
     try {
       await sharedOutfitsStore.deleteSharedOutfit(outfit.id)

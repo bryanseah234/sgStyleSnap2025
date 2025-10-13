@@ -1,8 +1,8 @@
 /**
  * Suggestions Store - StyleSnap
- * 
+ *
  * Purpose: Manages outfit suggestions (received and sent)
- * 
+ *
  * State:
  * - suggestions: Object
  *   - received: Array (suggestions from friends to me)
@@ -10,7 +10,7 @@
  * - currentSuggestion: Object | null (selected suggestion for viewing)
  * - isLoading: boolean
  * - unreadCount: number (count of unviewed received suggestions)
- * 
+ *
  * Actions:
  * - fetchReceivedSuggestions(): Fetches suggestions where target_user_id = me
  * - fetchSentSuggestions(): Fetches suggestions where creator_id = me
@@ -20,17 +20,17 @@
  * - markAsViewed(id): Updates suggestion status to 'viewed'
  * - likeSuggestion(id): Updates suggestion status to 'liked' (optional feature)
  * - fetchSuggestionDetails(id): Gets full details of a suggestion
- * 
+ *
  * Getters:
  * - receivedCount: returns suggestions.received.length
  * - sentCount: returns suggestions.sent.length
  * - newSuggestionsCount: returns count of suggestions with status = 'new'
- * 
+ *
  * Suggestion Status:
  * - new: just created, not viewed
  * - viewed: recipient has opened it
  * - liked: recipient liked it (optional)
- * 
+ *
  * Reference:
  * - services/suggestions-service.js for API calls
  * - requirements/database-schema.md for outfit_suggestions table
@@ -47,14 +47,13 @@ export const useSuggestionsStore = defineStore('suggestions', {
     unreadCount: 0,
     isLoading: false
   }),
-  
+
   getters: {
-    receivedCount: (state) => state.receivedSuggestions.length,
-    sentCount: (state) => state.sentSuggestions.length,
-    newSuggestionsCount: (state) => 
-      state.receivedSuggestions.filter(s => !s.is_read).length
+    receivedCount: state => state.receivedSuggestions.length,
+    sentCount: state => state.sentSuggestions.length,
+    newSuggestionsCount: state => state.receivedSuggestions.filter(s => !s.is_read).length
   },
-  
+
   actions: {
     /**
      * Fetch received suggestions
@@ -73,7 +72,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Fetch sent suggestions
      */
@@ -90,7 +89,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Fetch single suggestion details
      */
@@ -108,7 +107,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Create new suggestion
      */
@@ -117,10 +116,10 @@ export const useSuggestionsStore = defineStore('suggestions', {
       try {
         const suggestionsService = await import('../services/suggestions-service')
         const newSuggestion = await suggestionsService.createSuggestion(suggestionData)
-        
+
         // Add to sent suggestions
         this.sentSuggestions.unshift(newSuggestion)
-        
+
         return newSuggestion
       } catch (error) {
         console.error('Failed to create suggestion:', error)
@@ -129,7 +128,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Delete suggestion
      */
@@ -138,7 +137,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
       try {
         const suggestionsService = await import('../services/suggestions-service')
         await suggestionsService.deleteSuggestion(id)
-        
+
         // Remove from sent suggestions
         this.sentSuggestions = this.sentSuggestions.filter(s => s.id !== id)
       } catch (error) {
@@ -148,7 +147,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Mark suggestion as read
      */
@@ -156,7 +155,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
       try {
         const suggestionsService = await import('../services/suggestions-service')
         const updated = await suggestionsService.markAsRead(id)
-        
+
         // Update in received suggestions
         const index = this.receivedSuggestions.findIndex(s => s.id === id)
         if (index !== -1) {
@@ -166,17 +165,17 @@ export const useSuggestionsStore = defineStore('suggestions', {
             viewed_at: updated.viewed_at
           }
         }
-        
+
         // Update unread count
         this.unreadCount = this.receivedSuggestions.filter(s => !s.is_read).length
-        
+
         return updated
       } catch (error) {
         console.error('Failed to mark as read:', error)
         throw error
       }
     },
-    
+
     /**
      * Fetch unread count
      */
@@ -189,7 +188,7 @@ export const useSuggestionsStore = defineStore('suggestions', {
         console.error('Failed to fetch unread count:', error)
       }
     },
-    
+
     /**
      * Clear current suggestion
      */

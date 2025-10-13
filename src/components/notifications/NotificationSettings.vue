@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+  <div
+    class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+  >
     <!-- Header -->
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -165,9 +167,7 @@
                   v-if="preferences.daily_suggestions"
                   class="mt-2 ml-11"
                 >
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    Time
-                  </label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"> Time </label>
                   <input
                     v-model="preferences.daily_suggestion_time"
                     type="time"
@@ -215,9 +215,7 @@
             class="flex items-center space-x-4 ml-11"
           >
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                From
-              </label>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"> From </label>
               <input
                 v-model="preferences.quiet_hours_start"
                 type="time"
@@ -226,9 +224,7 @@
               >
             </div>
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                To
-              </label>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"> To </label>
               <input
                 v-model="preferences.quiet_hours_end"
                 type="time"
@@ -314,18 +310,16 @@ const notificationStatus = computed(() => {
   if (!isPushNotificationSupported()) {
     return 'Push notifications are not supported in your browser'
   }
-  
+
   if (browserPermission.value === 'denied') {
     return 'Notifications are blocked. Click "Help" to enable them.'
   }
-  
+
   if (browserPermission.value === 'default') {
     return 'Click "Enable" to allow push notifications'
   }
-  
-  return preferences.value.push_enabled 
-    ? 'Notifications are enabled' 
-    : 'Notifications are disabled'
+
+  return preferences.value.push_enabled ? 'Notifications are enabled' : 'Notifications are disabled'
 })
 
 onMounted(async () => {
@@ -356,7 +350,7 @@ async function requestPermission() {
   try {
     const permission = await requestNotificationPermission()
     browserPermission.value = permission
-    
+
     if (permission === 'granted') {
       preferences.value.push_enabled = true
       await savePreferences()
@@ -374,7 +368,7 @@ function showPermissionHelp() {
 
 async function sendTest() {
   isSendingTest.value = true
-  
+
   try {
     await sendTestNotification()
     showSuccessToast()

@@ -1,46 +1,46 @@
 /**
  * Friends Service - StyleSnap
- * 
+ *
  * Purpose: API calls for friendship management and friend requests
- * 
+ *
  * Functions:
  * - getFriends(): Fetches all accepted friendships
  *   - Returns: Array of friend objects (with user details)
- * 
+ *
  * - getPendingRequests(): Fetches all pending friend requests (incoming + outgoing)
  *   - Returns: { incoming: Array, outgoing: Array }
- * 
+ *
  * - sendFriendRequest(targetUserId): Sends friend request to another user
  *   - Creates friendship record with status = 'pending'
  *   - Returns: Created friendship object
- * 
+ *
  * - acceptFriendRequest(requestId): Accepts incoming friend request
  *   - Updates friendship status from 'pending' to 'accepted'
  *   - Returns: Updated friendship object
- * 
+ *
  * - rejectFriendRequest(requestId): Rejects incoming friend request
  *   - Updates status to 'rejected' or deletes record
  *   - Returns: Success response
- * 
+ *
  * - cancelFriendRequest(requestId): Cancels outgoing friend request
  *   - Deletes the pending request record
  *   - Returns: Success response
- * 
+ *
  * - unfriend(friendshipId): Removes an accepted friendship
  *   - Deletes friendship record
  *   - Returns: Success response
- * 
+ *
  * - searchUsers(query): **SECURE** search for users by name or email
  *   - query: string (min 3 characters, name fuzzy match or email exact match)
  *   - Excludes: current user, deleted users
  *   - Includes: friendship_status (none, pending_sent, pending_received, accepted)
  *   - Anti-scraping: Min 3 chars, max 10 results, random order, no emails in results
  *   - Returns: { users: Array, count: number, has_more: false }
- * 
+ *
  * - getFriendProfile(friendId): Gets friend's profile and public items
  *   - Only returns items with privacy_level = 'public'
  *   - Returns: { user: Object, items: Array }
- * 
+ *
  * API Endpoints:
  * - POST /api/users/search - **SECURE** search users (anti-scraping protected)
  * - GET /api/friends - List friends
@@ -50,19 +50,19 @@
  * - PUT /api/friends/:id/reject - Reject request
  * - DELETE /api/friends/:id - Unfriend or cancel request
  * - GET /api/friends/:id/profile - Get friend profile
- * 
+ *
  * Friendship Table Structure:
  * - id: UUID
  * - requester_id: UUID (lower UUID, canonical ordering)
  * - receiver_id: UUID (higher UUID, canonical ordering)
  * - status: 'pending' | 'accepted' | 'rejected'
  * - created_at: timestamp
- * 
+ *
  * IMPORTANT: Canonical Ordering (requester_id < receiver_id)
  * - Prevents duplicate rows for same relationship
  * - Single source of truth per friendship pair
  * - Check constraint enforces this at database level
- * 
+ *
  * Reference:
  * - requirements/api-endpoints.md for endpoint specifications
  * - requirements/database-schema.md for friendships table
@@ -78,13 +78,16 @@ import { supabase } from '../config/supabase'
  */
 export async function getFriends() {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
-    
+
     // Get friendships where user is either requester or receiver and status is accepted
     const { data, error } = await supabase
       .from('friends')
-      .select(`
+      .select(
+        `
         id,
         requester_id,
         receiver_id,
@@ -92,25 +95,25 @@ export async function getFriends() {
         created_at,
         requester:users!friends_requester_id_fkey(id, name, email, avatar_url),
         receiver:users!friends_receiver_id_fkey(id, name, email, avatar_url)
-      `)
+      `
+      )
       .eq('status', 'accepted')
       .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
-    
+
     if (error) throw error
-    
+
     // Transform data to include friend's info (the other person in the friendship)
     const friends = data.map(friendship => {
-      const friend = friendship.requester_id === user.id 
-        ? friendship.receiver 
-        : friendship.requester
-      
+      const friend =
+        friendship.requester_id === user.id ? friendship.receiver : friendship.requester
+
       return {
         friendshipId: friendship.id,
         ...friend,
         friendSince: friendship.created_at
       }
     })
-    
+
     return friends
   } catch (error) {
     console.error('Failed to fetch friends:', error)
@@ -124,13 +127,16 @@ export async function getFriends() {
  */
 export async function getPendingRequests() {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
-    
+
     // Get all pending requests where user is involved
     const { data, error } = await supabase
       .from('friends')
-      .select(`
+      .select(
+        `
         id,
         requester_id,
         receiver_id,
@@ -138,12 +144,13 @@ export async function getPendingRequests() {
         created_at,
         requester:users!friends_requester_id_fkey(id, name, email, avatar_url),
         receiver:users!friends_receiver_id_fkey(id, name, email, avatar_url)
-      `)
+      `
+      )
       .eq('status', 'pending')
       .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
-    
+
     if (error) throw error
-    
+
     // Separate into incoming and outgoing
     const incoming = data
       .filter(req => req.receiver_id === user.id)
@@ -152,7 +159,7 @@ export async function getPendingRequests() {
         ...req.requester,
         requestedAt: req.created_at
       }))
-    
+
     const outgoing = data
       .filter(req => req.requester_id === user.id)
       .map(req => ({
@@ -160,7 +167,7 @@ export async function getPendingRequests() {
         ...req.receiver,
         requestedAt: req.created_at
       }))
-    
+
     return { incoming, outgoing }
   } catch (error) {
     console.error('Failed to fetch pending requests:', error)
@@ -175,17 +182,19 @@ export async function getPendingRequests() {
  */
 export async function sendFriendRequest(emailOrUserId) {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
-    
+
     let targetUserId = null
-    
+
     // Check if input is a UUID (user ID) or email
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (uuidRegex.test(emailOrUserId)) {
       // Input is a user ID
       targetUserId = emailOrUserId
-      
+
       // Can't send request to yourself
       if (targetUserId === user.id) {
         throw new Error('You cannot send a friend request to yourself')
@@ -193,31 +202,31 @@ export async function sendFriendRequest(emailOrUserId) {
     } else {
       // Input is an email
       const email = emailOrUserId
-      
+
       // Can't send request to yourself
       if (email === user.email) {
         throw new Error('You cannot send a friend request to yourself')
       }
-      
+
       // Find target user by email
       const { data: targetUser, error: userError } = await supabase
         .from('users')
         .select('id')
         .eq('email', email)
         .single()
-      
+
       if (userError || !targetUser) {
         // For security, return success even if user doesn't exist (prevent email enumeration)
         return { id: null, status: 'pending', message: 'Friend request sent successfully' }
       }
-      
+
       targetUserId = targetUser.id
     }
-    
+
     // Ensure canonical ordering (smaller ID first)
     const requesterId = user.id < targetUserId ? user.id : targetUserId
     const receiverId = user.id < targetUserId ? targetUserId : user.id
-    
+
     // Check if friendship already exists
     const { data: existing } = await supabase
       .from('friends')
@@ -225,12 +234,16 @@ export async function sendFriendRequest(emailOrUserId) {
       .eq('requester_id', requesterId)
       .eq('receiver_id', receiverId)
       .single()
-    
+
     if (existing) {
       // Return success even if already exists (prevent duplicate detection)
-      return { id: existing.id, status: existing.status, message: 'Friend request sent successfully' }
+      return {
+        id: existing.id,
+        status: existing.status,
+        message: 'Friend request sent successfully'
+      }
     }
-    
+
     // Create new friend request
     const { data, error } = await supabase
       .from('friends')
@@ -241,9 +254,9 @@ export async function sendFriendRequest(emailOrUserId) {
       })
       .select()
       .single()
-    
+
     if (error) throw error
-    
+
     return { id: data.id, status: 'pending', message: 'Friend request sent successfully' }
   } catch (error) {
     console.error('Failed to send friend request:', error)
@@ -265,10 +278,10 @@ export async function acceptFriendRequest(requestId) {
       .eq('status', 'pending')
       .select()
       .single()
-    
+
     if (error) throw error
     if (!data) throw new Error('Request not found or already processed')
-    
+
     return data
   } catch (error) {
     console.error('Failed to accept friend request:', error)
@@ -289,7 +302,7 @@ export async function rejectFriendRequest(requestId) {
       .update({ status: 'rejected' })
       .eq('id', requestId)
       .eq('status', 'pending')
-    
+
     if (error) throw error
   } catch (error) {
     console.error('Failed to reject friend request:', error)
@@ -309,7 +322,7 @@ export async function cancelFriendRequest(requestId) {
       .delete()
       .eq('id', requestId)
       .eq('status', 'pending')
-    
+
     if (error) throw error
   } catch (error) {
     console.error('Failed to cancel friend request:', error)
@@ -329,7 +342,7 @@ export async function unfriend(friendshipId) {
       .delete()
       .eq('id', friendshipId)
       .eq('status', 'accepted')
-    
+
     if (error) throw error
   } catch (error) {
     console.error('Failed to unfriend:', error)
@@ -339,7 +352,7 @@ export async function unfriend(friendshipId) {
 
 /**
  * **SECURE** Search users by name or email with anti-scraping protection
- * 
+ *
  * CRITICAL Anti-Scraping Measures:
  * - Minimum 3-character query (prevents iteration)
  * - Rate limiting: 20 searches/minute (enforced at API level)
@@ -347,64 +360,60 @@ export async function unfriend(friendshipId) {
  * - Random ordering (prevents enumeration)
  * - Email addresses never exposed in results
  * - Includes friendship status for each result
- * 
+ *
  * @param {string} query - Search query (min 3 characters)
  * @returns {Promise<Object>} { users: Array, count: number, has_more: false }
  * @throws {Error} If query too short or rate limit exceeded
  */
 export async function searchUsers(query) {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
-    
+
     // Validate minimum query length (anti-scraping)
     if (!query || query.trim().length < 3) {
       throw new Error('Query must be at least 3 characters')
     }
-    
+
     // Search users with friendship status
     // Note: Fuzzy name search OR exact email match
     const { data: users, error } = await supabase
       .from('users')
-      .select(`
+      .select(
+        `
         id, 
         name, 
         avatar_url,
         friends_as_requester:friends!requester_id(id, receiver_id, status),
         friends_as_receiver:friends!receiver_id(id, requester_id, status)
-      `)
+      `
+      )
       .or(`name.ilike.%${query}%,email.eq.${query}`)
       .neq('id', user.id) // Exclude current user
       .is('removed_at', null) // Only active users
       .limit(10) // Hard limit (anti-scraping)
-    
+
     if (error) throw error
-    
+
     // Shuffle results for random ordering (anti-scraping)
     const shuffled = (users || []).sort(() => Math.random() - 0.5)
-    
+
     // Determine friendship status for each user
     const results = shuffled.map(searchUser => {
       let friendship_status = 'none'
-      
+
       // Check if user is in a friendship with current user
-      const asRequester = searchUser.friends_as_requester?.find(
-        f => f.receiver_id === user.id
-      )
-      const asReceiver = searchUser.friends_as_receiver?.find(
-        f => f.requester_id === user.id
-      )
-      
+      const asRequester = searchUser.friends_as_requester?.find(f => f.receiver_id === user.id)
+      const asReceiver = searchUser.friends_as_receiver?.find(f => f.requester_id === user.id)
+
       if (asRequester) {
-        friendship_status = asRequester.status === 'accepted' 
-          ? 'accepted' 
-          : 'pending_received' // They sent request to us
+        friendship_status = asRequester.status === 'accepted' ? 'accepted' : 'pending_received' // They sent request to us
       } else if (asReceiver) {
-        friendship_status = asReceiver.status === 'accepted'
-          ? 'accepted'
-          : 'pending_sent' // We sent request to them
+        friendship_status = asReceiver.status === 'accepted' ? 'accepted' : 'pending_sent' // We sent request to them
       }
-      
+
       return {
         id: searchUser.id,
         name: searchUser.name,
@@ -413,7 +422,7 @@ export async function searchUsers(query) {
         // CRITICAL: Never return email in search results
       }
     })
-    
+
     return {
       users: results,
       count: results.length,
@@ -432,13 +441,15 @@ export async function searchUsers(query) {
  */
 export async function getFriendProfile(friendId) {
   try {
-    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    const {
+      data: { user: currentUser }
+    } = await supabase.auth.getUser()
     if (!currentUser) throw new Error('Not authenticated')
-    
+
     // Verify friendship exists
     const requesterId = currentUser.id < friendId ? currentUser.id : friendId
     const receiverId = currentUser.id < friendId ? friendId : currentUser.id
-    
+
     const { data: friendship } = await supabase
       .from('friends')
       .select('status')
@@ -446,21 +457,21 @@ export async function getFriendProfile(friendId) {
       .eq('receiver_id', receiverId)
       .eq('status', 'accepted')
       .single()
-    
+
     if (!friendship) {
       // Return 404 for both non-friends and non-existent users (security)
       throw new Error('User not found')
     }
-    
+
     // Get friend's profile
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('id, name, email, avatar_url')
       .eq('id', friendId)
       .single()
-    
+
     if (userError) throw new Error('User not found')
-    
+
     // Get friend's items with 'friends' privacy
     const { data: items, error: itemsError } = await supabase
       .from('clothes')
@@ -469,9 +480,9 @@ export async function getFriendProfile(friendId) {
       .eq('privacy', 'friends')
       .is('removed_at', null)
       .order('created_at', { ascending: false })
-    
+
     if (itemsError) throw itemsError
-    
+
     return {
       user,
       items: items || []

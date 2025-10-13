@@ -34,7 +34,7 @@
           Share outfit ideas with friends
         </p>
       </div>
-      
+
       <div class="suggestions-content">
         <SuggestionList />
       </div>

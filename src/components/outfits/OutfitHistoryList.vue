@@ -3,19 +3,12 @@
     <!-- Header with Filters -->
     <div class="mb-6 space-y-4">
       <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-gray-900">
-          Outfit History
-        </h2>
+        <h2 class="text-2xl font-bold text-gray-900">Outfit History</h2>
         <button
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
           @click="showRecordModal = true"
         >
-          <svg
-            class="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -32,10 +25,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <!-- Occasion Filter -->
           <div>
-            <label
-              for="occasion-filter"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label for="occasion-filter" class="block text-sm font-medium text-gray-700 mb-1">
               Occasion
             </label>
             <select
@@ -44,42 +34,21 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               @change="applyFilters"
             >
-              <option value="">
-                All Occasions
-              </option>
-              <option value="work">
-                Work
-              </option>
-              <option value="casual">
-                Casual
-              </option>
-              <option value="formal">
-                Formal
-              </option>
-              <option value="party">
-                Party
-              </option>
-              <option value="date">
-                Date
-              </option>
-              <option value="sport">
-                Sport
-              </option>
-              <option value="travel">
-                Travel
-              </option>
-              <option value="other">
-                Other
-              </option>
+              <option value="">All Occasions</option>
+              <option value="work">Work</option>
+              <option value="casual">Casual</option>
+              <option value="formal">Formal</option>
+              <option value="party">Party</option>
+              <option value="date">Date</option>
+              <option value="sport">Sport</option>
+              <option value="travel">Travel</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
           <!-- Rating Filter -->
           <div>
-            <label
-              for="rating-filter"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label for="rating-filter" class="block text-sm font-medium text-gray-700 mb-1">
               Min Rating
             </label>
             <select
@@ -88,33 +57,18 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               @change="applyFilters"
             >
-              <option value="">
-                Any Rating
-              </option>
-              <option :value="5">
-                5 Stars
-              </option>
-              <option :value="4">
-                4+ Stars
-              </option>
-              <option :value="3">
-                3+ Stars
-              </option>
-              <option :value="2">
-                2+ Stars
-              </option>
-              <option :value="1">
-                1+ Stars
-              </option>
+              <option value="">Any Rating</option>
+              <option :value="5">5 Stars</option>
+              <option :value="4">4+ Stars</option>
+              <option :value="3">3+ Stars</option>
+              <option :value="2">2+ Stars</option>
+              <option :value="1">1+ Stars</option>
             </select>
           </div>
 
           <!-- Date Range Start -->
           <div>
-            <label
-              for="start-date"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">
               From Date
             </label>
             <input
@@ -123,15 +77,12 @@
               type="date"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               @change="applyFilters"
-            >
+            />
           </div>
 
           <!-- Date Range End -->
           <div>
-            <label
-              for="end-date"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">
               To Date
             </label>
             <input
@@ -140,15 +91,12 @@
               type="date"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               @change="applyFilters"
-            >
+            />
           </div>
         </div>
 
         <!-- Active Filters & Clear -->
-        <div
-          v-if="hasActiveFilters"
-          class="mt-3 flex items-center justify-between"
-        >
+        <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
           <div class="flex items-center flex-wrap gap-2">
             <span class="text-sm text-gray-600">Active filters:</span>
             <span
@@ -169,38 +117,27 @@
       </div>
 
       <!-- Stats Summary -->
-      <div
-        v-if="stats"
-        class="grid grid-cols-2 md:grid-cols-4 gap-4"
-      >
+      <div v-if="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">
-            Total Outfits
-          </p>
+          <p class="text-sm text-gray-600 mb-1">Total Outfits</p>
           <p class="text-2xl font-bold text-gray-900">
             {{ stats.total_outfits_worn || 0 }}
           </p>
         </div>
         <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">
-            Avg Rating
-          </p>
+          <p class="text-sm text-gray-600 mb-1">Avg Rating</p>
           <p class="text-2xl font-bold text-gray-900">
             {{ stats.avg_rating ? stats.avg_rating.toFixed(1) : 'N/A' }}
           </p>
         </div>
         <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">
-            Most Worn
-          </p>
+          <p class="text-sm text-gray-600 mb-1">Most Worn</p>
           <p class="text-sm font-semibold text-gray-900 truncate">
             {{ stats.most_worn_occasion || 'N/A' }}
           </p>
         </div>
         <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">
-            Items Used
-          </p>
+          <p class="text-sm text-gray-600 mb-1">Items Used</p>
           <p class="text-2xl font-bold text-gray-900">
             {{ stats.total_items_used || 0 }}
           </p>
@@ -209,21 +146,13 @@
     </div>
 
     <!-- Loading State -->
-    <div
-      v-if="loading && history.length === 0"
-      class="text-center py-12"
-    >
+    <div v-if="loading && history.length === 0" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-      <p class="mt-4 text-gray-600">
-        Loading outfit history...
-      </p>
+      <p class="mt-4 text-gray-600">Loading outfit history...</p>
     </div>
 
     <!-- Empty State -->
-    <div
-      v-else-if="!loading && history.length === 0"
-      class="text-center py-12"
-    >
+    <div v-else-if="!loading && history.length === 0" class="text-center py-12">
       <svg
         class="w-24 h-24 mx-auto text-gray-300 mb-4"
         fill="none"
@@ -237,12 +166,8 @@
           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
         />
       </svg>
-      <h3 class="text-xl font-semibold text-gray-900 mb-2">
-        No Outfit History Yet
-      </h3>
-      <p class="text-gray-600 mb-6">
-        Start recording your outfits to track what you wear!
-      </p>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">No Outfit History Yet</h3>
+      <p class="text-gray-600 mb-6">Start recording your outfits to track what you wear!</p>
       <button
         class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         @click="showRecordModal = true"
@@ -252,10 +177,7 @@
     </div>
 
     <!-- Outfit History Grid -->
-    <div
-      v-else
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <OutfitHistoryCard
         v-for="entry in history"
         :key="entry.id"
@@ -267,10 +189,7 @@
     </div>
 
     <!-- Load More Button -->
-    <div
-      v-if="hasMore && !loading"
-      class="mt-8 text-center"
-    >
+    <div v-if="hasMore && !loading" class="mt-8 text-center">
       <button
         class="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
         @click="loadMore"
@@ -280,18 +199,12 @@
     </div>
 
     <!-- Loading More Indicator -->
-    <div
-      v-if="loading && history.length > 0"
-      class="mt-8 text-center"
-    >
+    <div v-if="loading && history.length > 0" class="mt-8 text-center">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
     </div>
 
     <!-- Error Message -->
-    <div
-      v-if="error"
-      class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
-    >
+    <div v-if="error" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
       <p class="text-sm text-red-600">
         {{ error }}
       </p>
@@ -314,7 +227,7 @@ import { useOutfitHistoryStore } from '@/stores/outfit-history-store'
 import OutfitHistoryCard from './OutfitHistoryCard.vue'
 import RecordOutfitModal from './RecordOutfitModal.vue'
 
-// const props = defineProps({
+const props = defineProps({
   selectedItems: {
     type: Array,
     default: () => []

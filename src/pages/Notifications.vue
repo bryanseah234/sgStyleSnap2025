@@ -1,7 +1,9 @@
 <template>
   <div class="notifications-page min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20">
+    <div
+      class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20"
+    >
       <div class="max-w-4xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -91,7 +93,7 @@
                   />
                 </svg>
               </button>
-              
+
               <SuggestionApprovalCard
                 :suggestion="currentSuggestion"
                 @approve="handleApproveSuggestion"
@@ -163,7 +165,7 @@ const handleLoadMore = async () => {
   }
 }
 
-const handleNotificationClick = async (notification) => {
+const handleNotificationClick = async notification => {
   // Mark as read
   if (!notification.is_read) {
     try {
@@ -178,23 +180,23 @@ const handleNotificationClick = async (notification) => {
     case 'friend_outfit_suggestion':
       await openSuggestionApproval(notification.reference_id)
       break
-    
+
     case 'outfit_like':
       // Navigate to the outfit detail page
       router.push(`/outfits/${notification.reference_id}`)
       break
-    
+
     case 'item_like':
       // Navigate to the item detail or closet page
       router.push(`/closet?item=${notification.reference_id}`)
       break
-    
+
     default:
       console.log('Unknown notification type:', notification.type)
   }
 }
 
-const openSuggestionApproval = async (suggestionId) => {
+const openSuggestionApproval = async suggestionId => {
   loadingSuggestion.value = true
   try {
     const suggestion = await friendSuggestionsService.getSuggestion(suggestionId)
@@ -213,21 +215,21 @@ const closeApprovalModal = () => {
   currentSuggestion.value = null
 }
 
-const handleApproveSuggestion = async (suggestionId) => {
+const handleApproveSuggestion = async suggestionId => {
   try {
     const result = await friendSuggestionsService.approveSuggestion(suggestionId)
-    
+
     // Show success message
     alert('Outfit added to your closet! 🎉')
-    
+
     // Close modal
     closeApprovalModal()
-    
+
     // Optionally navigate to the new outfit
     if (result.outfit_id) {
       router.push(`/outfits/${result.outfit_id}`)
     }
-    
+
     // Refresh notifications
     await notificationsStore.refresh()
   } catch (error) {
@@ -236,16 +238,16 @@ const handleApproveSuggestion = async (suggestionId) => {
   }
 }
 
-const handleRejectSuggestion = async (suggestionId) => {
+const handleRejectSuggestion = async suggestionId => {
   try {
     await friendSuggestionsService.rejectSuggestion(suggestionId)
-    
+
     // Show feedback
     alert('Outfit suggestion declined.')
-    
+
     // Close modal
     closeApprovalModal()
-    
+
     // Refresh notifications
     await notificationsStore.refresh()
   } catch (error) {

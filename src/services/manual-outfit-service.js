@@ -158,7 +158,7 @@ class ManualOutfitService {
       if (!draftJson) return null
 
       const draft = JSON.parse(draftJson)
-      
+
       // Check if draft is not too old (7 days)
       const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
       if (Date.now() - draft.timestamp > maxAge) {

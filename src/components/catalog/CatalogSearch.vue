@@ -87,9 +87,12 @@ const localQuery = ref(props.modelValue)
 let debounceTimeout = null
 
 // Watch for external changes
-watch(() => props.modelValue, (newVal) => {
-  localQuery.value = newVal
-})
+watch(
+  () => props.modelValue,
+  newVal => {
+    localQuery.value = newVal
+  }
+)
 
 function handleInput() {
   emit('update:modelValue', localQuery.value)

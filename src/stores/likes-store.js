@@ -1,6 +1,6 @@
 /**
  * Likes Store (Pinia)
- * 
+ *
  * Manages state for likes feature including:
  * - User's liked items cache
  * - Like counts cache
@@ -16,19 +16,19 @@ export const useLikesStore = defineStore('likes', {
   state: () => ({
     // User's liked item IDs (Set for O(1) lookup)
     likedItemIds: new Set(),
-    
+
     // Like counts cache (itemId -> count)
     likeCounts: {},
-    
+
     // Likers cache (itemId -> array of users)
     likers: {},
-    
+
     // User's liked items history
     myLikedItems: [],
-    
+
     // Popular items from friends
     popularItems: [],
-    
+
     // User's likes statistics
     stats: {
       totalItems: 0,
@@ -38,14 +38,14 @@ export const useLikesStore = defineStore('likes', {
       mostLikedItemName: null,
       mostLikedItemLikes: 0
     },
-    
+
     // Loading states
     loading: false,
     liking: {}, // { itemId: boolean }
-    
+
     // Error state
     error: null,
-    
+
     // Initialized flag
     initialized: false
   }),
@@ -54,65 +54,63 @@ export const useLikesStore = defineStore('likes', {
     /**
      * Check if item is liked by current user
      */
-    isLiked: (state) => (itemId) => {
+    isLiked: state => itemId => {
       return state.likedItemIds.has(itemId)
     },
 
     /**
      * Get likes count for an item
      */
-    getLikesCount: (state) => (itemId) => {
+    getLikesCount: state => itemId => {
       return state.likeCounts[itemId] || 0
     },
 
     /**
      * Get likers for an item
      */
-    getLikers: (state) => (itemId) => {
+    getLikers: state => itemId => {
       return state.likers[itemId] || []
     },
 
     /**
      * Get liked items sorted by date (most recent first)
      */
-    sortedLikedItems: (state) => {
-      return [...state.myLikedItems].sort((a, b) => 
-        new Date(b.liked_at) - new Date(a.liked_at)
-      )
+    sortedLikedItems: state => {
+      return [...state.myLikedItems].sort((a, b) => new Date(b.liked_at) - new Date(a.liked_at))
     },
 
     /**
      * Get popular items
      */
-    getPopularItems: (state) => {
+    getPopularItems: state => {
       return state.popularItems
     },
 
     /**
      * Check if currently liking/unliking an item
      */
-    isLikingItem: (state) => (itemId) => {
+    isLikingItem: state => itemId => {
       return state.liking[itemId] || false
     },
 
     /**
      * Get total liked items count
      */
-    totalLikedItems: (state) => {
+    totalLikedItems: state => {
       return state.likedItemIds.size
     },
 
     /**
      * Alias for totalLikedItems
      */
-    likedItemsCount: (state) => {
+    likedItemsCount: state => {
       return state.likedItemIds.size
     },
 
     /**
      * Check if store is initialized
      */
-    isInitialized: (state) => {
+    isInitialized: state => {
       return state.initialized
     }
   },
@@ -130,7 +128,7 @@ export const useLikesStore = defineStore('likes', {
       try {
         this.loading = true
         this.error = null
-        
+
         // Fetch all initialization data in parallel
         // Note: Don't catch errors here - let them bubble up to the outer catch
         const [likedItems, popularItems, stats] = await Promise.all([
@@ -138,14 +136,14 @@ export const useLikesStore = defineStore('likes', {
           likesService.getPopularItemsFromFriends(20),
           likesService.getUserLikesStats(authStore.user.id)
         ])
-        
+
         // Set liked items
         this.myLikedItems = likedItems || []
         this.likedItemIds = new Set((likedItems || []).map(item => item.item_id))
-        
+
         // Set popular items
         this.popularItems = popularItems || []
-        
+
         // Update likes counts cache
         if (likedItems && likedItems.length > 0) {
           likedItems.forEach(item => {
@@ -157,7 +155,7 @@ export const useLikesStore = defineStore('likes', {
             this.likeCounts[item.item_id] = item.likes_count
           })
         }
-        
+
         // Set stats
         if (stats) {
           this.stats = {
@@ -169,7 +167,7 @@ export const useLikesStore = defineStore('likes', {
             mostLikedItemLikes: stats.most_liked_item_likes || 0
           }
         }
-        
+
         this.initialized = true
       } catch (error) {
         console.error('Error initializing likes:', error)
@@ -192,16 +190,16 @@ export const useLikesStore = defineStore('likes', {
 
         // API call
         const { likesCount } = await likesService.likeItem(itemId)
-        
+
         // Update with real count
         this.likeCounts[itemId] = likesCount
-        
+
         return { success: true, likesCount }
       } catch (error) {
         // Rollback optimistic update
         this.likedItemIds.delete(itemId)
         this.likeCounts[itemId] = (this.likeCounts[itemId] || 1) - 1
-        
+
         console.error('Error liking item:', error)
         this.error = error.message
         throw error
@@ -223,19 +221,19 @@ export const useLikesStore = defineStore('likes', {
 
         // API call
         const { likesCount } = await likesService.unlikeItem(itemId)
-        
+
         // Update with real count
         this.likeCounts[itemId] = likesCount
-        
+
         // Remove from myLikedItems if exists
         this.myLikedItems = this.myLikedItems.filter(item => item.item_id !== itemId)
-        
+
         return { success: true, likesCount }
       } catch (error) {
         // Rollback optimistic update
         this.likedItemIds.add(itemId)
         this.likeCounts[itemId] = (this.likeCounts[itemId] || 0) + 1
-        
+
         console.error('Error unliking item:', error)
         this.error = error.message
         throw error
@@ -249,13 +247,13 @@ export const useLikesStore = defineStore('likes', {
      */
     async toggleLike(itemId) {
       const isLiked = this.isLiked(itemId)
-      
+
       try {
         this.liking[itemId] = true
-        
+
         // Use service's toggleLike method
         const result = await likesService.toggleLike(itemId, isLiked)
-        
+
         // Update state based on result
         if (result.liked) {
           this.likedItemIds.add(itemId)
@@ -264,9 +262,9 @@ export const useLikesStore = defineStore('likes', {
           // Remove from myLikedItems if exists
           this.myLikedItems = this.myLikedItems.filter(item => item.item_id !== itemId)
         }
-        
+
         this.likeCounts[itemId] = result.likesCount
-        
+
         return result
       } catch (error) {
         console.error('Error toggling like:', error)
@@ -288,7 +286,7 @@ export const useLikesStore = defineStore('likes', {
         this.loading = true
         this.error = null
         const items = await likesService.getUserLikedItems(authStore.user.id, limit, offset)
-        
+
         if (offset === 0) {
           this.myLikedItems = items
           // Reset liked item IDs when fetching from start
@@ -296,13 +294,13 @@ export const useLikesStore = defineStore('likes', {
         } else {
           this.myLikedItems = [...this.myLikedItems, ...items]
         }
-        
+
         // Update likes counts cache and liked IDs
         items.forEach(item => {
           this.likeCounts[item.item_id] = item.likes_count
           this.likedItemIds.add(item.item_id)
         })
-        
+
         return items
       } catch (error) {
         console.error('Error fetching liked items:', error)
@@ -339,14 +337,14 @@ export const useLikesStore = defineStore('likes', {
         this.loading = true
         const items = await likesService.getPopularItemsFromFriends(limit)
         this.popularItems = items || []
-        
+
         // Update likes counts cache
         if (items && items.length > 0) {
           items.forEach(item => {
             this.likeCounts[item.item_id] = item.likes_count
           })
         }
-        
+
         return items || []
       } catch (error) {
         console.error('Error fetching popular items:', error)
@@ -364,7 +362,7 @@ export const useLikesStore = defineStore('likes', {
       try {
         this.loading = true
         const stats = await likesService.getUserLikesStats(userId)
-        
+
         // Handle null or undefined stats
         if (!stats) {
           this.stats = {
@@ -408,7 +406,7 @@ export const useLikesStore = defineStore('likes', {
     async batchUpdateLikes(itemIds) {
       try {
         const likedSet = await likesService.batchCheckLiked(itemIds)
-        
+
         // Update likedItemIds
         itemIds.forEach(itemId => {
           if (likedSet.has(itemId)) {

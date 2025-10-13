@@ -3,13 +3,17 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-red-400 flex items-center justify-center">
+        <div
+          class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-red-400 flex items-center justify-center"
+        >
           <svg
             class="w-4 h-4 text-white"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
           </svg>
         </div>
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">
@@ -58,13 +62,17 @@
       v-else-if="!items || items.length === 0"
       class="flex flex-col items-center justify-center py-12 px-4 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600"
     >
-      <div class="w-16 h-16 mb-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+      <div
+        class="w-16 h-16 mb-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+      >
         <svg
           class="w-8 h-8 text-gray-400"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          />
         </svg>
       </div>
       <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -90,7 +98,9 @@
           @click="handleItemClick(item)"
         >
           <!-- Item Card -->
-          <div class="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-200 h-56">
+          <div
+            class="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-200 h-56"
+          >
             <!-- Image -->
             <img
               :src="item.image_url"
@@ -103,12 +113,16 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/30" />
 
             <!-- Likes Badge -->
-            <div class="absolute top-2 right-2 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full flex items-center gap-1 shadow-lg">
+            <div
+              class="absolute top-2 right-2 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full flex items-center gap-1 shadow-lg"
+            >
               <svg
                 class="w-3 h-3 fill-current text-red-500"
                 viewBox="0 0 24 24"
               >
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                />
               </svg>
               <span class="text-xs font-bold text-gray-900 dark:text-white">
                 {{ formatCount(item.likes_count) }}
@@ -126,12 +140,16 @@
             </div>
 
             <!-- Hover Overlay -->
-            <div class="absolute inset-0 bg-primary-600/10 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200" />
+            <div
+              class="absolute inset-0 bg-primary-600/10 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200"
+            />
           </div>
 
           <!-- Category Badge -->
           <div class="mt-2 text-center">
-            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+            <span
+              class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+            >
               {{ formatCategory(item.category) }}
             </span>
           </div>
@@ -249,7 +267,7 @@ function updateScrollButtons() {
   if (!scrollContainer.value) return
 
   const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
-  
+
   canScrollLeft.value = scrollLeft > 0
   canScrollRight.value = scrollLeft < scrollWidth - clientWidth - 10
   showScrollButtons.value = scrollWidth > clientWidth

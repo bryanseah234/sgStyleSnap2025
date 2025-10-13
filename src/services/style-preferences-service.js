@@ -11,15 +11,13 @@ export default {
    * @returns {Promise<Object|null>} Style preferences
    */
   async getPreferences() {
-    const { data, error } = await supabase
-      .from('style_preferences')
-      .select('*')
-      .single()
-    
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+    const { data, error } = await supabase.from('style_preferences').select('*').single()
+
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = no rows
       throw error
     }
-    
+
     return data || null
   },
 
@@ -30,15 +28,15 @@ export default {
    */
   async updatePreferences(preferences) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { data: existing } = await supabase
       .from('style_preferences')
       .select('user_id')
       .eq('user_id', user.user.id)
       .single()
-    
+
     let data, error
-    
+
     if (existing) {
       // Update existing
       ({ data, error } = await supabase
@@ -51,14 +49,16 @@ export default {
       // Create new
       ({ data, error } = await supabase
         .from('style_preferences')
-        .insert([{
-          user_id: user.user.id,
-          ...preferences
-        }])
+        .insert([
+          {
+            user_id: user.user.id,
+            ...preferences
+          }
+        ])
         .select()
         .single())
     }
-    
+
     if (error) throw error
     return data
   },
@@ -72,20 +72,25 @@ export default {
    */
   async submitFeedback(suggestionId, feedbackType, reason = null) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { data, error } = await supabase
       .from('suggestion_feedback')
-      .upsert([{
-        user_id: user.user.id,
-        suggestion_id: suggestionId,
-        feedback_type: feedbackType,
-        feedback_reason: reason
-      }], {
-        onConflict: 'user_id,suggestion_id'
-      })
+      .upsert(
+        [
+          {
+            user_id: user.user.id,
+            suggestion_id: suggestionId,
+            feedback_type: feedbackType,
+            feedback_reason: reason
+          }
+        ],
+        {
+          onConflict: 'user_id,suggestion_id'
+        }
+      )
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -97,18 +102,18 @@ export default {
    */
   async getFeedback(suggestionId) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { data, error } = await supabase
       .from('suggestion_feedback')
       .select('*')
       .eq('user_id', user.user.id)
       .eq('suggestion_id', suggestionId)
       .single()
-    
+
     if (error && error.code !== 'PGRST116') {
       throw error
     }
-    
+
     return data || null
   },
 
@@ -121,7 +126,7 @@ export default {
       .from('suggestion_feedback')
       .select('*')
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data || []
   },
@@ -133,13 +138,13 @@ export default {
    */
   async deleteFeedback(suggestionId) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { error } = await supabase
       .from('suggestion_feedback')
       .delete()
       .eq('user_id', user.user.id)
       .eq('suggestion_id', suggestionId)
-    
+
     if (error) throw error
   }
 }

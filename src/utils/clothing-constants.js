@@ -24,7 +24,7 @@ export const CLOTHING_TYPES = [
   'Skirt',
   'T-Shirt',
   'Top',
-  'Undershirt',
+  'Undershirt'
 ]
 
 // Broad categories (existing database structure)
@@ -33,31 +33,31 @@ export const CATEGORIES = {
   BOTTOM: 'bottom',
   OUTERWEAR: 'outerwear',
   SHOES: 'shoes',
-  ACCESSORY: 'accessory',
+  ACCESSORY: 'accessory'
 }
 
 // Mapping of clothing types to broad categories
 export const CLOTHING_TYPE_TO_CATEGORY = {
-  'Blazer': CATEGORIES.OUTERWEAR,
-  'Blouse': CATEGORIES.TOP,
-  'Body': CATEGORIES.TOP,
-  'Dress': CATEGORIES.TOP, // Can be standalone outfit
-  'Hat': CATEGORIES.ACCESSORY,
-  'Hoodie': CATEGORIES.OUTERWEAR,
-  'Longsleeve': CATEGORIES.TOP,
+  Blazer: CATEGORIES.OUTERWEAR,
+  Blouse: CATEGORIES.TOP,
+  Body: CATEGORIES.TOP,
+  Dress: CATEGORIES.TOP, // Can be standalone outfit
+  Hat: CATEGORIES.ACCESSORY,
+  Hoodie: CATEGORIES.OUTERWEAR,
+  Longsleeve: CATEGORIES.TOP,
   'Not sure': CATEGORIES.TOP, // Default to top
-  'Other': CATEGORIES.ACCESSORY,
-  'Outwear': CATEGORIES.OUTERWEAR,
-  'Pants': CATEGORIES.BOTTOM,
-  'Polo': CATEGORIES.TOP,
-  'Shirt': CATEGORIES.TOP,
-  'Shoes': CATEGORIES.SHOES,
-  'Shorts': CATEGORIES.BOTTOM,
-  'Skip': CATEGORIES.TOP, // Default to top
-  'Skirt': CATEGORIES.BOTTOM,
+  Other: CATEGORIES.ACCESSORY,
+  Outwear: CATEGORIES.OUTERWEAR,
+  Pants: CATEGORIES.BOTTOM,
+  Polo: CATEGORIES.TOP,
+  Shirt: CATEGORIES.TOP,
+  Shoes: CATEGORIES.SHOES,
+  Shorts: CATEGORIES.BOTTOM,
+  Skip: CATEGORIES.TOP, // Default to top
+  Skirt: CATEGORIES.BOTTOM,
   'T-Shirt': CATEGORIES.TOP,
-  'Top': CATEGORIES.TOP,
-  'Undershirt': CATEGORIES.TOP,
+  Top: CATEGORIES.TOP,
+  Undershirt: CATEGORIES.TOP
 }
 
 // Get category from clothing type
@@ -67,9 +67,7 @@ export function getCategoryFromType(clothingType) {
 
 // Get all clothing types for a category
 export function getTypesForCategory(category) {
-  return CLOTHING_TYPES.filter(
-    (type) => CLOTHING_TYPE_TO_CATEGORY[type] === category
-  )
+  return CLOTHING_TYPES.filter(type => CLOTHING_TYPE_TO_CATEGORY[type] === category)
 }
 
 // Validate clothing type
@@ -84,26 +82,26 @@ export function isValidCategory(category) {
 
 // Display labels for UI
 export const CLOTHING_TYPE_LABELS = {
-  'Blazer': 'Blazer',
-  'Blouse': 'Blouse',
-  'Body': 'Bodysuit',
-  'Dress': 'Dress',
-  'Hat': 'Hat',
-  'Hoodie': 'Hoodie',
-  'Longsleeve': 'Long Sleeve Shirt',
+  Blazer: 'Blazer',
+  Blouse: 'Blouse',
+  Body: 'Bodysuit',
+  Dress: 'Dress',
+  Hat: 'Hat',
+  Hoodie: 'Hoodie',
+  Longsleeve: 'Long Sleeve Shirt',
   'Not sure': 'Not Sure',
-  'Other': 'Other',
-  'Outwear': 'Outerwear',
-  'Pants': 'Pants',
-  'Polo': 'Polo Shirt',
-  'Shirt': 'Shirt',
-  'Shoes': 'Shoes',
-  'Shorts': 'Shorts',
-  'Skip': 'Skip',
-  'Skirt': 'Skirt',
+  Other: 'Other',
+  Outwear: 'Outerwear',
+  Pants: 'Pants',
+  Polo: 'Polo Shirt',
+  Shirt: 'Shirt',
+  Shoes: 'Shoes',
+  Shorts: 'Shorts',
+  Skip: 'Skip',
+  Skirt: 'Skirt',
   'T-Shirt': 'T-Shirt',
-  'Top': 'Top',
-  'Undershirt': 'Undershirt',
+  Top: 'Top',
+  Undershirt: 'Undershirt'
 }
 
 // Category display labels
@@ -112,21 +110,14 @@ export const CATEGORY_LABELS = {
   [CATEGORIES.BOTTOM]: 'Bottoms',
   [CATEGORIES.OUTERWEAR]: 'Outerwear',
   [CATEGORIES.SHOES]: 'Shoes',
-  [CATEGORIES.ACCESSORY]: 'Accessories',
+  [CATEGORIES.ACCESSORY]: 'Accessories'
 }
 
 // Outfit generation: Required categories for complete outfit
-export const OUTFIT_REQUIRED_CATEGORIES = [
-  CATEGORIES.TOP,
-  CATEGORIES.BOTTOM,
-  CATEGORIES.SHOES,
-]
+export const OUTFIT_REQUIRED_CATEGORIES = [CATEGORIES.TOP, CATEGORIES.BOTTOM, CATEGORIES.SHOES]
 
 // Outfit generation: Optional categories
-export const OUTFIT_OPTIONAL_CATEGORIES = [
-  CATEGORIES.OUTERWEAR,
-  CATEGORIES.ACCESSORY,
-]
+export const OUTFIT_OPTIONAL_CATEGORIES = [CATEGORIES.OUTERWEAR, CATEGORIES.ACCESSORY]
 
 // Style tags for outfit generation
 export const STYLE_TAGS = [
@@ -139,7 +130,7 @@ export const STYLE_TAGS = [
   'vintage',
   'minimalist',
   'preppy',
-  'edgy',
+  'edgy'
 ]
 
 // Season tags
@@ -159,7 +150,7 @@ export const COLOR_TAGS = [
   'green',
   'blue',
   'purple',
-  'multicolor',
+  'multicolor'
 ]
 
 // Weather conditions
@@ -167,7 +158,7 @@ export const WEATHER_CONDITIONS = {
   HOT: 'hot', // > 25°C
   WARM: 'warm', // 15-25°C
   COOL: 'cool', // 5-15°C
-  COLD: 'cold', // < 5°C
+  COLD: 'cold' // < 5°C
 }
 
 // Occasions
@@ -178,7 +169,7 @@ export const OCCASIONS = {
   WORKOUT: 'workout',
   FORMAL: 'formal',
   PARTY: 'party',
-  TRAVEL: 'travel',
+  TRAVEL: 'travel'
 }
 
 export default {
@@ -197,5 +188,5 @@ export default {
   getCategoryFromType,
   getTypesForCategory,
   isValidClothingType,
-  isValidCategory,
+  isValidCategory
 }

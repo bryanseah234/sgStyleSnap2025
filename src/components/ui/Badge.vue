@@ -32,12 +32,12 @@ defineProps({
   variant: {
     type: String,
     default: 'default',
-    validator: (value) => ['default', 'primary', 'success', 'warning', 'danger'].includes(value)
+    validator: value => ['default', 'primary', 'success', 'warning', 'danger'].includes(value)
   },
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md'].includes(value)
+    validator: value => ['sm', 'md'].includes(value)
   },
   rounded: {
     type: Boolean,

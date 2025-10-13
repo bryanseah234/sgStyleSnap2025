@@ -50,7 +50,7 @@
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
       </svg>
-      
+
       <!-- Unread Badge -->
       <span
         v-if="unreadCount > 0"
@@ -68,9 +68,7 @@
         class="notification-dropdown"
       >
         <div class="dropdown-header">
-          <h3>
-            Notifications
-          </h3>
+          <h3>Notifications</h3>
           <button
             v-if="unreadCount > 0"
             class="mark-all-read"
@@ -103,9 +101,7 @@
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            <p>
-              No notifications yet
-            </p>
+            <p>No notifications yet</p>
           </div>
 
           <div
@@ -116,7 +112,7 @@
               v-for="notification in notifications"
               :key="notification.id"
               class="notification-item"
-              :class="{ 'unread': !notification.is_read }"
+              :class="{ unread: !notification.is_read }"
               @click="handleNotificationClick(notification)"
             >
               <div class="notification-icon">
@@ -125,7 +121,7 @@
                   class="icon"
                 />
               </div>
-              
+
               <div class="notification-content">
                 <p class="notification-message">
                   {{ notification.message }}
@@ -201,7 +197,7 @@ const fetchNotifications = async () => {
 }
 
 // Mark single notification as read
-const markAsRead = async (notificationId) => {
+const markAsRead = async notificationId => {
   await notificationsStore.markAsRead(notificationId)
 }
 
@@ -211,7 +207,7 @@ const markAllAsRead = async () => {
 }
 
 // Handle notification click
-const handleNotificationClick = async (notification) => {
+const handleNotificationClick = async notification => {
   // Mark as read
   if (!notification.is_read) {
     await markAsRead(notification.id)
@@ -219,7 +215,7 @@ const handleNotificationClick = async (notification) => {
 
   // Navigate based on notification type
   closeDropdown()
-  
+
   if (notification.related_id) {
     switch (notification.type) {
       case 'friend_request':
@@ -241,64 +237,88 @@ const handleNotificationClick = async (notification) => {
 }
 
 // Get icon component for notification type
-const getNotificationIcon = (type) => {
+const getNotificationIcon = type => {
   const icons = {
-    friend_request: () => h('svg', { 
-      xmlns: 'http://www.w3.org/2000/svg',
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: 'currentColor',
-      'stroke-width': '2'
-    }, [
-      h('path', { d: 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
-      h('circle', { cx: '8.5', cy: '7', r: '4' }),
-      h('line', { x1: '20', y1: '8', x2: '20', y2: '14' }),
-      h('line', { x1: '23', y1: '11', x2: '17', y2: '11' })
-    ]),
-    friend_accepted: () => h('svg', {
-      xmlns: 'http://www.w3.org/2000/svg',
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: 'currentColor',
-      'stroke-width': '2'
-    }, [
-      h('path', { d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
-      h('circle', { cx: '9', cy: '7', r: '4' }),
-      h('path', { d: 'M23 21v-2a4 4 0 0 0-3-3.87' }),
-      h('path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' })
-    ]),
-    outfit_suggestion: () => h('svg', {
-      xmlns: 'http://www.w3.org/2000/svg',
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: 'currentColor',
-      'stroke-width': '2'
-    }, [
-      h('path', { d: 'M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z' }),
-      h('line', { x1: '7', y1: '7', x2: '7.01', y2: '7' })
-    ]),
-    item_liked: () => h('svg', {
-      xmlns: 'http://www.w3.org/2000/svg',
-      viewBox: '0 0 24 24',
-      fill: 'currentColor',
-      stroke: 'none'
-    }, [
-      h('path', { d: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' })
-    ])
+    friend_request: () =>
+      h(
+        'svg',
+        {
+          xmlns: 'http://www.w3.org/2000/svg',
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          'stroke-width': '2'
+        },
+        [
+          h('path', { d: 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
+          h('circle', { cx: '8.5', cy: '7', r: '4' }),
+          h('line', { x1: '20', y1: '8', x2: '20', y2: '14' }),
+          h('line', { x1: '23', y1: '11', x2: '17', y2: '11' })
+        ]
+      ),
+    friend_accepted: () =>
+      h(
+        'svg',
+        {
+          xmlns: 'http://www.w3.org/2000/svg',
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          'stroke-width': '2'
+        },
+        [
+          h('path', { d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
+          h('circle', { cx: '9', cy: '7', r: '4' }),
+          h('path', { d: 'M23 21v-2a4 4 0 0 0-3-3.87' }),
+          h('path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' })
+        ]
+      ),
+    outfit_suggestion: () =>
+      h(
+        'svg',
+        {
+          xmlns: 'http://www.w3.org/2000/svg',
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          'stroke-width': '2'
+        },
+        [
+          h('path', {
+            d: 'M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'
+          }),
+          h('line', { x1: '7', y1: '7', x2: '7.01', y2: '7' })
+        ]
+      ),
+    item_liked: () =>
+      h(
+        'svg',
+        {
+          xmlns: 'http://www.w3.org/2000/svg',
+          viewBox: '0 0 24 24',
+          fill: 'currentColor',
+          stroke: 'none'
+        },
+        [
+          h('path', {
+            d: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'
+          })
+        ]
+      )
   }
   return icons[type] || icons.friend_request
 }
 
 // Format time relative to now
-const formatTime = (timestamp) => {
+const formatTime = timestamp => {
   const now = new Date()
   const time = new Date(timestamp)
   const diff = now - time
-  
+
   const minutes = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
-  
+
   if (minutes < 1) return 'Just now'
   if (minutes < 60) return `${minutes}m ago`
   if (hours < 24) return `${hours}h ago`
@@ -309,7 +329,7 @@ const formatTime = (timestamp) => {
 // Click outside directive
 const vClickOutside = {
   mounted(el, binding) {
-    el.clickOutsideEvent = (event) => {
+    el.clickOutsideEvent = event => {
       if (!(el === event.target || el.contains(event.target))) {
         binding.value(event)
       }

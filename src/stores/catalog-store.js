@@ -1,8 +1,8 @@
 /**
  * Catalog Store - Pinia
- * 
+ *
  * Purpose: State management for catalog browsing and filtering
- * 
+ *
  * Features:
  * - Browse catalog with filters
  * - Search catalog
@@ -138,7 +138,7 @@ export const useCatalogStore = defineStore('catalog', () => {
   async function setFilters(newFilters) {
     filters.value = { ...filters.value, ...newFilters }
     pagination.value.page = 1
-    
+
     if (searchQuery.value) {
       await searchCatalog(searchQuery.value)
     } else {
@@ -161,7 +161,7 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   async function setPage(page) {
     pagination.value.page = page
-    
+
     if (searchQuery.value) {
       await searchCatalog(searchQuery.value)
     } else {

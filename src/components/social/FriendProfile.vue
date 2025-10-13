@@ -75,7 +75,7 @@
               {{ getInitial(profile.user.name) }}
             </div>
           </div>
-          
+
           <div class="user-info">
             <h1 class="user-name">
               {{ profile.user.name }}
@@ -85,7 +85,7 @@
             </p>
           </div>
         </div>
-        
+
         <div class="header-actions">
           <button
             class="suggest-btn"
@@ -107,7 +107,7 @@
         <h2 class="section-title">
           Shared Closet
         </h2>
-        
+
         <!-- Empty State -->
         <div
           v-if="profile.items.length === 0"
@@ -117,7 +117,7 @@
             {{ profile.user.name }} hasn't shared any items yet
           </p>
         </div>
-        
+
         <!-- Items Grid -->
         <div
           v-else
@@ -162,7 +162,8 @@
           Unfriend {{ profile?.user.name }}?
         </h3>
         <p class="modal-message">
-          This will remove them from your friends list and you won't be able to see their shared items.
+          This will remove them from your friends list and you won't be able to see their shared
+          items.
         </p>
         <div class="modal-actions">
           <button
@@ -211,7 +212,7 @@ onMounted(async () => {
 async function loadProfile() {
   loading.value = true
   error.value = null
-  
+
   try {
     const data = await friendsStore.fetchFriendProfile(props.friendId)
     profile.value = data

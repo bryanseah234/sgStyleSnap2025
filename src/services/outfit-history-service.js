@@ -17,7 +17,7 @@ export default {
       .insert([outfitData])
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -28,29 +28,26 @@ export default {
    * @returns {Promise<Array>} Outfit history
    */
   async getHistory(filters = {}) {
-    let query = supabase
-      .from('outfit_history')
-      .select('*')
-      .order('worn_date', { ascending: false })
-    
+    let query = supabase.from('outfit_history').select('*').order('worn_date', { ascending: false })
+
     if (filters.occasion) {
       query = query.eq('occasion', filters.occasion)
     }
-    
+
     if (filters.rating_min) {
       query = query.gte('rating', filters.rating_min)
     }
-    
+
     if (filters.limit) {
       query = query.limit(filters.limit)
     }
-    
+
     if (filters.offset) {
       query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1)
     }
-    
+
     const { data, error } = await query
-    
+
     if (error) throw error
     return data
   },
@@ -61,12 +58,8 @@ export default {
    * @returns {Promise<Object>} History entry
    */
   async getHistoryEntry(id) {
-    const { data, error } = await supabase
-      .from('outfit_history')
-      .select('*')
-      .eq('id', id)
-      .single()
-    
+    const { data, error } = await supabase.from('outfit_history').select('*').eq('id', id).single()
+
     if (error) throw error
     return data
   },
@@ -84,7 +77,7 @@ export default {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -95,11 +88,8 @@ export default {
    * @returns {Promise<void>}
    */
   async deleteHistory(id) {
-    const { error } = await supabase
-      .from('outfit_history')
-      .delete()
-      .eq('id', id)
-    
+    const { error } = await supabase.from('outfit_history').delete().eq('id', id)
+
     if (error) throw error
   },
 
@@ -109,12 +99,11 @@ export default {
    */
   async getStats() {
     const { data: user } = await supabase.auth.getUser()
-    
-    const { data, error } = await supabase
-      .rpc('get_user_outfit_stats', {
-        p_user_id: user.user.id
-      })
-    
+
+    const { data, error } = await supabase.rpc('get_user_outfit_stats', {
+      p_user_id: user.user.id
+    })
+
     if (error) throw error
     return data[0] || {}
   },
@@ -126,13 +115,12 @@ export default {
    */
   async getMostWornItems(limit = 10) {
     const { data: user } = await supabase.auth.getUser()
-    
-    const { data, error } = await supabase
-      .rpc('get_most_worn_items', {
-        p_user_id: user.user.id,
-        p_limit: limit
-      })
-    
+
+    const { data, error } = await supabase.rpc('get_most_worn_items', {
+      p_user_id: user.user.id,
+      p_limit: limit
+    })
+
     if (error) throw error
     return data || []
   }

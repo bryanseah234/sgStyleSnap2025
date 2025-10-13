@@ -32,9 +32,13 @@
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left align-middle shadow-xl transition-all">
+            <DialogPanel
+              class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left align-middle shadow-xl transition-all"
+            >
               <!-- Header -->
-              <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div
+                class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700"
+              >
                 <DialogTitle
                   as="h3"
                   class="text-lg font-medium leading-6 text-gray-900 dark:text-white"
@@ -52,7 +56,9 @@
                     fill="currentColor"
                     class="w-5 h-5"
                   >
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    <path
+                      d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
+                    />
                   </svg>
                 </button>
               </div>
@@ -189,7 +195,7 @@ const error = ref(null)
 const loadLikers = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     const result = await likesService.getItemLikers(props.itemId)
     likers.value = result || []
@@ -200,15 +206,15 @@ const loadLikers = async () => {
   }
 }
 
-const formatLikeTime = (timestamp) => {
+const formatLikeTime = timestamp => {
   if (!timestamp) return ''
-  
+
   const date = new Date(timestamp)
   const now = new Date()
   const diffInMs = now - date
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
   const diffInDays = Math.floor(diffInHours / 24)
-  
+
   if (diffInHours < 1) {
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
     return diffInMinutes < 1 ? 'Just now' : `${diffInMinutes}m ago`
@@ -221,7 +227,7 @@ const formatLikeTime = (timestamp) => {
   }
 }
 
-const viewProfile = (userId) => {
+const viewProfile = userId => {
   closeModal()
   router.push(`/profile/${userId}`)
 }
@@ -230,15 +236,18 @@ const closeModal = () => {
   emit('close')
 }
 
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen) {
-    loadLikers()
-  } else {
-    // Reset state when closed
-    setTimeout(() => {
-      likers.value = []
-      error.value = null
-    }, 300)
+watch(
+  () => props.isOpen,
+  isOpen => {
+    if (isOpen) {
+      loadLikers()
+    } else {
+      // Reset state when closed
+      setTimeout(() => {
+        likers.value = []
+        error.value = null
+      }, 300)
+    }
   }
-})
+)
 </script>

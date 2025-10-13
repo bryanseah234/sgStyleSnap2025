@@ -86,7 +86,7 @@ const handleToggleLike = async () => {
   }, 200)
 
   loading.value = true
-  
+
   try {
     await emit('toggle-like', {
       itemId: props.itemId,

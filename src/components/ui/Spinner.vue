@@ -33,12 +33,12 @@ defineProps({
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(value)
+    validator: value => ['xs', 'sm', 'md', 'lg', 'xl'].includes(value)
   },
   color: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'white', 'gray'].includes(value)
+    validator: value => ['primary', 'white', 'gray'].includes(value)
   }
 })
 </script>

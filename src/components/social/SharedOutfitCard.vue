@@ -1,5 +1,7 @@
 <template>
-  <div class="shared-outfit-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+  <div
+    class="shared-outfit-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+  >
     <!-- User Header -->
     <div class="p-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -17,7 +19,7 @@
           </p>
         </div>
       </div>
-      
+
       <!-- More Options Menu -->
       <div
         v-if="isOwnOutfit"
@@ -32,14 +34,16 @@
             fill="currentColor"
             viewBox="0 0 20 20"
           >
-            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+            <path
+              d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+            />
           </svg>
         </button>
-        
+
         <!-- Dropdown Menu -->
         <div
           v-if="showMenu"
-          v-click-away="() => showMenu = false"
+          v-click-away="() => (showMenu = false)"
           class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10"
         >
           <button
@@ -245,12 +249,12 @@ const timeAgo = computed(() => {
   const date = new Date(props.outfit.created_at)
   const now = new Date()
   const seconds = Math.floor((now - date) / 1000)
-  
+
   if (seconds < 60) return 'Just now'
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
-  
+
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 })
 
@@ -270,14 +274,14 @@ const occasionClass = computed(() => {
 
 const handleLikeToggle = async () => {
   if (likeLoading.value) return
-  
+
   likeLoading.value = true
   const wasLiked = isLiked.value
-  
+
   try {
     // Optimistic update
     localLikesCount.value += wasLiked ? -1 : 1
-    
+
     await sharedOutfitsStore.toggleLike(props.outfit.id)
   } catch (error) {
     // Rollback on error
@@ -300,7 +304,7 @@ const handleCommentDeleted = () => {
   localCommentsCount.value = Math.max(0, localCommentsCount.value - 1)
 }
 
-const capitalizeFirst = (str) => {
+const capitalizeFirst = str => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
@@ -308,7 +312,7 @@ const capitalizeFirst = (str) => {
 // Click away directive for closing menu
 const vClickAway = {
   mounted(el, binding) {
-    el._clickAwayHandler = (event) => {
+    el._clickAwayHandler = event => {
       if (!el.contains(event.target)) {
         binding.value()
       }

@@ -159,9 +159,11 @@
             v-for="fit in fitOptions"
             :key="fit.value"
             class="relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md"
-            :class="preferences.fit_preference === fit.value 
-              ? 'border-blue-500 bg-blue-50' 
-              : 'border-gray-200 hover:border-gray-300'"
+            :class="
+              preferences.fit_preference === fit.value
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 hover:border-gray-300'
+            "
           >
             <input
               v-model="preferences.fit_preference"
@@ -171,7 +173,7 @@
             >
             <span class="text-3xl mb-2">{{ fit.icon }}</span>
             <span class="font-medium text-sm text-gray-900">{{ fit.label }}</span>
-            
+
             <!-- Checkmark -->
             <div
               v-if="preferences.fit_preference === fit.value"
@@ -209,9 +211,11 @@
             v-for="occasion in occasionOptions"
             :key="occasion.value"
             class="relative flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md"
-            :class="preferences.common_occasions.includes(occasion.value)
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-200 hover:border-gray-300'"
+            :class="
+              preferences.common_occasions.includes(occasion.value)
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 hover:border-gray-300'
+            "
           >
             <input
               type="checkbox"
@@ -297,7 +301,9 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center justify-end space-x-3 pt-4 border-t sticky bottom-0 bg-white py-4">
+      <div
+        class="flex items-center justify-end space-x-3 pt-4 border-t sticky bottom-0 bg-white py-4"
+      >
         <button
           type="button"
           class="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
@@ -386,7 +392,7 @@ const positivePercentage = computed(() => stylePreferencesStore.positivePercenta
 onMounted(async () => {
   await stylePreferencesStore.fetchPreferences()
   await stylePreferencesStore.fetchAllFeedback()
-  
+
   // Load preferences into local state
   if (stylePreferencesStore.hasPreferences) {
     preferences.value = {
@@ -402,17 +408,21 @@ onMounted(async () => {
 
 const addBrand = () => {
   const brand = newBrand.value.trim()
-  if (brand && !preferences.value.preferred_brands.includes(brand) && preferences.value.preferred_brands.length < 20) {
+  if (
+    brand &&
+    !preferences.value.preferred_brands.includes(brand) &&
+    preferences.value.preferred_brands.length < 20
+  ) {
     preferences.value.preferred_brands.push(brand)
     newBrand.value = ''
   }
 }
 
-const removeBrand = (brand) => {
+const removeBrand = brand => {
   preferences.value.preferred_brands = preferences.value.preferred_brands.filter(b => b !== brand)
 }
 
-const toggleOccasion = (occasion) => {
+const toggleOccasion = occasion => {
   const index = preferences.value.common_occasions.indexOf(occasion)
   if (index > -1) {
     preferences.value.common_occasions.splice(index, 1)

@@ -77,51 +77,51 @@ export const useClosetStore = defineStore('closet', {
       totalItems: 0 // Total items including catalog additions
     }
   }),
-  
+
   getters: {
-    filteredItems: (state) => {
+    filteredItems: state => {
       let items = state.items
-      
+
       // Filter by category
       if (state.filters.category && state.filters.category !== 'all') {
         items = items.filter(item => item.category === state.filters.category)
       }
-      
+
       // Filter by clothing_type
       if (state.filters.clothing_type && state.filters.clothing_type !== 'all') {
         items = items.filter(item => item.clothing_type === state.filters.clothing_type)
       }
-      
+
       // Filter by privacy
       if (state.filters.privacy && state.filters.privacy !== 'all') {
         items = items.filter(item => item.privacy === state.filters.privacy)
       }
-      
+
       // Filter by favorites
       if (state.filters.favorites) {
         items = items.filter(item => item.is_favorite === true)
       }
-      
+
       // Filter by search
       if (state.filters.search) {
         const search = state.filters.search.toLowerCase()
-        items = items.filter(item => 
-          item.name?.toLowerCase().includes(search) ||
-          item.brand?.toLowerCase().includes(search)
+        items = items.filter(
+          item =>
+            item.name?.toLowerCase().includes(search) || item.brand?.toLowerCase().includes(search)
         )
       }
-      
+
       return items
     },
-    favoriteItems: (state) => state.items.filter(item => item.is_favorite === true),
-    itemCount: (state) => state.items.length,
-    quotaPercentage: (state) => (state.quota.used / state.quota.limit) * 100,
-    isQuotaFull: (state) => state.quota.used >= state.quota.limit,
-    canAddItem: (state) => state.quota.used < state.quota.limit,
-    isQuotaNearLimit: (state) => state.quota.used >= (state.quota.limit * 0.9),
-    quotaRemaining: (state) => state.quota.limit - state.quota.used
+    favoriteItems: state => state.items.filter(item => item.is_favorite === true),
+    itemCount: state => state.items.length,
+    quotaPercentage: state => (state.quota.used / state.quota.limit) * 100,
+    isQuotaFull: state => state.quota.used >= state.quota.limit,
+    canAddItem: state => state.quota.used < state.quota.limit,
+    isQuotaNearLimit: state => state.quota.used >= state.quota.limit * 0.9,
+    quotaRemaining: state => state.quota.limit - state.quota.used
   },
-  
+
   actions: {
     /**
      * Fetch all items from API
@@ -132,7 +132,7 @@ export const useClosetStore = defineStore('closet', {
         const clothesService = await import('../services/clothes-service')
         const items = await clothesService.getItems(this.filters)
         this.items = items
-        
+
         // Count only user uploads (catalog_item_id is null) for quota
         this.quota.used = items.filter(item => !item.catalog_item_id).length
         this.quota.totalItems = items.length
@@ -143,7 +143,7 @@ export const useClosetStore = defineStore('closet', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Add new item (with image upload)
      * @param {Object} itemData - Item data including file
@@ -151,18 +151,20 @@ export const useClosetStore = defineStore('closet', {
     async addItem(itemData) {
       // Check quota before upload (only for user uploads, not catalog additions)
       if (!this.canAddItem) {
-        throw new Error('You have reached your 50 upload limit. Add unlimited items from our catalog instead!')
+        throw new Error(
+          'You have reached your 50 upload limit. Add unlimited items from our catalog instead!'
+        )
       }
-      
+
       this.isLoading = true
       this.loading = true
       try {
         const clothesService = await import('../services/clothes-service')
-        
+
         // Upload image to Cloudinary first
         let imageUrl = null
         let thumbnailUrl = null
-        
+
         if (itemData.file) {
           const uploadResult = await clothesService.uploadImage(itemData.file)
           imageUrl = uploadResult.url
@@ -174,7 +176,7 @@ export const useClosetStore = defineStore('closet', {
         } else {
           throw new Error('Image file or URL is required')
         }
-        
+
         // Create item with image URLs
         const newItem = await clothesService.createItem({
           name: itemData.name,
@@ -186,11 +188,11 @@ export const useClosetStore = defineStore('closet', {
           size: itemData.size,
           brand: itemData.brand
         })
-        
+
         // Add to local state
         this.items.unshift(newItem)
         this.quota.used = this.items.length
-        
+
         return newItem
       } catch (error) {
         console.error('Failed to add item:', error)
@@ -199,7 +201,7 @@ export const useClosetStore = defineStore('closet', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Update item
      */
@@ -208,7 +210,7 @@ export const useClosetStore = defineStore('closet', {
       this.loading = true
       try {
         const clothesService = await import('../services/clothes-service')
-        
+
         // Upload new image if provided
         if (itemData.file) {
           const uploadResult = await clothesService.uploadImage(itemData.file)
@@ -216,15 +218,15 @@ export const useClosetStore = defineStore('closet', {
           itemData.thumbnail_url = uploadResult.thumbnail_url
           delete itemData.file
         }
-        
+
         const updatedItem = await clothesService.updateItem(id, itemData)
-        
+
         // Update local state
         const index = this.items.findIndex(item => item.id === id)
         if (index !== -1) {
           this.items[index] = updatedItem
         }
-        
+
         return updatedItem
       } catch (error) {
         console.error('Failed to update item:', error)
@@ -235,7 +237,7 @@ export const useClosetStore = defineStore('closet', {
         this.loading = false
       }
     },
-    
+
     /**
      * Delete item
      */
@@ -245,7 +247,7 @@ export const useClosetStore = defineStore('closet', {
       try {
         const clothesService = await import('../services/clothes-service')
         await clothesService.deleteItem(id)
-        
+
         // Remove from local state
         this.items = this.items.filter(item => item.id !== id)
         this.quota.used = this.items.length
@@ -258,14 +260,14 @@ export const useClosetStore = defineStore('closet', {
         this.loading = false
       }
     },
-    
+
     /**
      * Remove item (alias for deleteItem)
      */
     async removeItem(id) {
       return this.deleteItem(id)
     },
-    
+
     /**
      * Toggle favorite status of an item
      */
@@ -276,12 +278,12 @@ export const useClosetStore = defineStore('closet', {
         if (!item) {
           throw new Error('Item not found')
         }
-        
+
         const newFavoriteStatus = !item.is_favorite
-        
+
         const clothesService = await import('../services/clothes-service')
         await clothesService.toggleFavorite(id, newFavoriteStatus)
-        
+
         // Update local state optimistically
         const index = this.items.findIndex(item => item.id === id)
         if (index !== -1) {
@@ -294,21 +296,21 @@ export const useClosetStore = defineStore('closet', {
         throw error
       }
     },
-    
+
     /**
      * Set current item for viewing/editing
      */
     setCurrentItem(item) {
       this.currentItem = item
     },
-    
+
     /**
      * Update filters
      */
     setFilters(filters) {
       this.filters = { ...this.filters, ...filters }
     },
-    
+
     /**
      * Fetch quota information
      */

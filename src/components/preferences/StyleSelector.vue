@@ -196,30 +196,30 @@ const availableStyles = [
   }
 ]
 
-const isSelected = (styleValue) => {
+const isSelected = styleValue => {
   return props.modelValue.includes(styleValue)
 }
 
-const isDisabled = (styleValue) => {
+const isDisabled = styleValue => {
   return props.maxStyles && !isSelected(styleValue) && props.modelValue.length >= props.maxStyles
 }
 
-const toggleStyle = (styleValue) => {
+const toggleStyle = styleValue => {
   if (isDisabled(styleValue)) return
-  
+
   const newValue = isSelected(styleValue)
     ? props.modelValue.filter(s => s !== styleValue)
     : [...props.modelValue, styleValue]
-  
+
   emit('update:modelValue', newValue)
 }
 
-const removeStyle = (styleValue) => {
+const removeStyle = styleValue => {
   const newValue = props.modelValue.filter(s => s !== styleValue)
   emit('update:modelValue', newValue)
 }
 
-const capitalizeFirst = (str) => {
+const capitalizeFirst = str => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1)
 }

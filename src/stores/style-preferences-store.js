@@ -19,76 +19,76 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     /**
      * Check if preferences exist
      */
-    hasPreferences: (state) => {
+    hasPreferences: state => {
       return state.preferences !== null
     },
 
     /**
      * Get favorite colors
      */
-    favoriteColors: (state) => {
+    favoriteColors: state => {
       return state.preferences?.favorite_colors || []
     },
 
     /**
      * Get avoided colors
      */
-    avoidColors: (state) => {
+    avoidColors: state => {
       return state.preferences?.avoid_colors || []
     },
 
     /**
      * Get preferred styles
      */
-    preferredStyles: (state) => {
+    preferredStyles: state => {
       return state.preferences?.preferred_styles || []
     },
 
     /**
      * Get preferred brands
      */
-    preferredBrands: (state) => {
+    preferredBrands: state => {
       return state.preferences?.preferred_brands || []
     },
 
     /**
      * Get fit preference
      */
-    fitPreference: (state) => {
+    fitPreference: state => {
       return state.preferences?.fit_preference || 'regular'
     },
 
     /**
      * Get common occasions
      */
-    commonOccasions: (state) => {
+    commonOccasions: state => {
       return state.preferences?.common_occasions || []
     },
 
     /**
      * Get feedback for specific suggestion
      */
-    getFeedbackForSuggestion: (state) => (suggestionId) => {
+    getFeedbackForSuggestion: state => suggestionId => {
       return state.feedback.find(f => f.suggestion_id === suggestionId)
     },
 
     /**
      * Get feedback statistics
      */
-    feedbackStats: (state) => {
+    feedbackStats: state => {
       const stats = {
         like: 0,
         dislike: 0,
         love: 0,
         total: state.feedback.length
       }
-      
+
       state.feedback.forEach(f => {
         if (f.feedback_type in stats) {
           stats[f.feedback_type]++
         }
       })
-      
+
       return stats
     },
 
@@ -109,7 +109,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async fetchPreferences() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.preferences = await stylePreferencesService.getPreferences()
         this.hasLoadedPreferences = true
@@ -128,11 +128,11 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async updatePreferences(updates) {
       this.loading = true
       this.error = null
-      
+
       // Optimistic update
       const oldPreferences = this.preferences
       this.preferences = { ...this.preferences, ...updates }
-      
+
       try {
         const updated = await stylePreferencesService.updatePreferences(updates)
         this.preferences = updated
@@ -154,7 +154,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async addFavoriteColor(color) {
       const currentColors = this.favoriteColors
       if (currentColors.includes(color)) return
-      
+
       await this.updatePreferences({
         favorite_colors: [...currentColors, color]
       })
@@ -176,7 +176,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async addAvoidColor(color) {
       const currentColors = this.avoidColors
       if (currentColors.includes(color)) return
-      
+
       await this.updatePreferences({
         avoid_colors: [...currentColors, color]
       })
@@ -198,7 +198,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async addPreferredStyle(style) {
       const currentStyles = this.preferredStyles
       if (currentStyles.includes(style)) return
-      
+
       await this.updatePreferences({
         preferred_styles: [...currentStyles, style]
       })
@@ -220,7 +220,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async addPreferredBrand(brand) {
       const currentBrands = this.preferredBrands
       if (currentBrands.includes(brand)) return
-      
+
       await this.updatePreferences({
         preferred_brands: [...currentBrands, brand]
       })
@@ -251,7 +251,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async addCommonOccasion(occasion) {
       const currentOccasions = this.commonOccasions
       if (currentOccasions.includes(occasion)) return
-      
+
       await this.updatePreferences({
         common_occasions: [...currentOccasions, occasion]
       })
@@ -273,25 +273,23 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async submitFeedback(suggestionId, feedbackType, reason = null) {
       this.loading = true
       this.error = null
-      
+
       try {
         const feedback = await stylePreferencesService.submitFeedback(
           suggestionId,
           feedbackType,
           reason
         )
-        
+
         // Update or add to feedback array
-        const existingIndex = this.feedback.findIndex(
-          f => f.suggestion_id === suggestionId
-        )
-        
+        const existingIndex = this.feedback.findIndex(f => f.suggestion_id === suggestionId)
+
         if (existingIndex !== -1) {
           this.feedback[existingIndex] = feedback
         } else {
           this.feedback.push(feedback)
         }
-        
+
         return feedback
       } catch (error) {
         this.error = error.message
@@ -308,7 +306,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async fetchAllFeedback() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.feedback = await stylePreferencesService.getAllFeedback()
       } catch (error) {
@@ -326,22 +324,20 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async fetchFeedback(suggestionId) {
       this.loading = true
       this.error = null
-      
+
       try {
         const feedback = await stylePreferencesService.getFeedback(suggestionId)
-        
+
         if (feedback) {
-          const existingIndex = this.feedback.findIndex(
-            f => f.suggestion_id === suggestionId
-          )
-          
+          const existingIndex = this.feedback.findIndex(f => f.suggestion_id === suggestionId)
+
           if (existingIndex !== -1) {
             this.feedback[existingIndex] = feedback
           } else {
             this.feedback.push(feedback)
           }
         }
-        
+
         return feedback
       } catch (error) {
         this.error = error.message
@@ -358,10 +354,10 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
     async deleteFeedback(suggestionId) {
       this.loading = true
       this.error = null
-      
+
       try {
         await stylePreferencesService.deleteFeedback(suggestionId)
-        
+
         this.feedback = this.feedback.filter(f => f.suggestion_id !== suggestionId)
       } catch (error) {
         this.error = error.message
@@ -379,7 +375,7 @@ export const useStylePreferencesStore = defineStore('stylePreferences', {
       if (!this.hasLoadedPreferences) {
         await this.fetchPreferences()
       }
-      
+
       if (!this.hasPreferences) {
         // Create default preferences
         await this.updatePreferences({

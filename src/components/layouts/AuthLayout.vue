@@ -58,9 +58,7 @@
 
       <!-- Footer -->
       <div class="auth-footer">
-        <p>
-          &copy; 2025 StyleSnap. All rights reserved.
-        </p>
+        <p>&copy; 2025 StyleSnap. All rights reserved.</p>
       </div>
     </div>
   </div>

@@ -48,7 +48,7 @@
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Select items from {{ friendName }}'s closet
                   </label>
-                  
+
                   <!-- Category Filter -->
                   <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
                     <button
@@ -122,7 +122,9 @@
                           />
                         </svg>
                       </div>
-                      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
+                      <div
+                        class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2"
+                      >
                         <p class="text-xs text-white truncate">
                           {{ item.name }}
                         </p>
@@ -269,11 +271,11 @@ const filteredItems = computed(() => {
   return friendItems.value.filter(item => item.category === selectedCategory.value)
 })
 
-const isItemSelected = (itemId) => {
+const isItemSelected = itemId => {
   return selectedItems.value.some(item => item.id === itemId)
 }
 
-const toggleItem = (item) => {
+const toggleItem = item => {
   const index = selectedItems.value.findIndex(i => i.id === item.id)
   if (index > -1) {
     selectedItems.value.splice(index, 1)
@@ -282,7 +284,7 @@ const toggleItem = (item) => {
   }
 }
 
-const removeItem = (itemId) => {
+const removeItem = itemId => {
   const index = selectedItems.value.findIndex(i => i.id === itemId)
   if (index > -1) {
     selectedItems.value.splice(index, 1)
@@ -292,7 +294,7 @@ const removeItem = (itemId) => {
 const loadFriendItems = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     const result = await friendSuggestionsService.getFriendClosetItems(props.friendId)
     if (result.success) {
@@ -312,10 +314,10 @@ const handleSubmit = async () => {
     error.value = 'Please select at least one item'
     return
   }
-  
+
   submitting.value = true
   error.value = null
-  
+
   try {
     const outfitItems = selectedItems.value.map(item => ({
       clothes_id: item.id,
@@ -324,13 +326,13 @@ const handleSubmit = async () => {
       thumbnail_url: item.thumbnail_url,
       name: item.name
     }))
-    
+
     const result = await friendSuggestionsService.createSuggestion({
       friendId: props.friendId,
       outfitItems,
       message: message.value.trim() || null
     })
-    
+
     if (result.success) {
       emit('success', result.suggestion)
       closeModal()
@@ -357,11 +359,14 @@ const closeModal = () => {
   }
 }
 
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen && friendItems.value.length === 0) {
-    loadFriendItems()
+watch(
+  () => props.isOpen,
+  isOpen => {
+    if (isOpen && friendItems.value.length === 0) {
+      loadFriendItems()
+    }
   }
-})
+)
 
 onMounted(() => {
   if (props.isOpen) {

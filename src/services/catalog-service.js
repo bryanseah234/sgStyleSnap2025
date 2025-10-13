@@ -1,19 +1,19 @@
 /**
  * Catalog Service - StyleSnap
- * 
+ *
  * Purpose: Manage catalog browsing, searching, and adding items to closet
- * 
+ *
  * Features:
  * - Browse catalog with pagination
  * - Full-text search with filters
  * - Category, color, brand, season filtering
  * - Add catalog items to user's closet
- * 
+ *
  * Privacy:
  * - CRITICAL: All catalog items displayed anonymously
  * - No owner information exposed (admin or user-uploaded)
  * - catalog_items table has no owner_id column by design
- * 
+ *
  * Dependencies:
  * - Supabase client (api.js)
  * - SQL Migration 005 (catalog_items table)
@@ -25,7 +25,7 @@ import { supabase } from '../config/supabase'
 const catalogService = {
   /**
    * Browse catalog items with optional filters
-   * 
+   *
    * @param {Object} options - Filter and pagination options
    * @param {string} options.category - Filter by category
    * @param {string} options.color - Filter by color
@@ -36,7 +36,7 @@ const catalogService = {
    * @param {number} options.page - Page number (default: 1)
    * @param {number} options.limit - Items per page (default: 20)
    * @returns {Promise<Object>} Catalog items with pagination info (excludes owned items)
-   * 
+   *
    * Note: By default, items user already has in their closet are filtered out.
    * This prevents showing duplicate suggestions.
    */
@@ -56,7 +56,9 @@ const catalogService = {
       // Get current user if excluding owned items
       let userId = null
       if (excludeOwned) {
-        const { data: { user } } = await supabase.auth.getUser()
+        const {
+          data: { user }
+        } = await supabase.auth.getUser()
         userId = user?.id || null
       }
 
@@ -105,7 +107,7 @@ const catalogService = {
 
   /**
    * Search catalog with full-text search
-   * 
+   *
    * @param {Object} options - Search and filter options
    * @param {string} options.q - Search query
    * @param {string} options.category - Filter by category
@@ -164,7 +166,7 @@ const catalogService = {
 
   /**
    * Get a single catalog item by ID
-   * 
+   *
    * @param {string} itemId - Catalog item ID
    * @returns {Promise<Object>} Catalog item details
    */
@@ -187,7 +189,7 @@ const catalogService = {
 
   /**
    * Add catalog item to user's closet
-   * 
+   *
    * @param {string} catalogItemId - Catalog item ID
    * @param {Object} options - Additional options
    * @param {string} options.customName - Custom name for the item (optional)
@@ -206,7 +208,9 @@ const catalogService = {
       }
 
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
       if (!user) {
         throw new Error('User not authenticated')
       }
@@ -253,11 +257,7 @@ const catalogService = {
         newItem.primary_color = catalogItem.primary_color
       }
 
-      const { data, error } = await supabase
-        .from('clothes')
-        .insert(newItem)
-        .select()
-        .single()
+      const { data, error } = await supabase.from('clothes').insert(newItem).select().single()
 
       if (error) throw error
 
@@ -270,7 +270,7 @@ const catalogService = {
 
   /**
    * Get unique values for filters (for filter dropdown population)
-   * 
+   *
    * @returns {Promise<Object>} Filter options
    */
   async getFilterOptions() {

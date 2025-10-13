@@ -48,7 +48,9 @@
                   :class="collection.is_favorite ? 'text-yellow-400 fill-current' : 'text-gray-400'"
                   viewBox="0 0 20 20"
                 >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                  />
                 </svg>
               </button>
             </div>
@@ -73,7 +75,8 @@
                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                   />
                 </svg>
-                {{ collection.outfits_count || 0 }} {{ collection.outfits_count === 1 ? 'outfit' : 'outfits' }}
+                {{ collection.outfits_count || 0 }}
+                {{ collection.outfits_count === 1 ? 'outfit' : 'outfits' }}
               </span>
               <span
                 v-if="collection.theme"
@@ -190,7 +193,9 @@
         class="space-y-6"
       >
         <!-- Drag and drop hint -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center text-sm text-blue-800">
+        <div
+          class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center text-sm text-blue-800"
+        >
           <svg
             class="w-5 h-5 mr-2 flex-shrink-0"
             fill="none"
@@ -219,7 +224,9 @@
           <template #item="{ element: outfit }">
             <div class="bg-white rounded-lg shadow-md overflow-hidden group">
               <!-- Drag Handle -->
-              <div class="drag-handle flex items-center justify-center bg-gray-50 py-2 cursor-move hover:bg-gray-100 transition-colors">
+              <div
+                class="drag-handle flex items-center justify-center bg-gray-50 py-2 cursor-move hover:bg-gray-100 transition-colors"
+              >
                 <svg
                   class="w-5 h-5 text-gray-400"
                   fill="none"
@@ -254,9 +261,7 @@
               <!-- Outfit Info -->
               <div class="p-4">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm text-gray-600">
-                    {{ outfit.items?.length || 0 }} items
-                  </span>
+                  <span class="text-sm text-gray-600"> {{ outfit.items?.length || 0 }} items </span>
                   <span
                     v-if="outfit.occasion"
                     class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
@@ -339,18 +344,26 @@ const loading = computed(() => collectionsStore.loading)
 const error = computed(() => collectionsStore.error)
 
 // Watch for collection changes
-watch(() => collection.value?.outfits, (outfits) => {
-  if (outfits) {
-    localOutfits.value = [...outfits]
-  }
-}, { immediate: true, deep: true })
+watch(
+  () => collection.value?.outfits,
+  outfits => {
+    if (outfits) {
+      localOutfits.value = [...outfits]
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 // Load collection on mount
-watch(() => props.collectionId, async (id) => {
-  if (id) {
-    await collectionsStore.fetchCollection(id)
-  }
-}, { immediate: true })
+watch(
+  () => props.collectionId,
+  async id => {
+    if (id) {
+      await collectionsStore.fetchCollection(id)
+    }
+  },
+  { immediate: true }
+)
 
 const toggleFavorite = async () => {
   if (!collection.value) return
@@ -364,16 +377,18 @@ const toggleFavorite = async () => {
 const showAddOutfitPrompt = () => {
   // This would typically open a modal to select outfits from outfit history
   // or create a new outfit to add to the collection
-  alert('Add outfit functionality would open a modal to select outfits. This requires integration with outfit history or outfit builder.')
+  alert(
+    'Add outfit functionality would open a modal to select outfits. This requires integration with outfit history or outfit builder.'
+  )
 }
 
-const viewOutfit = (outfit) => {
+const viewOutfit = outfit => {
   emit('view-outfit', outfit)
 }
 
-const removeOutfit = async (outfit) => {
+const removeOutfit = async outfit => {
   if (!collection.value) return
-  
+
   if (confirm('Remove this outfit from the collection?')) {
     try {
       await collectionsStore.removeOutfit(collection.value.id, outfit.id)
@@ -385,7 +400,7 @@ const removeOutfit = async (outfit) => {
 
 const handleReorder = async () => {
   if (!collection.value) return
-  
+
   try {
     const outfitIds = localOutfits.value.map(outfit => outfit.id)
     await collectionsStore.reorderOutfits(collection.value.id, outfitIds)
@@ -396,7 +411,7 @@ const handleReorder = async () => {
   }
 }
 
-const capitalizeFirst = (str) => {
+const capitalizeFirst = str => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1)
 }

@@ -61,11 +61,11 @@
               ×
             </button>
           </div>
-          
+
           <div class="modal-body">
             <slot />
           </div>
-          
+
           <div
             v-if="$slots.footer"
             class="modal-footer"
@@ -93,7 +93,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg', 'full'].includes(value)
+    validator: value => ['sm', 'md', 'lg', 'full'].includes(value)
   },
   closeOnBackdrop: {
     type: Boolean,
@@ -116,21 +116,24 @@ const handleBackdropClick = () => {
 }
 
 // Handle escape key
-watch(() => props.isOpen, (isOpen) => {
-  const handleEscape = (e) => {
-    if (e.key === 'Escape') {
-      emit('close')
+watch(
+  () => props.isOpen,
+  isOpen => {
+    const handleEscape = e => {
+      if (e.key === 'Escape') {
+        emit('close')
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = ''
     }
   }
-  
-  if (isOpen) {
-    document.addEventListener('keydown', handleEscape)
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.removeEventListener('keydown', handleEscape)
-    document.body.style.overflow = ''
-  }
-})
+)
 </script>
 
 <style scoped>
@@ -259,14 +262,14 @@ watch(() => props.isOpen, (isOpen) => {
     padding: 0;
     align-items: flex-end;
   }
-  
+
   .modal {
     width: 100%;
     max-height: 90vh;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }
-  
+
   .modal-enter-from .modal,
   .modal-leave-to .modal {
     transform: translateY(100%);

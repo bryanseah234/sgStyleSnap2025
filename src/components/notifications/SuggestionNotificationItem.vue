@@ -24,10 +24,12 @@
   >
     <div class="flex items-start gap-3">
       <!-- User Avatar -->
-      <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <img 
-          v-if="userAvatar" 
-          :src="userAvatar" 
+      <div
+        class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0"
+      >
+        <img
+          v-if="userAvatar"
+          :src="userAvatar"
           :alt="userName"
           class="w-full h-full rounded-full object-cover"
         >
@@ -55,22 +57,25 @@
         <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 mb-2">
           <div class="flex items-center gap-2">
             <!-- Item previews -->
-            <div 
-              v-for="(item, index) in previewItems" 
+            <div
+              v-for="(item, index) in previewItems"
               :key="item.id || index"
               class="w-12 h-16 bg-gray-300 dark:bg-gray-600 rounded flex items-center justify-center"
             >
-              <img 
-                v-if="item.image_url" 
-                :src="item.image_url" 
+              <img
+                v-if="item.image_url"
+                :src="item.image_url"
                 :alt="item.name"
                 class="w-full h-full object-cover rounded"
               >
-              <span v-else class="text-gray-500 text-xs">👕</span>
+              <span
+                v-else
+                class="text-gray-500 text-xs"
+              >👕</span>
             </div>
-            
+
             <!-- Add more indicator if there are more items -->
-            <div 
+            <div
               v-if="suggestion.items && suggestion.items.length > 3"
               class="w-12 h-16 bg-gray-300 dark:bg-gray-600 rounded flex items-center justify-center"
             >
@@ -85,16 +90,36 @@
             class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             @click.stop="handleAdd"
           >
-            <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            <svg
+              class="w-4 h-4 text-gray-600 dark:text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
           </button>
           <button
             class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             @click.stop="handleMore"
           >
-            <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+            <svg
+              class="w-4 h-4 text-gray-600 dark:text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+              />
             </svg>
           </button>
         </div>
@@ -136,19 +161,19 @@ const previewItems = computed(() => {
 // Format timestamp to relative time
 const relativeTime = computed(() => {
   if (!props.suggestion.created_at) return ''
-  
+
   const now = new Date()
   const created = new Date(props.suggestion.created_at)
   const diffMs = now - created
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
-  
+
   if (diffMins < 1) return 'Just now'
   if (diffMins < 60) return `${diffMins}m ago`
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
-  
+
   return created.toLocaleDateString()
 })
 

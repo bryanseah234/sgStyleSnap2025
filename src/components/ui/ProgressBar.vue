@@ -22,15 +22,15 @@
     class="progress-bar-container"
     :class="`progress-bar-${size}`"
   >
-    <div 
-      class="progress-bar-track" 
-      role="progressbar" 
-      :aria-valuenow="value" 
-      :aria-valuemin="0" 
+    <div
+      class="progress-bar-track"
+      role="progressbar"
+      :aria-valuenow="value"
+      :aria-valuemin="0"
       :aria-valuemax="max"
     >
-      <div 
-        class="progress-bar-fill" 
+      <div
+        class="progress-bar-fill"
         :class="`progress-bar-${color}`"
         :style="{ width: `${percentage}%` }"
       />
@@ -38,9 +38,7 @@
     <span
       v-if="showLabel"
       class="progress-bar-label"
-    >
-      {{ Math.round(percentage) }}%
-    </span>
+    > {{ Math.round(percentage) }}% </span>
   </div>
 </template>
 
@@ -51,7 +49,7 @@ const props = defineProps({
   value: {
     type: Number,
     required: true,
-    validator: (value) => value >= 0
+    validator: value => value >= 0
   },
   max: {
     type: Number,
@@ -60,7 +58,7 @@ const props = defineProps({
   color: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'success', 'warning', 'danger'].includes(value)
+    validator: value => ['primary', 'success', 'warning', 'danger'].includes(value)
   },
   showLabel: {
     type: Boolean,
@@ -69,7 +67,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value)
+    validator: value => ['sm', 'md', 'lg'].includes(value)
   }
 })
 
@@ -144,7 +142,7 @@ const percentage = computed(() => {
   .progress-bar-track {
     background-color: #374151;
   }
-  
+
   .progress-bar-label {
     color: #d1d5db;
   }

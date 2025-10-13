@@ -26,7 +26,8 @@
           <h1 class="text-xl font-semibold text-gray-900">
             Settings
           </h1>
-          <div class="w-16" /> <!-- Spacer for centering -->
+          <div class="w-16" />
+          <!-- Spacer for centering -->
         </div>
       </div>
     </div>
@@ -67,13 +68,11 @@
           <h2 class="text-lg font-semibold text-gray-900 mb-4">
             Profile Information
           </h2>
-          
+
           <div class="space-y-4">
             <!-- Username (Read-only) -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Username
-              </label>
+              <label class="block text-sm font-medium text-gray-700 mb-1"> Username </label>
               <div class="flex items-center">
                 <input
                   type="text"
@@ -81,17 +80,13 @@
                   readonly
                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                 >
-                <span class="ml-2 text-xs text-gray-500">
-                  (Auto-generated from email)
-                </span>
+                <span class="ml-2 text-xs text-gray-500"> (Auto-generated from email) </span>
               </div>
             </div>
 
             <!-- Name (Read-only) -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
+              <label class="block text-sm font-medium text-gray-700 mb-1"> Name </label>
               <div class="flex items-center">
                 <input
                   type="text"
@@ -99,17 +94,13 @@
                   readonly
                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                 >
-                <span class="ml-2 text-xs text-gray-500">
-                  (From Google)
-                </span>
+                <span class="ml-2 text-xs text-gray-500"> (From Google) </span>
               </div>
             </div>
 
             <!-- Email (Read-only) -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
+              <label class="block text-sm font-medium text-gray-700 mb-1"> Email </label>
               <input
                 type="email"
                 :value="profile.email"
@@ -125,7 +116,7 @@
           <h2 class="text-lg font-semibold text-gray-900 mb-4">
             Profile Photo
           </h2>
-          
+
           <!-- Current Avatar -->
           <div class="mb-6">
             <p class="text-sm text-gray-700 mb-2">
@@ -161,11 +152,9 @@
                   :src="avatar.url"
                   :alt="avatar.alt"
                   class="w-full h-auto aspect-square object-cover transition-transform duration-300"
-                  :class="[
-                    updatingAvatar ? 'opacity-50' : 'opacity-100 group-hover:scale-110'
-                  ]"
+                  :class="[updatingAvatar ? 'opacity-50' : 'opacity-100 group-hover:scale-110']"
                 >
-                
+
                 <!-- Selected Indicator -->
                 <div
                   v-if="profile.avatar_url === avatar.url"
@@ -244,96 +233,96 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { getUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js';
-import { signOut } from '../services/auth-service.js';
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
+import { signOut } from '../services/auth-service.js'
 
-const router = useRouter();
+const router = useRouter()
 
 // State
-const loading = ref(true);
-const error = ref(null);
-const profile = ref({});
-const defaultAvatars = ref(getDefaultAvatars());
-const updatingAvatar = ref(false);
-const updateSuccess = ref(false);
-const updateError = ref(null);
-const signingOut = ref(false);
+const loading = ref(true)
+const error = ref(null)
+const profile = ref({})
+const defaultAvatars = ref(getDefaultAvatars())
+const updatingAvatar = ref(false)
+const updateSuccess = ref(false)
+const updateError = ref(null)
+const signingOut = ref(false)
 
 // Load user profile
 async function loadProfile() {
-  loading.value = true;
-  error.value = null;
-  
+  loading.value = true
+  error.value = null
+
   try {
-    profile.value = await getUserProfile();
+    profile.value = await getUserProfile()
   } catch (err) {
-    console.error('Failed to load profile:', err);
-    error.value = 'Failed to load profile. Please try again.';
+    console.error('Failed to load profile:', err)
+    error.value = 'Failed to load profile. Please try again.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 // Select avatar
 async function selectAvatar(avatarUrl) {
   if (profile.value.avatar_url === avatarUrl) {
-    return; // Already selected
+    return // Already selected
   }
-  
-  updatingAvatar.value = true;
-  updateSuccess.value = false;
-  updateError.value = null;
-  
+
+  updatingAvatar.value = true
+  updateSuccess.value = false
+  updateError.value = null
+
   try {
-    const updatedProfile = await updateUserAvatar(avatarUrl);
-    profile.value = updatedProfile;
-    updateSuccess.value = true;
-    
+    const updatedProfile = await updateUserAvatar(avatarUrl)
+    profile.value = updatedProfile
+    updateSuccess.value = true
+
     // Hide success message after 3 seconds
     setTimeout(() => {
-      updateSuccess.value = false;
-    }, 3000);
+      updateSuccess.value = false
+    }, 3000)
   } catch (err) {
-    console.error('Failed to update avatar:', err);
-    updateError.value = err.message || 'Failed to update profile photo. Please try again.';
-    
+    console.error('Failed to update avatar:', err)
+    updateError.value = err.message || 'Failed to update profile photo. Please try again.'
+
     // Hide error message after 5 seconds
     setTimeout(() => {
-      updateError.value = null;
-    }, 5000);
+      updateError.value = null
+    }, 5000)
   } finally {
-    updatingAvatar.value = false;
+    updatingAvatar.value = false
   }
 }
 
 // Handle sign out
 async function handleSignOut() {
   if (!confirm('Are you sure you want to sign out?')) {
-    return;
+    return
   }
-  
-  signingOut.value = true;
-  
+
+  signingOut.value = true
+
   try {
-    await signOut();
-    router.push('/login');
+    await signOut()
+    router.push('/login')
   } catch (err) {
-    console.error('Failed to sign out:', err);
-    alert('Failed to sign out. Please try again.');
+    console.error('Failed to sign out:', err)
+    alert('Failed to sign out. Please try again.')
   } finally {
-    signingOut.value = false;
+    signingOut.value = false
   }
 }
 
 // Go back to previous page
 function goBack() {
-  router.back();
+  router.back()
 }
 
 // Load profile on mount
 onMounted(() => {
-  loadProfile();
-});
+  loadProfile()
+})
 </script>

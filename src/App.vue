@@ -65,66 +65,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
 import { isSupabaseConfigured } from './config/supabase'
 import { useAuthStore } from './stores/auth-store'
 import { useLikesStore } from './stores/likes-store'
-import './utils/debug-auth' // Import debug utilities
 
 const isConfigured = ref(isSupabaseConfigured)
-const router = useRouter()
 
 // Only initialize stores if Supabase is configured
 if (isConfigured.value) {
   const authStore = useAuthStore()
   const likesStore = useLikesStore()
-  let authListener = null
 
   // Initialize auth state on app mount
   onMounted(async () => {
-    console.log('🚀 App: Initializing authentication...')
     await authStore.initializeAuth()
-    
-    // Setup auth state change listener for OAuth callbacks
-    console.log('👂 App: Setting up auth listener...')
-    authListener = authStore.setupAuthListener()
-    
-    // Log initial auth state
-    console.log('👤 App: Initial auth state:', {
-      isAuthenticated: authStore.isAuthenticated,
-      userId: authStore.userId,
-      userEmail: authStore.userEmail
-    })
-  })
-
-  // Cleanup auth listener on unmount
-  onUnmounted(() => {
-    if (authListener && authListener.subscription) {
-      console.log('🔌 App: Cleaning up auth listener')
-      authListener.subscription.unsubscribe()
-    }
   })
 
   // Initialize likes when user logs in
-  watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
-    console.log('🔄 App: Auth state changed:', isAuthenticated)
-    
-    if (isAuthenticated) {
-      console.log('✅ App: User authenticated, initializing likes...')
-      await likesStore.initializeLikes()
-      
-      // If we're on login/register page, redirect to closet
-      const currentRoute = router.currentRoute.value.path
-      if (currentRoute === '/login' || currentRoute === '/register') {
-        console.log('🔄 App: Redirecting to closet from', currentRoute)
-        router.push('/closet')
+  watch(
+    () => authStore.isLoggedIn,
+    async isLoggedIn => {
+      if (isLoggedIn) {
+        await likesStore.initializeLikes()
+      } else {
+        likesStore.resetStore()
       }
-    } else {
-      console.log('❌ App: User not authenticated, resetting likes')
-      likesStore.resetStore()
     }
-  })
+  )
 }
 </script>
 

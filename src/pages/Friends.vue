@@ -32,7 +32,7 @@
           Connect with friends and share outfits
         </p>
       </div>
-      
+
       <!-- Tabs -->
       <div class="tabs-container">
         <div class="tabs">
@@ -74,7 +74,7 @@
           </button>
         </div>
       </div>
-      
+
       <div class="friends-content">
         <!-- Popular Items Tab -->
         <div
@@ -117,7 +117,7 @@
             <h2 class="section-title">
               Find Friends
             </h2>
-            
+
             <div class="search-box">
               <input
                 v-model="searchQuery"
@@ -139,7 +139,7 @@
               >
                 <p>Searching...</p>
               </div>
-              
+
               <div
                 v-else-if="searchResults.users && searchResults.users.length === 0"
                 class="empty-state"
@@ -148,7 +148,7 @@
                   No users found matching "{{ searchQuery }}"
                 </p>
               </div>
-              
+
               <div
                 v-else-if="searchResults.users"
                 class="results-list"
@@ -171,7 +171,7 @@
                       {{ getInitial(user.name) }}
                     </div>
                   </div>
-                  
+
                   <div class="user-info">
                     <h3 class="user-name">
                       {{ user.name }}
@@ -180,7 +180,7 @@
                       {{ getFriendshipStatusText(user.friendship_status) }}
                     </p>
                   </div>
-                  
+
                   <button
                     v-if="user.friendship_status === 'none'"
                     class="add-friend-btn"
@@ -206,7 +206,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div
               v-else
               class="search-hint"
@@ -283,12 +283,12 @@ function handleSearch() {
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
-  
+
   if (searchQuery.value.length < 3) {
     searchResults.value = {}
     return
   }
-  
+
   searchTimeout = setTimeout(async () => {
     searching.value = true
     try {
@@ -308,13 +308,13 @@ async function sendRequest(user) {
   sendingRequest.value = user.id
   try {
     await friendsStore.sendFriendRequest(user.id)
-    
+
     // Update user's friendship status in search results
     const userIndex = searchResults.value.users.findIndex(u => u.id === user.id)
     if (userIndex !== -1) {
       searchResults.value.users[userIndex].friendship_status = 'pending_sent'
     }
-    
+
     alert('Friend request sent!')
   } catch (error) {
     console.error('Failed to send request:', error)

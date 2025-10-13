@@ -1,7 +1,9 @@
 <template>
   <div class="catalog-browse min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+    <header
+      class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
+    >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -116,7 +118,9 @@
             v-if="catalogStore.loading && catalogStore.items.length > 0"
             class="mt-6 text-center"
           >
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+            <div
+              class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+            />
           </div>
 
           <!-- Pagination Info -->

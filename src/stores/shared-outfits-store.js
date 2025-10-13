@@ -27,37 +27,35 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     /**
      * Get feed sorted by date
      */
-    sortedFeed: (state) => {
-      return [...state.feed].sort((a, b) => 
-        new Date(b.created_at) - new Date(a.created_at)
-      )
+    sortedFeed: state => {
+      return [...state.feed].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     },
 
     /**
      * Check if outfit is liked by current user
      */
-    isLiked: (state) => (outfitId) => {
+    isLiked: state => outfitId => {
       return state.likedOutfits.has(outfitId)
     },
 
     /**
      * Get comments for outfit
      */
-    getOutfitComments: (state) => (outfitId) => {
+    getOutfitComments: state => outfitId => {
       return state.comments[outfitId] || []
     },
 
     /**
      * Get my shared outfits count
      */
-    myOutfitsCount: (state) => {
+    myOutfitsCount: state => {
       return state.mySharedOutfits.length
     },
 
     /**
      * Check if there are more pages to load
      */
-    hasMore: (state) => {
+    hasMore: state => {
       return state.feed.length < state.totalCount
     }
   },
@@ -69,20 +67,20 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async fetchFeed(options = {}) {
       this.loading = true
       this.error = null
-      
+
       try {
         const mergedOptions = { ...this.feedOptions, ...options }
         const { outfits, total } = await sharedOutfitsService.getFeed(mergedOptions)
-        
+
         if (mergedOptions.offset === 0) {
           this.feed = outfits
         } else {
           this.feed.push(...outfits)
         }
-        
+
         this.feedOptions = mergedOptions
         this.totalCount = total
-        
+
         // Check liked status for new outfits
         await this.updateLikedStatus(outfits)
       } catch (error) {
@@ -99,7 +97,7 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
      */
     async loadMore() {
       if (!this.hasMore || this.loading) return
-      
+
       this.feedOptions.offset += this.feedOptions.limit
       await this.fetchFeed(this.feedOptions)
     },
@@ -110,13 +108,13 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async shareOutfit(outfitData) {
       this.loading = true
       this.error = null
-      
+
       try {
         const newOutfit = await sharedOutfitsService.shareOutfit(outfitData)
         this.feed.unshift(newOutfit)
         this.mySharedOutfits.unshift(newOutfit)
         this.totalCount++
-        
+
         return newOutfit
       } catch (error) {
         this.error = error.message
@@ -133,17 +131,17 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async fetchSharedOutfit(id) {
       this.loading = true
       this.error = null
-      
+
       try {
         const outfit = await sharedOutfitsService.getSharedOutfit(id)
         this.currentOutfit = outfit
-        
+
         // Check if liked
         const liked = await sharedOutfitsService.hasLiked(id)
         if (liked) {
           this.likedOutfits.add(id)
         }
-        
+
         return outfit
       } catch (error) {
         this.error = error.message
@@ -160,26 +158,26 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async updateSharedOutfit(id, updates) {
       this.loading = true
       this.error = null
-      
+
       try {
         const updated = await sharedOutfitsService.updateSharedOutfit(id, updates)
-        
+
         // Update in feed
         const feedIndex = this.feed.findIndex(outfit => outfit.id === id)
         if (feedIndex !== -1) {
           this.feed[feedIndex] = updated
         }
-        
+
         // Update in my outfits
         const myIndex = this.mySharedOutfits.findIndex(outfit => outfit.id === id)
         if (myIndex !== -1) {
           this.mySharedOutfits[myIndex] = updated
         }
-        
+
         if (this.currentOutfit?.id === id) {
           this.currentOutfit = updated
         }
-        
+
         return updated
       } catch (error) {
         this.error = error.message
@@ -196,26 +194,26 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async deleteSharedOutfit(id) {
       this.loading = true
       this.error = null
-      
+
       try {
         await sharedOutfitsService.deleteSharedOutfit(id)
-        
+
         // Remove from feed
         this.feed = this.feed.filter(outfit => outfit.id !== id)
-        
+
         // Remove from my outfits
         this.mySharedOutfits = this.mySharedOutfits.filter(outfit => outfit.id !== id)
-        
+
         // Remove from liked
         this.likedOutfits.delete(id)
-        
+
         // Remove comments
         delete this.comments[id]
-        
+
         if (this.currentOutfit?.id === id) {
           this.currentOutfit = null
         }
-        
+
         this.totalCount--
       } catch (error) {
         this.error = error.message
@@ -231,13 +229,13 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
      */
     async likeOutfit(outfitId) {
       const wasLiked = this.likedOutfits.has(outfitId)
-      
+
       // Optimistic update
       if (!wasLiked) {
         this.likedOutfits.add(outfitId)
         this.incrementLikesCount(outfitId)
       }
-      
+
       try {
         await sharedOutfitsService.likeOutfit(outfitId)
       } catch (error) {
@@ -256,13 +254,13 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
      */
     async unlikeOutfit(outfitId) {
       const wasLiked = this.likedOutfits.has(outfitId)
-      
+
       // Optimistic update
       if (wasLiked) {
         this.likedOutfits.delete(outfitId)
         this.decrementLikesCount(outfitId)
       }
-      
+
       try {
         await sharedOutfitsService.unlikeOutfit(outfitId)
       } catch (error) {
@@ -293,7 +291,7 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async fetchComments(outfitId) {
       this.loading = true
       this.error = null
-      
+
       try {
         const comments = await sharedOutfitsService.getComments(outfitId)
         this.comments[outfitId] = comments
@@ -313,19 +311,19 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async addComment(outfitId, commentText) {
       this.loading = true
       this.error = null
-      
+
       try {
         const newComment = await sharedOutfitsService.addComment(outfitId, commentText)
-        
+
         // Add to comments
         if (!this.comments[outfitId]) {
           this.comments[outfitId] = []
         }
         this.comments[outfitId].push(newComment)
-        
+
         // Increment comment count
         this.incrementCommentsCount(outfitId)
-        
+
         return newComment
       } catch (error) {
         this.error = error.message
@@ -342,17 +340,17 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     async deleteComment(outfitId, commentId) {
       this.loading = true
       this.error = null
-      
+
       try {
         await sharedOutfitsService.deleteComment(commentId)
-        
+
         // Remove from comments
         if (this.comments[outfitId]) {
           this.comments[outfitId] = this.comments[outfitId].filter(
             comment => comment.id !== commentId
           )
         }
-        
+
         // Decrement comment count
         this.decrementCommentsCount(outfitId)
       } catch (error) {
@@ -386,7 +384,7 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     incrementLikesCount(outfitId) {
       const outfit = this.feed.find(o => o.id === outfitId)
       if (outfit) outfit.likes_count++
-      
+
       if (this.currentOutfit?.id === outfitId) {
         this.currentOutfit.likes_count++
       }
@@ -398,7 +396,7 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     decrementLikesCount(outfitId) {
       const outfit = this.feed.find(o => o.id === outfitId)
       if (outfit && outfit.likes_count > 0) outfit.likes_count--
-      
+
       if (this.currentOutfit?.id === outfitId && this.currentOutfit.likes_count > 0) {
         this.currentOutfit.likes_count--
       }
@@ -410,7 +408,7 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     incrementCommentsCount(outfitId) {
       const outfit = this.feed.find(o => o.id === outfitId)
       if (outfit) outfit.comments_count++
-      
+
       if (this.currentOutfit?.id === outfitId) {
         this.currentOutfit.comments_count++
       }
@@ -422,7 +420,7 @@ export const useSharedOutfitsStore = defineStore('sharedOutfits', {
     decrementCommentsCount(outfitId) {
       const outfit = this.feed.find(o => o.id === outfitId)
       if (outfit && outfit.comments_count > 0) outfit.comments_count--
-      
+
       if (this.currentOutfit?.id === outfitId && this.currentOutfit.comments_count > 0) {
         this.currentOutfit.comments_count--
       }

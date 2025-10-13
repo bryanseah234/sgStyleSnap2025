@@ -12,7 +12,7 @@
         loading="lazy"
         @error="handleImageError"
       >
-      
+
       <!-- Quick Add Button -->
       <button
         :disabled="adding"
@@ -59,7 +59,9 @@
 
       <!-- Category Badge -->
       <div class="absolute bottom-2 left-2">
-        <span class="inline-block px-2 py-1 text-xs font-medium bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white rounded">
+        <span
+          class="inline-block px-2 py-1 text-xs font-medium bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white rounded"
+        >
           {{ getCategoryLabel(item.category) }}
         </span>
       </div>
@@ -70,7 +72,7 @@
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white truncate mb-1">
         {{ item.name }}
       </h3>
-      
+
       <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
         <span
           v-if="item.brand"
@@ -131,7 +133,7 @@ const adding = ref(false)
 
 async function handleAddToCloset() {
   if (adding.value) return
-  
+
   adding.value = true
   try {
     emit('add-to-closet')

@@ -136,7 +136,7 @@ onMounted(async () => {
 const fetchComments = async () => {
   loading.value = true
   error.value = ''
-  
+
   try {
     await sharedOutfitsStore.fetchComments(props.outfitId)
   } catch (err) {
@@ -149,10 +149,10 @@ const fetchComments = async () => {
 
 const handleAddComment = async () => {
   if (!newComment.value.trim() || addingComment.value) return
-  
+
   addingComment.value = true
   error.value = ''
-  
+
   try {
     await sharedOutfitsStore.addComment(props.outfitId, newComment.value.trim())
     newComment.value = ''
@@ -165,11 +165,11 @@ const handleAddComment = async () => {
   }
 }
 
-const handleDeleteComment = async (commentId) => {
+const handleDeleteComment = async commentId => {
   if (!confirm('Are you sure you want to delete this comment?')) return
-  
+
   error.value = ''
-  
+
   try {
     await sharedOutfitsStore.deleteComment(props.outfitId, commentId)
     emit('comment-deleted')
@@ -179,25 +179,25 @@ const handleDeleteComment = async (commentId) => {
   }
 }
 
-const canDeleteComment = (comment) => {
+const canDeleteComment = comment => {
   // User can delete their own comments
   // Owner of the outfit can delete any comment on their outfit
   const currentUserId = authStore.user?.id
   const outfit = sharedOutfitsStore.feed.find(o => o.id === props.outfitId)
-  
+
   return currentUserId === comment.user_id || currentUserId === outfit?.user_id
 }
 
-const formatCommentTime = (timestamp) => {
+const formatCommentTime = timestamp => {
   const date = new Date(timestamp)
   const now = new Date()
   const seconds = Math.floor((now - date) / 1000)
-  
+
   if (seconds < 60) return 'Just now'
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
-  
+
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 </script>

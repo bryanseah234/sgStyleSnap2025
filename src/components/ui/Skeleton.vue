@@ -38,7 +38,7 @@ defineProps({
   type: {
     type: String,
     default: 'rect',
-    validator: (value) => ['text', 'circle', 'rect', 'card'].includes(value)
+    validator: value => ['text', 'circle', 'rect', 'card'].includes(value)
   },
   width: {
     type: String,
@@ -63,13 +63,7 @@ defineProps({
 }
 
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    #f0f0f0 0%,
-    #e0e0e0 20%,
-    #f0f0f0 40%,
-    #f0f0f0 100%
-  );
+  background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 20%, #f0f0f0 40%, #f0f0f0 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   position: relative;

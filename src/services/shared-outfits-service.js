@@ -17,7 +17,7 @@ export default {
       .insert([outfitData])
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -29,24 +29,27 @@ export default {
    */
   async getFeed(options = {}) {
     const { limit = 20, offset = 0, visibility } = options
-    
+
     let query = supabase
       .from('shared_outfits')
-      .select(`
+      .select(
+        `
         *,
         user:users!user_id (id, name, avatar_url)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' }
+      )
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
-    
+
     if (visibility) {
       query = query.eq('visibility', visibility)
     }
-    
+
     const { data, error, count } = await query
-    
+
     if (error) throw error
-    
+
     return {
       outfits: data || [],
       total: count || 0
@@ -61,13 +64,15 @@ export default {
   async getSharedOutfit(id) {
     const { data, error } = await supabase
       .from('shared_outfits')
-      .select(`
+      .select(
+        `
         *,
         user:users!user_id (id, name, avatar_url)
-      `)
+      `
+      )
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -85,7 +90,7 @@ export default {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -96,11 +101,8 @@ export default {
    * @returns {Promise<void>}
    */
   async deleteSharedOutfit(id) {
-    const { error } = await supabase
-      .from('shared_outfits')
-      .delete()
-      .eq('id', id)
-    
+    const { error } = await supabase.from('shared_outfits').delete().eq('id', id)
+
     if (error) throw error
   },
 
@@ -111,16 +113,18 @@ export default {
    */
   async likeOutfit(outfitId) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { data, error } = await supabase
       .from('shared_outfit_likes')
-      .insert([{ 
-        outfit_id: outfitId,
-        user_id: user.user.id
-      }])
+      .insert([
+        {
+          outfit_id: outfitId,
+          user_id: user.user.id
+        }
+      ])
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -132,13 +136,13 @@ export default {
    */
   async unlikeOutfit(outfitId) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { error } = await supabase
       .from('shared_outfit_likes')
       .delete()
       .eq('outfit_id', outfitId)
       .eq('user_id', user.user.id)
-    
+
     if (error) throw error
   },
 
@@ -149,14 +153,14 @@ export default {
    */
   async hasLiked(outfitId) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { data, error } = await supabase
       .from('shared_outfit_likes')
       .select('id')
       .eq('outfit_id', outfitId)
       .eq('user_id', user.user.id)
       .single()
-    
+
     if (error && error.code !== 'PGRST116') throw error
     return !!data
   },
@@ -169,20 +173,24 @@ export default {
    */
   async addComment(outfitId, commentText) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { data, error } = await supabase
       .from('outfit_comments')
-      .insert([{
-        outfit_id: outfitId,
-        user_id: user.user.id,
-        comment_text: commentText
-      }])
-      .select(`
+      .insert([
+        {
+          outfit_id: outfitId,
+          user_id: user.user.id,
+          comment_text: commentText
+        }
+      ])
+      .select(
+        `
         *,
         user:users!user_id (id, name, avatar_url)
-      `)
+      `
+      )
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -196,14 +204,16 @@ export default {
   async getComments(outfitId, limit = 100) {
     const { data, error } = await supabase
       .from('outfit_comments')
-      .select(`
+      .select(
+        `
         *,
         user:users!user_id (id, name, avatar_url)
-      `)
+      `
+      )
       .eq('outfit_id', outfitId)
       .order('created_at', { ascending: true })
       .limit(limit)
-    
+
     if (error) throw error
     return data || []
   },
@@ -221,7 +231,7 @@ export default {
       .eq('id', commentId)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -232,11 +242,8 @@ export default {
    * @returns {Promise<void>}
    */
   async deleteComment(commentId) {
-    const { error } = await supabase
-      .from('outfit_comments')
-      .delete()
-      .eq('id', commentId)
-    
+    const { error } = await supabase.from('outfit_comments').delete().eq('id', commentId)
+
     if (error) throw error
   }
 }

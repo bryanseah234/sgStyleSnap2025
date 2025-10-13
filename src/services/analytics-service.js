@@ -13,13 +13,12 @@ export default {
    */
   async getMostWornItems(limit = 10) {
     const { data: user } = await supabase.auth.getUser()
-    
-    const { data, error } = await supabase
-      .rpc('get_most_worn_items', {
-        p_user_id: user.user.id,
-        p_limit: limit
-      })
-    
+
+    const { data, error } = await supabase.rpc('get_most_worn_items', {
+      p_user_id: user.user.id,
+      p_limit: limit
+    })
+
     if (error) throw error
     return data || []
   },
@@ -30,12 +29,11 @@ export default {
    */
   async getUnwornItems() {
     const { data: user } = await supabase.auth.getUser()
-    
-    const { data, error } = await supabase
-      .rpc('get_unworn_combinations', {
-        p_user_id: user.user.id
-      })
-    
+
+    const { data, error } = await supabase.rpc('get_unworn_combinations', {
+      p_user_id: user.user.id
+    })
+
     if (error) throw error
     return data || []
   },
@@ -46,12 +44,11 @@ export default {
    */
   async getStats() {
     const { data: user } = await supabase.auth.getUser()
-    
-    const { data, error } = await supabase
-      .rpc('get_user_outfit_stats', {
-        p_user_id: user.user.id
-      })
-    
+
+    const { data, error } = await supabase.rpc('get_user_outfit_stats', {
+      p_user_id: user.user.id
+    })
+
     if (error) throw error
     return data[0] || {}
   },
@@ -61,20 +58,18 @@ export default {
    * @returns {Promise<Object>} Category breakdown
    */
   async getCategoryBreakdown() {
-    const { data, error } = await supabase
-      .from('outfit_history')
-      .select('outfit_items')
-    
+    const { data, error } = await supabase.from('outfit_history').select('outfit_items')
+
     if (error) throw error
-    
+
     const categoryCount = {}
-    
+
     data.forEach(outfit => {
       outfit.outfit_items.forEach(item => {
         categoryCount[item.category] = (categoryCount[item.category] || 0) + 1
       })
     })
-    
+
     return categoryCount
   },
 
@@ -83,20 +78,18 @@ export default {
    * @returns {Promise<Object>} Occasion breakdown
    */
   async getOccasionBreakdown() {
-    const { data, error } = await supabase
-      .from('outfit_history')
-      .select('occasion')
-    
+    const { data, error } = await supabase.from('outfit_history').select('occasion')
+
     if (error) throw error
-    
+
     const occasionCount = {}
-    
+
     data.forEach(entry => {
       if (entry.occasion) {
         occasionCount[entry.occasion] = (occasionCount[entry.occasion] || 0) + 1
       }
     })
-    
+
     return occasionCount
   },
 
@@ -105,20 +98,18 @@ export default {
    * @returns {Promise<Object>} Rating counts
    */
   async getRatingDistribution() {
-    const { data, error } = await supabase
-      .from('outfit_history')
-      .select('rating')
-    
+    const { data, error } = await supabase.from('outfit_history').select('rating')
+
     if (error) throw error
-    
+
     const ratingCount = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-    
+
     data.forEach(entry => {
       if (entry.rating) {
         ratingCount[entry.rating] = (ratingCount[entry.rating] || 0) + 1
       }
     })
-    
+
     return ratingCount
   },
 
@@ -130,24 +121,23 @@ export default {
     const { data, error } = await supabase
       .from('outfit_history')
       .select('weather_temp, weather_condition')
-    
+
     if (error) throw error
-    
+
     const conditionCount = {}
     let totalTemp = 0
     let tempCount = 0
-    
+
     data.forEach(entry => {
       if (entry.weather_condition) {
-        conditionCount[entry.weather_condition] = 
-          (conditionCount[entry.weather_condition] || 0) + 1
+        conditionCount[entry.weather_condition] = (conditionCount[entry.weather_condition] || 0) + 1
       }
       if (entry.weather_temp) {
         totalTemp += entry.weather_temp
         tempCount++
       }
     })
-    
+
     return {
       avg_temp: tempCount > 0 ? Math.round(totalTemp / tempCount) : null,
       conditions: conditionCount

@@ -170,10 +170,11 @@ const filteredItems = computed(() => {
   // Search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    items = items.filter(item =>
-      item.name?.toLowerCase().includes(query) ||
-      item.category?.toLowerCase().includes(query) ||
-      item.clothing_type?.toLowerCase().includes(query)
+    items = items.filter(
+      item =>
+        item.name?.toLowerCase().includes(query) ||
+        item.category?.toLowerCase().includes(query) ||
+        item.clothing_type?.toLowerCase().includes(query)
     )
   }
 
@@ -400,7 +401,9 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {

@@ -23,44 +23,44 @@ export const useAnalyticsStore = defineStore('analytics', {
     /**
      * Total items tracked
      */
-    totalItemsTracked: (state) => {
+    totalItemsTracked: state => {
       return state.stats?.total_items_used || 0
     },
 
     /**
      * Total outfits worn
      */
-    totalOutfitsWorn: (state) => {
+    totalOutfitsWorn: state => {
       return state.stats?.total_outfits_worn || 0
     },
 
     /**
      * Average outfit rating
      */
-    averageRating: (state) => {
+    averageRating: state => {
       return state.stats?.avg_rating || 0
     },
 
     /**
      * Most worn occasion
      */
-    mostWornOccasion: (state) => {
+    mostWornOccasion: state => {
       return state.stats?.most_worn_occasion || 'N/A'
     },
 
     /**
      * Favorite season
      */
-    favoriteSeason: (state) => {
+    favoriteSeason: state => {
       return state.stats?.favorite_season || 'N/A'
     },
 
     /**
      * Most worn item
      */
-    mostWornItem: (state) => {
+    mostWornItem: state => {
       if (!state.stats?.most_worn_item_id) return null
-      
+
       return {
         id: state.stats.most_worn_item_id,
         count: state.stats.most_worn_item_count || 0
@@ -70,21 +70,21 @@ export const useAnalyticsStore = defineStore('analytics', {
     /**
      * Top 5 most worn items
      */
-    top5MostWorn: (state) => {
+    top5MostWorn: state => {
       return state.mostWornItems.slice(0, 5)
     },
 
     /**
      * Items never worn
      */
-    neverWornItems: (state) => {
+    neverWornItems: state => {
       return state.unwornItems.filter(item => item.last_worn_days_ago === 999)
     },
 
     /**
      * Items not worn in 30+ days
      */
-    notWornIn30Days: (state) => {
+    notWornIn30Days: state => {
       return state.unwornItems.filter(
         item => item.last_worn_days_ago >= 30 && item.last_worn_days_ago < 999
       )
@@ -93,97 +93,94 @@ export const useAnalyticsStore = defineStore('analytics', {
     /**
      * Most worn category
      */
-    mostWornCategory: (state) => {
+    mostWornCategory: state => {
       if (Object.keys(state.categoryBreakdown).length === 0) return 'N/A'
-      
-      return Object.entries(state.categoryBreakdown)
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
+
+      return Object.entries(state.categoryBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
     },
 
     /**
      * Least worn category
      */
-    leastWornCategory: (state) => {
+    leastWornCategory: state => {
       if (Object.keys(state.categoryBreakdown).length === 0) return 'N/A'
-      
-      return Object.entries(state.categoryBreakdown)
-        .sort((a, b) => a[1] - b[1])[0]?.[0] || 'N/A'
+
+      return Object.entries(state.categoryBreakdown).sort((a, b) => a[1] - b[1])[0]?.[0] || 'N/A'
     },
 
     /**
      * Category breakdown as percentage
      */
-    categoryPercentages: (state) => {
+    categoryPercentages: state => {
       const total = Object.values(state.categoryBreakdown).reduce((sum, val) => sum + val, 0)
       if (total === 0) return {}
-      
+
       const percentages = {}
       Object.entries(state.categoryBreakdown).forEach(([category, count]) => {
         percentages[category] = Math.round((count / total) * 100)
       })
-      
+
       return percentages
     },
 
     /**
      * Occasion breakdown as percentage
      */
-    occasionPercentages: (state) => {
+    occasionPercentages: state => {
       const total = Object.values(state.occasionBreakdown).reduce((sum, val) => sum + val, 0)
       if (total === 0) return {}
-      
+
       const percentages = {}
       Object.entries(state.occasionBreakdown).forEach(([occasion, count]) => {
         percentages[occasion] = Math.round((count / total) * 100)
       })
-      
+
       return percentages
     },
 
     /**
      * Rating breakdown as percentage
      */
-    ratingPercentages: (state) => {
+    ratingPercentages: state => {
       const total = Object.values(state.ratingDistribution).reduce((sum, val) => sum + val, 0)
       if (total === 0) return {}
-      
+
       const percentages = {}
       Object.entries(state.ratingDistribution).forEach(([rating, count]) => {
         percentages[rating] = Math.round((count / total) * 100)
       })
-      
+
       return percentages
     },
 
     /**
      * Average weather temperature
      */
-    averageWeatherTemp: (state) => {
+    averageWeatherTemp: state => {
       return state.weatherPreferences?.avg_temp || null
     },
 
     /**
      * Most common weather condition
      */
-    mostCommonWeatherCondition: (state) => {
+    mostCommonWeatherCondition: state => {
       if (!state.weatherPreferences?.conditions) return 'N/A'
-      
+
       const conditions = state.weatherPreferences.conditions
       if (Object.keys(conditions).length === 0) return 'N/A'
-      
-      return Object.entries(conditions)
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
+
+      return Object.entries(conditions).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
     },
 
     /**
      * Wardrobe utilization percentage
      */
-    wardrobeUtilization: (state) => {
+    wardrobeUtilization: state => {
       if (!state.stats || !state.unwornItems.length) return 0
-      
+
       const totalItems = state.unwornItems.length
       const usedItems = state.stats.total_items_used || 0
-      
+
       if (totalItems === 0) return 0
       return Math.round((usedItems / totalItems) * 100)
     },
@@ -191,7 +188,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     /**
      * Has analytics data
      */
-    hasData: (state) => {
+    hasData: state => {
       return state.stats !== null && state.stats.total_outfits_worn > 0
     }
   },
@@ -203,7 +200,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchAll() {
       this.loading = true
       this.error = null
-      
+
       try {
         await Promise.all([
           this.fetchStats(),
@@ -229,7 +226,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchStats() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.stats = await analyticsService.getStats()
       } catch (error) {
@@ -247,7 +244,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchMostWornItems(limit = 10) {
       this.loading = true
       this.error = null
-      
+
       try {
         this.mostWornItems = await analyticsService.getMostWornItems(limit)
       } catch (error) {
@@ -265,7 +262,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchUnwornItems() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.unwornItems = await analyticsService.getUnwornItems()
       } catch (error) {
@@ -283,7 +280,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchCategoryBreakdown() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.categoryBreakdown = await analyticsService.getCategoryBreakdown()
       } catch (error) {
@@ -301,7 +298,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchOccasionBreakdown() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.occasionBreakdown = await analyticsService.getOccasionBreakdown()
       } catch (error) {
@@ -319,7 +316,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchRatingDistribution() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.ratingDistribution = await analyticsService.getRatingDistribution()
       } catch (error) {
@@ -337,7 +334,7 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchWeatherPreferences() {
       this.loading = true
       this.error = null
-      
+
       try {
         this.weatherPreferences = await analyticsService.getWeatherPreferences()
       } catch (error) {

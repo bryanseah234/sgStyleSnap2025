@@ -49,7 +49,8 @@ defineProps({
   },
   description: {
     type: String,
-    default: 'When your friends interact with your outfits and items, you\'ll see notifications here.'
+    default:
+      "When your friends interact with your outfits and items, you'll see notifications here."
   },
   showActionButton: {
     type: Boolean,

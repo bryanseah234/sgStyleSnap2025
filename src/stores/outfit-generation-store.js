@@ -7,10 +7,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import outfitGeneratorService from '@/services/outfit-generator-service'
 import { useClosetStore } from './closet-store'
-import {
-  WEATHER_CONDITIONS,
-  OCCASIONS,
-} from '@/utils/clothing-constants'
+import { WEATHER_CONDITIONS, OCCASIONS } from '@/utils/clothing-constants'
 
 export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
   // State
@@ -18,7 +15,7 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
   const generationParams = ref({
     occasion: OCCASIONS.CASUAL,
     weather: WEATHER_CONDITIONS.WARM,
-    style: null,
+    style: null
   })
   const generating = ref(false)
   const error = ref(null)
@@ -27,12 +24,8 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
 
   // Getters
   const hasCurrentOutfit = computed(() => currentOutfit.value !== null)
-  const outfitScore = computed(() =>
-    currentOutfit.value ? currentOutfit.value.score : 0
-  )
-  const outfitItems = computed(() =>
-    currentOutfit.value ? currentOutfit.value.items : []
-  )
+  const outfitScore = computed(() => (currentOutfit.value ? currentOutfit.value.score : 0))
+  const outfitItems = computed(() => (currentOutfit.value ? currentOutfit.value.items : []))
 
   // Actions
   async function generateOutfit() {
@@ -45,18 +38,16 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
       await closetStore.fetchItems()
 
       // Filter out removed items
-      const activeItems = closetStore.items.filter((item) => !item.removed_at)
+      const activeItems = closetStore.items.filter(item => !item.removed_at)
 
       if (activeItems.length < 3) {
-        throw new Error(
-          'You need at least 3 items in your closet to generate an outfit'
-        )
+        throw new Error('You need at least 3 items in your closet to generate an outfit')
       }
 
       // Generate outfit
       const result = await outfitGeneratorService.generateOutfit({
         ...generationParams.value,
-        userItems: activeItems,
+        userItems: activeItems
       })
 
       currentOutfit.value = result
@@ -84,7 +75,7 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
   function updateParams(newParams) {
     generationParams.value = {
       ...generationParams.value,
-      ...newParams,
+      ...newParams
     }
   }
 
@@ -111,9 +102,7 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
       currentOutfit.value.rated_at = new Date().toISOString()
 
       // Update in history
-      const historyIndex = history.value.findIndex(
-        (o) => o.id === currentOutfit.value.id
-      )
+      const historyIndex = history.value.findIndex(o => o.id === currentOutfit.value.id)
       if (historyIndex !== -1) {
         history.value[historyIndex].user_rating = rating
         history.value[historyIndex].rated_at = currentOutfit.value.rated_at
@@ -130,10 +119,7 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
     }
 
     try {
-      await outfitGeneratorService.saveOutfit(
-        currentOutfit.value.id,
-        collectionId
-      )
+      await outfitGeneratorService.saveOutfit(currentOutfit.value.id, collectionId)
       currentOutfit.value.is_saved = true
       currentOutfit.value.saved_at = new Date().toISOString()
       if (collectionId) {
@@ -141,9 +127,7 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
       }
 
       // Update in history
-      const historyIndex = history.value.findIndex(
-        (o) => o.id === currentOutfit.value.id
-      )
+      const historyIndex = history.value.findIndex(o => o.id === currentOutfit.value.id)
       if (historyIndex !== -1) {
         history.value[historyIndex].is_saved = true
         history.value[historyIndex].saved_at = currentOutfit.value.saved_at
@@ -191,7 +175,7 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
     generationParams.value = {
       occasion: OCCASIONS.CASUAL,
       weather: WEATHER_CONDITIONS.WARM,
-      style: null,
+      style: null
     }
     generating.value = false
     error.value = null
@@ -224,6 +208,6 @@ export const useOutfitGenerationStore = defineStore('outfitGeneration', () => {
     loadHistory,
     loadSuggestedOutfits,
     clearCurrentOutfit,
-    reset,
+    reset
   }
 })

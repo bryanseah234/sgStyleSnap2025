@@ -1,8 +1,8 @@
 /**
  * Friends Store - StyleSnap
- * 
+ *
  * Purpose: Manages friendships, friend requests, and friend data
- * 
+ *
  * State:
  * - friends: Array (accepted friendships)
  * - pendingRequests: Object
@@ -10,7 +10,7 @@
  *   - outgoing: Array (requests sent)
  * - currentFriend: Object | null (selected friend's profile)
  * - isLoading: boolean
- * 
+ *
  * Actions:
  * - fetchFriends(): Fetches accepted friendships
  * - fetchPendingRequests(): Fetches all pending requests (incoming + outgoing)
@@ -21,17 +21,17 @@
  * - unfriend(friendshipId): Removes friendship
  * - searchUsers(query): Searches for users by name/email
  * - fetchFriendProfile(friendId): Gets friend's profile and public items
- * 
+ *
  * Getters:
  * - friendsCount: returns friends.length
  * - incomingRequestsCount: returns pendingRequests.incoming.length
  * - hasPendingRequests: returns incomingRequestsCount > 0
- * 
+ *
  * Friendship States:
  * - pending: request sent, awaiting response
  * - accepted: active friendship
  * - rejected: request denied (not shown in UI)
- * 
+ *
  * Reference:
  * - services/friends-service.js for API calls
  * - requirements/database-schema.md for friendships table
@@ -51,14 +51,14 @@ export const useFriendsStore = defineStore('friends', {
     searchResults: [],
     isLoading: false
   }),
-  
+
   getters: {
-    friendsCount: (state) => state.friends.length,
-    incomingRequestsCount: (state) => state.pendingRequests.incoming.length,
-    outgoingRequestsCount: (state) => state.pendingRequests.outgoing.length,
-    hasPendingRequests: (state) => state.pendingRequests.incoming.length > 0
+    friendsCount: state => state.friends.length,
+    incomingRequestsCount: state => state.pendingRequests.incoming.length,
+    outgoingRequestsCount: state => state.pendingRequests.outgoing.length,
+    hasPendingRequests: state => state.pendingRequests.incoming.length > 0
   },
-  
+
   actions: {
     /**
      * Fetch all accepted friendships
@@ -76,7 +76,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Fetch pending friend requests
      */
@@ -93,7 +93,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Send friend request by email
      */
@@ -102,10 +102,10 @@ export const useFriendsStore = defineStore('friends', {
       try {
         const friendsService = await import('../services/friends-service')
         const result = await friendsService.sendFriendRequest(email)
-        
+
         // Refresh pending requests to include new request
         await this.fetchPendingRequests()
-        
+
         return result
       } catch (error) {
         console.error('Failed to send friend request:', error)
@@ -114,7 +114,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Accept incoming friend request
      */
@@ -123,12 +123,12 @@ export const useFriendsStore = defineStore('friends', {
       try {
         const friendsService = await import('../services/friends-service')
         await friendsService.acceptFriendRequest(requestId)
-        
+
         // Remove from pending incoming
         this.pendingRequests.incoming = this.pendingRequests.incoming.filter(
           req => req.requestId !== requestId
         )
-        
+
         // Refresh friends list
         await this.fetchFriends()
       } catch (error) {
@@ -138,7 +138,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Reject incoming friend request
      */
@@ -147,7 +147,7 @@ export const useFriendsStore = defineStore('friends', {
       try {
         const friendsService = await import('../services/friends-service')
         await friendsService.rejectFriendRequest(requestId)
-        
+
         // Remove from pending incoming
         this.pendingRequests.incoming = this.pendingRequests.incoming.filter(
           req => req.requestId !== requestId
@@ -159,7 +159,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Cancel outgoing friend request
      */
@@ -168,7 +168,7 @@ export const useFriendsStore = defineStore('friends', {
       try {
         const friendsService = await import('../services/friends-service')
         await friendsService.cancelFriendRequest(requestId)
-        
+
         // Remove from pending outgoing
         this.pendingRequests.outgoing = this.pendingRequests.outgoing.filter(
           req => req.requestId !== requestId
@@ -180,7 +180,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Unfriend
      */
@@ -189,11 +189,9 @@ export const useFriendsStore = defineStore('friends', {
       try {
         const friendsService = await import('../services/friends-service')
         await friendsService.unfriend(friendshipId)
-        
+
         // Remove from friends list
-        this.friends = this.friends.filter(
-          friend => friend.friendshipId !== friendshipId
-        )
+        this.friends = this.friends.filter(friend => friend.friendshipId !== friendshipId)
       } catch (error) {
         console.error('Failed to unfriend:', error)
         throw error
@@ -201,7 +199,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Search users by name or email
      */
@@ -210,7 +208,7 @@ export const useFriendsStore = defineStore('friends', {
         this.searchResults = []
         return
       }
-      
+
       this.isLoading = true
       try {
         const friendsService = await import('../services/friends-service')
@@ -224,7 +222,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Fetch friend's profile and items
      */
@@ -242,7 +240,7 @@ export const useFriendsStore = defineStore('friends', {
         this.isLoading = false
       }
     },
-    
+
     /**
      * Clear current friend
      */

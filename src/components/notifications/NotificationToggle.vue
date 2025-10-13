@@ -1,5 +1,7 @@
 <template>
-  <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+  <div
+    class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+  >
     <div class="flex items-start space-x-3 flex-1">
       <div class="flex-shrink-0 mt-0.5">
         <component
@@ -41,15 +43,15 @@ const iconComponent = computed(() => {
   const icons = {
     'user-add': UserAddIcon,
     'user-check': UserCheckIcon,
-    'heart': HeartIcon,
-    'chat': ChatIcon,
-    'star': StarIcon,
-    'lightbulb': LightbulbIcon,
-    'calendar': CalendarIcon,
-    'cloud': CloudIcon,
-    'warning': WarningIcon
+    heart: HeartIcon,
+    chat: ChatIcon,
+    star: StarIcon,
+    lightbulb: LightbulbIcon,
+    calendar: CalendarIcon,
+    cloud: CloudIcon,
+    warning: WarningIcon
   }
-  
+
   return icons[props.icon] || HeartIcon
 })
 

@@ -467,7 +467,7 @@ const showDeleteButton = computed(() => {
   .items-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .modal-content {
     max-height: 95vh;
   }

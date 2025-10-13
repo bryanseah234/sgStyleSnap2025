@@ -30,25 +30,23 @@
       v-if="showDetails"
       class="quota-header"
     >
-      <span class="quota-count">
-        {{ currentCount }} / {{ maxCount }} uploads
-      </span>
-      <span 
-        v-if="quota.isNearLimit" 
+      <span class="quota-count"> {{ currentCount }} / {{ maxCount }} uploads </span>
+      <span
+        v-if="quota.isNearLimit"
         class="quota-badge"
         :class="quota.isFull ? 'quota-badge-danger' : 'quota-badge-warning'"
       >
         {{ quota.isFull ? 'Full' : 'Near Limit' }}
       </span>
     </div>
-    
-    <ProgressBar 
-      :value="currentCount" 
-      :max="maxCount" 
+
+    <ProgressBar
+      :value="currentCount"
+      :max="maxCount"
       :color="quotaColor"
       size="md"
     />
-    
+
     <p
       v-if="showDetails"
       class="quota-message"
@@ -67,7 +65,7 @@ const props = defineProps({
   currentCount: {
     type: Number,
     required: true,
-    validator: (value) => value >= 0
+    validator: value => value >= 0
   },
   maxCount: {
     type: Number,
@@ -134,17 +132,17 @@ const quotaMessage = computed(() => getQuotaMessage(quota.value))
   .quota-count {
     color: #d1d5db;
   }
-  
+
   .quota-badge-warning {
     background-color: #78350f;
     color: #fef3c7;
   }
-  
+
   .quota-badge-danger {
     background-color: #7f1d1d;
     color: #fee2e2;
   }
-  
+
   .quota-message {
     color: #9ca3af;
   }

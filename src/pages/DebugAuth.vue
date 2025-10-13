@@ -12,7 +12,7 @@
   <div class="debug-page">
     <div class="debug-container">
       <h1>🔧 Authentication Debug</h1>
-      
+
       <section class="debug-section">
         <h2>Environment Variables</h2>
         <div class="info-grid">
@@ -25,7 +25,11 @@
           <div class="info-item">
             <span class="label">VITE_SUPABASE_ANON_KEY:</span>
             <span :class="['value', supabaseAnonKey ? 'success' : 'error']">
-              {{ supabaseAnonKey ? '✅ SET (' + supabaseAnonKey.substring(0, 20) + '...)' : '❌ NOT SET' }}
+              {{
+                supabaseAnonKey
+                  ? '✅ SET (' + supabaseAnonKey.substring(0, 20) + '...)'
+                  : '❌ NOT SET'
+              }}
             </span>
           </div>
           <div class="info-item">
@@ -84,7 +88,7 @@
           >
             Test Google OAuth
           </Button>
-          
+
           <Button
             variant="secondary"
             @click="checkSession"
@@ -92,13 +96,20 @@
             Check Current Session
           </Button>
         </div>
-        
-        <div v-if="testResult" class="test-result" :class="testResult.type">
+
+        <div
+          v-if="testResult"
+          class="test-result"
+          :class="testResult.type"
+        >
           <strong>{{ testResult.type === 'error' ? '❌' : '✅' }} {{ testResult.title }}</strong>
           <pre>{{ testResult.message }}</pre>
         </div>
-        
-        <div v-if="sessionInfo" class="test-result info">
+
+        <div
+          v-if="sessionInfo"
+          class="test-result info"
+        >
           <strong>📋 Session Info</strong>
           <pre>{{ sessionInfo }}</pre>
         </div>
@@ -111,11 +122,11 @@
           <p>Add these to Authorized redirect URIs:</p>
           <code>{{ callbackUrl }}</code>
           <code>{{ currentOrigin }}</code>
-          
+
           <h3>Supabase Dashboard</h3>
           <p>Add these to Redirect URLs:</p>
           <code>{{ currentOrigin }}</code>
-          
+
           <h3>Environment Variables (.env.local)</h3>
           <code>VITE_SUPABASE_URL={{ supabaseUrl || 'YOUR_SUPABASE_URL' }}</code>
           <code>VITE_SUPABASE_ANON_KEY={{ supabaseAnonKey ? '***' : 'YOUR_ANON_KEY' }}</code>
@@ -124,7 +135,12 @@
       </section>
 
       <div class="actions">
-        <router-link to="/login" class="link-button">← Back to Login</router-link>
+        <router-link
+          to="/login"
+          class="link-button"
+        >
+          ← Back to Login
+        </router-link>
       </div>
     </div>
   </div>
@@ -168,14 +184,14 @@ onMounted(async () => {
 async function testGoogleAuth() {
   testResult.value = null
   isLoading.value = true
-  
+
   try {
     console.log('🧪 Testing Google OAuth...')
-    
+
     if (!supabase || !supabase.auth) {
       throw new Error('Supabase client is not initialized')
     }
-    
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -186,9 +202,9 @@ async function testGoogleAuth() {
         }
       }
     })
-    
+
     console.log('OAuth response:', { data, error })
-    
+
     if (error) {
       testResult.value = {
         type: 'error',
@@ -201,7 +217,7 @@ async function testGoogleAuth() {
         title: 'Redirect URL Generated',
         message: `Redirecting to:\n${data.url}`
       }
-      
+
       // Redirect after 2 seconds to show the URL
       setTimeout(() => {
         window.location.href = data.url
@@ -227,26 +243,33 @@ async function testGoogleAuth() {
 
 async function checkSession() {
   sessionInfo.value = null
-  
+
   try {
     if (!supabase || !supabase.auth) {
       sessionInfo.value = 'Supabase client is not initialized'
       return
     }
-    
-    const { data: { session }, error } = await supabase.auth.getSession()
-    
+
+    const {
+      data: { session },
+      error
+    } = await supabase.auth.getSession()
+
     if (error) {
       sessionInfo.value = `Error: ${error.message}`
     } else if (session) {
-      sessionInfo.value = JSON.stringify({
-        user: {
-          id: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.name
+      sessionInfo.value = JSON.stringify(
+        {
+          user: {
+            id: session.user.id,
+            email: session.user.email,
+            name: session.user.user_metadata?.name
+          },
+          expires_at: new Date(session.expires_at * 1000).toISOString()
         },
-        expires_at: new Date(session.expires_at * 1000).toISOString()
-      }, null, 2)
+        null,
+        2
+      )
     } else {
       sessionInfo.value = 'No active session'
     }

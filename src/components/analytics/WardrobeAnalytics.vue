@@ -61,9 +61,11 @@
                 v-for="preset in datePresets"
                 :key="preset.value"
                 class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                :class="selectedPreset === preset.value 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                :class="
+                  selectedPreset === preset.value
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                "
                 @click="setDateRange(preset.value)"
               >
                 {{ preset.label }}
@@ -101,7 +103,9 @@
       <!-- Overview Stats -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <!-- Total Outfits -->
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm p-6 text-white">
+        <div
+          class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm p-6 text-white"
+        >
           <div class="flex items-center justify-between">
             <div>
               <p class="text-blue-100 text-sm font-medium">
@@ -120,32 +124,46 @@
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                <path
+                  d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"
+                />
               </svg>
             </div>
           </div>
         </div>
 
         <!-- Average Rating -->
-        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-sm p-6 text-white">
+        <div
+          class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-sm p-6 text-white"
+        >
           <div class="flex items-center justify-between">
             <div>
               <p class="text-yellow-100 text-sm font-medium">
                 Avg Rating
               </p>
               <p class="text-3xl font-bold mt-2">
-                {{ analyticsStore.stats.avg_rating ? analyticsStore.stats.avg_rating.toFixed(1) : '0.0' }}
+                {{
+                  analyticsStore.stats.avg_rating
+                    ? analyticsStore.stats.avg_rating.toFixed(1)
+                    : '0.0'
+                }}
               </p>
               <div class="flex items-center mt-1">
                 <svg
                   v-for="i in 5"
                   :key="i"
                   class="w-4 h-4"
-                  :class="i <= Math.round(analyticsStore.stats.avg_rating || 0) ? 'text-yellow-200' : 'text-yellow-400 opacity-30'"
+                  :class="
+                    i <= Math.round(analyticsStore.stats.avg_rating || 0)
+                      ? 'text-yellow-200'
+                      : 'text-yellow-400 opacity-30'
+                  "
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                  />
                 </svg>
               </div>
             </div>
@@ -155,14 +173,18 @@
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                />
               </svg>
             </div>
           </div>
         </div>
 
         <!-- Most Worn Occasion -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm p-6 text-white">
+        <div
+          class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm p-6 text-white"
+        >
           <div class="flex items-center justify-between">
             <div>
               <p class="text-green-100 text-sm font-medium">
@@ -192,7 +214,9 @@
         </div>
 
         <!-- Items Used -->
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-sm p-6 text-white">
+        <div
+          class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-sm p-6 text-white"
+        >
           <div class="flex items-center justify-between">
             <div>
               <p class="text-purple-100 text-sm font-medium">
@@ -211,7 +235,9 @@
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
-                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                <path
+                  d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"
+                />
               </svg>
             </div>
           </div>
@@ -388,29 +414,29 @@ const weatherBreakdown = computed(() => {
   return null
 })
 
-const setDateRange = (preset) => {
+const setDateRange = preset => {
   selectedPreset.value = preset
-  
+
   const endDate = new Date()
   let startDate = new Date()
-  
+
   if (preset !== 'all') {
     const days = parseInt(preset)
     startDate.setDate(startDate.getDate() - days)
   } else {
     startDate = null
   }
-  
+
   fetchAnalytics(startDate, endDate)
 }
 
 const applyCustomRange = () => {
   if (!customStartDate.value || !customEndDate.value) return
-  
+
   selectedPreset.value = null
   const startDate = new Date(customStartDate.value)
   const endDate = new Date(customEndDate.value)
-  
+
   fetchAnalytics(startDate, endDate)
 }
 
@@ -424,7 +450,7 @@ const fetchAnalytics = async (startDate, endDate) => {
   ])
 }
 
-const fetchMostWornItems = async (limit) => {
+const fetchMostWornItems = async limit => {
   await analyticsStore.fetchMostWornItems(limit)
 }
 

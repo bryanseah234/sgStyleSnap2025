@@ -99,12 +99,18 @@ const emit = defineEmits(['update:filters'])
 
 const localFilters = ref({ ...props.filters })
 
-watch(() => props.filters, (newFilters) => {
-  localFilters.value = { ...newFilters }
-}, { deep: true })
+watch(
+  () => props.filters,
+  newFilters => {
+    localFilters.value = { ...newFilters }
+  },
+  { deep: true }
+)
 
 const hasActiveFilters = computed(() => {
-  return localFilters.value.category || localFilters.value.clothing_type || localFilters.value.privacy
+  return (
+    localFilters.value.category || localFilters.value.clothing_type || localFilters.value.privacy
+  )
 })
 
 function emitFilters() {

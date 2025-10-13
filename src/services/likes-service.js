@@ -1,8 +1,8 @@
 /**
  * Likes Service
- * 
+ *
  * Handles all like/unlike operations for clothing items and outfits.
- * 
+ *
  * Features:
  * - Like/unlike individual items (item_likes table - creates notifications)
  * - Like/unlike shared outfits (shared_outfit_likes table - creates notifications)
@@ -10,7 +10,7 @@
  * - Get likers for an item or outfit
  * - Get popular items from friends
  * - Like statistics
- * 
+ *
  * Privacy Rules:
  * - Users can only like items from friends
  * - Users cannot like their own items
@@ -29,20 +29,23 @@ export const likesService = {
   async likeItem(itemId) {
     try {
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) throw new Error('Not authenticated')
 
       // Insert like (will fail if duplicate due to unique constraint)
       const { data: like, error: insertError } = await supabase
         .from('likes')
-        .insert({ 
+        .insert({
           item_id: itemId,
           user_id: user.id
         })
         .select()
         .single()
-      
+
       // Handle duplicate like (already liked)
       if (insertError) {
         if (insertError.code === '23505') {
@@ -53,38 +56,38 @@ export const likesService = {
             .eq('item_id', itemId)
             .eq('user_id', user.id)
             .single()
-          
+
           // Get current likes count
           const { data: item } = await supabase
             .from('clothes')
             .select('likes_count')
             .eq('id', itemId)
             .single()
-          
-          return { 
-            like: existing, 
+
+          return {
+            like: existing,
             likesCount: item?.likes_count || 0,
             alreadyLiked: true
           }
         }
-        
+
         // Handle self-like error
         if (insertError.message?.includes('cannot like their own items')) {
           throw new Error('You cannot like your own items')
         }
-        
+
         throw insertError
       }
-      
+
       // Get updated likes count
       const { data: item } = await supabase
         .from('clothes')
         .select('likes_count')
         .eq('id', itemId)
         .single()
-      
-      return { 
-        like, 
+
+      return {
+        like,
         likesCount: item?.likes_count || 1
       }
     } catch (error) {
@@ -101,7 +104,10 @@ export const likesService = {
   async unlikeItem(itemId) {
     try {
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) throw new Error('Not authenticated')
 
@@ -111,17 +117,17 @@ export const likesService = {
         .delete()
         .eq('item_id', itemId)
         .eq('user_id', user.id)
-      
+
       if (deleteError) throw deleteError
-      
+
       // Get updated likes count
       const { data: item } = await supabase
         .from('clothes')
         .select('likes_count')
         .eq('id', itemId)
         .single()
-      
-      return { 
+
+      return {
         likesCount: item?.likes_count || 0
       }
     } catch (error) {
@@ -160,13 +166,12 @@ export const likesService = {
    */
   async getUserLikedItems(userId, limit = 50, offset = 0) {
     try {
-      const { data, error } = await supabase
-        .rpc('get_user_liked_items', {
-          user_id_param: userId,
-          limit_param: limit,
-          offset_param: offset
-        })
-      
+      const { data, error } = await supabase.rpc('get_user_liked_items', {
+        user_id_param: userId,
+        limit_param: limit,
+        offset_param: offset
+      })
+
       if (error) throw error
       return data || []
     } catch (error) {
@@ -175,7 +180,7 @@ export const likesService = {
     }
   },
 
-    /**
+  /**
    * Get list of users who liked an item
    * @param {string} itemId - UUID of the item
    * @param {number} limit - Max likers to return
@@ -183,14 +188,13 @@ export const likesService = {
    */
   async getItemLikers(itemId, limit = 50) {
     try {
-      const { data, error } = await supabase
-        .rpc('get_item_likers', {
-          item_id_param: itemId,
-          limit_param: limit
-        })
-      
+      const { data, error } = await supabase.rpc('get_item_likers', {
+        item_id_param: itemId,
+        limit_param: limit
+      })
+
       if (error) throw error
-      
+
       return data || []
     } catch (error) {
       console.error('Error fetching item likers:', error)
@@ -206,16 +210,18 @@ export const likesService = {
   async getPopularItemsFromFriends(limit = 20) {
     try {
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) throw new Error('Not authenticated')
-      
-      const { data, error } = await supabase
-        .rpc('get_popular_items_from_friends', {
-          user_id_param: user.id,
-          limit_param: limit
-        })
-      
+
+      const { data, error } = await supabase.rpc('get_popular_items_from_friends', {
+        user_id_param: user.id,
+        limit_param: limit
+      })
+
       if (error) throw error
       return data || []
     } catch (error) {
@@ -232,15 +238,15 @@ export const likesService = {
   async initializeUserLikes() {
     try {
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) return []
-      
-      const { data, error } = await supabase
-        .from('likes')
-        .select('item_id')
-        .eq('user_id', user.id)
-      
+
+      const { data, error } = await supabase.from('likes').select('item_id').eq('user_id', user.id)
+
       if (error) throw error
       return data?.map(like => like.item_id) || []
     } catch (error) {
@@ -257,16 +263,18 @@ export const likesService = {
   async hasUserLikedItem(itemId) {
     try {
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) return false
-      
-      const { data, error } = await supabase
-        .rpc('has_user_liked_item', {
-          user_id_param: user.id,
-          item_id_param: itemId
-        })
-      
+
+      const { data, error } = await supabase.rpc('has_user_liked_item', {
+        user_id_param: user.id,
+        item_id_param: itemId
+      })
+
       if (error) throw error
       return data || false
     } catch (error) {
@@ -282,20 +290,21 @@ export const likesService = {
    */
   async getUserLikesStats(userId) {
     try {
-      const { data, error } = await supabase
-        .rpc('get_user_likes_stats', {
-          user_id_param: userId
-        })
-      
+      const { data, error } = await supabase.rpc('get_user_likes_stats', {
+        user_id_param: userId
+      })
+
       if (error) throw error
-      return data?.[0] || {
-        total_items: 0,
-        total_likes_received: 0,
-        avg_likes_per_item: 0,
-        most_liked_item_id: null,
-        most_liked_item_name: null,
-        most_liked_item_likes: 0
-      }
+      return (
+        data?.[0] || {
+          total_items: 0,
+          total_likes_received: 0,
+          avg_likes_per_item: 0,
+          most_liked_item_id: null,
+          most_liked_item_name: null,
+          most_liked_item_likes: 0
+        }
+      )
     } catch (error) {
       console.error('Error fetching user likes stats:', error)
       throw error
@@ -309,11 +318,8 @@ export const likesService = {
    */
   async getRecentLikes(limit = 50) {
     try {
-      const { data, error } = await supabase
-        .from('recent_likes')
-        .select('*')
-        .limit(limit)
-      
+      const { data, error } = await supabase.from('recent_likes').select('*').limit(limit)
+
       if (error) throw error
       return data || []
     } catch (error) {
@@ -330,18 +336,21 @@ export const likesService = {
   async batchCheckLiked(itemIds) {
     try {
       if (!itemIds || itemIds.length === 0) return new Set()
-      
+
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) return new Set()
-      
+
       const { data, error } = await supabase
         .from('likes')
         .select('item_id')
         .eq('user_id', user.id)
         .in('item_id', itemIds)
-      
+
       if (error) throw error
       return new Set(data?.map(like => like.item_id) || [])
     } catch (error) {
@@ -361,34 +370,35 @@ export const likesService = {
    */
   async likeSharedOutfit(outfitId) {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) throw new Error('Not authenticated')
-      
+
       // Insert like (trigger will create notification)
-      const { error: likeError } = await supabase
-        .from('shared_outfit_likes')
-        .insert({
-          outfit_id: outfitId,
-          user_id: user.id
-        })
-      
+      const { error: likeError } = await supabase.from('shared_outfit_likes').insert({
+        outfit_id: outfitId,
+        user_id: user.id
+      })
+
       if (likeError) {
         if (likeError.code === '23505') {
           throw new Error('Already liked this outfit')
         }
         throw likeError
       }
-      
+
       // Get updated likes count
       const { data: outfit, error: outfitError } = await supabase
         .from('shared_outfits')
         .select('likes_count')
         .eq('id', outfitId)
         .single()
-      
+
       if (outfitError) throw outfitError
-      
+
       return {
         success: true,
         likes_count: outfit.likes_count
@@ -406,28 +416,31 @@ export const likesService = {
    */
   async unlikeSharedOutfit(outfitId) {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) throw new Error('Not authenticated')
-      
+
       // Delete like
       const { error: deleteError } = await supabase
         .from('shared_outfit_likes')
         .delete()
         .eq('outfit_id', outfitId)
         .eq('user_id', user.id)
-      
+
       if (deleteError) throw deleteError
-      
+
       // Get updated likes count
       const { data: outfit, error: outfitError } = await supabase
         .from('shared_outfits')
         .select('likes_count')
         .eq('id', outfitId)
         .single()
-      
+
       if (outfitError) throw outfitError
-      
+
       return {
         success: true,
         likes_count: outfit.likes_count
@@ -447,19 +460,21 @@ export const likesService = {
     try {
       const { data, error } = await supabase
         .from('shared_outfit_likes')
-        .select(`
+        .select(
+          `
           created_at,
           user:users!shared_outfit_likes_user_id_fkey (
             id,
             username,
             avatar
           )
-        `)
+        `
+        )
         .eq('outfit_id', outfitId)
         .order('created_at', { ascending: false })
-      
+
       if (error) throw error
-      
+
       return data.map(like => ({
         user_id: like.user.id,
         username: like.user.username,
@@ -479,17 +494,20 @@ export const likesService = {
    */
   async hasUserLikedSharedOutfit(outfitId) {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) return false
-      
+
       const { data, error } = await supabase
         .from('shared_outfit_likes')
         .select('id')
         .eq('outfit_id', outfitId)
         .eq('user_id', user.id)
         .maybeSingle()
-      
+
       if (error) throw error
       return !!data
     } catch (error) {
@@ -509,38 +527,39 @@ export const likesService = {
    */
   async likeClosetItem(itemId) {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) throw new Error('Not authenticated')
-      
+
       // Insert like (trigger will create notification and update likes_count)
-      const { error: likeError } = await supabase
-        .from('item_likes')
-        .insert({
-          item_id: itemId,
-          user_id: user.id
-        })
-      
+      const { error: likeError } = await supabase.from('item_likes').insert({
+        item_id: itemId,
+        user_id: user.id
+      })
+
       if (likeError) {
         if (likeError.code === '23505') {
           throw new Error('Already liked this item')
         }
         // Check for self-like or non-friend error
         if (likeError.code === '23514') {
-          throw new Error('Cannot like your own items or non-friends\' items')
+          throw new Error("Cannot like your own items or non-friends' items")
         }
         throw likeError
       }
-      
+
       // Get updated likes count
       const { data: item, error: itemError } = await supabase
         .from('clothes')
         .select('likes_count')
         .eq('id', itemId)
         .single()
-      
+
       if (itemError) throw itemError
-      
+
       return {
         success: true,
         likes_count: item.likes_count
@@ -558,28 +577,31 @@ export const likesService = {
    */
   async unlikeClosetItem(itemId) {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) throw new Error('Not authenticated')
-      
+
       // Delete like (trigger will update likes_count)
       const { error: deleteError } = await supabase
         .from('item_likes')
         .delete()
         .eq('item_id', itemId)
         .eq('user_id', user.id)
-      
+
       if (deleteError) throw deleteError
-      
+
       // Get updated likes count
       const { data: item, error: itemError } = await supabase
         .from('clothes')
         .select('likes_count')
         .eq('id', itemId)
         .single()
-      
+
       if (itemError) throw itemError
-      
+
       return {
         success: true,
         likes_count: item.likes_count
@@ -599,19 +621,21 @@ export const likesService = {
     try {
       const { data, error } = await supabase
         .from('item_likes')
-        .select(`
+        .select(
+          `
           created_at,
           user:users!item_likes_user_id_fkey (
             id,
             username,
             avatar
           )
-        `)
+        `
+        )
         .eq('item_id', itemId)
         .order('created_at', { ascending: false })
-      
+
       if (error) throw error
-      
+
       return data.map(like => ({
         user_id: like.user.id,
         username: like.user.username,
@@ -631,17 +655,20 @@ export const likesService = {
    */
   async hasUserLikedClosetItem(itemId) {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) return false
-      
+
       const { data, error } = await supabase
         .from('item_likes')
         .select('id')
         .eq('item_id', itemId)
         .eq('user_id', user.id)
         .maybeSingle()
-      
+
       if (error) throw error
       return !!data
     } catch (error) {
@@ -698,12 +725,11 @@ export const likesService = {
    */
   async getPopularItems(limit = 20, minLikes = 0) {
     try {
-      const { data, error } = await supabase
-        .rpc('get_popular_items', {
-          limit_param: limit,
-          min_likes_param: minLikes
-        })
-      
+      const { data, error } = await supabase.rpc('get_popular_items', {
+        limit_param: limit,
+        min_likes_param: minLikes
+      })
+
       if (error) throw error
       return data || []
     } catch (error) {
@@ -719,17 +745,20 @@ export const likesService = {
   async hasLiked(itemId) {
     try {
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!user) return false
-      
+
       const { data, error } = await supabase
         .from('likes')
         .select('id')
         .eq('item_id', itemId)
         .eq('user_id', user.id)
         .single()
-      
+
       if (error) {
         if (error.code === 'PGRST116') return false // No rows returned
         throw error

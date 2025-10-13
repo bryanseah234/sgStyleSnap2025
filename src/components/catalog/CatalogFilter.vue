@@ -44,9 +44,7 @@
 
     <!-- Color Filter -->
     <div class="filter-group mb-4">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Color
-      </label>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"> Color </label>
       <select
         v-model="localFilters.color"
         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -67,9 +65,7 @@
 
     <!-- Brand Filter -->
     <div class="filter-group mb-4">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Brand
-      </label>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"> Brand </label>
       <select
         v-model="localFilters.brand"
         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -156,9 +152,13 @@ const emit = defineEmits(['update:filters', 'clear'])
 const localFilters = ref({ ...props.filters })
 
 // Watch for external filter changes
-watch(() => props.filters, (newFilters) => {
-  localFilters.value = { ...newFilters }
-}, { deep: true })
+watch(
+  () => props.filters,
+  newFilters => {
+    localFilters.value = { ...newFilters }
+  },
+  { deep: true }
+)
 
 const groupedCategories = computed(() => CATEGORY_GROUPS)
 

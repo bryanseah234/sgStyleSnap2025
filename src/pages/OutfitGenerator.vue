@@ -20,9 +20,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- Occasion -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Occasion
-            </label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"> Occasion </label>
             <select
               v-model="outfitStore.generationParams.occasion"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -39,9 +37,7 @@
 
           <!-- Weather -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Weather
-            </label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"> Weather </label>
             <select
               v-model="outfitStore.generationParams.weather"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -58,9 +54,7 @@
 
           <!-- Style (Optional) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Style (Optional)
-            </label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"> Style (Optional) </label>
             <select
               v-model="outfitStore.generationParams.style"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -247,9 +241,7 @@
               <span class="text-sm font-medium text-gray-900 capitalize">
                 {{ outfit.occasion }}
               </span>
-              <span class="text-sm text-gray-600">
-                Score: {{ outfit.ai_score }}/100
-              </span>
+              <span class="text-sm text-gray-600"> Score: {{ outfit.ai_score }}/100 </span>
             </div>
             <div class="flex gap-2">
               <img
@@ -281,14 +273,14 @@ const occasionOptions = [
   { value: OCCASIONS.WORKOUT, label: 'Workout' },
   { value: OCCASIONS.FORMAL, label: 'Formal Event' },
   { value: OCCASIONS.PARTY, label: 'Party' },
-  { value: OCCASIONS.TRAVEL, label: 'Travel' },
+  { value: OCCASIONS.TRAVEL, label: 'Travel' }
 ]
 
 const weatherOptions = [
   { value: WEATHER_CONDITIONS.HOT, label: 'Hot (>25°C)' },
   { value: WEATHER_CONDITIONS.WARM, label: 'Warm (15-25°C)' },
   { value: WEATHER_CONDITIONS.COOL, label: 'Cool (5-15°C)' },
-  { value: WEATHER_CONDITIONS.COLD, label: 'Cold (<5°C)' },
+  { value: WEATHER_CONDITIONS.COLD, label: 'Cold (<5°C)' }
 ]
 
 const styleOptions = [
@@ -300,7 +292,7 @@ const styleOptions = [
   { value: 'street', label: 'Street' },
   { value: 'boho', label: 'Boho' },
   { value: 'vintage', label: 'Vintage' },
-  { value: 'minimalist', label: 'Minimalist' },
+  { value: 'minimalist', label: 'Minimalist' }
 ]
 
 async function handleGenerate() {

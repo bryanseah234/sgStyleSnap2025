@@ -1,8 +1,8 @@
 /**
  * Theme Configuration - StyleSnap
- * 
+ *
  * Purpose: Centralized theme configuration for colors, spacing, typography, and design tokens
- * 
+ *
  * Configuration Includes:
  * - Color palette (primary, secondary, success, warning, danger, neutral shades)
  * - Typography (font families, sizes, weights, line heights)
@@ -11,20 +11,20 @@
  * - Border radius values
  * - Shadow definitions
  * - Z-index layers
- * 
+ *
  * Usage:
  * import theme from '@/config/theme'
  * const primaryColor = theme.colors.primary
- * 
+ *
  * This should align with Tailwind config for consistency
- * 
+ *
  * Mobile-First Design:
  * - Base: 0-640px (mobile)
  * - sm: 640px+ (large mobile)
  * - md: 768px+ (tablet)
  * - lg: 1024px+ (desktop)
  * - xl: 1280px+ (large desktop)
- * 
+ *
  * Reference:
  * - docs/design/DESIGN_REFERENCE.md for design tokens
  * - tailwind.config.js should extend these values
@@ -121,7 +121,7 @@ export default {
       900: '#171923'
     }
   },
-  
+
   typography: {
     fontFamily: {
       sans: [
@@ -134,26 +134,19 @@ export default {
         'Arial',
         'sans-serif'
       ],
-      mono: [
-        'Fira Code',
-        'Monaco',
-        'Consolas',
-        'Liberation Mono',
-        'Courier New',
-        'monospace'
-      ]
+      mono: ['Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace']
     },
     fontSize: {
-      xs: '0.75rem',      // 12px
-      sm: '0.875rem',     // 14px
-      base: '1rem',       // 16px
-      lg: '1.125rem',     // 18px
-      xl: '1.25rem',      // 20px
-      '2xl': '1.5rem',    // 24px
-      '3xl': '1.875rem',  // 30px
-      '4xl': '2.25rem',   // 36px
-      '5xl': '3rem',      // 48px
-      '6xl': '3.75rem'    // 60px
+      xs: '0.75rem', // 12px
+      sm: '0.875rem', // 14px
+      base: '1rem', // 16px
+      lg: '1.125rem', // 18px
+      xl: '1.25rem', // 20px
+      '2xl': '1.5rem', // 24px
+      '3xl': '1.875rem', // 30px
+      '4xl': '2.25rem', // 36px
+      '5xl': '3rem', // 48px
+      '6xl': '3.75rem' // 60px
     },
     fontWeight: {
       thin: 100,
@@ -175,49 +168,49 @@ export default {
       loose: 2
     }
   },
-  
+
   spacing: {
     0: '0',
-    1: '0.25rem',   // 4px
-    2: '0.5rem',    // 8px
-    3: '0.75rem',   // 12px
-    4: '1rem',      // 16px
-    5: '1.25rem',   // 20px
-    6: '1.5rem',    // 24px
-    7: '1.75rem',   // 28px
-    8: '2rem',      // 32px
-    10: '2.5rem',   // 40px
-    12: '3rem',     // 48px
-    16: '4rem',     // 64px
-    20: '5rem',     // 80px
-    24: '6rem',     // 96px
-    32: '8rem',     // 128px
-    40: '10rem',    // 160px
-    48: '12rem',    // 192px
-    56: '14rem',    // 224px
-    64: '16rem'     // 256px
+    1: '0.25rem', // 4px
+    2: '0.5rem', // 8px
+    3: '0.75rem', // 12px
+    4: '1rem', // 16px
+    5: '1.25rem', // 20px
+    6: '1.5rem', // 24px
+    7: '1.75rem', // 28px
+    8: '2rem', // 32px
+    10: '2.5rem', // 40px
+    12: '3rem', // 48px
+    16: '4rem', // 64px
+    20: '5rem', // 80px
+    24: '6rem', // 96px
+    32: '8rem', // 128px
+    40: '10rem', // 160px
+    48: '12rem', // 192px
+    56: '14rem', // 224px
+    64: '16rem' // 256px
   },
-  
+
   breakpoints: {
-    sm: '640px',    // Large mobile
-    md: '768px',    // Tablet
-    lg: '1024px',   // Desktop
-    xl: '1280px',   // Large desktop
+    sm: '640px', // Large mobile
+    md: '768px', // Tablet
+    lg: '1024px', // Desktop
+    xl: '1280px', // Large desktop
     '2xl': '1536px' // Extra large desktop
   },
-  
+
   borderRadius: {
     none: '0',
-    sm: '0.125rem',   // 2px
-    base: '0.25rem',  // 4px
-    md: '0.375rem',   // 6px
-    lg: '0.5rem',     // 8px
-    xl: '0.75rem',    // 12px
-    '2xl': '1rem',    // 16px
-    '3xl': '1.5rem',  // 24px
-    full: '9999px'    // Fully rounded
+    sm: '0.125rem', // 2px
+    base: '0.25rem', // 4px
+    md: '0.375rem', // 6px
+    lg: '0.5rem', // 8px
+    xl: '0.75rem', // 12px
+    '2xl': '1rem', // 16px
+    '3xl': '1.5rem', // 24px
+    full: '9999px' // Fully rounded
   },
-  
+
   shadows: {
     none: 'none',
     sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
@@ -232,7 +225,7 @@ export default {
     dropdown: '0 10px 40px rgba(0, 0, 0, 0.15)',
     modal: '0 20px 60px rgba(0, 0, 0, 0.3)'
   },
-  
+
   zIndex: {
     // Layering system (grouped by context)
     base: 0,
@@ -249,7 +242,7 @@ export default {
     canvas: 100,
     overlay: 900
   },
-  
+
   // Transition timings
   transitions: {
     fast: '150ms',
@@ -257,7 +250,7 @@ export default {
     slow: '300ms',
     slower: '500ms'
   },
-  
+
   // Common animation easing functions
   easing: {
     linear: 'linear',

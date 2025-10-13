@@ -53,7 +53,7 @@
             Create Your Digital Closet
           </p>
         </div>
-        
+
         <div class="register-section">
           <Button
             variant="primary"
@@ -65,7 +65,7 @@
           >
             <span v-if="!isLoading">Sign up with Google</span>
           </Button>
-          
+
           <p
             v-if="errorMessage"
             class="error-message"
@@ -73,13 +73,13 @@
             {{ errorMessage }}
           </p>
         </div>
-        
+
         <div class="footer-links">
           <p class="footer-text">
             By signing up, you agree to our Terms of Service and Privacy Policy
           </p>
           <p class="footer-text">
-            Already have an account? 
+            Already have an account?
             <router-link
               to="/login"
               class="link"
@@ -110,7 +110,7 @@ const errorMessage = ref('')
 async function handleGoogleSignUp() {
   isLoading.value = true
   errorMessage.value = ''
-  
+
   try {
     // Same OAuth flow as login - Supabase handles new user creation
     await authStore.login()
@@ -200,7 +200,7 @@ async function handleGoogleSignUp() {
   .register-content {
     padding: 1.5rem;
   }
-  
+
   .app-title {
     font-size: 2rem;
   }

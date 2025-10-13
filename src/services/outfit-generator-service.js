@@ -9,7 +9,7 @@ import {
   CATEGORIES,
   OUTFIT_REQUIRED_CATEGORIES,
   WEATHER_CONDITIONS,
-  OCCASIONS,
+  OCCASIONS
 } from '@/utils/clothing-constants'
 
 // Outfit generation rules
@@ -20,7 +20,7 @@ const OUTFIT_RULES = {
     analogous: 'Adjacent colors on color wheel',
     complementary: 'Opposite colors on color wheel',
     triadic: 'Three evenly spaced colors',
-    neutral: 'Blacks, whites, grays, beige',
+    neutral: 'Blacks, whites, grays, beige'
   },
 
   // Style compatibility matrix
@@ -34,7 +34,7 @@ const OUTFIT_RULES = {
     vintage: ['vintage', 'casual'],
     minimalist: ['minimalist', 'formal', 'business', 'casual'],
     preppy: ['preppy', 'business', 'casual'],
-    edgy: ['edgy', 'street', 'casual'],
+    edgy: ['edgy', 'street', 'casual']
   },
 
   // Weather rules
@@ -42,23 +42,23 @@ const OUTFIT_RULES = {
     [WEATHER_CONDITIONS.HOT]: {
       temp: '> 25°C',
       avoid: [CATEGORIES.OUTERWEAR],
-      prefer: ['T-Shirt', 'Shorts', 'Dress'],
+      prefer: ['T-Shirt', 'Shorts', 'Dress']
     },
     [WEATHER_CONDITIONS.WARM]: {
       temp: '15-25°C',
       optional: [CATEGORIES.OUTERWEAR],
-      prefer: ['Shirt', 'Pants', 'T-Shirt'],
+      prefer: ['Shirt', 'Pants', 'T-Shirt']
     },
     [WEATHER_CONDITIONS.COOL]: {
       temp: '5-15°C',
       require: [CATEGORIES.OUTERWEAR],
-      prefer: ['Longsleeve', 'Pants', 'Blazer', 'Hoodie'],
+      prefer: ['Longsleeve', 'Pants', 'Blazer', 'Hoodie']
     },
     [WEATHER_CONDITIONS.COLD]: {
       temp: '< 5°C',
       require: [CATEGORIES.OUTERWEAR],
-      prefer: ['Longsleeve', 'Pants', 'Outwear'],
-    },
+      prefer: ['Longsleeve', 'Pants', 'Outwear']
+    }
   },
 
   // Occasion requirements
@@ -66,32 +66,32 @@ const OUTFIT_RULES = {
     [OCCASIONS.WORK]: {
       styles: ['formal', 'business'],
       avoid: ['sporty', 'street'],
-      prefer: ['Blazer', 'Shirt', 'Pants', 'Blouse'],
+      prefer: ['Blazer', 'Shirt', 'Pants', 'Blouse']
     },
     [OCCASIONS.CASUAL]: {
       styles: ['casual'],
       avoid: ['formal'],
-      prefer: ['T-Shirt', 'Pants', 'Shorts'],
+      prefer: ['T-Shirt', 'Pants', 'Shorts']
     },
     [OCCASIONS.WORKOUT]: {
       styles: ['sporty'],
       require: ['Shoes'],
-      prefer: ['T-Shirt', 'Shorts'],
+      prefer: ['T-Shirt', 'Shorts']
     },
     [OCCASIONS.FORMAL]: {
       styles: ['formal'],
       avoid: ['casual', 'sporty'],
-      prefer: ['Blazer', 'Shirt', 'Pants', 'Dress'],
+      prefer: ['Blazer', 'Shirt', 'Pants', 'Dress']
     },
     [OCCASIONS.DATE]: {
       styles: ['formal', 'business', 'casual'],
-      prefer: ['Dress', 'Shirt', 'Blouse', 'Skirt'],
+      prefer: ['Dress', 'Shirt', 'Blouse', 'Skirt']
     },
     [OCCASIONS.PARTY]: {
       styles: ['formal', 'casual', 'street'],
-      prefer: ['Dress', 'Shirt', 'Skirt'],
-    },
-  },
+      prefer: ['Dress', 'Shirt', 'Skirt']
+    }
+  }
 }
 
 class OutfitGeneratorService {
@@ -109,32 +109,26 @@ class OutfitGeneratorService {
       occasion = OCCASIONS.CASUAL,
       weather = WEATHER_CONDITIONS.WARM,
       style = null,
-      userItems = [],
+      userItems = []
     } = params
 
     // Step 1: Filter items by weather
     const weatherAppropriate = this.filterByWeather(userItems, weather)
 
     // Step 2: Filter by occasion/style
-    const styleAppropriate = this.filterByStyle(
-      weatherAppropriate,
-      occasion,
-      style
-    )
+    const styleAppropriate = this.filterByStyle(weatherAppropriate, occasion, style)
 
     // Step 3: Generate outfit combinations
     const combinations = this.generateCombinations(styleAppropriate)
 
     if (combinations.length === 0) {
-      throw new Error(
-        'Not enough items to generate an outfit. Add more items to your closet!'
-      )
+      throw new Error('Not enough items to generate an outfit. Add more items to your closet!')
     }
 
     // Step 4: Score each combination
-    const scoredOutfits = combinations.map((combo) => ({
+    const scoredOutfits = combinations.map(combo => ({
       items: combo,
-      score: this.scoreOutfit(combo),
+      score: this.scoreOutfit(combo)
     }))
 
     // Step 5: Sort by score and get best outfit
@@ -144,19 +138,19 @@ class OutfitGeneratorService {
     // Step 6: Save to database
     try {
       const response = await apiClient.post('/outfits/generate', {
-        item_ids: bestOutfit.items.map((item) => item.id),
+        item_ids: bestOutfit.items.map(item => item.id),
         generation_params: { occasion, weather, style },
         color_scheme: this.detectColorScheme(bestOutfit.items),
         style_theme: style || this.detectStyleTheme(bestOutfit.items),
         occasion,
         weather_condition: weather,
-        ai_score: Math.round(bestOutfit.score),
+        ai_score: Math.round(bestOutfit.score)
       })
 
       return {
         ...response.data,
         items: bestOutfit.items,
-        score: Math.round(bestOutfit.score),
+        score: Math.round(bestOutfit.score)
       }
     } catch (error) {
       console.error('Error saving generated outfit:', error)
@@ -167,7 +161,7 @@ class OutfitGeneratorService {
         color_scheme: this.detectColorScheme(bestOutfit.items),
         style_theme: style || this.detectStyleTheme(bestOutfit.items),
         occasion,
-        weather_condition: weather,
+        weather_condition: weather
       }
     }
   }
@@ -179,18 +173,14 @@ class OutfitGeneratorService {
   filterByWeather(items, weather) {
     const rules = OUTFIT_RULES.weatherRules[weather]
 
-    return items.filter((item) => {
+    return items.filter(item => {
       // Check if category should be avoided
       if (rules.avoid && rules.avoid.includes(item.category)) {
         return false
       }
 
       // Prefer certain clothing types in this weather
-      if (
-        rules.prefer &&
-        item.clothing_type &&
-        rules.prefer.includes(item.clothing_type)
-      ) {
+      if (rules.prefer && item.clothing_type && rules.prefer.includes(item.clothing_type)) {
         return true
       }
 
@@ -205,16 +195,13 @@ class OutfitGeneratorService {
   filterByStyle(items, occasion, preferredStyle) {
     const occasionRules = OUTFIT_RULES.occasions[occasion]
 
-    return items.filter((item) => {
+    return items.filter(item => {
       // Check style compatibility
       if (preferredStyle) {
         const compatible = OUTFIT_RULES.styleMatrix[preferredStyle] || []
         const itemStyles = item.style_tags || []
 
-        if (
-          itemStyles.length > 0 &&
-          !itemStyles.some((tag) => compatible.includes(tag))
-        ) {
+        if (itemStyles.length > 0 && !itemStyles.some(tag => compatible.includes(tag))) {
           return false
         }
       }
@@ -224,10 +211,7 @@ class OutfitGeneratorService {
         const itemStyles = item.style_tags || []
 
         // Check if style should be avoided
-        if (
-          occasionRules.avoid &&
-          itemStyles.some((tag) => occasionRules.avoid.includes(tag))
-        ) {
+        if (occasionRules.avoid && itemStyles.some(tag => occasionRules.avoid.includes(tag))) {
           return false
         }
 
@@ -235,7 +219,7 @@ class OutfitGeneratorService {
         if (
           occasionRules.styles &&
           itemStyles.length > 0 &&
-          !itemStyles.some((tag) => occasionRules.styles.includes(tag))
+          !itemStyles.some(tag => occasionRules.styles.includes(tag))
         ) {
           // Not strictly required, but reduces priority
           return true
@@ -253,11 +237,11 @@ class OutfitGeneratorService {
   generateCombinations(items) {
     const combinations = []
     const categories = {
-      top: items.filter((i) => i.category === CATEGORIES.TOP),
-      bottom: items.filter((i) => i.category === CATEGORIES.BOTTOM),
-      shoes: items.filter((i) => i.category === CATEGORIES.SHOES),
-      outerwear: items.filter((i) => i.category === CATEGORIES.OUTERWEAR),
-      accessory: items.filter((i) => i.category === CATEGORIES.ACCESSORY),
+      top: items.filter(i => i.category === CATEGORIES.TOP),
+      bottom: items.filter(i => i.category === CATEGORIES.BOTTOM),
+      shoes: items.filter(i => i.category === CATEGORIES.SHOES),
+      outerwear: items.filter(i => i.category === CATEGORIES.OUTERWEAR),
+      accessory: items.filter(i => i.category === CATEGORIES.ACCESSORY)
     }
 
     // Check if we have minimum required items
@@ -268,7 +252,7 @@ class OutfitGeneratorService {
     ) {
       // Check if we have a dress (can replace top+bottom)
       const dresses = items.filter(
-        (i) => i.clothing_type === 'Dress' && i.category === CATEGORIES.TOP
+        i => i.clothing_type === 'Dress' && i.category === CATEGORIES.TOP
       )
       if (dresses.length > 0 && categories.shoes.length > 0) {
         // Generate dress combinations
@@ -352,9 +336,7 @@ class OutfitGeneratorService {
    * @private
    */
   scoreColorHarmony(items) {
-    const colors = items
-      .map((item) => item.primary_color || item.color)
-      .filter(Boolean)
+    const colors = items.map(item => item.primary_color || item.color).filter(Boolean)
 
     if (colors.length === 0) return 0.5
 
@@ -366,7 +348,7 @@ class OutfitGeneratorService {
 
     // Check for neutral combinations (always safe)
     const neutrals = ['black', 'white', 'gray', 'grey', 'beige', 'brown']
-    if (colors.every((c) => neutrals.includes(c.toLowerCase()))) {
+    if (colors.every(c => neutrals.includes(c.toLowerCase()))) {
       return 0.9 // Neutral combinations are safe
     }
 
@@ -378,7 +360,7 @@ class OutfitGeneratorService {
 
     // Check for analogous colors
     const analogous = this.getAnalogousColors(colors[0])
-    if (colors.some((c) => analogous.includes(c))) {
+    if (colors.some(c => analogous.includes(c))) {
       return 0.8 // Good analogous match
     }
 
@@ -391,7 +373,7 @@ class OutfitGeneratorService {
    * @private
    */
   scoreStyleConsistency(items) {
-    const styles = items.flatMap((item) => item.style_tags || [])
+    const styles = items.flatMap(item => item.style_tags || [])
     if (styles.length === 0) return 0.5
 
     const uniqueStyles = [...new Set(styles)]
@@ -402,8 +384,8 @@ class OutfitGeneratorService {
     }
 
     // Check style matrix compatibility
-    const compatible = uniqueStyles.every((style) => {
-      return uniqueStyles.every((otherStyle) => {
+    const compatible = uniqueStyles.every(style => {
+      return uniqueStyles.every(otherStyle => {
         const compat = OUTFIT_RULES.styleMatrix[style] || []
         return style === otherStyle || compat.includes(otherStyle)
       })
@@ -417,15 +399,13 @@ class OutfitGeneratorService {
    * @private
    */
   scoreCompleteness(items) {
-    const categories = items.map((i) => i.category)
+    const categories = items.map(i => i.category)
 
     // Check all required categories present
-    const hasRequired = OUTFIT_REQUIRED_CATEGORIES.every((cat) =>
-      categories.includes(cat)
-    )
+    const hasRequired = OUTFIT_REQUIRED_CATEGORIES.every(cat => categories.includes(cat))
     if (!hasRequired) {
       // Check if it's a dress outfit
-      const hasDress = items.some((i) => i.clothing_type === 'Dress')
+      const hasDress = items.some(i => i.clothing_type === 'Dress')
       const hasShoes = categories.includes(CATEGORIES.SHOES)
       if (hasDress && hasShoes) return 0.9
       return 0.3
@@ -455,16 +435,13 @@ class OutfitGeneratorService {
    * @private
    */
   detectColorScheme(items) {
-    const colors = items
-      .map((item) => item.primary_color || item.color)
-      .filter(Boolean)
+    const colors = items.map(item => item.primary_color || item.color).filter(Boolean)
     const uniqueColors = [...new Set(colors)]
 
     if (uniqueColors.length === 1) return 'monochromatic'
 
     const neutrals = ['black', 'white', 'gray', 'grey', 'beige', 'brown']
-    if (colors.every((c) => neutrals.includes(c.toLowerCase())))
-      return 'neutral'
+    if (colors.every(c => neutrals.includes(c.toLowerCase()))) return 'neutral'
 
     // Check for complementary
     if (colors.length >= 2) {
@@ -473,7 +450,7 @@ class OutfitGeneratorService {
 
       // Check for analogous
       const analogous = this.getAnalogousColors(colors[0])
-      if (colors.some((c) => analogous.includes(c))) return 'analogous'
+      if (colors.some(c => analogous.includes(c))) return 'analogous'
     }
 
     return 'mixed'
@@ -484,7 +461,7 @@ class OutfitGeneratorService {
    * @private
    */
   detectStyleTheme(items) {
-    const styles = items.flatMap((item) => item.style_tags || [])
+    const styles = items.flatMap(item => item.style_tags || [])
     if (styles.length === 0) return 'casual'
 
     const styleCounts = styles.reduce((acc, style) => {
@@ -492,9 +469,7 @@ class OutfitGeneratorService {
       return acc
     }, {})
 
-    const dominant = Object.entries(styleCounts).sort(
-      ([, a], [, b]) => b - a
-    )[0]
+    const dominant = Object.entries(styleCounts).sort(([, a], [, b]) => b - a)[0]
 
     return dominant ? dominant[0] : 'casual'
   }
@@ -512,7 +487,7 @@ class OutfitGeneratorService {
       yellow: 'purple',
       purple: 'yellow',
       pink: 'green',
-      teal: 'red',
+      teal: 'red'
     }
     return complementaryMap[color?.toLowerCase()] || color
   }
@@ -530,7 +505,7 @@ class OutfitGeneratorService {
       blue: ['teal', 'purple'],
       purple: ['blue', 'pink'],
       pink: ['purple', 'red'],
-      teal: ['green', 'blue'],
+      teal: ['green', 'blue']
     }
     return analogousMap[color?.toLowerCase()] || []
   }
@@ -554,7 +529,7 @@ class OutfitGeneratorService {
   async rateOutfit(outfitId, rating) {
     try {
       const response = await apiClient.post(`/outfits/${outfitId}/rate`, {
-        rating,
+        rating
       })
       return response.data
     } catch (error) {
@@ -569,7 +544,7 @@ class OutfitGeneratorService {
   async saveOutfit(outfitId, collectionId = null) {
     try {
       const response = await apiClient.post(`/outfits/${outfitId}/save`, {
-        collection_id: collectionId,
+        collection_id: collectionId
       })
       return response.data
     } catch (error) {

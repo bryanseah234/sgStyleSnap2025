@@ -212,14 +212,14 @@ function handleDragEnd(event) {
 
 function handleDrop(event) {
   event.preventDefault()
-  
+
   if (draggedItem.value) {
     // Add item to canvas
     selectedItems.value.push({
       uniqueId: `item-${uniqueIdCounter++}`,
       item: draggedItem.value
     })
-    
+
     draggedItem.value = null
   }
 }
@@ -234,13 +234,13 @@ async function handleSave() {
   if (selectedItems.value.length === 0) {
     return
   }
-  
+
   isSaving.value = true
-  
+
   try {
     // Extract item IDs
     const itemIds = selectedItems.value.map(si => si.item.id)
-    
+
     // Emit save event with data
     emit('save', {
       toUserId: props.friendId,
@@ -386,7 +386,7 @@ async function handleSave() {
 .canvas-area {
   flex: 1;
   position: relative;
-  background: 
+  background:
     linear-gradient(to right, #e5e7eb 1px, transparent 1px),
     linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
   background-size: 20px 20px;
@@ -536,19 +536,19 @@ async function handleSave() {
   .canvas-content {
     flex-direction: column;
   }
-  
+
   .items-panel {
     width: 100%;
     max-height: 200px;
     border-right: none;
     border-bottom: 1px solid #e5e7eb;
   }
-  
+
   .items-list {
     flex-direction: row;
     overflow-x: auto;
   }
-  
+
   .item-thumbnail {
     min-width: 120px;
   }

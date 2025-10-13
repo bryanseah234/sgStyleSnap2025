@@ -40,7 +40,8 @@ const formattedCount = computed(() => {
 
 /* Custom pulse animation for new notifications */
 @keyframes pulse-scale {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

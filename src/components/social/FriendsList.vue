@@ -34,7 +34,7 @@
   <div class="friends-list">
     <div class="friends-header">
       <h2>My Friends ({{ friendsStore.friendsCount }})</h2>
-      
+
       <!-- Search Bar -->
       <div class="search-box">
         <input
@@ -103,7 +103,7 @@
             {{ getInitial(friend.name) }}
           </div>
         </div>
-        
+
         <div class="friend-info">
           <h3 class="friend-name">
             {{ friend.name }}
@@ -112,7 +112,7 @@
             Friends since {{ formatDate(friend.friendSince) }}
           </p>
         </div>
-        
+
         <button
           class="suggest-btn"
           title="Suggest outfit"
@@ -159,11 +159,9 @@ const filteredFriends = computed(() => {
   if (!searchQuery.value) {
     return friendsStore.friends
   }
-  
+
   const query = searchQuery.value.toLowerCase()
-  return friendsStore.friends.filter(friend => 
-    friend.name.toLowerCase().includes(query)
-  )
+  return friendsStore.friends.filter(friend => friend.name.toLowerCase().includes(query))
 })
 
 // Fetch friends on mount
@@ -178,9 +176,9 @@ function handleSearch() {
 
 // Navigate to friend profile
 function viewFriendProfile(friend) {
-  router.push({ 
-    name: 'FriendProfileView', 
-    params: { friendId: friend.id } 
+  router.push({
+    name: 'FriendProfileView',
+    params: { friendId: friend.id }
   })
 }
 
@@ -203,7 +201,7 @@ function formatDate(dateString) {
   const now = new Date()
   const diffTime = Math.abs(now - date)
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays < 7) {
     return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
   } else if (diffDays < 30) {

@@ -1,34 +1,34 @@
 /**
  * Drag and Drop Helpers - StyleSnap
- * 
+ *
  * Purpose: Utility functions for implementing drag-and-drop in outfit suggestion canvas
- * 
+ *
  * Used By: components/social/SuggestionCanvas.vue
- * 
+ *
  * Functions:
  * - handleDragStart(event, item): Sets up drag data when drag starts
  *   - event: DragEvent
  *   - item: Object (clothing item being dragged)
  *   - Sets dataTransfer with item data
- * 
+ *
  * - handleDragOver(event): Allows dropping by preventing default
  *   - event: DragEvent
  *   - Must call event.preventDefault() to allow drop
- * 
+ *
  * - handleDrop(event): Handles drop event and calculates position
  *   - event: DragEvent
  *   - Returns: { itemId: string, x: number, y: number }
- * 
+ *
  * - calculateDropPosition(event, containerRect): Calculates item position in canvas
  *   - event: DragEvent
  *   - containerRect: DOMRect of drop zone
  *   - Returns: { x: number, y: number } (relative to container)
- * 
+ *
  * - createDraggableElement(item, position): Creates positioned element
  *   - item: Object (clothing item)
  *   - position: { x, y, z_index }
  *   - Returns: Object with style properties
- * 
+ *
  * Drag & Drop Flow:
  * 1. User drags item from sidebar
  * 2. handleDragStart() stores item data
@@ -37,7 +37,7 @@
  * 5. handleDrop() calculates position
  * 6. Create positioned div with item image
  * 7. Store position in items_data JSON
- * 
+ *
  * Items Data Format (saved to database):
  * [
  *   {
@@ -50,22 +50,22 @@
  *   },
  *   ...
  * ]
- * 
+ *
  * Usage:
  * import { handleDragStart, handleDragOver, handleDrop } from './drag-drop-helpers'
- * 
+ *
  * // In component:
  * <div @dragstart="(e) => handleDragStart(e, item)">
  *   <img :src="item.image_url" draggable="true" />
  * </div>
- * 
- * <div 
- *   @dragover="handleDragOver" 
+ *
+ * <div
+ *   @dragover="handleDragOver"
  *   @drop="(e) => onDrop(handleDrop(e))"
  *   class="canvas"
  * >
  * </div>
- * 
+ *
  * Reference:
  * - tasks/05-suggestion-system.md for drag-and-drop implementation
  * - components/social/SuggestionCanvas.vue for usage
@@ -81,12 +81,15 @@ export function handleDragStart(event, item) {
   if (!event.dataTransfer || !item) return
 
   // Set drag data (item ID and info)
-  event.dataTransfer.setData('application/json', JSON.stringify({
-    id: item.id,
-    image_url: item.image_url,
-    name: item.name,
-    category: item.category
-  }))
+  event.dataTransfer.setData(
+    'application/json',
+    JSON.stringify({
+      id: item.id,
+      image_url: item.image_url,
+      name: item.name,
+      category: item.category
+    })
+  )
 
   // Set effectAllowed
   event.dataTransfer.effectAllowed = 'copy'
@@ -106,7 +109,7 @@ export function handleDragStart(event, item) {
 export function handleDragOver(event) {
   // Prevent default to allow drop
   event.preventDefault()
-  
+
   // Set dropEffect
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = 'copy'
@@ -128,7 +131,7 @@ export function handleDrop(event) {
     if (!data) return null
 
     const itemData = JSON.parse(data)
-    
+
     // Calculate drop position relative to the container
     const container = event.currentTarget
     const containerRect = container.getBoundingClientRect()
@@ -239,25 +242,20 @@ export function removeItem(items, itemId) {
  */
 export function findItemAtPosition(items, position) {
   const { x, y } = position
-  
+
   // Sort by z-index (highest first) to find topmost item
   const sortedItems = [...items].sort((a, b) => (b.z_index || 0) - (a.z_index || 0))
-  
+
   for (const item of sortedItems) {
     const itemX = item.x || 0
     const itemY = item.y || 0
     const itemWidth = item.width || 120
     const itemHeight = item.height || 150
-    
-    if (
-      x >= itemX && 
-      x <= itemX + itemWidth && 
-      y >= itemY && 
-      y <= itemY + itemHeight
-    ) {
+
+    if (x >= itemX && x <= itemX + itemWidth && y >= itemY && y <= itemY + itemHeight) {
       return item
     }
   }
-  
+
   return null
 }

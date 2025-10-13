@@ -6,7 +6,7 @@
     >
       {{ label }}
     </label>
-    
+
     <!-- Selected Colors -->
     <div
       v-if="modelValue.length > 0"
@@ -52,8 +52,8 @@
         type="button"
         class="relative aspect-square rounded-lg border-2 transition-all hover:scale-110"
         :class="[
-          isSelected(color.name) 
-            ? 'border-blue-500 ring-2 ring-blue-200' 
+          isSelected(color.name)
+            ? 'border-blue-500 ring-2 ring-blue-200'
             : 'border-gray-300 hover:border-gray-400',
           isDisabled(color.name) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         ]"
@@ -99,7 +99,7 @@
 </template>
 
 <script setup>
-import { /* computed */ } from 'vue'
+import {} from /* computed */ 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -140,35 +140,35 @@ const availableColors = [
   { name: 'coral', hex: '#FB7185' }
 ]
 
-const isSelected = (colorName) => {
+const isSelected = colorName => {
   return props.modelValue.includes(colorName)
 }
 
-const isDisabled = (colorName) => {
+const isDisabled = colorName => {
   return props.maxColors && !isSelected(colorName) && props.modelValue.length >= props.maxColors
 }
 
-const toggleColor = (colorName) => {
+const toggleColor = colorName => {
   if (isDisabled(colorName)) return
-  
+
   const newValue = isSelected(colorName)
     ? props.modelValue.filter(c => c !== colorName)
     : [...props.modelValue, colorName]
-  
+
   emit('update:modelValue', newValue)
 }
 
-const removeColor = (colorName) => {
+const removeColor = colorName => {
   const newValue = props.modelValue.filter(c => c !== colorName)
   emit('update:modelValue', newValue)
 }
 
-const getColorHex = (colorName) => {
+const getColorHex = colorName => {
   const color = availableColors.find(c => c.name === colorName)
   return color?.hex || '#CCCCCC'
 }
 
-const capitalizeFirst = (str) => {
+const capitalizeFirst = str => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1)
 }

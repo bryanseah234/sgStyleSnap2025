@@ -39,9 +39,7 @@
           >
             <!-- Outfit Preview -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Outfit Preview *
-              </label>
+              <label class="block text-sm font-medium text-gray-700 mb-2"> Outfit Preview * </label>
               <div
                 v-if="selectedItems.length === 0"
                 class="text-sm text-gray-500 italic"
@@ -62,8 +60,12 @@
                     :alt="item.name"
                     class="w-full h-full object-cover"
                   >
-                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
-                    <span class="text-white text-xs opacity-0 group-hover:opacity-100 text-center px-2">
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center"
+                  >
+                    <span
+                      class="text-white text-xs opacity-0 group-hover:opacity-100 text-center px-2"
+                    >
                       {{ item.name }}
                     </span>
                   </div>
@@ -141,7 +143,9 @@
                 Who can see this?
               </label>
               <div class="space-y-2">
-                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <label
+                  class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <input
                     v-model="formData.visibility"
                     type="radio"
@@ -169,7 +173,9 @@
                   </div>
                 </label>
 
-                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <label
+                  class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <input
                     v-model="formData.visibility"
                     type="radio"
@@ -313,9 +319,13 @@ const formData = ref({
 })
 
 // Watch for selected items changes
-watch(() => props.selectedItems, (items) => {
-  formData.value.outfit_items = items.map(item => item.id)
-}, { immediate: true, deep: true })
+watch(
+  () => props.selectedItems,
+  items => {
+    formData.value.outfit_items = items.map(item => item.id)
+  },
+  { immediate: true, deep: true }
+)
 
 const handleClose = () => {
   if (!loading.value) {

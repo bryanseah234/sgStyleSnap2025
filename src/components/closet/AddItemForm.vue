@@ -149,18 +149,18 @@
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Image *
         </label>
-        
+
         <!-- Image Preview -->
         <div
           v-if="imagePreview"
           class="mb-4"
         >
-          <img 
-            :src="imagePreview" 
-            alt="Preview" 
+          <img
+            :src="imagePreview"
+            alt="Preview"
             class="w-full h-48 object-cover rounded-md"
           >
-          
+
           <!-- Color Analysis -->
           <div
             v-if="detectingColors"
@@ -188,7 +188,7 @@
             </svg>
             Analyzing colors...
           </div>
-          
+
           <div
             v-else-if="detectedColors"
             class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-md"
@@ -202,7 +202,7 @@
             <div class="flex items-center gap-2 flex-wrap">
               <!-- Primary Color -->
               <div class="flex items-center gap-2">
-                <div 
+                <div
                   class="w-10 h-10 rounded-md border-2 border-gray-300 dark:border-gray-600 shadow-sm"
                   :style="{ backgroundColor: getColorHex(detectedColors.primary) }"
                   :title="`Primary: ${detectedColors.primary}`"
@@ -211,12 +211,12 @@
                   {{ detectedColors.primary }}
                 </span>
               </div>
-              
+
               <!-- Secondary Colors -->
               <template v-if="detectedColors.secondary && detectedColors.secondary.length > 0">
                 <span class="text-gray-400">+</span>
-                <div 
-                  v-for="color in detectedColors.secondary" 
+                <div
+                  v-for="color in detectedColors.secondary"
                   :key="color"
                   class="w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600"
                   :style="{ backgroundColor: getColorHex(color) }"
@@ -228,7 +228,7 @@
               Colors will be stored for better search and outfit matching
             </p>
           </div>
-          
+
           <button
             type="button"
             class="mt-2 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
@@ -237,9 +237,9 @@
             Remove Image
           </button>
         </div>
-        
+
         <!-- File Input -->
-        <div 
+        <div
           v-else
           class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md p-4 text-center hover:border-blue-500 transition-colors cursor-pointer"
           :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900/10': isDragging }"
@@ -284,7 +284,7 @@
             Images automatically converted to WebP for optimal storage
           </p>
         </div>
-        
+
         <!-- Upload Error -->
         <p
           v-if="imageError"
@@ -366,12 +366,14 @@ const isFormValid = computed(() => {
 // Detect if device is mobile/tablet (allows camera) vs desktop/laptop (file upload only)
 const isMobileDevice = computed(() => {
   if (typeof window === 'undefined') return false
-  
+
   // Check for touch support and screen size
   const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0
   const isMobileWidth = window.innerWidth <= 1024 // tablets and below
-  const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  
+  const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  )
+
   return (hasTouchScreen && isMobileWidth) || isMobileUserAgent
 })
 
@@ -397,21 +399,21 @@ async function handleDrop(event) {
 async function processFile(file) {
   imageError.value = null
   detectedColors.value = null
-  
+
   try {
     // Compress and convert to WebP
     const compressed = await compressImage(file, 1)
-    
+
     // Create preview
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = e => {
       imagePreview.value = e.target.result
     }
     reader.readAsDataURL(compressed)
-    
+
     // Store compressed file
     form.value.file = compressed
-    
+
     // Detect colors from the original file (better quality for detection)
     detectingColors.value = true
     try {
@@ -420,13 +422,13 @@ async function processFile(file) {
         quality: 10,
         excludeWhiteBlack: true
       })
-      
+
       detectedColors.value = colors
-      
+
       // Store colors in form
       form.value.primary_color = colors.primary
       form.value.secondary_colors = colors.secondary || []
-      
+
       console.log('Detected colors:', colors)
     } catch (colorError) {
       console.error('Color detection failed:', colorError)
@@ -459,10 +461,11 @@ function getColorHex(colorName) {
 
 async function handleSubmit() {
   if (!isFormValid.value || submitting.value) return
-  
+
   // Check quota
   if (!closetStore.canAddItem) {
-    imageError.value = 'You have reached your 50 upload limit. Add unlimited items from our catalog instead!'
+    imageError.value =
+      'You have reached your 50 upload limit. Add unlimited items from our catalog instead!'
     return
   }
 

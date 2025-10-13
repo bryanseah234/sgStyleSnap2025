@@ -74,7 +74,7 @@
           class="w-full h-auto max-h-[500px] object-contain cursor-zoom-in"
           @click="toggleImageZoom"
         >
-        
+
         <!-- Favorite Button Overlay -->
         <button
           class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
@@ -304,27 +304,34 @@ const daysInCloset = computed(() => {
 })
 
 // Watch for item ID changes
-watch(() => props.itemId, (newId) => {
-  if (newId && props.isOpen) {
-    loadItemDetails()
-  }
-}, { immediate: true })
+watch(
+  () => props.itemId,
+  newId => {
+    if (newId && props.isOpen) {
+      loadItemDetails()
+    }
+  },
+  { immediate: true }
+)
 
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen && props.itemId) {
-    loadItemDetails()
+watch(
+  () => props.isOpen,
+  isOpen => {
+    if (isOpen && props.itemId) {
+      loadItemDetails()
+    }
   }
-})
+)
 
 /**
  * Load item details and statistics
  */
 async function loadItemDetails() {
   if (!props.itemId) return
-  
+
   loading.value = true
   error.value = null
-  
+
   try {
     const data = await getItemDetails(props.itemId)
     item.value = data.item
@@ -342,7 +349,7 @@ async function loadItemDetails() {
  */
 async function toggleFavoriteStatus() {
   if (!item.value || favoriting.value) return
-  
+
   favoriting.value = true
   try {
     await toggleFavorite(item.value.id, !item.value.is_favorite)
@@ -376,10 +383,12 @@ function handleShare() {
  */
 async function handleDelete() {
   if (!item.value || deleting.value) return
-  
-  const confirmed = confirm(`Are you sure you want to delete "${item.value.name}"? This action cannot be undone.`)
+
+  const confirmed = confirm(
+    `Are you sure you want to delete "${item.value.name}"? This action cannot be undone.`
+  )
   if (!confirmed) return
-  
+
   deleting.value = true
   try {
     await deleteItem(item.value.id)
@@ -447,7 +456,7 @@ function getColorHex(colorName) {
     violet: '#8B5CF6',
     fuchsia: '#D946EF'
   }
-  
+
   return colorMap[colorName?.toLowerCase()] || '#9CA3AF'
 }
 </script>

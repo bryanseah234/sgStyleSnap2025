@@ -1,8 +1,8 @@
 /**
  * Auth Store - StyleSnap
- * 
+ *
  * Purpose: Manages authentication state and user session
- * 
+ *
  * State:
  * - user: Object | null (current authenticated user)
  *   - id: UUID
@@ -11,22 +11,22 @@
  *   - avatar_url: string (from Google)
  * - isAuthenticated: boolean
  * - isLoading: boolean (for auth operations)
- * 
+ *
  * Actions:
  * - login(): Initiates Google OAuth flow
  * - logout(): Signs out user and clears session
  * - fetchUser(): Gets current user from Supabase session
  * - refreshSession(): Refreshes auth token
- * 
+ *
  * Getters:
  * - userId: returns user.id or null
  * - userName: returns user.name or null
- * 
+ *
  * Integration:
  * - Uses Supabase Auth (services/auth-service.js)
  * - Persists session in localStorage (Supabase handles this)
  * - Used by auth-guard.js for route protection
- * 
+ *
  * Reference:
  * - services/auth-service.js for auth API calls
  * - tasks/02-authentication-database.md for auth implementation
@@ -43,16 +43,17 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     error: null
   }),
-  
+
   getters: {
-    userId: (state) => state.user?.id || null,
-    userName: (state) => state.user?.user_metadata?.name || state.user?.name || state.user?.email || 'User',
-    userEmail: (state) => state.user?.email || null,
-    userAvatar: (state) => state.user?.avatar_url || null,
+    userId: state => state.user?.id || null,
+    userName: state =>
+      state.user?.user_metadata?.name || state.user?.name || state.user?.email || 'User',
+    userEmail: state => state.user?.email || null,
+    userAvatar: state => state.user?.avatar_url || null,
     // Backward compatibility
-    isLoading: (state) => state.loading
+    isLoading: state => state.loading
   },
-  
+
   actions: {
     /**
      * Set user data
@@ -64,7 +65,7 @@ export const useAuthStore = defineStore('auth', {
       this.isAuthenticated = !!userData
       console.log('🔧 AuthStore: isAuthenticated set to:', this.isAuthenticated)
     },
-    
+
     /**
      * Clear user data and authentication state
      */
@@ -73,7 +74,7 @@ export const useAuthStore = defineStore('auth', {
       this.isAuthenticated = false
       this.error = null
     },
-    
+
     /**
      * Initialize auth state from existing session
      */
@@ -84,7 +85,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const session = await authService.getSession()
         console.log('📦 AuthStore: Session retrieved:', session ? 'Found' : 'Not found')
-        
+
         if (session) {
           console.log('✅ AuthStore: Setting user from session:', session.user.email)
           this.setUser(session.user)
@@ -97,11 +98,13 @@ export const useAuthStore = defineStore('auth', {
         this.clearUser()
       } finally {
         this.loading = false
-        console.log('✅ AuthStore: Auth initialization complete. Authenticated:', this.isAuthenticated)
+        console.log(
+          '✅ AuthStore: Auth initialization complete. Authenticated:',
+          this.isAuthenticated
+        )
       }
     },
 
-    
     /**
      * Login with Google OAuth
      */
@@ -119,14 +122,14 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
       }
     },
-    
+
     /**
      * Login with Google OAuth (alias for login)
      */
     async loginWithGoogle() {
       return this.login()
     },
-    
+
     /**
      * Logout and clear session
      */
@@ -144,7 +147,7 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
       }
     },
-    
+
     /**
      * Fetch current user data
      */
@@ -166,7 +169,7 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
       }
     },
-    
+
     /**
      * Fetch user profile from database
      */
@@ -200,7 +203,7 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
       }
     },
-    
+
     /**
      * Refresh auth session
      */
@@ -222,15 +225,19 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
       }
     },
-    
+
     /**
      * Setup auth state change listener
      */
     setupAuthListener() {
       console.log('👂 AuthStore: Setting up auth state listener')
       return authService.onAuthStateChange((event, session) => {
-        console.log('🔔 AuthStore: Auth event received:', event, session?.user?.email || 'no session')
-        
+        console.log(
+          '🔔 AuthStore: Auth event received:',
+          event,
+          session?.user?.email || 'no session'
+        )
+
         if (event === 'SIGNED_IN' && session) {
           console.log('✅ AuthStore: User signed in:', session.user.email)
           this.setUser(session.user)

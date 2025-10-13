@@ -35,7 +35,7 @@
       <div class="profile-header">
         <h1>Profile</h1>
       </div>
-      
+
       <div class="profile-content">
         <!-- Profile Info Card -->
         <div class="profile-card">
@@ -52,7 +52,7 @@
               </p>
             </div>
           </div>
-          
+
           <div class="profile-actions">
             <Button
               variant="danger"
@@ -234,7 +234,7 @@ onMounted(async () => {
 
 async function loadLikedItems() {
   if (loadingLikedItems.value) return
-  
+
   loadingLikedItems.value = true
   try {
     const items = await likesStore.fetchMyLikedItems(itemsPerPage, 0)
@@ -249,7 +249,7 @@ async function loadLikedItems() {
 
 async function loadMoreLikedItems() {
   if (loadingMore.value || !hasMore.value) return
-  
+
   loadingMore.value = true
   try {
     const offset = currentPage.value * itemsPerPage
@@ -468,27 +468,27 @@ async function handleLogout() {
   .profile-page {
     background-color: #111827;
   }
-  
+
   .profile-card,
   .tabs-container,
   .tab-content {
     background: #1f2937;
   }
-  
+
   .profile-header h1,
   .user-name {
     color: white;
   }
-  
+
   .tab {
     color: #9ca3af;
   }
-  
+
   .tab:hover {
     color: white;
     background-color: #374151;
   }
-  
+
   .tab.active {
     color: #818cf8;
     background-color: #312e81;

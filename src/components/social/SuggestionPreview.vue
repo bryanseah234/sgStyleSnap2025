@@ -44,7 +44,9 @@
             :alt="item.name"
             class="w-full h-full object-cover"
           >
-          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+          <div
+            class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2"
+          >
             <p class="text-xs text-white truncate">
               {{ item.name }}
             </p>
@@ -136,13 +138,13 @@ defineEmits(['approve', 'reject', 'view-details'])
 
 const formattedDate = computed(() => {
   if (!props.suggestion.created_at) return ''
-  
+
   const date = new Date(props.suggestion.created_at)
   const now = new Date()
   const diffInMs = now - date
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
   const diffInDays = Math.floor(diffInHours / 24)
-  
+
   if (diffInHours < 1) {
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
     return diffInMinutes < 1 ? 'Just now' : `${diffInMinutes}m ago`
@@ -170,7 +172,7 @@ const statusClasses = computed(() => {
 
 const gridClass = computed(() => {
   const itemCount = props.suggestion.outfit_items?.length || 0
-  
+
   if (itemCount === 1) return 'grid-cols-1'
   if (itemCount === 2) return 'grid-cols-2'
   if (itemCount === 3) return 'grid-cols-3'

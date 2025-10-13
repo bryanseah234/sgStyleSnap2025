@@ -7,7 +7,11 @@
           Liked Items
         </h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {{ totalItems > 0 ? `${totalItems} item${totalItems !== 1 ? 's' : ''}` : 'No liked items yet' }}
+          {{
+            totalItems > 0
+              ? `${totalItems} item${totalItems !== 1 ? 's' : ''}`
+              : 'No liked items yet'
+          }}
         </p>
       </div>
 
@@ -50,13 +54,17 @@
       v-else-if="!items || items.length === 0"
       class="flex flex-col items-center justify-center py-16 text-center"
     >
-      <div class="w-24 h-24 mb-6 rounded-full bg-gradient-to-br from-pink-400 to-red-400 flex items-center justify-center">
+      <div
+        class="w-24 h-24 mb-6 rounded-full bg-gradient-to-br from-pink-400 to-red-400 flex items-center justify-center"
+      >
         <svg
           class="w-12 h-12 text-white"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          />
         </svg>
       </div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -98,7 +106,9 @@
         />
 
         <!-- Item Info (always visible at bottom) -->
-        <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
+        <div
+          class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent"
+        >
           <p class="text-white font-semibold text-sm truncate">
             {{ item.name }}
           </p>
@@ -119,7 +129,9 @@
             class="w-5 h-5 text-red-500 fill-current"
             viewBox="0 0 24 24"
           >
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
           </svg>
         </button>
 
@@ -132,7 +144,9 @@
             class="w-3 h-3 fill-current text-red-400"
             viewBox="0 0 24 24"
           >
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
           </svg>
           {{ formatCount(item.likes_count) }}
         </div>
@@ -189,22 +203,22 @@ const unlikingItemId = ref(null)
 
 const sortedItems = computed(() => {
   const itemsCopy = [...props.items]
-  
+
   switch (sortBy.value) {
     case 'recent':
       // Items are already sorted by liked_at DESC from API
       return itemsCopy
-      
+
     case 'popular':
       return itemsCopy.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0))
-      
+
     case 'owner':
       return itemsCopy.sort((a, b) => {
         const nameA = a.owner?.display_name || ''
         const nameB = b.owner?.display_name || ''
         return nameA.localeCompare(nameB)
       })
-      
+
     default:
       return itemsCopy
   }

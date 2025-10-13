@@ -119,11 +119,11 @@
 
             <!-- Visibility -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Visibility
-              </label>
+              <label class="block text-sm font-medium text-gray-700 mb-2"> Visibility </label>
               <div class="space-y-2">
-                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <label
+                  class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <input
                     v-model="formData.visibility"
                     type="radio"
@@ -151,7 +151,9 @@
                   </div>
                 </label>
 
-                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <label
+                  class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <input
                     v-model="formData.visibility"
                     type="radio"
@@ -206,7 +208,7 @@
                 class="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 :disabled="loading || !formData.name.trim()"
               >
-                {{ loading ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+                {{ loading ? 'Saving...' : isEditMode ? 'Update' : 'Create' }}
               </button>
             </div>
           </form>
@@ -248,16 +250,20 @@ const formData = ref({
 })
 
 // Watch for edit mode changes
-watch(() => props.collectionToEdit, (collection) => {
-  if (collection) {
-    formData.value = {
-      name: collection.name || '',
-      description: collection.description || '',
-      theme: collection.theme || '',
-      visibility: collection.visibility || 'private'
+watch(
+  () => props.collectionToEdit,
+  collection => {
+    if (collection) {
+      formData.value = {
+        name: collection.name || '',
+        description: collection.description || '',
+        theme: collection.theme || '',
+        visibility: collection.visibility || 'private'
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 
 const handleClose = () => {
   if (!loading.value) {

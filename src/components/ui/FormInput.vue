@@ -35,7 +35,7 @@
         class="required-mark"
       >*</span>
     </label>
-    
+
     <input
       :id="inputId"
       :value="modelValue"
@@ -47,10 +47,10 @@
       :aria-invalid="!!error"
       :aria-describedby="error ? `${inputId}-error` : undefined"
       class="input-field"
-      :class="{ 'has-error': !!error, 'disabled': disabled }"
+      :class="{ 'has-error': !!error, disabled: disabled }"
       @input="handleInput"
     >
-    
+
     <p
       v-if="error"
       :id="`${inputId}-error`"
@@ -72,7 +72,7 @@ defineProps({
   type: {
     type: String,
     default: 'text',
-    validator: (value) => ['text', 'email', 'password', 'number', 'url'].includes(value)
+    validator: value => ['text', 'email', 'password', 'number', 'url'].includes(value)
   },
   label: {
     type: String,
@@ -106,7 +106,7 @@ const inputId = computed(() => {
   return `input-${Math.random().toString(36).substr(2, 9)}`
 })
 
-const handleInput = (event) => {
+const handleInput = event => {
   emit('update:modelValue', event.target.value)
 }
 </script>

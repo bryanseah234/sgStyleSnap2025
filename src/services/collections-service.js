@@ -13,16 +13,18 @@ export default {
    */
   async createCollection(collectionData) {
     const { data: user } = await supabase.auth.getUser()
-    
+
     const { data, error } = await supabase
       .from('outfit_collections')
-      .insert([{
-        user_id: user.user.id,
-        ...collectionData
-      }])
+      .insert([
+        {
+          user_id: user.user.id,
+          ...collectionData
+        }
+      ])
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -36,7 +38,7 @@ export default {
       .from('outfit_collections')
       .select('*')
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data || []
   },
@@ -52,17 +54,17 @@ export default {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (collectionError) throw collectionError
-    
+
     const { data: outfits, error: outfitsError } = await supabase
       .from('collection_outfits')
       .select('*')
       .eq('collection_id', id)
       .order('position', { ascending: true })
-    
+
     if (outfitsError) throw outfitsError
-    
+
     return {
       ...collection,
       outfits: outfits || []
@@ -82,7 +84,7 @@ export default {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -93,11 +95,8 @@ export default {
    * @returns {Promise<void>}
    */
   async deleteCollection(id) {
-    const { error } = await supabase
-      .from('outfit_collections')
-      .delete()
-      .eq('id', id)
-    
+    const { error } = await supabase.from('outfit_collections').delete().eq('id', id)
+
     if (error) throw error
   },
 
@@ -115,19 +114,21 @@ export default {
       .eq('collection_id', collectionId)
       .order('position', { ascending: false })
       .limit(1)
-    
+
     const nextPosition = existing && existing.length > 0 ? existing[0].position + 1 : 0
-    
+
     const { data, error } = await supabase
       .from('collection_outfits')
-      .insert([{
-        collection_id: collectionId,
-        position: nextPosition,
-        ...outfitData
-      }])
+      .insert([
+        {
+          collection_id: collectionId,
+          position: nextPosition,
+          ...outfitData
+        }
+      ])
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -138,11 +139,8 @@ export default {
    * @returns {Promise<void>}
    */
   async removeOutfitFromCollection(outfitId) {
-    const { error } = await supabase
-      .from('collection_outfits')
-      .delete()
-      .eq('id', outfitId)
-    
+    const { error } = await supabase.from('collection_outfits').delete().eq('id', outfitId)
+
     if (error) throw error
   },
 
@@ -159,7 +157,7 @@ export default {
       .eq('id', outfitId)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -175,14 +173,14 @@ export default {
       id,
       position: index
     }))
-    
+
     for (const update of updates) {
       const { error } = await supabase
         .from('collection_outfits')
         .update({ position: update.position })
         .eq('id', update.id)
         .eq('collection_id', collectionId)
-      
+
       if (error) throw error
     }
   },
@@ -198,7 +196,7 @@ export default {
       .select('is_favorite')
       .eq('id', id)
       .single()
-    
+
     return this.updateCollection(id, {
       is_favorite: !collection.is_favorite
     })

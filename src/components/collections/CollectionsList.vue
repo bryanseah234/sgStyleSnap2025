@@ -37,9 +37,11 @@
         v-for="filter in filters"
         :key="filter.value"
         class="px-4 py-2 font-medium text-sm transition-colors relative"
-        :class="activeFilter === filter.value 
-          ? 'text-blue-600 border-b-2 border-blue-600' 
-          : 'text-gray-600 hover:text-gray-900'"
+        :class="
+          activeFilter === filter.value
+            ? 'text-blue-600 border-b-2 border-blue-600'
+            : 'text-gray-600 hover:text-gray-900'
+        "
         @click="activeFilter = filter.value"
       >
         {{ filter.label }}
@@ -187,16 +189,16 @@ onMounted(async () => {
   await collectionsStore.fetchCollections()
 })
 
-const viewCollection = (collection) => {
+const viewCollection = collection => {
   emit('view-collection', collection)
 }
 
-const editCollection = (collection) => {
+const editCollection = collection => {
   collectionToEdit.value = collection
   showCreateModal.value = true
 }
 
-const deleteCollection = async (collection) => {
+const deleteCollection = async collection => {
   if (confirm(`Are you sure you want to delete "${collection.name}"?`)) {
     try {
       await collectionsStore.deleteCollection(collection.id)
@@ -206,7 +208,7 @@ const deleteCollection = async (collection) => {
   }
 }
 
-const toggleFavorite = async (collection) => {
+const toggleFavorite = async collection => {
   try {
     await collectionsStore.toggleFavorite(collection.id)
   } catch (err) {

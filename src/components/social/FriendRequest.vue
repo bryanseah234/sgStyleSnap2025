@@ -32,7 +32,7 @@
   <div class="friend-requests">
     <div class="requests-header">
       <h2>Friend Requests</h2>
-      
+
       <!-- Tabs -->
       <div class="tabs">
         <button
@@ -86,7 +86,7 @@
           When someone sends you a friend request, it will appear here
         </p>
       </div>
-      
+
       <div
         v-else
         class="requests-list"
@@ -109,7 +109,7 @@
               {{ getInitial(request.name) }}
             </div>
           </div>
-          
+
           <div class="request-info">
             <h3 class="request-name">
               {{ request.name }}
@@ -118,7 +118,7 @@
               {{ formatDate(request.requestedAt) }}
             </p>
           </div>
-          
+
           <div class="request-actions">
             <button
               class="accept-btn"
@@ -155,7 +155,7 @@
           Friend requests you send will appear here until they're accepted
         </p>
       </div>
-      
+
       <div
         v-else
         class="requests-list"
@@ -178,7 +178,7 @@
               {{ getInitial(request.name) }}
             </div>
           </div>
-          
+
           <div class="request-info">
             <h3 class="request-name">
               {{ request.name }}
@@ -187,7 +187,7 @@
               Sent {{ formatDate(request.requestedAt) }}
             </p>
           </div>
-          
+
           <div class="request-actions">
             <button
               class="cancel-btn"
@@ -291,7 +291,7 @@ function formatDate(dateString) {
   const diffMinutes = Math.floor(diffTime / (1000 * 60))
   const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-  
+
   if (diffMinutes < 1) {
     return 'just now'
   } else if (diffMinutes < 60) {

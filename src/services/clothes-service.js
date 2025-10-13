@@ -1,8 +1,8 @@
 /**
  * Service for managing clothing items in user's closet.
- * 
+ *
  * Purpose: CRUD operations for clothes table
- * 
+ *
  * Features:
  * - Upload images to Cloudinary
  * - Create/Read/Update/Delete clothing items
@@ -12,13 +12,13 @@
  * - Soft delete with 30-day recovery
  * - Quota enforcement (50 uploads max)
  * - Auto-contribute uploads to catalog (anonymous, background)
- * 
+ *
  * Auto-Catalog Contribution:
  * - After successful upload, item automatically added to catalog_items
  * - No user prompt or confirmation required
  * - Catalog entry has no owner_id (anonymous)
  * - Happens silently in background
- * 
+ *
  * Dependencies:
  * - Supabase client (auth-service.js)
  * - Cloudinary (via upload preset)
@@ -37,15 +37,15 @@ export async function uploadImage(file) {
   try {
     // Compress image first (converts to WebP)
     const compressedFile = await compressImage(file)
-    
+
     // Get Cloudinary credentials from environment
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-    
+
     if (!cloudName || !uploadPreset) {
       throw new Error('Cloudinary credentials not configured. Check .env file.')
     }
-    
+
     // Create form data for upload
     const formData = new FormData()
     formData.append('file', compressedFile)
@@ -53,33 +53,30 @@ export async function uploadImage(file) {
     formData.append('folder', 'closet-items') // Organize uploads
     formData.append('format', 'webp') // Force WebP format
     formData.append('quality', 'auto:good') // Auto quality optimization
-    
+
     // Upload to Cloudinary
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: 'POST',
-        body: formData
-      }
-    )
-    
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: 'POST',
+      body: formData
+    })
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.error?.message || 'Failed to upload image to Cloudinary')
     }
-    
+
     const data = await response.json()
-    
+
     // Generate optimized URLs with Cloudinary transformations
     // const baseUrl = data.secure_url
     const publicId = data.public_id
-    
+
     // Full size image URL (WebP, quality optimized)
     const fullImageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good/${publicId}.webp`
-    
+
     // Thumbnail URL (400x400, WebP, quality optimized)
     const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/${publicId}.webp`
-    
+
     return {
       url: fullImageUrl,
       thumbnail_url: thumbnailUrl,
@@ -112,31 +109,28 @@ export async function uploadImage(file) {
  */
 export async function getItems(filters = {}) {
   try {
-    let query = supabase
-      .from('clothes')
-      .select('*')
-      .is('removed_at', null) // Only active items
-    
+    let query = supabase.from('clothes').select('*').is('removed_at', null) // Only active items
+
     // Apply category filter
     if (filters.category && filters.category !== 'all') {
       query = query.eq('category', filters.category)
     }
-    
+
     // Apply clothing_type filter
     if (filters.clothing_type && filters.clothing_type !== 'all') {
       query = query.eq('clothing_type', filters.clothing_type)
     }
-    
+
     // Apply favorite filter
     if (filters.is_favorite === true) {
       query = query.eq('is_favorite', true)
     }
-    
+
     // Apply search filter
     if (filters.search) {
       query = query.or(`name.ilike.%${filters.search}%,brand.ilike.%${filters.search}%`)
     }
-    
+
     // Apply sorting
     switch (filters.sort) {
       case 'name':
@@ -150,13 +144,13 @@ export async function getItems(filters = {}) {
         query = query.order('created_at', { ascending: false })
         break
     }
-    
+
     const { data, error } = await query
-    
+
     if (error) {
       throw error
     }
-    
+
     return data || []
   } catch (error) {
     console.error('Failed to fetch items:', error)
@@ -177,11 +171,11 @@ export async function getItem(id) {
       .eq('id', id)
       .is('removed_at', null)
       .single()
-    
+
     if (error) {
       throw error
     }
-    
+
     return data
   } catch (error) {
     console.error('Failed to fetch item:', error)
@@ -197,12 +191,14 @@ export async function getItem(id) {
 export async function createItem(itemData) {
   try {
     // Get current user from session
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+
     if (!user) {
       throw new Error('User not authenticated')
     }
-    
+
     // Prepare item data
     const item = {
       owner_id: user.id,
@@ -217,21 +213,19 @@ export async function createItem(itemData) {
       primary_color: itemData.primary_color || null,
       secondary_colors: itemData.secondary_colors || []
     }
-    
-    const { data, error } = await supabase
-      .from('clothes')
-      .insert(item)
-      .select()
-      .single()
-    
+
+    const { data, error } = await supabase.from('clothes').insert(item).select().single()
+
     if (error) {
       // Check for quota error
       if (error.code === '23514' || error.message.includes('quota')) {
-        throw new Error('You have reached your 50 upload limit. You can add unlimited items from our catalog!')
+        throw new Error(
+          'You have reached your 50 upload limit. You can add unlimited items from our catalog!'
+        )
       }
       throw error
     }
-    
+
     return data
   } catch (error) {
     console.error('Failed to create item:', error)
@@ -254,11 +248,11 @@ export async function updateItem(id, itemData) {
       .is('removed_at', null)
       .select()
       .single()
-    
+
     if (error) {
       throw error
     }
-    
+
     return data
   } catch (error) {
     console.error('Failed to update item:', error)
@@ -278,11 +272,11 @@ export async function deleteItem(id) {
       .from('clothes')
       .update({ removed_at: new Date().toISOString() })
       .eq('id', id)
-    
+
     if (error) {
       throw error
     }
-    
+
     // Note: Cloudinary cleanup is handled by maintenance script (scripts/cloudinary-cleanup.js)
     // This runs periodically to delete images of items deleted > 30 days ago
   } catch (error) {
@@ -301,7 +295,7 @@ export async function toggleFavorite(id, isFavorite) {
   try {
     const { data, error } = await supabase
       .from('clothes')
-      .update({ 
+      .update({
         is_favorite: isFavorite,
         updated_at: new Date().toISOString()
       })
@@ -309,11 +303,11 @@ export async function toggleFavorite(id, isFavorite) {
       .is('removed_at', null)
       .select()
       .single()
-    
+
     if (error) {
       throw error
     }
-    
+
     return data
   } catch (error) {
     console.error('Failed to toggle favorite:', error)
@@ -335,16 +329,16 @@ export async function getItemDetails(id) {
       .eq('id', id)
       .is('removed_at', null)
       .single()
-    
+
     if (error) {
       throw error
     }
-    
+
     // Calculate days in closet
     const createdDate = new Date(item.created_at)
     const now = new Date()
     const daysInCloset = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24))
-    
+
     // Get wear count from outfit_history (if table exists)
     let timesWorn = 0
     let lastWorn = null
@@ -353,9 +347,9 @@ export async function getItemDetails(id) {
         .from('outfit_history')
         .select('*', { count: 'exact', head: true })
         .contains('item_ids', [id])
-      
+
       timesWorn = count || 0
-      
+
       // Get last worn date
       if (timesWorn > 0) {
         const { data: lastWornData } = await supabase
@@ -365,13 +359,13 @@ export async function getItemDetails(id) {
           .order('worn_date', { ascending: false })
           .limit(1)
           .single()
-        
+
         lastWorn = lastWornData?.worn_date || null
       }
     } catch (err) {
       console.log('outfit_history table not available yet')
     }
-    
+
     // Get outfit count from outfit_generation_history (if table exists)
     let inOutfits = 0
     try {
@@ -379,12 +373,12 @@ export async function getItemDetails(id) {
         .from('outfit_generation_history')
         .select('*', { count: 'exact', head: true })
         .contains('item_ids', [id])
-      
+
       inOutfits = count || 0
     } catch (err) {
       console.log('outfit_generation_history table not available yet')
     }
-    
+
     // Get share count from shared_outfits (if table exists)
     let timesShared = 0
     try {
@@ -392,12 +386,12 @@ export async function getItemDetails(id) {
         .from('shared_outfits')
         .select('*', { count: 'exact', head: true })
         .contains('item_ids', [id])
-      
+
       timesShared = count || 0
     } catch (err) {
       console.log('shared_outfits table not available yet')
     }
-    
+
     return {
       ...item,
       statistics: {
@@ -420,15 +414,12 @@ export async function getItemDetails(id) {
  */
 export async function getUserCategories() {
   try {
-    const { data, error } = await supabase
-      .from('clothes')
-      .select('category')
-      .is('removed_at', null)
-    
+    const { data, error } = await supabase.from('clothes').select('category').is('removed_at', null)
+
     if (error) {
       throw error
     }
-    
+
     // Get unique categories
     const categories = [...new Set(data.map(item => item.category))]
     return categories.sort()
@@ -448,11 +439,11 @@ export async function getItemCount() {
       .from('clothes')
       .select('*', { count: 'exact', head: true })
       .is('removed_at', null)
-    
+
     if (error) {
       throw error
     }
-    
+
     return count || 0
   } catch (error) {
     console.error('Failed to get item count:', error)
@@ -468,7 +459,7 @@ export async function getItemCount() {
 export async function uploadItem(itemData) {
   // Upload image first
   const uploadResult = await uploadImage(itemData.file)
-  
+
   // Create item with image URLs
   return createItem({
     ...itemData,
@@ -484,13 +475,13 @@ export async function uploadItem(itemData) {
 export async function getQuota() {
   const used = await getItemCount()
   const max = 50 // From requirements
-  
+
   return {
     used,
     max,
     remaining: max - used,
     percentage: (used / max) * 100,
     isFull: used >= max,
-    isNearLimit: used >= (max * 0.9)
+    isNearLimit: used >= max * 0.9
   }
 }

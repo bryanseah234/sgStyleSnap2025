@@ -1,15 +1,15 @@
 /**
  * Constants Configuration - StyleSnap
- * 
+ *
  * Purpose: Centralized constants for clothing categories, colors, and other enumerations
- * 
+ *
  * Usage:
  * import { CLOTHING_CATEGORIES, COLORS } from '@/config/constants'
  */
 
 /**
  * Clothing Categories
- * 
+ *
  * Detailed categories for precise filtering and organization
  * These categories replace the simple 5-category system (top, bottom, outerwear, shoes, accessory)
  */
@@ -77,18 +77,18 @@ export const COLORS = [
   { value: 'gray', label: 'Gray', hex: '#808080' },
   { value: 'beige', label: 'Beige', hex: '#F5F5DC' },
   { value: 'brown', label: 'Brown', hex: '#8B4513' },
-  
+
   // Primary Colors
   { value: 'red', label: 'Red', hex: '#FF0000' },
   { value: 'blue', label: 'Blue', hex: '#0000FF' },
   { value: 'yellow', label: 'Yellow', hex: '#FFFF00' },
-  
+
   // Secondary Colors
   { value: 'green', label: 'Green', hex: '#00FF00' },
   { value: 'orange', label: 'Orange', hex: '#FFA500' },
   { value: 'purple', label: 'Purple', hex: '#800080' },
   { value: 'pink', label: 'Pink', hex: '#FFC0CB' },
-  
+
   // Additional
   { value: 'gold', label: 'Gold', hex: '#FFD700' },
   { value: 'silver', label: 'Silver', hex: '#C0C0C0' },
@@ -146,17 +146,7 @@ export const STYLE_TAGS = [
 /**
  * Sizes
  */
-export const SIZES = [
-  'XXS',
-  'XS',
-  'S',
-  'M',
-  'L',
-  'XL',
-  'XXL',
-  'XXXL',
-  'One Size'
-]
+export const SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'One Size']
 
 /**
  * Item Quotas

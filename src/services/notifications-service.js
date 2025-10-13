@@ -18,31 +18,34 @@ export const notificationsService = {
     try {
       let query = supabase
         .from('notifications')
-        .select(`
+        .select(
+          `
           *,
           actor:users!notifications_actor_id_fkey (
             id,
             username,
             avatar_url
           )
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
-      
+
       if (unreadOnly) {
         query = query.eq('is_read', false)
       }
-      
+
       const { data, error, count } = await query
-      
+
       if (error) throw error
-      
+
       // Get unread count
       const { count: unreadCount } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false)
-      
+
       return {
         success: true,
         data,
@@ -72,9 +75,9 @@ export const notificationsService = {
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false)
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         count: count || 0
@@ -98,9 +101,9 @@ export const notificationsService = {
       const { error } = await supabase.rpc('mark_notification_read', {
         p_notification_id: notificationId
       })
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         message: 'Notification marked as read'
@@ -122,13 +125,13 @@ export const notificationsService = {
     try {
       const currentUser = supabase.auth.user()
       if (!currentUser) throw new Error('Not authenticated')
-      
+
       const { data, error } = await supabase.rpc('mark_all_notifications_read', {
         p_user_id: currentUser.id
       })
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         updated_count: data
@@ -149,13 +152,10 @@ export const notificationsService = {
    */
   async deleteNotification(notificationId) {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId)
-      
+      const { error } = await supabase.from('notifications').delete().eq('id', notificationId)
+
       if (error) throw error
-      
+
       return {
         success: true,
         message: 'Notification deleted'
@@ -189,7 +189,7 @@ export const notificationsService = {
         callback
       )
       .subscribe()
-    
+
     return subscription
   },
 
@@ -203,23 +203,25 @@ export const notificationsService = {
   async getNotificationDetails(type, referenceId) {
     try {
       let data, error
-      
+
       switch (type) {
         case 'friend_outfit_suggestion':
           ({ data, error } = await supabase
             .from('friend_outfit_suggestions')
-            .select(`
+            .select(
+              `
               *,
               suggester:users!friend_outfit_suggestions_suggester_id_fkey (
                 id,
                 username,
                 avatar_url
               )
-            `)
+            `
+            )
             .eq('id', referenceId)
             .single())
           break
-        
+
         case 'outfit_like':
           ({ data, error } = await supabase
             .from('shared_outfits')
@@ -227,7 +229,7 @@ export const notificationsService = {
             .eq('id', referenceId)
             .single())
           break
-        
+
         case 'item_like':
           ({ data, error } = await supabase
             .from('clothes')
@@ -235,13 +237,13 @@ export const notificationsService = {
             .eq('id', referenceId)
             .single())
           break
-        
+
         default:
           throw new Error('Unknown notification type')
       }
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         data

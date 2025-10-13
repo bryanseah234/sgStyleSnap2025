@@ -1,5 +1,7 @@
 <template>
-  <div class="suggestion-approval-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden max-w-2xl mx-auto">
+  <div
+    class="suggestion-approval-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden max-w-2xl mx-auto"
+  >
     <!-- Header -->
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <div class="flex items-center gap-4">
@@ -53,7 +55,7 @@
       <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
         Suggested Items ({{ outfitItems.length }})
       </h4>
-      
+
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         <div
           v-for="(item, index) in outfitItems"
@@ -65,7 +67,9 @@
             :alt="item.name"
             class="w-full h-full object-cover"
           >
-          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+          <div
+            class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2"
+          >
             <p class="text-xs text-white font-medium truncate">
               {{ item.name }}
             </p>
@@ -111,7 +115,7 @@
           Processing...
         </span>
       </button>
-      
+
       <button
         :disabled="processing"
         class="flex-1 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-lg"
@@ -173,14 +177,14 @@ const emit = defineEmits(['approve', 'reject'])
 const processing = ref(false)
 
 const suggesterName = computed(() => {
-  return props.suggestion.suggester?.name || 
-         props.suggestion.suggester?.username || 
-         'Friend'
+  return props.suggestion.suggester?.name || props.suggestion.suggester?.username || 'Friend'
 })
 
 const suggesterAvatar = computed(() => {
-  return props.suggestion.suggester?.avatar_url || 
-         `https://ui-avatars.com/api/?name=${encodeURIComponent(suggesterName.value)}&background=random`
+  return (
+    props.suggestion.suggester?.avatar_url ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(suggesterName.value)}&background=random`
+  )
 })
 
 const outfitItems = computed(() => {

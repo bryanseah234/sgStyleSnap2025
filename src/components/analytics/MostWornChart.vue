@@ -159,40 +159,40 @@ const maxWornCount = computed(() => {
   return Math.max(...props.items.map(item => item.times_worn))
 })
 
-const getPercentage = (count) => {
+const getPercentage = count => {
   if (maxWornCount.value === 0) return 0
   return (count / maxWornCount.value) * 100
 }
 
-const getRankClass = (index) => {
+const getRankClass = index => {
   if (index === 0) return 'bg-yellow-400 text-yellow-900'
   if (index === 1) return 'bg-gray-300 text-gray-900'
   if (index === 2) return 'bg-orange-400 text-orange-900'
   return 'bg-gray-100 text-gray-600'
 }
 
-const getBarClass = (index) => {
+const getBarClass = index => {
   if (index === 0) return 'bg-yellow-400'
   if (index === 1) return 'bg-gray-400'
   if (index === 2) return 'bg-orange-400'
   return 'bg-blue-400'
 }
 
-const formatLastWorn = (dateString) => {
+const formatLastWorn = dateString => {
   const date = new Date(dateString)
   const now = new Date()
   const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays === 0) return 'today'
   if (diffDays === 1) return 'yesterday'
   if (diffDays < 7) return `${diffDays} days ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
   if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`
-  
+
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
-const capitalizeFirst = (str) => {
+const capitalizeFirst = str => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1)
 }

@@ -48,22 +48,22 @@
     >
       New
     </div>
-    
+
     <!-- Preview Area -->
     <div class="preview-area">
       <div
         v-if="suggestion.items && suggestion.items.length > 0"
         class="items-preview"
       >
-        <div 
-          v-for="(item, index) in previewItems" 
+        <div
+          v-for="(item, index) in previewItems"
           :key="item.id"
           class="preview-item"
           :style="{ zIndex: index }"
         >
-          <img 
-            v-if="item.image_url" 
-            :src="item.image_url" 
+          <img
+            v-if="item.image_url"
+            :src="item.image_url"
             :alt="item.name"
             class="item-image"
           >
@@ -83,14 +83,14 @@
         <span class="no-items-text">No items</span>
       </div>
     </div>
-    
+
     <!-- Suggestion Info -->
     <div class="suggestion-info">
       <div class="user-info">
         <div class="user-avatar">
-          <img 
-            v-if="userAvatar" 
-            :src="userAvatar" 
+          <img
+            v-if="userAvatar"
+            :src="userAvatar"
             :alt="userName"
             class="avatar-image"
           >
@@ -108,7 +108,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Message preview if exists -->
       <div
         v-if="suggestion.message"
@@ -116,7 +116,7 @@
       >
         "{{ suggestion.message }}"
       </div>
-      
+
       <!-- Status badge for sent suggestions -->
       <div
         v-if="mode === 'sent'"
@@ -125,16 +125,16 @@
       >
         {{ statusText }}
       </div>
-      
+
       <!-- Item count -->
       <div class="item-count">
         {{ itemCountText }}
       </div>
     </div>
-    
+
     <!-- Delete button for sent suggestions -->
-    <button 
-      v-if="mode === 'sent'" 
+    <button
+      v-if="mode === 'sent'"
       class="delete-btn"
       title="Delete suggestion"
       @click.stop="handleDelete"
@@ -168,7 +168,7 @@ const props = defineProps({
   mode: {
     type: String,
     required: true,
-    validator: (value) => ['received', 'sent'].includes(value)
+    validator: value => ['received', 'sent'].includes(value)
   }
 })
 
@@ -202,19 +202,19 @@ const userInitial = computed(() => {
 // Format timestamp to relative time
 const relativeTime = computed(() => {
   if (!props.suggestion.created_at) return ''
-  
+
   const now = new Date()
   const created = new Date(props.suggestion.created_at)
   const diffMs = now - created
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
-  
+
   if (diffMins < 1) return 'Just now'
   if (diffMins < 60) return `${diffMins}m ago`
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
-  
+
   return created.toLocaleDateString()
 })
 

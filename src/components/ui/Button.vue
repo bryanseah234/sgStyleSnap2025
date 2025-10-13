@@ -40,12 +40,12 @@ const props = defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'danger', 'ghost'].includes(value)
+    validator: value => ['primary', 'secondary', 'danger', 'ghost'].includes(value)
   },
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value)
+    validator: value => ['sm', 'md', 'lg'].includes(value)
   },
   type: {
     type: String,
@@ -69,23 +69,23 @@ const emit = defineEmits(['click'])
 
 const buttonClasses = computed(() => {
   const classes = ['btn']
-  
+
   // Variant classes
   classes.push(`btn-${props.variant}`)
-  
+
   // Size classes
   classes.push(`btn-${props.size}`)
-  
+
   // Full width
   if (props.fullWidth) {
     classes.push('btn-full-width')
   }
-  
+
   // Loading state
   if (props.loading) {
     classes.push('btn-loading')
   }
-  
+
   return classes.join(' ')
 })
 

@@ -35,7 +35,7 @@
         class="required-mark"
       >*</span>
     </label>
-    
+
     <div class="select-wrapper">
       <select
         :id="selectId"
@@ -45,7 +45,7 @@
         :aria-invalid="!!error"
         :aria-describedby="error ? `${selectId}-error` : undefined"
         class="select-field"
-        :class="{ 'has-error': !!error, 'disabled': disabled }"
+        :class="{ 'has-error': !!error, disabled: disabled }"
         @change="handleChange"
       >
         <option
@@ -62,7 +62,7 @@
           {{ option.label }}
         </option>
       </select>
-      
+
       <!-- Custom dropdown arrow -->
       <div class="select-arrow">
         <svg
@@ -76,7 +76,7 @@
         </svg>
       </div>
     </div>
-    
+
     <p
       v-if="error"
       :id="`${selectId}-error`"
@@ -98,7 +98,7 @@ defineProps({
   options: {
     type: Array,
     required: true,
-    validator: (value) => value.every(opt => 'value' in opt && 'label' in opt)
+    validator: value => value.every(opt => 'value' in opt && 'label' in opt)
   },
   label: {
     type: String,
@@ -128,7 +128,7 @@ const selectId = computed(() => {
   return `select-${Math.random().toString(36).substr(2, 9)}`
 })
 
-const handleChange = (event) => {
+const handleChange = event => {
   emit('update:modelValue', event.target.value)
 }
 </script>

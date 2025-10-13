@@ -10,7 +10,9 @@
           class="relative w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl max-h-[80vh] flex flex-col"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <div
+            class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
+          >
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">
               Likes
             </h2>
@@ -60,13 +62,17 @@
               v-else-if="!likers || likers.length === 0"
               class="text-center py-12"
             >
-              <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <div
+                class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"
+              >
                 <svg
                   class="w-8 h-8 text-gray-400"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  />
                 </svg>
               </div>
               <p class="text-gray-500 dark:text-gray-400">
@@ -99,7 +105,7 @@
                   >
                     {{ getInitials(liker.display_name) }}
                   </div>
-                  
+
                   <!-- "You" Badge -->
                   <div
                     v-if="liker.user_id === currentUserId"
@@ -116,7 +122,8 @@
                     <span
                       v-if="liker.user_id === currentUserId"
                       class="text-primary-500"
-                    > (You)</span>
+                    >
+                      (You)</span>
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
                     {{ formatLikedAt(liker.liked_at) }}
@@ -198,11 +205,14 @@ const totalCount = computed(() => likesStore.getLikesCount(props.itemId))
 const hasMore = computed(() => likers.value.length < totalCount.value)
 
 // Watch for modal open
-watch(() => props.isOpen, async (newVal) => {
-  if (newVal && props.itemId) {
-    await fetchLikers()
+watch(
+  () => props.isOpen,
+  async newVal => {
+    if (newVal && props.itemId) {
+      await fetchLikers()
+    }
   }
-})
+)
 
 async function fetchLikers() {
   loading.value = true
@@ -250,7 +260,7 @@ function getInitials(name) {
 
 function formatLikedAt(timestamp) {
   if (!timestamp) return ''
-  
+
   const date = new Date(timestamp)
   const now = new Date()
   const diffMs = now - date
@@ -262,7 +272,7 @@ function formatLikedAt(timestamp) {
   if (diffMins < 60) return `${diffMins}m ago`
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
-  
+
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
@@ -288,7 +298,9 @@ function formatTotalCount(count) {
 
 .modal-enter-active > div,
 .modal-leave-active > div {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .modal-enter-from > div,

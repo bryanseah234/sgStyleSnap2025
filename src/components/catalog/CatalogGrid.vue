@@ -42,8 +42,8 @@ let observer = null
 onMounted(() => {
   // Set up intersection observer for infinite scroll
   observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
+    entries => {
+      entries.forEach(entry => {
         if (entry.isIntersecting && !props.loading) {
           emit('load-more')
         }

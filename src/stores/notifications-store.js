@@ -26,48 +26,45 @@ export const useNotificationsStore = defineStore('notifications', {
     /**
      * Check if there are unread notifications
      */
-    hasUnread: (state) => state.unreadCount > 0,
-    
+    hasUnread: state => state.unreadCount > 0,
+
     /**
      * Get only unread notifications
      */
-    unreadNotifications: (state) => 
-      state.notifications.filter(n => !n.is_read),
-    
+    unreadNotifications: state => state.notifications.filter(n => !n.is_read),
+
     /**
      * Get only read notifications
      */
-    readNotifications: (state) => 
-      state.notifications.filter(n => n.is_read),
-    
+    readNotifications: state => state.notifications.filter(n => n.is_read),
+
     /**
      * Get notifications by type
      */
-    getNotificationsByType: (state) => (type) =>
-      state.notifications.filter(n => n.type === type),
-    
+    getNotificationsByType: state => type => state.notifications.filter(n => n.type === type),
+
     /**
      * Get notification count by type
      */
-    getCountByType: (state) => (type) =>
+    getCountByType: state => type =>
       state.notifications.filter(n => n.type === type && !n.is_read).length,
-    
+
     /**
      * Get friend suggestion notifications count
      */
-    friendSuggestionCount: (state) =>
+    friendSuggestionCount: state =>
       state.notifications.filter(n => n.type === 'friend_outfit_suggestion' && !n.is_read).length,
-    
+
     /**
      * Get outfit like notifications count
      */
-    outfitLikeCount: (state) =>
+    outfitLikeCount: state =>
       state.notifications.filter(n => n.type === 'outfit_like' && !n.is_read).length,
-    
+
     /**
      * Get item like notifications count
      */
-    itemLikeCount: (state) =>
+    itemLikeCount: state =>
       state.notifications.filter(n => n.type === 'item_like' && !n.is_read).length
   },
 
@@ -77,7 +74,7 @@ export const useNotificationsStore = defineStore('notifications', {
      */
     async initialize() {
       if (this.initialized) return
-      
+
       await this.fetchNotifications()
       this.startRealtimeSubscription()
       this.initialized = true
@@ -90,23 +87,23 @@ export const useNotificationsStore = defineStore('notifications', {
     async fetchNotifications({ unreadOnly = false, loadMore = false } = {}) {
       this.loading = true
       this.error = null
-      
+
       try {
         const offset = loadMore ? this.pagination.offset + this.pagination.limit : 0
-        
+
         const result = await notificationsService.getNotifications({
           limit: this.pagination.limit,
           offset,
           unreadOnly
         })
-        
+
         if (result.success) {
           if (loadMore) {
             this.notifications.push(...result.data)
           } else {
             this.notifications = result.data
           }
-          
+
           this.pagination = result.pagination
           this.unreadCount = result.pagination.unread_count
         } else {
@@ -125,7 +122,7 @@ export const useNotificationsStore = defineStore('notifications', {
      */
     async fetchUnreadCount() {
       const result = await notificationsService.getUnreadCount()
-      
+
       if (result.success) {
         this.unreadCount = result.count
       }
@@ -137,7 +134,7 @@ export const useNotificationsStore = defineStore('notifications', {
      */
     async markAsRead(notificationId) {
       const result = await notificationsService.markAsRead(notificationId)
-      
+
       if (result.success) {
         const notification = this.notifications.find(n => n.id === notificationId)
         if (notification && !notification.is_read) {
@@ -146,7 +143,7 @@ export const useNotificationsStore = defineStore('notifications', {
           this.unreadCount = Math.max(0, this.unreadCount - 1)
         }
       }
-      
+
       return result
     },
 
@@ -155,7 +152,7 @@ export const useNotificationsStore = defineStore('notifications', {
      */
     async markAllAsRead() {
       const result = await notificationsService.markAllAsRead()
-      
+
       if (result.success) {
         this.notifications.forEach(n => {
           if (!n.is_read) {
@@ -165,7 +162,7 @@ export const useNotificationsStore = defineStore('notifications', {
         })
         this.unreadCount = 0
       }
-      
+
       return result
     },
 
@@ -175,21 +172,21 @@ export const useNotificationsStore = defineStore('notifications', {
      */
     async deleteNotification(notificationId) {
       const result = await notificationsService.deleteNotification(notificationId)
-      
+
       if (result.success) {
         const index = this.notifications.findIndex(n => n.id === notificationId)
         if (index !== -1) {
           const wasUnread = !this.notifications[index].is_read
           this.notifications.splice(index, 1)
-          
+
           if (wasUnread) {
             this.unreadCount = Math.max(0, this.unreadCount - 1)
           }
-          
+
           this.pagination.total = Math.max(0, this.pagination.total - 1)
         }
       }
-      
+
       return result
     },
 
@@ -197,19 +194,21 @@ export const useNotificationsStore = defineStore('notifications', {
      * Start real-time subscription for new notifications
      */
     async startRealtimeSubscription() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session }
+      } = await supabase.auth.getSession()
       const currentUser = session?.user
       if (!currentUser) return
-      
+
       // Unsubscribe if already subscribed
       this.stopRealtimeSubscription()
-      
+
       this.subscription = notificationsService.subscribeToNotifications(
         currentUser.id,
-        async (payload) => {
+        async payload => {
           // Add new notification to the beginning
           const newNotification = payload.new
-          
+
           // Fetch actor details
           if (newNotification.actor_id) {
             const { data: actor } = await supabase
@@ -217,16 +216,16 @@ export const useNotificationsStore = defineStore('notifications', {
               .select('id, username, avatar_url')
               .eq('id', newNotification.actor_id)
               .single()
-            
+
             if (actor) {
               newNotification.actor = actor
             }
           }
-          
+
           this.notifications.unshift(newNotification)
           this.unreadCount++
           this.pagination.total++
-          
+
           // Show browser notification if permitted
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('New notification from StyleSnap', {
@@ -236,7 +235,7 @@ export const useNotificationsStore = defineStore('notifications', {
               tag: newNotification.id
             })
           }
-          
+
           // Play sound (optional)
           this.playNotificationSound()
         }
@@ -260,7 +259,7 @@ export const useNotificationsStore = defineStore('notifications', {
      */
     getNotificationMessage(notification) {
       const actor = notification.actor?.username || 'Someone'
-      
+
       switch (notification.type) {
         case 'friend_outfit_suggestion':
           return `${actor} suggested an outfit for you`
@@ -304,7 +303,7 @@ export const useNotificationsStore = defineStore('notifications', {
     async loadMore() {
       if (this.loading) return
       if (this.notifications.length >= this.pagination.total) return
-      
+
       await this.fetchNotifications({ loadMore: true })
     },
 

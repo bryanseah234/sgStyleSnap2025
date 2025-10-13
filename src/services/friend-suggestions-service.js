@@ -16,23 +16,28 @@ export const friendSuggestionsService = {
    */
   async createSuggestion({ friendId, outfitItems, message }) {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session }
+      } = await supabase.auth.getSession()
       const currentUser = session?.user
       if (!currentUser) throw new Error('Not authenticated')
-      
+
       // Validate outfit items belong to friend's closet
       const { data: items, error: itemsError } = await supabase
         .from('clothes')
         .select('id, owner_id')
         .eq('owner_id', friendId)
-        .in('id', outfitItems.map(item => item.clothes_id))
-      
+        .in(
+          'id',
+          outfitItems.map(item => item.clothes_id)
+        )
+
       if (itemsError) throw itemsError
-      
+
       if (items.length !== outfitItems.length) {
-        throw new Error('Some items do not belong to friend\'s closet')
+        throw new Error("Some items do not belong to friend's closet")
       }
-      
+
       // Verify friendship exists
       const { data: friendship, error: friendError } = await supabase
         .from('friends')
@@ -41,11 +46,11 @@ export const friendSuggestionsService = {
         .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
         .or(`requester_id.eq.${friendId},receiver_id.eq.${friendId}`)
         .single()
-      
+
       if (friendError || !friendship) {
         throw new Error('You must be friends to create suggestions')
       }
-      
+
       // Create suggestion
       const { data, error } = await supabase
         .from('friend_outfit_suggestions')
@@ -57,9 +62,9 @@ export const friendSuggestionsService = {
         })
         .select()
         .single()
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         suggestion: data
@@ -84,20 +89,23 @@ export const friendSuggestionsService = {
     try {
       const { data, error, count } = await supabase
         .from('friend_outfit_suggestions')
-        .select(`
+        .select(
+          `
           *,
           suggester:users!friend_outfit_suggestions_suggester_id_fkey (
             id,
             username,
             avatar
           )
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         suggestions: data,
@@ -124,25 +132,28 @@ export const friendSuggestionsService = {
     try {
       let query = supabase
         .from('friend_outfit_suggestions')
-        .select(`
+        .select(
+          `
           *,
           suggester:users!friend_outfit_suggestions_suggester_id_fkey (
             id,
             username,
             avatar
           )
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
-      
+
       if (status) {
         query = query.eq('status', status)
       }
-      
+
       const { data, error, count } = await query
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         suggestions: data,
@@ -168,19 +179,22 @@ export const friendSuggestionsService = {
     try {
       const { data, error, count } = await supabase
         .from('friend_outfit_suggestions')
-        .select(`
+        .select(
+          `
           *,
           owner:users!friend_outfit_suggestions_owner_id_fkey (
             id,
             username,
             avatar
           )
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         suggestions: data,
@@ -205,9 +219,9 @@ export const friendSuggestionsService = {
       const { data, error } = await supabase.rpc('approve_friend_outfit_suggestion', {
         p_suggestion_id: suggestionId
       })
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         outfit_id: data,
@@ -232,9 +246,9 @@ export const friendSuggestionsService = {
       const { error } = await supabase.rpc('reject_friend_outfit_suggestion', {
         p_suggestion_id: suggestionId
       })
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         message: 'Suggestion rejected'
@@ -257,7 +271,8 @@ export const friendSuggestionsService = {
     try {
       const { data, error } = await supabase
         .from('friend_outfit_suggestions')
-        .select(`
+        .select(
+          `
           *,
           suggester:users!friend_outfit_suggestions_suggester_id_fkey (
             id,
@@ -269,12 +284,13 @@ export const friendSuggestionsService = {
             username,
             avatar
           )
-        `)
+        `
+        )
         .eq('id', suggestionId)
         .single()
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         suggestion: data
@@ -300,9 +316,9 @@ export const friendSuggestionsService = {
         .delete()
         .eq('id', suggestionId)
         .eq('status', 'pending')
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         message: 'Suggestion deleted'
@@ -329,20 +345,20 @@ export const friendSuggestionsService = {
         .select('*')
         .eq('owner_id', friendId)
         .order('created_at', { ascending: false })
-      
+
       // Apply filters
       if (filters.category) {
         query = query.eq('category', filters.category)
       }
-      
+
       if (filters.search) {
         query = query.ilike('name', `%${filters.search}%`)
       }
-      
+
       const { data, error } = await query
-      
+
       if (error) throw error
-      
+
       return {
         success: true,
         items: data
