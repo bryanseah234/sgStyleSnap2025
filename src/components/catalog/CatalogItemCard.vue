@@ -1,114 +1,104 @@
 <template>
   <div
-    class="catalog-item-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer"
+    class="catalog-item-card"
     @click="emit('click')"
   >
-    <!-- Image -->
-    <div class="relative aspect-square overflow-hidden rounded-t-lg">
+    <!-- Image Container -->
+    <div class="item-image-container">
       <img
+        v-if="item.image_url"
         :src="item.thumbnail_url || item.image_url"
         :alt="item.name"
-        class="w-full h-full object-cover"
+        class="item-image"
         loading="lazy"
         @error="handleImageError"
       >
-
-      <!-- Quick Add Button -->
-      <button
-        :disabled="adding"
-        class="absolute top-2 right-2 p-2 bg-white dark:bg-gray-800 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-        :class="{ 'opacity-50 cursor-not-allowed': adding }"
-        title="Add to closet"
-        @click.stop="handleAddToCloset"
+      <div
+        v-else
+        class="item-image-placeholder"
       >
-        <svg
-          v-if="!adding"
-          class="h-5 w-5 text-blue-600 dark:text-blue-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        <svg
-          v-else
-          class="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          />
-          <path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          />
-        </svg>
-      </button>
+        {{ item.name }}
+      </div>
 
-      <!-- Category Badge -->
-      <div class="absolute bottom-2 left-2">
-        <span
-          class="inline-block px-2 py-1 text-xs font-medium bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white rounded"
+      <!-- Dark Overlay on Hover -->
+      <div class="item-overlay">
+        <!-- Quick Add Button -->
+        <button
+          :disabled="adding"
+          class="add-to-closet-btn"
+          :class="{ 'opacity-50 cursor-not-allowed': adding }"
+          title="Add to closet"
+          @click.stop="handleAddToCloset"
         >
+          <svg
+            v-if="!adding"
+            class="add-icon"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <div
+            v-else
+            class="loading-spinner"
+          />
+        </button>
+
+        <!-- Category Badge -->
+        <div class="category-badge">
           {{ getCategoryLabel(item.category) }}
-        </span>
+        </div>
       </div>
     </div>
 
-    <!-- Info -->
-    <div class="p-4">
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-white truncate mb-1">
+    <!-- Item Info -->
+    <div class="item-info">
+      <h3 class="item-name">
         {{ item.name }}
       </h3>
 
-      <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div class="item-details">
         <span
           v-if="item.brand"
-          class="truncate"
+          class="item-brand"
         >
           {{ item.brand }}
         </span>
         <span
-          v-if="item.color"
-          class="flex items-center gap-1"
+          v-if="item.primary_color"
+          class="item-color"
         >
           <span
-            class="inline-block w-3 h-3 rounded-full border border-gray-300 dark:border-gray-600"
-            :style="{ backgroundColor: getColorHex(item.color) }"
+            class="color-swatch"
+            :style="{ backgroundColor: getColorHex(item.primary_color) }"
           />
-          {{ getColorLabel(item.color) }}
+          {{ getColorLabel(item.primary_color) }}
         </span>
       </div>
 
-      <!-- Tags -->
+      <!-- Style Tags -->
       <div
-        v-if="item.tags && item.tags.length > 0"
-        class="mt-2 flex flex-wrap gap-1"
+        v-if="item.style_tags && item.style_tags.length > 0"
+        class="item-tags"
       >
         <span
-          v-for="tag in item.tags.slice(0, 3)"
+          v-for="tag in item.style_tags.slice(0, 3)"
           :key="tag"
-          class="inline-block px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded"
+          class="tag"
         >
           {{ tag }}
         </span>
         <span
-          v-if="item.tags.length > 3"
-          class="inline-block px-2 py-0.5 text-xs text-gray-500 dark:text-gray-400"
+          v-if="item.style_tags.length > 3"
+          class="tag-more"
         >
-          +{{ item.tags.length - 3 }}
+          +{{ item.style_tags.length - 3 }}
         </span>
       </div>
     </div>
@@ -156,5 +146,251 @@ function getColorLabel(colorValue) {
 </script>
 
 <style scoped>
-/* Additional custom styles if needed */
+.catalog-item-card {
+  background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.catalog-item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Image Container */
+.item-image-container {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.catalog-item-card:hover .item-image {
+  transform: scale(1.05);
+}
+
+.item-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Item Overlay */
+.item-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.75rem;
+}
+
+.catalog-item-card:hover .item-overlay {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Add to Closet Button */
+.add-to-closet-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.catalog-item-card:hover .add-to-closet-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.add-to-closet-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.add-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #3b82f6;
+}
+
+.loading-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Category Badge */
+.category-badge {
+  background: rgba(255, 255, 255, 0.9);
+  color: #374151;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.catalog-item-card:hover .category-badge {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Item Info */
+.item-info {
+  padding: 1rem;
+}
+
+.item-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.item-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.item-brand {
+  font-weight: 500;
+}
+
+.item-color {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.color-swatch {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+}
+
+/* Item Tags */
+.item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tag {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tag-more {
+  background: #e5e7eb;
+  color: #6b7280;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .catalog-item-card {
+    transform: none;
+  }
+  
+  .catalog-item-card:hover {
+    transform: none;
+  }
+  
+  .item-image-container {
+    height: 250px;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .catalog-item-card {
+    background: #374151;
+  }
+  
+  .item-image-placeholder {
+    background: #4b5563;
+    color: #9ca3af;
+  }
+  
+  .item-name {
+    color: white;
+  }
+  
+  .item-details {
+    color: #9ca3af;
+  }
+  
+  .add-to-closet-btn {
+    background: rgba(55, 65, 81, 0.9);
+  }
+  
+  .category-badge {
+    background: rgba(55, 65, 81, 0.9);
+    color: white;
+  }
+  
+  .tag {
+    background: #4b5563;
+    color: #d1d5db;
+  }
+  
+  .tag-more {
+    background: #374151;
+    color: #9ca3af;
+  }
+}
 </style>

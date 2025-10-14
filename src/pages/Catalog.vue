@@ -1,151 +1,136 @@
 <template>
-  <div class="catalog-browse min-h-screen bg-gray-50 dark:bg-gray-900">
-    <!-- Header -->
-    <header
-      class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex items-center justify-between mb-4">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Browse Catalog
-          </h1>
-          <button
-            v-if="catalogStore.hasFilters"
-            class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-            @click="catalogStore.clearFilters()"
-          >
-            Clear All Filters ({{ catalogStore.activeFilterCount }})
-          </button>
+  <MainLayout>
+    <div class="catalog-page">
+      <!-- Header -->
+      <div class="catalog-header">
+        <div class="header-content">
+          <h1>Browse Catalog</h1>
+          <p class="catalog-description">Discover new items for your closet</p>
         </div>
+        
+        <!-- Clear Filters Button -->
+        <button
+          v-if="catalogStore.hasFilters"
+          class="clear-filters-btn"
+          @click="catalogStore.clearFilters()"
+        >
+          Clear Filters ({{ catalogStore.activeFilterCount }})
+        </button>
+      </div>
 
-        <!-- Search Bar -->
+      <!-- Search Bar -->
+      <div class="search-container">
         <CatalogSearch
           v-model="searchQuery"
           @search="handleSearch"
           @clear="handleClearSearch"
         />
       </div>
-    </header>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Filters Sidebar -->
-        <aside class="lg:w-64 flex-shrink-0">
-          <CatalogFilter
-            :filters="catalogStore.filters"
-            :filter-options="catalogStore.filterOptions"
-            @update:filters="handleFilterChange"
-            @clear="catalogStore.clearFilters()"
-          />
-        </aside>
+      <!-- Filters Panel -->
+      <div class="filters-container">
+        <CatalogFilter
+          :filters="catalogStore.filters"
+          :filter-options="catalogStore.filterOptions"
+          @update:filters="handleFilterChange"
+          @clear="catalogStore.clearFilters()"
+        />
+      </div>
 
-        <!-- Catalog Grid -->
-        <main class="flex-1">
-          <!-- Loading State -->
+      <!-- Catalog Grid -->
+      <div class="catalog-content">
+        <!-- Loading State -->
+        <div
+          v-if="catalogStore.loading && catalogStore.items.length === 0"
+          class="items-grid"
+        >
           <div
-            v-if="catalogStore.loading && catalogStore.items.length === 0"
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            v-for="i in 8"
+            :key="`skeleton-${i}`"
+            class="skeleton-card animate-pulse"
           >
-            <div
-              v-for="i in 6"
-              :key="i"
-              class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 animate-pulse"
-            >
-              <div class="aspect-square bg-gray-300 dark:bg-gray-700 rounded-lg mb-4" />
-              <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded mb-2" />
-              <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded w-2/3" />
+            <div class="skeleton-image shimmer" />
+            <div class="skeleton-content">
+              <div class="skeleton-title shimmer" />
+              <div class="skeleton-subtitle shimmer" />
             </div>
           </div>
+        </div>
 
-          <!-- Empty State -->
-          <div
-            v-else-if="catalogStore.isEmpty"
-            class="text-center py-12"
+        <!-- Empty State -->
+        <div
+          v-else-if="catalogStore.isEmpty"
+          class="empty-state"
+        >
+          <div class="empty-icon">👔</div>
+          <p class="empty-message">No items found</p>
+          <p class="empty-description">Try adjusting your filters or search query</p>
+          <button
+            class="clear-filters-btn"
+            @click="catalogStore.clearFilters()"
           >
-            <svg
-              class="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              No items found
-            </h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Try adjusting your filters or search query.
-            </p>
-            <button
-              class="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-              @click="catalogStore.clearFilters()"
-            >
-              Clear Filters
-            </button>
-          </div>
+            Clear All Filters
+          </button>
+        </div>
 
-          <!-- Catalog Grid -->
-          <CatalogGrid
-            v-else
-            :items="catalogStore.items"
-            :loading="catalogStore.loading"
-            @add-to-closet="handleAddToCloset"
-            @load-more="catalogStore.loadMore()"
-            @item-click="handleItemClick"
+        <!-- Items Grid -->
+        <div
+          v-else
+          class="items-grid"
+        >
+          <CatalogItemCard
+            v-for="(item, index) in catalogStore.items"
+            :key="item.id"
+            :item="item"
+            :style="{ animationDelay: `${index * 50}ms` }"
+            class="item-card"
+            @add-to-closet="handleAddToCloset(item.id)"
+            @click="handleItemClick(item)"
           />
+        </div>
 
-          <!-- Load More Button -->
-          <div
-            v-if="catalogStore.hasMore && !catalogStore.loading"
-            class="mt-6 text-center"
+        <!-- Load More Button -->
+        <div
+          v-if="catalogStore.hasMore && !catalogStore.loading"
+          class="load-more-container"
+        >
+          <button
+            class="load-more-btn"
+            @click="catalogStore.loadMore()"
           >
-            <button
-              class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-              @click="catalogStore.loadMore()"
-            >
-              Load More
-            </button>
-          </div>
+            Load More Items
+          </button>
+        </div>
 
-          <!-- Loading More State -->
-          <div
-            v-if="catalogStore.loading && catalogStore.items.length > 0"
-            class="mt-6 text-center"
-          >
-            <div
-              class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-            />
-          </div>
+        <!-- Loading More State -->
+        <div
+          v-if="catalogStore.loading && catalogStore.items.length > 0"
+          class="loading-more"
+        >
+          <div class="spinner"></div>
+          <span>Loading more items...</span>
+        </div>
 
-          <!-- Pagination Info -->
-          <div
-            v-if="catalogStore.items.length > 0"
-            class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400"
-          >
-            Showing {{ catalogStore.items.length }} of {{ catalogStore.pagination.total }} items
-          </div>
-        </main>
+        <!-- Pagination Info -->
+        <div
+          v-if="catalogStore.items.length > 0"
+          class="pagination-info"
+        >
+          Showing {{ catalogStore.items.length }} of {{ catalogStore.pagination.total }} items
+        </div>
       </div>
     </div>
-
-    <!-- Item Detail Modal (future enhancement) -->
-    <!-- <CatalogItemModal v-if="selectedItem" :item="selectedItem" @close="selectedItem = null" /> -->
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useCatalogStore } from '@/stores/catalog-store'
 import { useClosetStore } from '@/stores/closet-store'
+import MainLayout from '@/components/layouts/MainLayout.vue'
 import CatalogSearch from '@/components/catalog/CatalogSearch.vue'
 import CatalogFilter from '@/components/catalog/CatalogFilter.vue'
-import CatalogGrid from '@/components/catalog/CatalogGrid.vue'
+import CatalogItemCard from '@/components/catalog/CatalogItemCard.vue'
 
 const catalogStore = useCatalogStore()
 const closetStore = useClosetStore()
@@ -191,5 +176,259 @@ function handleItemClick(item) {
 </script>
 
 <style scoped>
-/* Additional custom styles if needed */
+.catalog-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.catalog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.header-content h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.catalog-description {
+  color: #6b7280;
+  margin: 0;
+}
+
+.clear-filters-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clear-filters-btn:hover {
+  background: #2563eb;
+}
+
+
+/* Search Container */
+.search-container {
+  margin-bottom: 1.5rem;
+}
+
+/* Filters Container */
+.filters-container {
+  margin-bottom: 2rem;
+}
+
+/* Catalog Content */
+.catalog-content {
+  min-height: 400px;
+}
+
+/* Items Grid - Same as ClosetGrid */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Item Card Animation */
+.item-card {
+  animation: slideIn 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading Skeletons */
+.skeleton-card {
+  background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-image {
+  width: 100%;
+  height: 280px;
+  background: #f3f4f6;
+}
+
+.skeleton-content {
+  padding: 1rem;
+}
+
+.skeleton-title {
+  height: 1rem;
+  background: #f3f4f6;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-subtitle {
+  height: 0.75rem;
+  background: #f3f4f6;
+  border-radius: 0.25rem;
+  width: 60%;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-message {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.empty-description {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+/* Load More */
+.load-more-container {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.load-more-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.load-more-btn:hover {
+  background: #2563eb;
+}
+
+/* Loading More */
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 2rem 0;
+  color: #6b7280;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pagination Info */
+.pagination-info {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .catalog-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .items-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .header-content h1 {
+    color: white;
+  }
+  
+  .catalog-description {
+    color: #9ca3af;
+  }
+  
+  .skeleton-card {
+    background: #374151;
+  }
+  
+  .skeleton-image,
+  .skeleton-title,
+  .skeleton-subtitle {
+    background: #4b5563;
+  }
+  
+  .empty-message {
+    color: white;
+  }
+  
+  .empty-description {
+    color: #9ca3af;
+  }
+  
+  .pagination-info {
+    color: #9ca3af;
+  }
+}
 </style>
