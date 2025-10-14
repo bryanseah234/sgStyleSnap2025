@@ -170,6 +170,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClosetStore } from '../stores/closet-store'
+import { supabase } from '../config/supabase'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import UserGreeting from '../components/ui/UserGreeting.vue'
 import ClosetFilter from '../components/closet/ClosetFilter.vue'
@@ -233,7 +234,19 @@ const hasFilters = computed(
 )
 
 onMounted(async () => {
+  if (!supabase) {
+    console.error('Supabase client is not initialized')
+    return
+  }
+  
   const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    console.error('User is not authenticated, redirecting to login')
+    router.push('/login')
+    return
+  }
+  
   userId.value = user.id
   closetStore.fetchItems(userId.value)
 })

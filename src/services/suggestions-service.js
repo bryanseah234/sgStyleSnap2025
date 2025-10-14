@@ -62,7 +62,7 @@
  * - components/social/SuggestionCanvas.vue for items_data format
  */
 
-import { supabase } from '../config/supabase'
+import { supabase, isSupabaseConfigured } from '../config/supabase'
 
 /**
  * Get suggestions received by current user
@@ -71,6 +71,10 @@ import { supabase } from '../config/supabase'
  */
 export async function getReceivedSuggestions(filters = {}) {
   try {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase client is not initialized. Please check your environment variables.')
+    }
+    
     let query = supabase
       .from('suggestions')
       .select(

@@ -32,7 +32,7 @@
  */
 
 import axios from 'axios'
-import { supabase } from '../config/supabase'
+import { supabase, isSupabaseConfigured } from '../config/supabase'
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -46,6 +46,12 @@ const api = axios.create({
 // Request interceptor - add auth token to headers
 api.interceptors.request.use(
   async config => {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured || !supabase) {
+      console.warn('Supabase not configured, skipping auth token')
+      return config
+    }
+
     // Get current session
     const {
       data: { session }

@@ -53,7 +53,7 @@ export const supabase = hasCredentials
         detectSessionInUrl: true
       }
     })
-  : null // Return null if no credentials - app will show error page
+  : createClient('https://placeholder.supabase.co', 'placeholder-key') // Fallback client to prevent undefined errors
 
 // Export flag for checking if Supabase is configured
 export const isSupabaseConfigured = hasCredentials

@@ -70,7 +70,7 @@
  * - sql/002_rls_policies.sql for RLS rules on friend data
  */
 
-import { supabase } from '../config/supabase'
+import { supabase, isSupabaseConfigured } from '../config/supabase'
 
 /**
  * Get all accepted friendships for current user
@@ -78,6 +78,10 @@ import { supabase } from '../config/supabase'
  */
 export async function getFriends() {
   try {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase client is not initialized. Please check your environment variables.')
+    }
+    
     const {
       data: { user }
     } = await supabase.auth.getUser()
@@ -135,6 +139,10 @@ export async function getFriends() {
  */
 export async function getPendingRequests() {
   try {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase client is not initialized. Please check your environment variables.')
+    }
+    
     const {
       data: { user }
     } = await supabase.auth.getUser()
@@ -198,6 +206,10 @@ export async function getPendingRequests() {
  */
 export async function sendFriendRequest(emailOrUserId) {
   try {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase client is not initialized. Please check your environment variables.')
+    }
+    
     const {
       data: { user }
     } = await supabase.auth.getUser()

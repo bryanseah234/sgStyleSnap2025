@@ -35,6 +35,8 @@ jobs:
           if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then echo "::error::Missing VERCEL_TOKEN secret"; exit 1; fi
           if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then echo "::error::Missing VERCEL_ORG_ID secret"; exit 1; fi
           if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then echo "::error::Missing VERCEL_PROJECT_ID secret"; exit 1; fi
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then echo "::error::Missing VITE_SUPABASE_URL secret"; exit 1; fi
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then echo "::error::Missing VITE_SUPABASE_ANON_KEY secret"; exit 1; fi
       
       - name: Pull Vercel Env (Preview)
         if: github.event_name == 'pull_request'
@@ -48,7 +50,6 @@ jobs:
         if: github.event_name == 'pull_request'
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          # Add your environment variables here
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
