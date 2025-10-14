@@ -81,7 +81,15 @@ export async function getFriends() {
     const {
       data: { user }
     } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    
+    // Development mode: Use mock user if authentication fails
+    let userId = user?.id
+    if (!userId && import.meta.env.DEV) {
+      console.log('🔧 DEV MODE: Using mock user for friends service')
+      userId = 'dev-user-123' // Mock user ID for development
+    } else if (!userId) {
+      throw new Error('Not authenticated')
+    }
 
     // Get friendships where user is either requester or receiver and status is accepted
     const { data, error } = await supabase
@@ -98,14 +106,14 @@ export async function getFriends() {
       `
       )
       .eq('status', 'accepted')
-      .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
 
     if (error) throw error
 
     // Transform data to include friend's info (the other person in the friendship)
     const friends = data.map(friendship => {
       const friend =
-        friendship.requester_id === user.id ? friendship.receiver : friendship.requester
+        friendship.requester_id === userId ? friendship.receiver : friendship.requester
 
       return {
         friendshipId: friendship.id,
@@ -130,7 +138,15 @@ export async function getPendingRequests() {
     const {
       data: { user }
     } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    
+    // Development mode: Use mock user if authentication fails
+    let userId = user?.id
+    if (!userId && import.meta.env.DEV) {
+      console.log('🔧 DEV MODE: Using mock user for pending requests')
+      userId = 'dev-user-123' // Mock user ID for development
+    } else if (!userId) {
+      throw new Error('Not authenticated')
+    }
 
     // Get all pending requests where user is involved
     const { data, error } = await supabase
@@ -147,13 +163,13 @@ export async function getPendingRequests() {
       `
       )
       .eq('status', 'pending')
-      .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
 
     if (error) throw error
 
     // Separate into incoming and outgoing
     const incoming = data
-      .filter(req => req.receiver_id === user.id)
+      .filter(req => req.receiver_id === userId)
       .map(req => ({
         requestId: req.id,
         ...req.requester,
@@ -161,7 +177,7 @@ export async function getPendingRequests() {
       }))
 
     const outgoing = data
-      .filter(req => req.requester_id === user.id)
+      .filter(req => req.requester_id === userId)
       .map(req => ({
         requestId: req.id,
         ...req.receiver,
@@ -185,7 +201,15 @@ export async function sendFriendRequest(emailOrUserId) {
     const {
       data: { user }
     } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    
+    // Development mode: Use mock user if authentication fails
+    let userId = user?.id
+    if (!userId && import.meta.env.DEV) {
+      console.log('🔧 DEV MODE: Using mock user for sending friend request')
+      userId = 'dev-user-123' // Mock user ID for development
+    } else if (!userId) {
+      throw new Error('Not authenticated')
+    }
 
     let targetUserId = null
 
@@ -196,15 +220,15 @@ export async function sendFriendRequest(emailOrUserId) {
       targetUserId = emailOrUserId
 
       // Can't send request to yourself
-      if (targetUserId === user.id) {
+      if (targetUserId === userId) {
         throw new Error('You cannot send a friend request to yourself')
       }
     } else {
       // Input is an email
       const email = emailOrUserId
 
-      // Can't send request to yourself
-      if (email === user.email) {
+      // Can't send request to yourself (skip this check in dev mode since we don't have real email)
+      if (!import.meta.env.DEV && email === user?.email) {
         throw new Error('You cannot send a friend request to yourself')
       }
 
@@ -224,8 +248,8 @@ export async function sendFriendRequest(emailOrUserId) {
     }
 
     // Ensure canonical ordering (smaller ID first)
-    const requesterId = user.id < targetUserId ? user.id : targetUserId
-    const receiverId = user.id < targetUserId ? targetUserId : user.id
+    const requesterId = userId < targetUserId ? userId : targetUserId
+    const receiverId = userId < targetUserId ? targetUserId : userId
 
     // Check if friendship already exists
     const { data: existing } = await supabase
@@ -370,7 +394,15 @@ export async function searchUsers(query) {
     const {
       data: { user }
     } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    
+    // Development mode: Use mock user if authentication fails
+    let userId = user?.id
+    if (!userId && import.meta.env.DEV) {
+      console.log('🔧 DEV MODE: Using mock user for user search')
+      userId = 'dev-user-123' // Mock user ID for development
+    } else if (!userId) {
+      throw new Error('Not authenticated')
+    }
 
     // Validate minimum query length (anti-scraping)
     if (!query || query.trim().length < 3) {
@@ -391,7 +423,7 @@ export async function searchUsers(query) {
       `
       )
       .or(`name.ilike.%${query}%,email.eq.${query}`)
-      .neq('id', user.id) // Exclude current user
+      .neq('id', userId) // Exclude current user
       .is('removed_at', null) // Only active users
       .limit(10) // Hard limit (anti-scraping)
 
@@ -405,8 +437,8 @@ export async function searchUsers(query) {
       let friendship_status = 'none'
 
       // Check if user is in a friendship with current user
-      const asRequester = searchUser.friends_as_requester?.find(f => f.receiver_id === user.id)
-      const asReceiver = searchUser.friends_as_receiver?.find(f => f.requester_id === user.id)
+      const asRequester = searchUser.friends_as_requester?.find(f => f.receiver_id === userId)
+      const asReceiver = searchUser.friends_as_receiver?.find(f => f.requester_id === userId)
 
       if (asRequester) {
         friendship_status = asRequester.status === 'accepted' ? 'accepted' : 'pending_received' // They sent request to us

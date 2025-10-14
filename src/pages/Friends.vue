@@ -216,10 +216,18 @@ const sendingRequest = ref(null)
 let searchTimeout = null
 
 console.log('🟢 Friends.vue loaded at', new Date().toISOString())
+console.log('🔧 Development mode:', import.meta.env.DEV)
 
 onMounted(async () => {
   await friendsStore.fetchFriends()
   await friendsStore.fetchPendingRequests()
+  
+  // Restore search query from localStorage if it exists
+  const savedQuery = localStorage.getItem('friends-search-query')
+  if (savedQuery && savedQuery.length >= 3) {
+    searchQuery.value = savedQuery
+    await handleSearch()
+  }
 })
 
 // Handle search with debouncing
@@ -230,8 +238,12 @@ function handleSearch() {
 
   if (searchQuery.value.length < 3) {
     searchResults.value = {}
+    localStorage.removeItem('friends-search-query')
     return
   }
+
+  // Save search query to localStorage
+  localStorage.setItem('friends-search-query', searchQuery.value)
 
   searchTimeout = setTimeout(async () => {
     searching.value = true
@@ -249,19 +261,22 @@ function handleSearch() {
 
 // Send friend request
 async function sendRequest(user) {
+  console.log('📤 Sending friend request to:', user.name, user.id)
   sendingRequest.value = user.id
   try {
-    await friendsStore.sendFriendRequest(user.id)
+    const result = await friendsStore.sendFriendRequest(user.id)
+    console.log('✅ Friend request result:', result)
 
     // Update user's friendship status in search results
     const userIndex = searchResults.value.users.findIndex(u => u.id === user.id)
     if (userIndex !== -1) {
       searchResults.value.users[userIndex].friendship_status = 'pending_sent'
+      console.log('🔄 Updated friendship status to pending_sent for:', user.name)
     }
 
     alert('Friend request sent!')
   } catch (error) {
-    console.error('Failed to send request:', error)
+    console.error('❌ Failed to send request:', error)
     alert('Failed to send friend request. Please try again.')
   } finally {
     sendingRequest.value = null
