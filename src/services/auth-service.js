@@ -75,30 +75,72 @@ export async function signInWithGoogle() {
 
   console.log('🔐 Starting Google OAuth sign-in...')
   console.log('📍 Redirect URL:', `${window.location.origin}/closet`)
+  console.log('🌐 Current origin:', window.location.origin)
+  console.log('🔧 Supabase URL:', supabaseUrl)
+  console.log('🔧 Supabase configured:', isSupabaseConfigured)
 
-  const result = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/closet`,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent'
+  try {
+    // Log detailed configuration for debugging
+    console.log('🔧 OAuth Configuration Debug:')
+    console.log('   Current origin:', window.location.origin)
+    console.log('   Supabase URL:', supabaseUrl)
+    console.log('   Redirect to:', `${window.location.origin}/closet`)
+    console.log('   Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID || 'Not set in .env')
+    
+    const result = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/closet`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
+      }
+    })
+
+    console.log('📤 OAuth result:', result)
+
+    if (result?.error) {
+      console.error('❌ Google sign-in error:', result.error)
+      console.error('🔧 Current origin:', window.location.origin)
+      console.error('🔧 Expected origins in Google Console:')
+      console.error('   - http://localhost:5173')
+      console.error('   - http://localhost:5174')
+      console.error('   - http://localhost:3000')
+      console.error('   - https://nztqjmknblelnzpeatyx.supabase.co')
+      
+      // Provide more specific error messages
+      if (result.error.message.includes('redirect_uri_mismatch')) {
+        throw new Error(`OAuth configuration error: The redirect URI is not configured for ${window.location.origin}. Please add this URL to Google Cloud Console → OAuth 2.0 Client → Authorized JavaScript origins and Authorized redirect URIs.`)
+      } else if (result.error.message.includes('invalid_client')) {
+        throw new Error('OAuth configuration error: Please check that the Google Client ID and Secret are correctly configured in Supabase Dashboard → Authentication → Providers → Google.')
+      } else if (result.error.message.includes('unauthorized_client')) {
+        throw new Error('OAuth configuration error: The Google OAuth client is not authorized for this application. Please check your Google Cloud Console OAuth consent screen configuration.')
+      } else if (result.error.message.includes('access_denied')) {
+        throw new Error('OAuth access denied: The user cancelled the authorization or the app is not verified. For development, add your email to test users in Google Cloud Console.')
+      } else {
+        throw new Error(`Google sign-in failed: ${result.error.message}`)
       }
     }
-  })
 
-  console.log('📤 OAuth result:', result)
+    if (result?.data?.url) {
+      console.log('✅ Redirecting to Google OAuth:', result.data.url)
+    } else {
+      console.warn('⚠️ No redirect URL received from OAuth')
+      throw new Error('OAuth configuration error: No redirect URL received. Please check your Google OAuth setup.')
+    }
 
-  if (result?.error) {
-    console.error('❌ Google sign-in error:', result.error)
-    throw new Error(`Google sign-in failed: ${result.error.message}`)
+    return result
+  } catch (error) {
+    console.error('❌ OAuth initiation failed:', error)
+    
+    // Re-throw with more context
+    if (error.message.includes('OAuth configuration error')) {
+      throw error
+    } else {
+      throw new Error(`Failed to initiate Google OAuth: ${error.message}`)
+    }
   }
-
-  if (result?.data?.url) {
-    console.log('✅ Redirecting to Google OAuth:', result.data.url)
-  }
-
-  return result
 }
 
 /**

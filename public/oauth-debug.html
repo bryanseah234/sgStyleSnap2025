@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Debug - StyleSnap</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .error { color: red; background: #ffe6e6; padding: 10px; border-radius: 5px; }
+        .success { color: green; background: #e6ffe6; padding: 10px; border-radius: 5px; }
+        .info { color: blue; background: #e6f3ff; padding: 10px; border-radius: 5px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 OAuth Configuration Debug Tool</h1>
+    
+    <div id="status" class="info">
+        <h3>Current Configuration:</h3>
+        <p><strong>Current Origin:</strong> <span id="currentOrigin"></span></p>
+        <p><strong>Supabase URL:</strong> https://nztqjmknblelnzpeatyx.supabase.co</p>
+        <p><strong>Google Client ID:</strong> 175364816920-u06gjt8ktd4nl8ak66dq07m7i52dt54q.apps.googleusercontent.com</p>
+    </div>
+
+    <button id="testOAuth">🧪 Test Google OAuth</button>
+    <button id="checkConfig">🔧 Check Configuration</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const supabaseUrl = 'https://nztqjmknblelnzpeatyx.supabase.co'
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56dHFqbWtuYmxlbG56cGVhdHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MDgyNzYsImV4cCI6MjA3NTI4NDI3Nn0.H2C6pRoE22beBq2L9AcyaSJosDq0mNpKrzggSYSqz3E'
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey)
+        
+        document.getElementById('currentOrigin').textContent = window.location.origin
+        
+        document.getElementById('checkConfig').addEventListener('click', () => {
+            const results = document.getElementById('results')
+            results.innerHTML = `
+                <div class="info">
+                    <h3>🔧 Required Configuration:</h3>
+                    <h4>1. Google Cloud Console:</h4>
+                    <p>Go to: <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></p>
+                    <p>Click your OAuth 2.0 Client ID and add these URLs:</p>
+                    <pre><strong>Authorized JavaScript Origins:</strong>
+http://localhost:5173
+http://localhost:5174  ← ADD THIS
+http://localhost:3000
+https://nztqjmknblelnzpeatyx.supabase.co</pre>
+                    <pre><strong>Authorized Redirect URIs:</strong>
+https://nztqjmknblelnzpeatyx.supabase.co/auth/v1/callback
+http://localhost:5173
+http://localhost:5174  ← ADD THIS
+http://localhost:3000</pre>
+                    
+                    <h4>2. Supabase Dashboard:</h4>
+                    <p>Go to: <a href="https://supabase.com/dashboard/project/nztqjmknblelnzpeatyx" target="_blank">Supabase Dashboard</a></p>
+                    <p><strong>Authentication → URL Configuration:</strong></p>
+                    <pre>Site URL: http://localhost:5174  ← UPDATE THIS
+Redirect URLs:
+  - http://localhost:5173
+  - http://localhost:5174  ← ADD THIS
+  - http://localhost:3000</pre>
+                    
+                    <p><strong>Authentication → Providers → Google:</strong></p>
+                    <pre>✅ Enable Google provider
+Client ID: 175364816920-u06gjt8ktd4nl8ak66dq07m7i52dt54q.apps.googleusercontent.com
+Client Secret: [Your secret from Google Console]</pre>
+                </div>
+            `
+        })
+        
+        document.getElementById('testOAuth').addEventListener('click', async () => {
+            const results = document.getElementById('results')
+            results.innerHTML = '<div class="info">Testing OAuth...</div>'
+            
+            try {
+                console.log('🔐 Starting OAuth test...')
+                console.log('📍 Current origin:', window.location.origin)
+                
+                const result = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: `${window.location.origin}/closet`,
+                        queryParams: {
+                            access_type: 'offline',
+                            prompt: 'consent'
+                        }
+                    }
+                })
+                
+                console.log('📤 OAuth result:', result)
+                
+                if (result?.error) {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h3>❌ OAuth Error:</h3>
+                            <p><strong>Error:</strong> ${result.error.message}</p>
+                            <p><strong>Status:</strong> ${result.error.status || 'Unknown'}</p>
+                            
+                            <h4>🔧 Most Likely Issues:</h4>
+                            <ul>
+                                <li><strong>Port 5174 not configured:</strong> Add ${window.location.origin} to Google Console</li>
+                                <li><strong>Supabase not configured:</strong> Update Supabase URL configuration</li>
+                                <li><strong>Google provider disabled:</strong> Enable Google provider in Supabase</li>
+                            </ul>
+                            
+                            <h4>🛠️ Quick Fix:</h4>
+                            <ol>
+                                <li>Click "Check Configuration" button above</li>
+                                <li>Follow the exact steps shown</li>
+                                <li>Wait 5-10 minutes for Google propagation</li>
+                                <li>Clear browser cache and try again</li>
+                            </ol>
+                        </div>
+                    `
+                } else if (result?.data?.url) {
+                    results.innerHTML = `
+                        <div class="success">
+                            <h3>✅ OAuth Success!</h3>
+                            <p>Redirecting to: ${result.data.url}</p>
+                            <p><a href="${result.data.url}" target="_blank">Click here to test OAuth flow</a></p>
+                        </div>
+                    `
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h3>⚠️ Unexpected Result:</h3>
+                            <p>No error, but no redirect URL received</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `
+                }
+                
+            } catch (error) {
+                console.error('❌ OAuth test failed:', error)
+                results.innerHTML = `
+                    <div class="error">
+                        <h3>❌ OAuth Test Failed:</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `
+            }
+        })
+    </script>
+</body>
+</html>

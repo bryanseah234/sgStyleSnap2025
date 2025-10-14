@@ -227,6 +227,52 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
+     * Mock login for development
+     * Creates a fake user session for testing
+     */
+    async mockLogin() {
+      console.log('🚀 AuthStore: Starting mock login...')
+      this.loading = true
+      this.error = null
+
+      try {
+        // Create a mock user object
+        const mockUser = {
+          id: 'mock-user-id-' + Date.now(),
+          email: 'dev@stylesnap.local',
+          user_metadata: {
+            name: 'Dev User',
+            full_name: 'Development User',
+            avatar_url: null,
+            picture: null
+          },
+          app_metadata: {
+            provider: 'mock',
+            providers: ['mock']
+          },
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+
+        console.log('✅ AuthStore: Mock user created:', mockUser.email)
+        this.setUser(mockUser)
+
+        // Simulate a small delay for realistic UX
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        console.log('✅ AuthStore: Mock login successful')
+        return mockUser
+      } catch (error) {
+        console.error('❌ AuthStore: Mock login failed:', error)
+        this.error = error.message
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
      * Setup auth state change listener
      */
     setupAuthListener() {

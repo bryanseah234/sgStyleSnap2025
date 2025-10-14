@@ -1,0 +1,170 @@
+/**
+ * Global Theme Styles - StyleSnap
+ * 
+ * Purpose: Global CSS variables and theme styles that apply to the entire application
+ * 
+ * Features:
+ * - CSS custom properties for theme colors
+ * - Global theme classes for light/dark mode
+ * - Consistent styling across all components
+ */
+
+/* CSS Custom Properties for Theme Colors */
+:root {
+  /* Light theme (default) - Light purple palette */
+  --theme-primary: #c84dd6;
+  --theme-secondary: #d66ee3;
+  --theme-background: #f8f4ff;
+  --theme-surface: #ffffff;
+  --theme-surface-light: #f0e8ff;
+  --theme-text: #2d1b69;
+  --theme-text-secondary: #6b46c1;
+  --theme-border: #e0d4ff;
+  --theme-hover: #f0e8ff;
+  --theme-shadow: rgba(200, 77, 214, 0.1);
+}
+
+/* Dark theme - Much lighter vibrant purple palette */
+.dark {
+  --theme-primary: #c84dd6; /* Your specified vibrant purple */
+  --theme-secondary: #d66ee3; /* Lighter vibrant purple */
+  --theme-background: #5a2a6a; /* Much lighter purple background */
+  --theme-surface: #6a3a7a; /* Lighter purple surface */
+  --theme-surface-light: #7a4a8a; /* Even lighter purple surface */
+  --theme-text: #FFFFFF;
+  --theme-text-secondary: #E5E7EB;
+  --theme-border: #8a5a9a; /* Lighter purple border */
+  --theme-hover: #7a4a8a; /* Lighter purple hover */
+  --theme-shadow: rgba(200, 77, 214, 0.2); /* Lighter purple shadow */
+}
+
+/* Global theme application */
+html {
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global component styles */
+.theme-surface {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.theme-text {
+  color: var(--theme-text);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-border {
+  border-color: var(--theme-border);
+}
+
+.theme-hover:hover {
+  background-color: var(--theme-hover);
+}
+
+.theme-shadow {
+  box-shadow: 0 1px 3px var(--theme-shadow);
+}
+
+/* Override common element styles */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--theme-text-secondary);
+}
+
+/* Button styles */
+.theme-button {
+  background-color: var(--theme-primary);
+  color: white;
+  border: 1px solid var(--theme-primary);
+  transition: all 0.2s ease;
+}
+
+.theme-button:hover {
+  background-color: var(--theme-secondary);
+  border-color: var(--theme-secondary);
+}
+
+.theme-button-secondary {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  transition: all 0.2s ease;
+}
+
+.theme-button-secondary:hover {
+  background-color: var(--theme-hover);
+}
+
+/* Card styles */
+.theme-card {
+  background-color: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  box-shadow: 0 1px 3px var(--theme-shadow);
+}
+
+/* Navigation styles */
+.theme-nav {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+  box-shadow: 0 1px 3px var(--theme-shadow);
+}
+
+/* Form styles */
+.theme-form {
+  background-color: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+}
+
+.theme-form input,
+.theme-form textarea,
+.theme-form select {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.theme-form input:focus,
+.theme-form textarea:focus,
+.theme-form select:focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* Dark mode specific focus styles */
+.dark .theme-form input:focus,
+.dark .theme-form textarea:focus,
+.dark .theme-form select:focus {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Disable transitions for elements that shouldn't animate */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+}
