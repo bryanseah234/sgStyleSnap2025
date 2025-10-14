@@ -37,33 +37,6 @@
               >⚠️ Near limit!</span>
             </p>
           </div>
-
-          <!-- Settings Icon -->
-          <button
-            class="settings-button transition-all duration-300 ease-out hover:scale-110 active:scale-95"
-            title="Settings"
-            @click="goToSettings"
-          >
-            <svg
-              class="w-6 h-6 transition-transform duration-500 hover:rotate-180"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-          </button>
         </div>
       </div>
 
@@ -199,9 +172,6 @@ function handleFilterChange(newFilters) {
   filters.value = { ...newFilters }
 }
 
-function goToSettings() {
-  router.push('/settings')
-}
 
 // Item detail modal handlers
 function handleItemClick(item) {
@@ -247,7 +217,7 @@ async function handleFavoriteClick(item) {
 .closet-page {
   min-height: 100vh;
   padding: 1rem;
-  background-color: #f9fafb;
+  background-color: var(--theme-background);
 }
 
 .closet-header {
@@ -256,7 +226,6 @@ async function handleFavoriteClick(item) {
 
 .header-content {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
 }
@@ -264,48 +233,18 @@ async function handleFavoriteClick(item) {
 .closet-header h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--theme-text);
   margin-bottom: 0.25rem;
 }
 
 .quota-text {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.settings-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0.5rem;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.settings-button:hover {
-  background-color: #f3f4f6;
-  color: #111827;
-  border-color: #d1d5db;
-}
-
-.settings-button:active {
-  transform: scale(0.95);
-}
-
-.settings-button svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
 
 .quota-warning {
   color: #f59e0b;

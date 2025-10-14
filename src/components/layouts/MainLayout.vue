@@ -11,7 +11,7 @@
           StyleSnap
         </h1>
         <div class="header-actions">
-          <span class="user-greeting">{{ userName }}</span>
+          <SettingsDropdown />
         </div>
       </div>
     </header>
@@ -93,6 +93,7 @@ import { useAuthStore } from '../../stores/auth-store'
 import { useNotificationsStore } from '../../stores/notifications-store'
 import { useSuggestionsStore } from '../../stores/suggestions-store'
 import NotificationBadge from '../notifications/NotificationBadge.vue'
+import SettingsDropdown from '../ui/SettingsDropdown.vue'
 
 const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
@@ -125,16 +126,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: var(--theme-background);
 }
 
 .main-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: var(--theme-surface);
+  border-bottom: 1px solid var(--theme-border);
+  box-shadow: 0 1px 3px var(--theme-shadow);
 }
 
 .header-content {
@@ -149,8 +150,13 @@ onMounted(() => {
 .app-logo {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #3b82f6;
+  color: var(--theme-primary);
   margin: 0;
+}
+
+/* Make logo white in dark mode */
+.dark .app-logo {
+  color: #FFFFFF;
 }
 
 .header-actions {
@@ -159,10 +165,6 @@ onMounted(() => {
   gap: 1rem;
 }
 
-.user-greeting {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
 
 .main-content {
   flex: 1;
@@ -177,15 +179,15 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: white;
-  border-top: 1px solid #e5e7eb;
+  background-color: var(--theme-surface);
+  border-top: 1px solid var(--theme-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 60px;
   padding: 0 0;
   z-index: 100;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -1px 3px var(--theme-shadow);
   max-width: 100vw;
   overflow: hidden;
 }
@@ -198,7 +200,7 @@ onMounted(() => {
   gap: 0.25rem;
   padding: 0 0;
   text-decoration: none;
-  color: #6b7280;
+  color: var(--theme-text-secondary);
   transition: all 0.2s;
   border-radius: 0.5rem;
   text-align: center;
@@ -207,11 +209,11 @@ onMounted(() => {
 }
 
 .nav-item:hover {
-  background-color: #f3f4f6;
+  background-color: var(--theme-hover);
 }
 
 .nav-item.active {
-  color: #3b82f6;
+  color: var(--theme-primary);
 }
 
 .nav-icon-svg {

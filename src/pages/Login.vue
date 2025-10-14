@@ -119,7 +119,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
 import Button from '../components/ui/Button.vue'
 
-// const router = useRouter()
+const router = useRouter()
 const authStore = useAuthStore()
 
 const isLoading = ref(false)
@@ -152,7 +152,9 @@ async function handleMockLogin() {
     // Use the mock authentication from auth store
     await authStore.mockLogin()
     console.log('✅ Mock login successful')
-    // The auth store will handle redirecting to /closet
+    
+    // Redirect to closet page after successful mock login
+    await router.push('/closet')
   } catch (error) {
     console.error('❌ Mock login error:', error)
     errorMessage.value = error.message || 'Failed to mock login. Please try again.'

@@ -36,6 +36,8 @@ import App from './App.vue'
 import router from './router'
 import { pinia } from './stores'
 import { useAuthStore } from './stores/auth-store'
+import { useThemeStore } from './stores/theme-store'
+import './assets/styles/theme.css'
 
 // Create app instance
 const app = createApp(App)
@@ -46,8 +48,12 @@ app.use(pinia)
 // Use Vue Router for navigation
 app.use(router)
 
-// Initialize auth state before mounting
+// Initialize stores before mounting
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
+
+// Initialize theme
+themeStore.initializeTheme()
 
 // Setup auth listener for real-time auth state changes
 authStore.setupAuthListener()
