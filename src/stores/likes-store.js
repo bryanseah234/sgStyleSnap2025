@@ -130,9 +130,9 @@ export const useLikesStore = defineStore('likes', {
         // Fetch all initialization data in parallel
         // Note: Don't catch errors here - let them bubble up to the outer catch
         const [likedItems, popularItems, stats] = await Promise.all([
-          likesService.getUserLikedItems(authStore.user.id, 50, 0),
+          likesService.getUserLikedItems(userId, 50, 0),
           likesService.getPopularItemsFromFriends(20),
-          likesService.getUserLikesStats(authStore.user.id)
+          likesService.getUserLikesStats(userId)
         ])
 
         // Set liked items

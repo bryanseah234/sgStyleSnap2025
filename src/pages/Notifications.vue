@@ -1,59 +1,119 @@
 <template>
   <MainLayout>
-    <div class="notifications-page min-h-screen bg-gray-50 dark:bg-gray-900">
-      <!-- Header -->
-      <div
-        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20"
-      >
-        <div class="max-w-4xl mx-auto px-4 py-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <button
-                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors lg:hidden"
-                @click="goBack"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-6 h-6"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15.75 19.5L8.25 12l7.5-7.5"
-                  />
-                </svg>
-              </button>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                Notifications
-              </h1>
-              <NotificationBadge
-                v-if="notificationsStore.unreadCount > 0"
-                :count="notificationsStore.unreadCount"
-              />
-            </div>
+    <div class="notifications-page">
+      <div class="notifications-header">
+        <h1>Notifications</h1>
+        <p class="subtitle">
+          Stay updated with your friends' activities
+        </p>
+      </div>
 
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button
+            :class="['tab', { active: activeTab === 'all' }]"
+            @click="activeTab = 'all'"
+          >
+            All
+            <span
+              v-if="notificationsStore.unreadCount > 0"
+              class="badge"
+            >
+              {{ notificationsStore.unreadCount }}
+            </span>
+          </button>
+          <button
+            :class="['tab', { active: activeTab === 'unread' }]"
+            @click="activeTab = 'unread'"
+          >
+            Unread
+            <span
+              v-if="notificationsStore.unreadCount > 0"
+              class="badge"
+            >
+              {{ notificationsStore.unreadCount }}
+            </span>
+          </button>
+          <button
+            :class="['tab', { active: activeTab === 'suggestions' }]"
+            @click="activeTab = 'suggestions'"
+          >
+            Suggestions
+          </button>
+        </div>
+      </div>
+
+      <div class="notifications-content">
+        <!-- All Notifications Tab -->
+        <div
+          v-if="activeTab === 'all'"
+          class="tab-panel"
+        >
+          <div class="panel-header">
+            <h2 class="section-title">
+              All Notifications
+            </h2>
             <button
               v-if="notificationsStore.hasUnread"
               :disabled="markingAllRead"
-              class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="mark-all-btn"
               @click="handleMarkAllRead"
             >
               {{ markingAllRead ? 'Marking...' : 'Mark all as read' }}
             </button>
           </div>
-        </div>
-      </div>
-
-      <!-- Main Content -->
-      <div class="max-w-4xl mx-auto">
-        <div class="bg-white dark:bg-gray-800 shadow-sm min-h-[calc(100vh-80px)]">
           <NotificationsList
             :notifications="notificationsStore.notifications"
             :unread-count="notificationsStore.unreadCount"
+            :loading="notificationsStore.loading"
+            :has-more="hasMore"
+            @notification-click="handleNotificationClick"
+            @load-more="handleLoadMore"
+          />
+        </div>
+
+        <!-- Unread Notifications Tab -->
+        <div
+          v-if="activeTab === 'unread'"
+          class="tab-panel"
+        >
+          <div class="panel-header">
+            <h2 class="section-title">
+              Unread Notifications
+            </h2>
+            <button
+              v-if="notificationsStore.hasUnread"
+              :disabled="markingAllRead"
+              class="mark-all-btn"
+              @click="handleMarkAllRead"
+            >
+              {{ markingAllRead ? 'Marking...' : 'Mark all as read' }}
+            </button>
+          </div>
+          <NotificationsList
+            :notifications="unreadNotifications"
+            :unread-count="notificationsStore.unreadCount"
+            :loading="notificationsStore.loading"
+            :has-more="hasMore"
+            @notification-click="handleNotificationClick"
+            @load-more="handleLoadMore"
+          />
+        </div>
+
+        <!-- Suggestions Tab -->
+        <div
+          v-if="activeTab === 'suggestions'"
+          class="tab-panel"
+        >
+          <div class="panel-header">
+            <h2 class="section-title">
+              Outfit Suggestions
+            </h2>
+          </div>
+          <NotificationsList
+            :notifications="suggestionNotifications"
+            :unread-count="suggestionNotifications.filter(n => !n.is_read).length"
             :loading="notificationsStore.loading"
             :has-more="hasMore"
             @notification-click="handleNotificationClick"
@@ -116,12 +176,12 @@ import { useNotificationsStore } from '../stores/notifications-store'
 import { friendSuggestionsService } from '../services/friend-suggestions-service'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import NotificationsList from '../components/notifications/NotificationsList.vue'
-import NotificationBadge from '../components/notifications/NotificationBadge.vue'
 import SuggestionApprovalCard from '../components/social/SuggestionApprovalCard.vue'
 
 const router = useRouter()
 const notificationsStore = useNotificationsStore()
 
+const activeTab = ref('all')
 const markingAllRead = ref(false)
 const showApprovalModal = ref(false)
 const currentSuggestion = ref(null)
@@ -130,6 +190,14 @@ const loadingSuggestion = ref(false)
 const hasMore = computed(() => {
   const { total, offset, limit } = notificationsStore.pagination
   return offset + limit < total
+})
+
+const unreadNotifications = computed(() => {
+  return notificationsStore.notifications.filter(n => !n.is_read)
+})
+
+const suggestionNotifications = computed(() => {
+  return notificationsStore.notifications.filter(n => n.type === 'friend_outfit_suggestion')
 })
 
 onMounted(async () => {
@@ -144,9 +212,7 @@ onUnmounted(() => {
   // The store manages its own lifecycle
 })
 
-const goBack = () => {
-  router.back()
-}
+// Removed goBack function - no back button needed
 
 const handleMarkAllRead = async () => {
   markingAllRead.value = true
@@ -261,6 +327,128 @@ const handleRejectSuggestion = async suggestionId => {
 </script>
 
 <style scoped>
+.notifications-page {
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: var(--theme-background, #faf5ff);
+  overflow-x: hidden;
+}
+
+.notifications-header {
+  margin-bottom: 1rem;
+}
+
+.notifications-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--theme-text, #1e1b4b);
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--theme-text-secondary, #6b46c1);
+}
+
+/* Tabs */
+.tabs-container {
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--theme-border, #e0d4ff);
+  overflow-x: hidden;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--theme-text-secondary, #6b46c1);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--theme-text, #1e1b4b);
+}
+
+.tab.active {
+  color: var(--theme-primary, #8b5cf6);
+  border-bottom-color: var(--theme-primary, #8b5cf6);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.375rem;
+  background: var(--theme-primary, #8b5cf6);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.notifications-content {
+  min-height: 400px;
+}
+
+.tab-panel {
+  background: var(--theme-surface, #ffffff);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px var(--theme-shadow, rgba(139, 92, 246, 0.1));
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--theme-text, #1e1b4b);
+  margin: 0;
+}
+
+.mark-all-btn {
+  padding: 0.5rem 1rem;
+  background: var(--theme-primary, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mark-all-btn:hover:not(:disabled) {
+  background: var(--theme-primary-hover, #7c3aed);
+}
+
+.mark-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Modal transitions */
 .modal-enter-active,
 .modal-leave-active {
@@ -295,11 +483,11 @@ const handleRejectSuggestion = async suggestionId => {
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgb(209, 213, 219);
+  background: var(--theme-border, #e0d4ff);
   border-radius: 4px;
 }
 
 .dark .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgb(75, 85, 99);
+  background: var(--theme-border, #4c1d95);
 }
 </style>

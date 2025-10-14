@@ -17,6 +17,7 @@
  */
 
 import { defineStore } from 'pinia'
+import { PURPLE_THEME } from '../config/colors'
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
@@ -80,33 +81,33 @@ export const useThemeStore = defineStore('theme', {
      */
     applyTheme() {
       const root = document.documentElement
-      
+
       if (this.isDarkMode) {
         root.classList.add('dark')
-        // Dark theme colors - Much lighter vibrant purple palette
-        root.style.setProperty('--theme-primary', '#c84dd6') // Your specified vibrant purple
-        root.style.setProperty('--theme-secondary', '#d66ee3') // Lighter vibrant purple
-        root.style.setProperty('--theme-background', '#5a2a6a') // Much lighter purple background
-        root.style.setProperty('--theme-surface', '#6a3a7a') // Lighter purple surface
-        root.style.setProperty('--theme-surface-light', '#7a4a8a') // Even lighter purple surface
-        root.style.setProperty('--theme-text', '#FFFFFF')
-        root.style.setProperty('--theme-text-secondary', '#E5E7EB')
-        root.style.setProperty('--theme-border', '#8a5a9a') // Lighter purple border
-        root.style.setProperty('--theme-hover', '#7a4a8a') // Lighter purple hover
-        root.style.setProperty('--theme-shadow', 'rgba(200, 77, 214, 0.2)') // Lighter purple shadow
+        // Dark theme colors - Purple palette
+        root.style.setProperty('--theme-primary', PURPLE_THEME.primary)
+        root.style.setProperty('--theme-secondary', PURPLE_THEME.secondary)
+        root.style.setProperty('--theme-background', '#1e1b4b') // Dark purple background
+        root.style.setProperty('--theme-surface', '#312e81') // Dark purple surface
+        root.style.setProperty('--theme-surface-light', '#4338ca') // Lighter dark purple surface
+        root.style.setProperty('--theme-text', '#ffffff')
+        root.style.setProperty('--theme-text-secondary', '#c7d2fe')
+        root.style.setProperty('--theme-border', '#4c1d95') // Dark purple border
+        root.style.setProperty('--theme-hover', '#4338ca') // Dark purple hover
+        root.style.setProperty('--theme-shadow', PURPLE_THEME.shadowDark)
       } else {
         root.classList.remove('dark')
-        // Light theme colors - Light purple palette
-        root.style.setProperty('--theme-primary', '#c84dd6') // Your vibrant purple
-        root.style.setProperty('--theme-secondary', '#d66ee3') // Lighter vibrant purple
-        root.style.setProperty('--theme-background', '#f8f4ff') // Very light purple background
-        root.style.setProperty('--theme-surface', '#ffffff') // White surface
-        root.style.setProperty('--theme-surface-light', '#f0e8ff') // Light purple surface
-        root.style.setProperty('--theme-text', '#2d1b69') // Dark purple text
-        root.style.setProperty('--theme-text-secondary', '#6b46c1') // Medium purple text
-        root.style.setProperty('--theme-border', '#e0d4ff') // Light purple border
-        root.style.setProperty('--theme-hover', '#f0e8ff') // Light purple hover
-        root.style.setProperty('--theme-shadow', 'rgba(200, 77, 214, 0.1)') // Light purple shadow
+        // Light theme colors - Purple palette
+        root.style.setProperty('--theme-primary', PURPLE_THEME.primary)
+        root.style.setProperty('--theme-secondary', PURPLE_THEME.secondary)
+        root.style.setProperty('--theme-background', PURPLE_THEME.background)
+        root.style.setProperty('--theme-surface', PURPLE_THEME.surface)
+        root.style.setProperty('--theme-surface-light', PURPLE_THEME.surfaceLight)
+        root.style.setProperty('--theme-text', PURPLE_THEME.text)
+        root.style.setProperty('--theme-text-secondary', PURPLE_THEME.textSecondary)
+        root.style.setProperty('--theme-border', PURPLE_THEME.border)
+        root.style.setProperty('--theme-hover', PURPLE_THEME.surfaceLight)
+        root.style.setProperty('--theme-shadow', PURPLE_THEME.shadow)
       }
     },
 
