@@ -238,13 +238,13 @@ onMounted(() => {
 .notifications-header h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--theme-text, #111827);
   margin-bottom: 0.25rem;
 }
 
 .subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
 }
 
 .tabs-container {
@@ -265,7 +265,7 @@ onMounted(() => {
   border: none;
   font-size: 1rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
   cursor: pointer;
   transition: all 0.2s;
   border-radius: 0.5rem 0.5rem 0 0;
@@ -277,13 +277,13 @@ onMounted(() => {
 }
 
 .tab:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--theme-hover, #f3f4f6);
+  color: var(--theme-text, #374151);
 }
 
 .tab.active {
-  color: #3b82f6;
-  background: #eff6ff;
+  color: var(--theme-text, #1e1b4b);
+  background: var(--theme-active-tab-bg, rgb(250, 245, 255));
   font-weight: 600;
 }
 
@@ -303,10 +303,10 @@ onMounted(() => {
 
 .tab-panel {
   flex: 1;
-  background: white;
+  background: var(--theme-notification-container-bg, rgb(250, 245, 255));
   border-radius: 0.75rem;
   padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--theme-shadow, rgba(0, 0, 0, 0.1));
 }
 
 .loading-state {
@@ -315,7 +315,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
 }
 
 .loading-spinner {
@@ -341,7 +341,7 @@ onMounted(() => {
   justify-content: center;
   padding: 3rem 1rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
 }
 
 .empty-icon {
@@ -352,7 +352,7 @@ onMounted(() => {
 .empty-state h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--theme-text, #374151);
   margin-bottom: 0.5rem;
 }
 

@@ -22,6 +22,8 @@
   --theme-border: #e0d4ff;
   --theme-hover: #f0e8ff;
   --theme-shadow: rgba(200, 77, 214, 0.1);
+  --theme-active-tab-bg: rgb(250, 245, 255);
+  --theme-notification-container-bg: rgb(250, 245, 255);
 }
 
 /* Dark theme - Much lighter vibrant purple palette */
@@ -36,6 +38,8 @@
   --theme-border: #8a5a9a; /* Lighter purple border */
   --theme-hover: #7a4a8a; /* Lighter purple hover */
   --theme-shadow: rgba(200, 77, 214, 0.2); /* Lighter purple shadow */
+  --theme-active-tab-bg: rgb(31, 41, 55); /* Dark grey-blue for active tabs in dark mode */
+  --theme-notification-container-bg: rgb(31, 41, 55); /* Dark grey-blue for notification container in dark mode */
 }
 
 /* Global theme application */
@@ -90,6 +94,76 @@ body {
 .dark input::placeholder,
 .dark textarea::placeholder {
   color: var(--theme-text-secondary);
+}
+
+/* Ensure all text elements are white in dark mode */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark p,
+.dark span,
+.dark div,
+.dark label,
+.dark button,
+.dark a {
+  color: var(--theme-text) !important;
+}
+
+/* Ensure secondary text is also visible in dark mode */
+.dark .text-secondary,
+.dark .text-muted,
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-gray-700 {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Override Tailwind text color classes in dark mode */
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300,
+.dark .text-gray-200,
+.dark .text-gray-100 {
+  color: var(--theme-text) !important;
+}
+
+/* Override Tailwind text color classes for secondary text in dark mode */
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300 {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Override Tailwind background classes in dark mode */
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark .bg-gray-300,
+.dark .bg-gray-400,
+.dark .bg-gray-500,
+.dark .bg-gray-600,
+.dark .bg-gray-700,
+.dark .bg-gray-800,
+.dark .bg-gray-900 {
+  background-color: var(--theme-surface) !important;
+}
+
+/* Override Tailwind border classes in dark mode */
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-400,
+.dark .border-gray-500,
+.dark .border-gray-600,
+.dark .border-gray-700,
+.dark .border-gray-800 {
+  border-color: var(--theme-border) !important;
 }
 
 /* Button styles */

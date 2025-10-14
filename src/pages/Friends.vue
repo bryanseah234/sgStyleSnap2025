@@ -216,10 +216,18 @@ const sendingRequest = ref(null)
 let searchTimeout = null
 
 console.log('🟢 Friends.vue loaded at', new Date().toISOString())
+console.log('🔧 Development mode:', import.meta.env.DEV)
 
 onMounted(async () => {
   await friendsStore.fetchFriends()
   await friendsStore.fetchPendingRequests()
+  
+  // Restore search query from localStorage if it exists
+  const savedQuery = localStorage.getItem('friends-search-query')
+  if (savedQuery && savedQuery.length >= 3) {
+    searchQuery.value = savedQuery
+    await handleSearch()
+  }
 })
 
 // Handle search with debouncing
@@ -230,8 +238,12 @@ function handleSearch() {
 
   if (searchQuery.value.length < 3) {
     searchResults.value = {}
+    localStorage.removeItem('friends-search-query')
     return
   }
+
+  // Save search query to localStorage
+  localStorage.setItem('friends-search-query', searchQuery.value)
 
   searchTimeout = setTimeout(async () => {
     searching.value = true
@@ -249,19 +261,22 @@ function handleSearch() {
 
 // Send friend request
 async function sendRequest(user) {
+  console.log('📤 Sending friend request to:', user.name, user.id)
   sendingRequest.value = user.id
   try {
-    await friendsStore.sendFriendRequest(user.id)
+    const result = await friendsStore.sendFriendRequest(user.id)
+    console.log('✅ Friend request result:', result)
 
     // Update user's friendship status in search results
     const userIndex = searchResults.value.users.findIndex(u => u.id === user.id)
     if (userIndex !== -1) {
       searchResults.value.users[userIndex].friendship_status = 'pending_sent'
+      console.log('🔄 Updated friendship status to pending_sent for:', user.name)
     }
 
     alert('Friend request sent!')
   } catch (error) {
-    console.error('Failed to send request:', error)
+    console.error('❌ Failed to send request:', error)
     alert('Failed to send friend request. Please try again.')
   } finally {
     sendingRequest.value = null
@@ -395,19 +410,20 @@ function getFriendshipStatusText(status) {
 }
 
 .search-input {
-  width: 100%;
+  width: calc(100% - 4px);
   padding: 0.75rem 1rem;
-  border: 1px solid var(--theme-border, #e0d4ff);
+  border: 2px solid var(--theme-text, #ffffff);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s;
   background: var(--theme-surface, #ffffff);
   color: var(--theme-text, #1e1b4b);
+  box-sizing: border-box;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: var(--theme-primary, #8b5cf6);
+  border: 2px solid var(--theme-primary, #8b5cf6);
   box-shadow: 0 0 0 3px var(--theme-shadow, rgba(139, 92, 246, 0.1));
 }
 

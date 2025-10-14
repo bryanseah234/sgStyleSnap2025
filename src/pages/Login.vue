@@ -193,13 +193,13 @@ async function handleMockLogin() {
 .app-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--theme-text, #1f2937);
   margin-bottom: 0.5rem;
 }
 
 .app-tagline {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
 }
 
 .login-section {
@@ -249,10 +249,10 @@ async function handleMockLogin() {
 }
 
 .dev-divider-text {
-  background-color: white;
+  background-color: var(--theme-background, white);
   padding: 0 1rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
   font-weight: 500;
 }
 
@@ -277,7 +277,7 @@ async function handleMockLogin() {
 
 .dev-note {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
   text-align: center;
   font-style: italic;
   margin: 0;

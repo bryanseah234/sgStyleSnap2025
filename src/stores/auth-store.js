@@ -238,10 +238,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         // Create a mock user object
         const mockUser = {
-          id: 'mock-user-id-' + Date.now(),
-          email: 'dev@stylesnap.local',
+          id: 'dev-user-123', // Consistent ID for development
+          email: 'dev@test.com',
           user_metadata: {
-            name: 'Dev User',
+            name: 'Development User',
             full_name: 'Development User',
             avatar_url: null,
             picture: null

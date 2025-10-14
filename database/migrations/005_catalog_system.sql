@@ -461,6 +461,7 @@ BEGIN
         color,
         season,
         style,
+        privacy,
         is_active
       ) VALUES (
         NEW.name,
@@ -472,6 +473,7 @@ BEGIN
         NEW.primary_color,
         'all-season', -- Default season
         NEW.style_tags, -- Use style_tags as style array
+        'public', -- Make catalog items public by default
         true
       )
       ON CONFLICT (image_url) DO NOTHING; -- Safety: prevent duplicates
