@@ -109,14 +109,16 @@ export async function uploadImage(file) {
  */
 export async function getItems(filters = {}) {
   try {
-    if (!filters.user_id) {
-      throw new Error('user_id is required to fetch items')
+    // Expect owner_id (matches DB column). Backward-compat: allow user_id alias
+    const ownerId = filters.owner_id || filters.user_id
+    if (!ownerId) {
+      throw new Error('owner_id is required to fetch items')
     }
 
     let query = supabase.from('clothes')
       .select('*')
       .is('removed_at', null)
-      .eq('user_id', filters.user_id) // Always filter by user_id
+      .eq('owner_id', ownerId) // Always filter by owner_id
 
     // Apply category filter
     if (filters.category && filters.category !== 'all') {
