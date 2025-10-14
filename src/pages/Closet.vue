@@ -101,6 +101,13 @@
         @edit="handleEditItem"
         @share="handleShareItem"
       />
+
+      <!-- Add Item Modal -->
+      <AddItemModal
+        :is-open="showAddItemModal"
+        @close="closeAddItemModal"
+        @success="handleAddItemSuccess"
+      />
     </div>
   </MainLayout>
 </template>
@@ -113,6 +120,7 @@ import MainLayout from '../components/layouts/MainLayout.vue'
 import ClosetFilter from '../components/closet/ClosetFilter.vue'
 import ClosetGrid from '../components/closet/ClosetGrid.vue'
 import ItemDetailModal from '../components/closet/ItemDetailModal.vue'
+import AddItemModal from '../components/closet/AddItemModal.vue'
 
 const router = useRouter()
 const closetStore = useClosetStore()
@@ -127,6 +135,9 @@ const filters = ref({
 // Item detail modal state
 const selectedItemId = ref(null)
 const showDetailModal = ref(false)
+
+// Add item modal state
+const showAddItemModal = ref(false)
 
 const items = computed(() => {
   let filtered = closetStore.items
@@ -165,7 +176,17 @@ onMounted(() => {
 })
 
 function handleAddItem() {
-  alert('Add item functionality coming soon!')
+  showAddItemModal.value = true
+}
+
+function closeAddItemModal() {
+  showAddItemModal.value = false
+}
+
+function handleAddItemSuccess() {
+  // Item added successfully, refresh the closet
+  closetStore.fetchItems()
+  closeAddItemModal()
 }
 
 function handleFilterChange(newFilters) {

@@ -1,271 +1,123 @@
-<!--
-  AddItemModal Component - StyleSnap
-  Compact, functional design for adding clothing items
--->
-
 <template>
+  <Teleport to="body">
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-[100] overflow-y-auto"
+      class="modal-overlay"
     @click.self="handleClose"
   >
-    <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-
-    <!-- Modal -->
-    <div class="flex min-h-full items-center justify-center p-4 pt-12 pb-20">
-      <div class="relative w-full max-w-sm transform transition-all duration-300">
-        <div
-          class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
-        >
+      <!-- Modal Container -->
+      <div class="modal-container">
+        <div class="modal-content">
+          
           <!-- Header -->
-          <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <div
-                  class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center"
-                >
-                  <svg
-                    class="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
+          <div class="modal-header">
+            <div class="header-content">
+              <div class="header-icon">
+                <svg class="icon-plus" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  Add Item
-                </h2>
-              </div>
-              <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                @click="handleClose"
-              >
-                <svg
-                  class="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+              <h2 class="header-title">Add Item</h2>
             </div>
           </div>
 
-          <!-- Content -->
-          <div class="p-4 max-h-[60vh] overflow-y-auto">
-            <form
-              class="space-y-3"
-              @submit.prevent="handleSubmit"
-            >
-              <!-- Image Upload -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Photo *
-                </label>
-
+          <!-- Form Content -->
+          <div class="modal-body">
+            <form @submit.prevent="handleSubmit" class="form-container">
+              
+              <!-- Photo Upload -->
+              <div class="upload-section">
+                <label class="section-label">Photo</label>
                 <div
-                  class="relative border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 hover:border-purple-400"
+                  class="upload-area"
                   :class="{
-                    'border-purple-400 bg-purple-50 dark:bg-purple-900/20': isDragging,
-                    'border-red-300 bg-red-50 dark:bg-red-900/20': imageError,
-                    'border-gray-300 dark:border-gray-600': !isDragging && !imageError
+                    'upload-dragging': isDragging,
+                    'upload-error': imageError,
+                    'upload-has-image': imagePreview
                   }"
                   @dragover.prevent="isDragging = true"
                   @dragleave.prevent="isDragging = false"
                   @drop.prevent="handleDrop"
                 >
                   <!-- Image Preview -->
-                  <div
-                    v-if="imagePreview"
-                    class="mb-2"
-                  >
-                    <div class="relative inline-block">
-                      <img
-                        :src="imagePreview"
-                        alt="Preview"
-                        class="w-16 h-16 object-cover rounded-lg shadow-md"
-                      >
-                      <div
-                        class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"
-                      >
-                        <svg
-                          class="w-2.5 h-2.5 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clip-rule="evenodd"
-                          />
+                  <div v-if="imagePreview" class="image-preview">
+                    <img :src="imagePreview" alt="Preview" class="preview-image">
+                    <div class="preview-overlay">
+                      <svg class="check-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                         </svg>
-                      </div>
                     </div>
                   </div>
 
-                  <!-- Upload Area -->
-                  <div
-                    v-else
-                    class="mb-2"
-                  >
-                    <div
-                      class="w-10 h-10 mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center mb-2"
-                    >
-                      <svg
-                        class="w-5 h-5 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
+                  <!-- Upload Button -->
                   <button
+                    v-else
                     type="button"
-                    class="inline-flex items-center px-3 py-1.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                    class="upload-btn" 
                     @click="fileInput?.click()"
                   >
-                    <svg
-                      class="w-3 h-3 mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      />
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    Choose Photo
+                    <span>Choose Photo</span>
                   </button>
-
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Drag & drop or click
-                  </p>
 
                   <!-- Hidden File Input -->
                   <input
                     ref="fileInput"
                     type="file"
                     accept="image/*"
-                    class="hidden"
+                    class="file-input-hidden"
                     @change="handleFileSelect"
                   >
                 </div>
+                
+                <!-- Error Message -->
+                <p v-if="imageError" class="error-text">
+                  {{ imageError }}
+                </p>
+                </div>
 
                 <!-- AI Status -->
-                <div
-                  v-if="classifying"
-                  class="flex items-center space-x-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg mt-2"
-                >
-                  <div class="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                    <svg
-                      class="w-2.5 h-2.5 text-white animate-spin"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                      />
-                      <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                  </div>
-                  <span class="text-xs text-blue-700 dark:text-blue-300">Analyzing...</span>
+              <div v-if="classifying" class="ai-status">
+                <div class="ai-spinner"></div>
+                <span class="ai-text">Analyzing image...</span>
                 </div>
 
                 <!-- AI Result -->
-                <div
-                  v-if="classificationResult && !classifying"
-                  class="flex items-center space-x-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg mt-2"
-                >
-                  <div class="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                    <svg
-                      class="w-2.5 h-2.5 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clip-rule="evenodd"
-                      />
+              <div v-if="classificationResult && !classifying" class="ai-result">
+                <div class="ai-success-icon">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg>
                   </div>
-                  <span class="text-xs text-green-700 dark:text-green-300">
-                    Detected: {{ classificationResult.topPrediction }}
-                  </span>
-                </div>
-
-                <!-- Error Message -->
-                <p
-                  v-if="imageError"
-                  class="text-xs text-red-600 dark:text-red-400 mt-1"
-                >
-                  {{ imageError }}
-                </p>
+                <span class="ai-text">Detected: {{ classificationResult.topPrediction }}</span>
               </div>
 
               <!-- Form Fields -->
-              <div class="space-y-3">
+              <div class="form-fields">
                 <!-- Name -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Name *
-                  </label>
+                <div class="field-group">
+                  <label class="field-label">Name</label>
                   <input
                     v-model="form.name"
                     type="text"
                     required
                     maxlength="100"
-                    placeholder="e.g., Blue Denim Jacket"
-                    class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+                    placeholder="Blue Denim Jacket"
+                    class="field-input"
                   >
                 </div>
 
                 <!-- Category -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Category *
-                  </label>
+                <div class="field-group">
+                  <label class="field-label">Category</label>
                   <select
                     v-model="form.category"
                     required
-                    class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none cursor-pointer text-sm"
+                    class="field-select"
                   >
-                    <option value="">
-                      Select category
-                    </option>
+                    <option value="">Select category</option>
                     <optgroup
                       v-for="(items, group) in CATEGORY_GROUPS"
                       :key="group"
@@ -283,214 +135,94 @@
                 </div>
 
                 <!-- Clothing Type -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Type
-                  </label>
+                <div class="field-group">
+                  <label class="field-label">Type</label>
                   <select
                     v-model="form.clothing_type"
-                    class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none cursor-pointer text-sm"
+                    class="field-select"
                   >
-                    <option value="">
-                      Select type
-                    </option>
-                    <option value="t-shirt">
-                      T-Shirt
-                    </option>
-                    <option value="shirt">
-                      Shirt
-                    </option>
-                    <option value="blouse">
-                      Blouse
-                    </option>
-                    <option value="polo">
-                      Polo
-                    </option>
-                    <option value="tank-top">
-                      Tank Top
-                    </option>
-                    <option value="sweater">
-                      Sweater
-                    </option>
-                    <option value="hoodie">
-                      Hoodie
-                    </option>
-                    <option value="blazer">
-                      Blazer
-                    </option>
-                    <option value="jacket">
-                      Jacket
-                    </option>
-                    <option value="coat">
-                      Coat
-                    </option>
-                    <option value="jeans">
-                      Jeans
-                    </option>
-                    <option value="pants">
-                      Pants
-                    </option>
-                    <option value="shorts">
-                      Shorts
-                    </option>
-                    <option value="skirt">
-                      Skirt
-                    </option>
-                    <option value="dress">
-                      Dress
-                    </option>
-                    <option value="sneakers">
-                      Sneakers
-                    </option>
-                    <option value="boots">
-                      Boots
-                    </option>
-                    <option value="sandals">
-                      Sandals
-                    </option>
-                    <option value="heels">
-                      Heels
-                    </option>
-                    <option value="hat">
-                      Hat
-                    </option>
-                    <option value="bag">
-                      Bag
-                    </option>
-                    <option value="accessory">
-                      Accessory
-                    </option>
+                    <option value="">Select type</option>
+                    <option value="t-shirt">T-Shirt</option>
+                    <option value="shirt">Shirt</option>
+                    <option value="blouse">Blouse</option>
+                    <option value="polo">Polo</option>
+                    <option value="tank-top">Tank Top</option>
+                    <option value="sweater">Sweater</option>
+                    <option value="hoodie">Hoodie</option>
+                    <option value="blazer">Blazer</option>
+                    <option value="jacket">Jacket</option>
+                    <option value="coat">Coat</option>
+                    <option value="jeans">Jeans</option>
+                    <option value="pants">Pants</option>
+                    <option value="shorts">Shorts</option>
+                    <option value="skirt">Skirt</option>
+                    <option value="dress">Dress</option>
+                    <option value="sneakers">Sneakers</option>
+                    <option value="boots">Boots</option>
+                    <option value="sandals">Sandals</option>
+                    <option value="heels">Heels</option>
+                    <option value="hat">Hat</option>
+                    <option value="bag">Bag</option>
+                    <option value="accessory">Accessory</option>
                   </select>
                 </div>
 
                 <!-- Brand -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Brand
-                  </label>
+                <div class="field-group">
+                  <label class="field-label">Brand</label>
                   <input
                     v-model="form.brand"
                     type="text"
                     maxlength="100"
-                    placeholder="e.g., Nike, Zara, H&M"
-                    class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+                    placeholder="Nike, Zara, H&M"
+                    class="field-input"
                   >
                 </div>
 
                 <!-- Privacy -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Privacy
-                  </label>
+                <div class="field-group">
+                  <label class="field-label">Privacy</label>
                   <select
                     v-model="form.privacy"
-                    class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none cursor-pointer text-sm"
+                    class="field-select"
                   >
-                    <option value="friends">
-                      Visible to Friends
-                    </option>
-                    <option value="private">
-                      Private
-                    </option>
+                    <option value="friends">Visible to Friends</option>
+                    <option value="private">Private</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Status -->
-              <div class="flex items-center space-x-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div class="flex items-center space-x-1">
-                  <div
-                    class="w-3 h-3 rounded-full flex items-center justify-center"
-                    :class="form.file ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'"
-                  >
-                    <svg
-                      v-if="form.file"
-                      class="w-2 h-2 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+              <!-- Progress Indicators -->
+              <div class="progress-section">
+                <div class="progress-item" :class="{ 'complete': form.file }">
+                  <div class="progress-dot"></div>
+                  <span class="progress-text">Photo</span>
                   </div>
-                  <span class="text-xs text-gray-700 dark:text-gray-300">Photo</span>
+                <div class="progress-item" :class="{ 'complete': form.name.trim() }">
+                  <div class="progress-dot"></div>
+                  <span class="progress-text">Name</span>
                 </div>
-                <div class="flex items-center space-x-1">
-                  <div
-                    class="w-3 h-3 rounded-full flex items-center justify-center"
-                    :class="form.name.trim() ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'"
-                  >
-                    <svg
-                      v-if="form.name.trim()"
-                      class="w-2 h-2 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <span class="text-xs text-gray-700 dark:text-gray-300">Name</span>
-                </div>
-                <div class="flex items-center space-x-1">
-                  <div
-                    class="w-3 h-3 rounded-full flex items-center justify-center"
-                    :class="form.category ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'"
-                  >
-                    <svg
-                      v-if="form.category"
-                      class="w-2 h-2 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <span class="text-xs text-gray-700 dark:text-gray-300">Category</span>
+                <div class="progress-item" :class="{ 'complete': form.category }">
+                  <div class="progress-dot"></div>
+                  <span class="progress-text">Category</span>
                 </div>
               </div>
 
               <!-- Quota Warning -->
-              <div
-                v-if="quotaWarning"
-                class="flex items-center space-x-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg"
-              >
-                <div class="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                  <svg
-                    class="w-2.5 h-2.5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clip-rule="evenodd"
-                    />
+              <div v-if="quotaWarning" class="quota-warning">
+                <svg class="warning-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                   </svg>
-                </div>
-                <span class="text-xs text-yellow-700 dark:text-yellow-300">
-                  {{ quotaUsed }}/50 uploads used
-                </span>
+                <span>{{ quotaUsed }}/50 uploads used</span>
               </div>
             </form>
           </div>
 
           <!-- Actions -->
-          <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-            <div class="flex space-x-3">
+          <div class="modal-actions">
               <button
                 type="button"
-                class="flex-1 px-3 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium text-sm"
+              class="action-btn cancel-btn"
                 @click="handleClose"
               >
                 Cancel
@@ -498,17 +230,17 @@
               <button
                 type="submit"
                 :disabled="submitting || !isFormValid"
-                class="flex-1 px-3 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center text-sm"
+              class="action-btn submit-btn"
                 @click="handleSubmit"
               >
                 <svg
                   v-if="submitting"
-                  class="w-4 h-4 mr-2 animate-spin"
+                class="spinner"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
                   <circle
-                    class="opacity-25"
+                  class="spinner-circle"
                     cx="12"
                     cy="12"
                     r="10"
@@ -516,28 +248,24 @@
                     stroke-width="4"
                   />
                   <path
-                    class="opacity-75"
+                  class="spinner-path"
                     fill="currentColor"
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                {{ submitting ? 'Adding...' : 'Add Item' }}
+              <span v-else>Add Item</span>
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useClosetStore } from '@/stores/closet-store'
-import {
-  classifyClothingItem,
-  validateImageForClassification
-} from '@/services/fashion-rnn-service'
+import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { CATEGORY_GROUPS } from '@/config/constants'
 
 const props = defineProps({
@@ -645,7 +373,7 @@ async function processFile(file) {
 
   // Create preview
   const reader = new FileReader()
-  reader.onload = e => {
+  reader.onload = (e) => {
     imagePreview.value = e.target.result
   }
   reader.readAsDataURL(file)
@@ -678,9 +406,7 @@ async function classifyImage(file) {
 
       // Generate name suggestion if empty
       if (!form.value.name.trim()) {
-        form.value.name = result.topPrediction
-          .replace('-', ' ')
-          .replace(/\b\w/g, l => l.toUpperCase())
+        form.value.name = result.topPrediction.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
       }
     } else {
       console.warn('Classification failed:', result.error)
@@ -695,10 +421,7 @@ async function classifyImage(file) {
 // Handle form submission
 async function handleSubmit() {
   if (!isFormValid.value || submitting.value) {
-    console.log('🚫 Form submission blocked:', {
-      isValid: isFormValid.value,
-      submitting: submitting.value
-    })
+    console.log('🚫 Form submission blocked:', { isValid: isFormValid.value, submitting: submitting.value })
     return
   }
 
@@ -708,9 +431,7 @@ async function handleSubmit() {
   try {
     // Check quota
     if (!closetStore.canAddItem) {
-      throw new Error(
-        'You have reached your 50 upload limit. Add unlimited items from our catalog!'
-      )
+      throw new Error('You have reached your 50 upload limit. Add unlimited items from our catalog!')
     }
 
     // Prepare item data
@@ -729,6 +450,7 @@ async function handleSubmit() {
     // Success!
     emit('success')
     handleClose()
+    
   } catch (error) {
     console.error('Failed to add item:', error)
     imageError.value = error.message
@@ -738,9 +460,7 @@ async function handleSubmit() {
 }
 
 // Watch for modal open to reset form
-watch(
-  () => props.isOpen,
-  isOpen => {
+watch(() => props.isOpen, (isOpen) => {
     if (isOpen) {
       // Reset form when modal opens
       form.value = {
@@ -755,15 +475,689 @@ watch(
       imageError.value = null
       classificationResult.value = null
     }
-  }
-)
+})
 </script>
 
 <style scoped>
-/* Smooth transitions */
-* {
-  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(16px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    backdrop-filter: blur(0px);
+  }
+  to { 
+    opacity: 1; 
+    backdrop-filter: blur(16px);
+  }
+}
+
+/* Modal Container */
+.modal-container {
+  width: 100%;
+  max-width: 28rem;
+  position: relative;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 90vh;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal Content */
+.modal-content {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 2rem;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  max-height: 85vh;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(139, 92, 246, 0.3), 
+    rgba(59, 130, 246, 0.3), 
+    transparent
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  .modal-content {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Header */
+.modal-header {
+  padding: 2rem 2rem 1.5rem;
+  position: relative;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 10px 25px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-icon::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6, #06b6d4);
+  border-radius: 1.25rem;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.header-icon:hover::before {
+  opacity: 1;
+}
+
+.icon-plus {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: white;
+}
+
+.header-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .header-title {
+    background: linear-gradient(135deg, #a78bfa, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Body */
+.modal-body {
+  padding: 0 2rem;
+  overflow-y: auto;
+  flex: 1;
+  max-height: calc(85vh - 200px);
+  min-height: 400px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding-bottom: 1rem;
+}
+
+/* Upload Section */
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.section-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .section-label {
+    color: #94a3b8;
+  }
+}
+
+.upload-area {
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.02), rgba(59, 130, 246, 0.02));
+  position: relative;
+  overflow: hidden;
+  min-height: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.05), 
+    rgba(59, 130, 246, 0.05),
+    rgba(6, 182, 212, 0.05)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.upload-area:hover::before {
+  opacity: 1;
+}
+
+.upload-dragging {
+  border-color: #8b5cf6;
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.05));
+  transform: scale(1.02);
+}
+
+.upload-error {
+  border-color: #ef4444;
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+  animation: shake 0.5s ease-in-out;
+}
+
+.upload-has-image {
+  border-color: #10b981;
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.upload-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 
+    0 8px 25px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.upload-btn:hover::before {
+  opacity: 1;
+}
+
+.upload-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 35px rgba(139, 92, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.upload-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.preview-image {
+  width: 5rem;
+  height: 5rem;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.preview-overlay {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.check-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: white;
+}
+
+.error-text {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin: 0;
+  text-align: center;
+}
+
+/* AI Status */
+.ai-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1rem;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.ai-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(37, 99, 235, 0.2);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.ai-result {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 1rem;
+  color: #059669;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.ai-success-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form Fields */
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .field-label {
+    color: #cbd5e1;
+  }
+}
+
+.field-input,
+.field-select {
+  width: 100%;
+  min-width: 0;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.field-input:focus,
+.field-select:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 
+    0 8px 25px rgba(139, 92, 246, 0.15),
+    0 0 0 3px rgba(139, 92, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.field-input::placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.field-input:hover,
+.field-select:hover {
+  border-color: rgba(139, 92, 246, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 20px rgba(139, 92, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .field-input,
+  .field-select {
+    background: linear-gradient(145deg, #334155, #1e293b);
+    color: #f1f5f9;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  .field-input:focus,
+  .field-select:focus {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 
+      0 8px 25px rgba(139, 92, 246, 0.2),
+      0 0 0 3px rgba(139, 92, 246, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .field-input::placeholder {
+    color: #64748b;
+  }
+}
+
+/* Progress Section */
+.progress-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.02));
+  border-radius: 1rem;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.progress-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.progress-item.complete .progress-dot {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.progress-item.complete .progress-text {
+  color: #059669;
+}
+
+@media (prefers-color-scheme: dark) {
+  .progress-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.05));
+    border-color: rgba(139, 92, 246, 0.2);
+  }
+  
+  .progress-dot {
+    background: #475569;
+  }
+  
+  .progress-text {
+    color: #94a3b8;
+  }
+  
+  .progress-item.complete .progress-text {
+    color: #34d399;
+  }
+}
+
+/* Quota Warning */
+.quota-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 1rem;
+  color: #d97706;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.warning-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .quota-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+  }
+}
+
+/* Actions */
+.modal-actions {
+  padding: 2rem;
+  display: flex;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.02), rgba(59, 130, 246, 0.02));
+}
+
+.action-btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cancel-btn {
+  background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+  color: #64748b;
+  border: 2px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(145deg, #e2e8f0, #cbd5e1);
+  border-color: rgba(148, 163, 184, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: white;
+  border: 2px solid transparent;
+  box-shadow: 
+    0 8px 25px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 35px rgba(139, 92, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-circle {
+  opacity: 0.25;
+}
+
+.spinner-path {
+  opacity: 0.75;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cancel-btn {
+    background: linear-gradient(145deg, #334155, #1e293b);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+  
+  .cancel-btn:hover {
+    background: linear-gradient(145deg, #475569, #334155);
+    border-color: rgba(148, 163, 184, 0.4);
+  }
+}
+
+/* Hidden File Input */
+.file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 </style>
