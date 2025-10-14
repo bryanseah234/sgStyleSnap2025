@@ -127,7 +127,7 @@ export const useClosetStore = defineStore('closet', {
      * Fetch all items from API
      * @param {string} userId - Current user's ID
      */
-    async fetchItems() {
+    async fetchItems(userId) {
       this.isLoading = true
       try {
         const clothesService = await import('../services/clothes-service')
