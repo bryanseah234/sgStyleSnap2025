@@ -35,10 +35,10 @@ const hasCredentials = supabaseUrl && supabaseAnonKey
 
 if (!hasCredentials) {
   console.error('⚠️  Missing Supabase credentials!')
-  console.error('📝 Please create a .env file with:')
-  console.error('   VITE_SUPABASE_URL=https://your-project.supabase.co')
-  console.error('   VITE_SUPABASE_ANON_KEY=your-anon-key')
-  console.error('💡 Copy .env.example to .env and fill in your values')
+  console.error('📝 Environment variables found:')
+  console.error('   VITE_SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING')
+  console.error('   VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING')
+  console.error('💡 Make sure your environment variables are properly configured in Vercel')
 }
 
 /**

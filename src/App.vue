@@ -67,8 +67,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { isSupabaseConfigured } from './config/supabase'
-import { useAuthStore } from './stores/auth-store'
-import { useLikesStore } from './stores/likes-store'
+import { useAuthStore, useLikesStore } from './stores'
 
 const isConfigured = ref(isSupabaseConfigured)
 
@@ -83,7 +82,7 @@ if (isConfigured.value) {
     () => authStore.isAuthenticated,
     async isAuthenticated => {
       if (isAuthenticated) {
-        await likesStore.initializeLikes()
+        await likesStore.initializeLikes(authStore.userId)
       } else {
         likesStore.resetStore()
       }

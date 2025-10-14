@@ -1,11 +1,56 @@
 /**
  * Color Configuration - StyleSnap
  *
- * Standardized color palette for AI-powered color detection
- * Used by: color-detector.js, ColorPicker.vue, color filters
+ * Centralized color system for the entire app
+ * 
+ * 🎨 PURPLE THEME SYSTEM:
+ * All purple shades are defined here for easy theme changes
+ * To change the app's color scheme, modify the PURPLE_THEME object below
+ *
+ * Usage:
+ * - Import: import { PURPLE_THEME } from '@/config/colors'
+ * - Use: color: PURPLE_THEME.primary
  *
  * Reference: tasks/10-color-detection-ai.md
  */
+
+// 🎨 PURPLE THEME - CHANGE THESE VALUES TO UPDATE THE ENTIRE APP THEME
+export const PURPLE_THEME = {
+  // Primary purple shades
+  primary: '#8b5cf6',        // Main purple - buttons, links, active states
+  primaryHover: '#7c3aed',   // Darker purple for hover states
+  primaryLight: '#a78bfa',   // Lighter purple for backgrounds
+  
+  // Secondary purple shades  
+  secondary: '#c084fc',      // Secondary purple - accents, badges
+  secondaryHover: '#a855f7', // Darker secondary for hover
+  secondaryLight: '#ddd6fe', // Very light purple for subtle backgrounds
+  
+  // Background purple shades
+  background: '#faf5ff',     // Very light purple background
+  surface: '#ffffff',        // White surfaces
+  surfaceLight: '#f3e8ff',   // Light purple surface
+  
+  // Text colors
+  text: '#1e1b4b',          // Dark purple text
+  textSecondary: '#6b46c1', // Medium purple text
+  textMuted: '#9ca3af',     // Muted text
+  
+  // Border and divider colors
+  border: '#e0d4ff',        // Light purple borders
+  borderLight: '#f3e8ff',   // Very light borders
+  
+  // Status colors (keeping some non-purple for clarity)
+  success: '#10b981',       // Green for success states
+  warning: '#f59e0b',       // Orange for warnings
+  error: '#ef4444',         // Red for errors
+  info: '#3b82f6',          // Blue for info
+  
+  // Shadow colors
+  shadow: 'rgba(139, 92, 246, 0.1)',     // Light purple shadow
+  shadowMedium: 'rgba(139, 92, 246, 0.2)', // Medium purple shadow
+  shadowDark: 'rgba(139, 92, 246, 0.3)',   // Dark purple shadow
+}
 
 export const COLOR_PALETTE = {
   // Neutrals

@@ -10,7 +10,6 @@
 
 import { defineStore } from 'pinia'
 import { likesService } from '../services/likes-service'
-import { useAuthStore } from './auth-store'
 
 export const useLikesStore = defineStore('likes', {
   state: () => ({
@@ -119,11 +118,10 @@ export const useLikesStore = defineStore('likes', {
     /**
      * Initialize likes data for current user
      */
-    async initializeLikes() {
+    async initializeLikes(userId = null) {
       if (this.initialized) return
 
-      const authStore = useAuthStore()
-      if (!authStore.isLoggedIn) return
+      if (!userId) return
 
       try {
         this.loading = true
@@ -132,9 +130,9 @@ export const useLikesStore = defineStore('likes', {
         // Fetch all initialization data in parallel
         // Note: Don't catch errors here - let them bubble up to the outer catch
         const [likedItems, popularItems, stats] = await Promise.all([
-          likesService.getUserLikedItems(authStore.user.id, 50, 0),
+          likesService.getUserLikedItems(userId, 50, 0),
           likesService.getPopularItemsFromFriends(20),
-          likesService.getUserLikesStats(authStore.user.id)
+          likesService.getUserLikesStats(userId)
         ])
 
         // Set liked items
@@ -278,14 +276,13 @@ export const useLikesStore = defineStore('likes', {
     /**
      * Fetch user's liked items
      */
-    async fetchMyLikedItems(limit = 50, offset = 0) {
-      const authStore = useAuthStore()
-      if (!authStore.isLoggedIn) return
+    async fetchMyLikedItems(userId, limit = 50, offset = 0) {
+      if (!userId) return
 
       try {
         this.loading = true
         this.error = null
-        const items = await likesService.getUserLikedItems(authStore.user.id, limit, offset)
+        const items = await likesService.getUserLikedItems(userId, limit, offset)
 
         if (offset === 0) {
           this.myLikedItems = items

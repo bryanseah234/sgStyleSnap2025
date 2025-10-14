@@ -37,12 +37,6 @@
       <div class="tabs-container">
         <div class="tabs">
           <button
-            :class="['tab', { active: activeTab === 'popular' }]"
-            @click="activeTab = 'popular'"
-          >
-            Popular
-          </button>
-          <button
             :class="['tab', { active: activeTab === 'friends' }]"
             @click="activeTab = 'friends'"
           >
@@ -76,22 +70,6 @@
       </div>
 
       <div class="friends-content">
-        <!-- Popular Items Tab -->
-        <div
-          v-if="activeTab === 'popular'"
-          class="tab-panel"
-        >
-          <PopularItemsCarousel
-            :items="popularItems"
-            :loading="loadingPopular"
-            title="Trending in Your Circle"
-            empty-message="No popular items yet. Start liking items from your friends!"
-            @item-click="handleItemClick"
-            @view-all="viewAllPopular"
-            @refresh="refreshPopularItems"
-          />
-        </div>
-
         <!-- Friends List Tab -->
         <div
           v-if="activeTab === 'friends'"
@@ -223,18 +201,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useFriendsStore } from '../stores/friends-store'
-import { useLikesStore } from '../stores/likes-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
-import PopularItemsCarousel from '../components/social/PopularItemsCarousel.vue'
 import FriendsList from '../components/social/FriendsList.vue'
 import FriendRequest from '../components/social/FriendRequest.vue'
 
 const friendsStore = useFriendsStore()
-const likesStore = useLikesStore()
 
-const activeTab = ref('popular')
-const popularItems = ref([])
-const loadingPopular = ref(false)
+const activeTab = ref('friends')
 const searchQuery = ref('')
 const searchResults = ref({})
 const searching = ref(false)
@@ -247,36 +220,7 @@ console.log('🟢 Friends.vue loaded at', new Date().toISOString())
 onMounted(async () => {
   await friendsStore.fetchFriends()
   await friendsStore.fetchPendingRequests()
-  await loadPopularItems()
 })
-
-async function loadPopularItems() {
-  loadingPopular.value = true
-  try {
-    const items = await likesStore.fetchPopularItems(20)
-    popularItems.value = items
-  } catch (error) {
-    console.error('Error loading popular items:', error)
-  } finally {
-    loadingPopular.value = false
-  }
-}
-
-async function refreshPopularItems() {
-  await loadPopularItems()
-}
-
-function handleItemClick(item) {
-  // Navigate to item detail or owner's profile
-  console.log('Item clicked:', item)
-  // TODO: Implement item detail view or navigation to owner's closet
-}
-
-function viewAllPopular() {
-  // Navigate to a page showing all popular items
-  console.log('View all popular items')
-  // TODO: Create dedicated popular items page
-}
 
 // Handle search with debouncing
 function handleSearch() {
@@ -350,7 +294,7 @@ function getFriendshipStatusText(status) {
 .friends-page {
   min-height: 100vh;
   padding: 1rem;
-  background-color: #f9fafb;
+  background-color: var(--theme-background, #faf5ff);
   overflow-x: hidden;
 }
 
@@ -361,13 +305,13 @@ function getFriendshipStatusText(status) {
 .friends-header h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--theme-text, #1e1b4b);
   margin-bottom: 0.25rem;
 }
 
 .subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b46c1);
 }
 
 /* Tabs */
@@ -378,7 +322,7 @@ function getFriendshipStatusText(status) {
 .tabs {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--theme-border, #e0d4ff);
   overflow-x: hidden;
   overflow: hidden;
   flex-wrap: wrap;
@@ -389,7 +333,7 @@ function getFriendshipStatusText(status) {
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b46c1);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -401,12 +345,12 @@ function getFriendshipStatusText(status) {
 }
 
 .tab:hover {
-  color: #374151;
+  color: var(--theme-text, #1e1b4b);
 }
 
 .tab.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
+  color: var(--theme-primary, #8b5cf6);
+  border-bottom-color: var(--theme-primary, #8b5cf6);
 }
 
 .badge {
@@ -416,7 +360,7 @@ function getFriendshipStatusText(status) {
   min-width: 20px;
   height: 20px;
   padding: 0 0.375rem;
-  background: #3b82f6;
+  background: var(--theme-primary, #8b5cf6);
   color: white;
   font-size: 0.75rem;
   font-weight: 600;
@@ -428,10 +372,10 @@ function getFriendshipStatusText(status) {
 }
 
 .tab-panel {
-  background: white;
+  background: var(--theme-surface, #ffffff);
   border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--theme-shadow, rgba(139, 92, 246, 0.1));
 }
 
 /* Search Section */
@@ -442,7 +386,7 @@ function getFriendshipStatusText(status) {
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--theme-text, #1e1b4b);
   margin-bottom: 1rem;
 }
 
@@ -453,22 +397,24 @@ function getFriendshipStatusText(status) {
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--theme-border, #e0d4ff);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s;
+  background: var(--theme-surface, #ffffff);
+  color: var(--theme-text, #1e1b4b);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--theme-primary, #8b5cf6);
+  box-shadow: 0 0 0 3px var(--theme-shadow, rgba(139, 92, 246, 0.1));
 }
 
 .loading {
   text-align: center;
   padding: 2rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b46c1);
 }
 
 .empty-state {
@@ -477,13 +423,13 @@ function getFriendshipStatusText(status) {
 }
 
 .empty-message {
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b46c1);
 }
 
 .search-hint {
   text-align: center;
   padding: 3rem 1rem;
-  color: #9ca3af;
+  color: var(--theme-text-muted, #9ca3af);
 }
 
 /* Search Results */
@@ -498,15 +444,15 @@ function getFriendshipStatusText(status) {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--theme-surface-light, #f3e8ff);
+  border: 1px solid var(--theme-border, #e0d4ff);
   border-radius: 0.75rem;
   transition: all 0.2s;
 }
 
 .user-card:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--theme-primary, #8b5cf6);
+  box-shadow: 0 2px 4px var(--theme-shadow, rgba(139, 92, 246, 0.1));
 }
 
 .user-avatar {
@@ -543,7 +489,7 @@ function getFriendshipStatusText(status) {
 .user-name {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--theme-text, #1e1b4b);
   margin-bottom: 0.25rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -552,7 +498,7 @@ function getFriendshipStatusText(status) {
 
 .friendship-status {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b46c1);
 }
 
 .add-friend-btn,
@@ -569,12 +515,12 @@ function getFriendshipStatusText(status) {
 }
 
 .add-friend-btn {
-  background: #3b82f6;
+  background: var(--theme-primary, #8b5cf6);
   color: white;
 }
 
 .add-friend-btn:hover:not(:disabled) {
-  background: #2563eb;
+  background: var(--theme-primary-hover, #7c3aed);
 }
 
 .add-friend-btn:disabled {

@@ -51,8 +51,8 @@ export async function uploadImage(file) {
     formData.append('file', compressedFile)
     formData.append('upload_preset', uploadPreset)
     formData.append('folder', 'closet-items') // Organize uploads
-    formData.append('format', 'webp') // Force WebP format
-    formData.append('quality', 'auto:good') // Auto quality optimization
+    // Note: format and quality parameters are not allowed with unsigned uploads
+    // They should be configured in the upload preset instead
 
     // Upload to Cloudinary
     const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {

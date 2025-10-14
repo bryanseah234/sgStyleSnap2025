@@ -76,14 +76,18 @@ export async function signInWithGoogle() {
   console.log('🔐 Starting Google OAuth sign-in...')
   console.log('📍 Redirect URL:', `${window.location.origin}/closet`)
   console.log('🌐 Current origin:', window.location.origin)
+<<<<<<< HEAD
   console.log('🔧 Supabase URL:', supabaseUrl)
+=======
+  console.log('🔧 Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
+>>>>>>> 1338a3b04d7f763f5709236ee1c338f23754b192
   console.log('🔧 Supabase configured:', isSupabaseConfigured)
 
   try {
     // Log detailed configuration for debugging
     console.log('🔧 OAuth Configuration Debug:')
     console.log('   Current origin:', window.location.origin)
-    console.log('   Supabase URL:', supabaseUrl)
+    console.log('   Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
     console.log('   Redirect to:', `${window.location.origin}/closet`)
     console.log('   Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID || 'Not set in .env')
     

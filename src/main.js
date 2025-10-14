@@ -34,9 +34,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import { pinia } from './stores'
-import { useAuthStore } from './stores/auth-store'
-import { useThemeStore } from './stores/theme-store'
+import { pinia, useAuthStore, useThemeStore } from './stores'
 import './assets/styles/theme.css'
 
 // Create app instance
