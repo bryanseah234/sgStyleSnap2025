@@ -60,7 +60,15 @@
     </div>
 
     <!-- Main App -->
-    <RouterView v-else />
+    <Suspense v-else>
+      <RouterView />
+      <template #fallback>
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading StyleSnap...</p>
+        </div>
+      </template>
+    </Suspense>
   </div>
 </template>
 
@@ -190,5 +198,38 @@ if (isConfigured.value) {
   border-top: 1px solid #e2e8f0;
   color: #718096;
   font-size: 0.9rem;
+}
+
+/* Loading Styles */
+.loading-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.9;
 }
 </style>

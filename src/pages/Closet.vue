@@ -180,8 +180,7 @@ import AddItemModal from '../components/closet/AddItemModal.vue'
 const router = useRouter()
 const closetStore = useClosetStore()
 
-const { data: { user } } = await supabase.auth.getUser()
-const userId = user.id
+const userId = ref(null)
 
 const filters = ref({
   category: '',
@@ -233,8 +232,10 @@ const hasFilters = computed(
     filters.value.is_favorite
 )
 
-onMounted(() => {
-  closetStore.fetchItems(userId)
+onMounted(async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  userId.value = user.id
+  closetStore.fetchItems(userId.value)
 })
 
 // Dropdown functions
@@ -279,7 +280,9 @@ function closeAddItemModal() {
 
 function handleAddItemSuccess() {
   // Item added successfully, refresh the closet
-  closetStore.fetchItems(userId)
+  if (userId.value) {
+    closetStore.fetchItems(userId.value)
+  }
   closeAddItemModal()
 }
 
@@ -301,12 +304,16 @@ function closeDetailModal() {
 
 function handleItemUpdated() {
   // Item updated in modal, refresh the closet
-  closetStore.fetchItems(userId)
+  if (userId.value) {
+    closetStore.fetchItems(userId.value)
+  }
 }
 
 function handleItemDeleted() {
   // Item deleted, refresh the closet
-  closetStore.fetchItems(userId)
+  if (userId.value) {
+    closetStore.fetchItems(userId.value)
+  }
 }
 
 function handleEditItem(item) {
