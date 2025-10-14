@@ -111,9 +111,9 @@ export async function getItems(filters = {}) {
   try {
     let query = supabase.from('clothes').select('*').is('removed_at', null) // Only active items
 
-     // Apply user filter
-    if (filters.user_id) {
-      query = query.eq('user_id', filters.user_id)
+    // Add owner_id filter
+    if (filters.owner_id) {
+      query = query.eq('owner_id', filters.owner_id)
     }
 
     // Apply category filter
