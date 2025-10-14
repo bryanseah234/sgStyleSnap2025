@@ -27,7 +27,7 @@
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from './stores/auth-store'
+import { useAuthStore } from './stores'
 
 // Import pages
 import Login from './pages/Login.vue'

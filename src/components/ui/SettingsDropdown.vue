@@ -159,8 +159,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '../../stores/auth-store'
-import { useThemeStore } from '../../stores/theme-store'
+import { useAuthStore, useThemeStore } from '../../stores'
 import { signOut } from '../../services/auth-service'
 
 const router = useRouter()
