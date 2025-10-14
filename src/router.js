@@ -42,6 +42,7 @@ import OutfitGenerator from './pages/OutfitGenerator.vue'
 import ManualOutfitCreator from './pages/ManualOutfitCreator.vue' // Manual outfit creation
 import Notifications from './pages/Notifications.vue' // Notifications page
 import DebugAuth from './pages/DebugAuth.vue' // Debug authentication
+import FriendProfileView from './pages/FriendProfileView.vue' // Friend profile page
 
 const routes = [
   {
@@ -122,6 +123,12 @@ const routes = [
     name: 'DebugAuth',
     component: DebugAuth,
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/friend/:friendId',
+    name: 'FriendProfileView',
+    component: FriendProfileView,
+    meta: { requiresAuth: true }
   },
   // Catch-all 404 route
   {
