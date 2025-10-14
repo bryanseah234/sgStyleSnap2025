@@ -135,7 +135,7 @@ export const useClosetStore = defineStore('closet', {
         // Merge filters with user_id
         const filters = {
           ...this.filters,
-          user_id: userId
+          owner_id: userId
         }
 
         const items = await clothesService.getItems(filters)
