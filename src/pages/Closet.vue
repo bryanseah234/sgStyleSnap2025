@@ -248,7 +248,11 @@ onMounted(async () => {
   }
   
   userId.value = user.id
-  closetStore.fetchItems(userId.value)
+  
+  // Only fetch items if we have a valid user ID
+  if (userId.value) {
+    closetStore.fetchItems(userId.value)
+  }
 })
 
 // Dropdown functions

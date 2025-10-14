@@ -130,6 +130,10 @@ export const useClosetStore = defineStore('closet', {
     async fetchItems(userId) {
       this.isLoading = true
       try {
+        if (!userId) {
+          throw new Error('user_id is required to fetch items')
+        }
+        
         const clothesService = await import('../services/clothes-service')
 
         // Merge filters with user_id
