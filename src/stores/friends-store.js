@@ -95,13 +95,13 @@ export const useFriendsStore = defineStore('friends', {
     },
 
     /**
-     * Send friend request by email
+     * Send friend request by email or user ID
      */
-    async sendFriendRequest(email) {
+    async sendFriendRequest(emailOrUserId) {
       this.isLoading = true
       try {
         const friendsService = await import('../services/friends-service')
-        const result = await friendsService.sendFriendRequest(email)
+        const result = await friendsService.sendFriendRequest(emailOrUserId)
 
         // Refresh pending requests to include new request
         await this.fetchPendingRequests()
@@ -124,12 +124,12 @@ export const useFriendsStore = defineStore('friends', {
         const friendsService = await import('../services/friends-service')
         await friendsService.acceptFriendRequest(requestId)
 
-        // Remove from pending incoming
+        // Remove from pending incoming immediately for better UX
         this.pendingRequests.incoming = this.pendingRequests.incoming.filter(
           req => req.requestId !== requestId
         )
 
-        // Refresh friends list
+        // Refresh friends list to show new friend
         await this.fetchFriends()
       } catch (error) {
         console.error('Failed to accept friend request:', error)
@@ -148,7 +148,7 @@ export const useFriendsStore = defineStore('friends', {
         const friendsService = await import('../services/friends-service')
         await friendsService.rejectFriendRequest(requestId)
 
-        // Remove from pending incoming
+        // Remove from pending incoming immediately for better UX
         this.pendingRequests.incoming = this.pendingRequests.incoming.filter(
           req => req.requestId !== requestId
         )
@@ -169,7 +169,7 @@ export const useFriendsStore = defineStore('friends', {
         const friendsService = await import('../services/friends-service')
         await friendsService.cancelFriendRequest(requestId)
 
-        // Remove from pending outgoing
+        // Remove from pending outgoing immediately for better UX
         this.pendingRequests.outgoing = this.pendingRequests.outgoing.filter(
           req => req.requestId !== requestId
         )
@@ -246,6 +246,25 @@ export const useFriendsStore = defineStore('friends', {
      */
     clearCurrentFriend() {
       this.currentFriend = null
+    },
+
+    /**
+     * Update search results after sending friend request
+     */
+    updateSearchResultFriendshipStatus(userId, status) {
+      if (this.searchResults && this.searchResults.users) {
+        const userIndex = this.searchResults.users.findIndex(u => u.id === userId)
+        if (userIndex !== -1) {
+          this.searchResults.users[userIndex].friendship_status = status
+        }
+      }
+    },
+
+    /**
+     * Clear search results
+     */
+    clearSearchResults() {
+      this.searchResults = { users: [], count: 0, has_more: false }
     }
   }
 })

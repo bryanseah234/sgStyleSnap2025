@@ -145,7 +145,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFriendsStore } from '../../stores/friends-store'
 
@@ -166,7 +166,10 @@ const filteredFriends = computed(() => {
 
 // Fetch friends on mount
 onMounted(async () => {
-  await friendsStore.fetchFriends()
+  // Only fetch if not already loaded
+  if (friendsStore.friends.length === 0) {
+    await friendsStore.fetchFriends()
+  }
 })
 
 // Handle search with debouncing (no API call, just local filtering)

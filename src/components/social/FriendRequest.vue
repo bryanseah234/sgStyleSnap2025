@@ -212,7 +212,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useFriendsStore } from '../../stores/friends-store'
 
 const friendsStore = useFriendsStore()
@@ -224,7 +224,10 @@ const notificationMessage = ref('')
 
 // Fetch requests on mount
 onMounted(async () => {
-  await friendsStore.fetchPendingRequests()
+  // Only fetch if not already loaded
+  if (friendsStore.pendingRequests.incoming.length === 0 && friendsStore.pendingRequests.outgoing.length === 0) {
+    await friendsStore.fetchPendingRequests()
+  }
 })
 
 // Handle accepting friend request
@@ -232,6 +235,11 @@ async function handleAccept(requestId) {
   processingRequest.value = requestId
   try {
     await friendsStore.acceptRequest(requestId)
+    
+    // Force reactivity update by refreshing the store state
+    await friendsStore.fetchPendingRequests()
+    await friendsStore.fetchFriends()
+    
     showSuccessNotification('Friend request accepted!')
   } catch (error) {
     console.error('Failed to accept request:', error)
@@ -246,6 +254,10 @@ async function handleReject(requestId) {
   processingRequest.value = requestId
   try {
     await friendsStore.rejectRequest(requestId)
+    
+    // Force reactivity update by refreshing the store state
+    await friendsStore.fetchPendingRequests()
+    
     showSuccessNotification('Friend request rejected')
   } catch (error) {
     console.error('Failed to reject request:', error)
@@ -260,6 +272,10 @@ async function handleCancel(requestId) {
   processingRequest.value = requestId
   try {
     await friendsStore.cancelRequest(requestId)
+    
+    // Force reactivity update by refreshing the store state
+    await friendsStore.fetchPendingRequests()
+    
     showSuccessNotification('Friend request canceled')
   } catch (error) {
     console.error('Failed to cancel request:', error)

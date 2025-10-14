@@ -115,6 +115,7 @@
                 v-if="searching"
                 class="loading"
               >
+                <div class="spinner"></div>
                 <p>Searching...</p>
               </div>
 
@@ -128,7 +129,7 @@
               </div>
 
               <div
-                v-else-if="searchResults.users"
+                v-else-if="searchResults.users && searchResults.users.length > 0"
                 class="results-list"
               >
                 <div
@@ -199,7 +200,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useFriendsStore } from '../stores/friends-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import FriendsList from '../components/social/FriendsList.vue'
@@ -209,9 +210,11 @@ const friendsStore = useFriendsStore()
 
 const activeTab = ref('friends')
 const searchQuery = ref('')
-const searchResults = ref({})
 const searching = ref(false)
 const sendingRequest = ref(null)
+
+// Use computed property for search results to ensure reactivity
+const searchResults = computed(() => friendsStore.searchResults || {})
 
 let searchTimeout = null
 
@@ -219,14 +222,24 @@ console.log('🟢 Friends.vue loaded at', new Date().toISOString())
 console.log('🔧 Development mode:', import.meta.env.DEV)
 
 onMounted(async () => {
-  await friendsStore.fetchFriends()
-  await friendsStore.fetchPendingRequests()
+  // Load data in parallel for better performance
+  await Promise.all([
+    friendsStore.fetchFriends(),
+    friendsStore.fetchPendingRequests()
+  ])
   
   // Restore search query from localStorage if it exists
   const savedQuery = localStorage.getItem('friends-search-query')
   if (savedQuery && savedQuery.length >= 3) {
     searchQuery.value = savedQuery
     await handleSearch()
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
   }
 })
 
@@ -237,7 +250,7 @@ function handleSearch() {
   }
 
   if (searchQuery.value.length < 3) {
-    searchResults.value = {}
+    friendsStore.clearSearchResults()
     localStorage.removeItem('friends-search-query')
     return
   }
@@ -249,10 +262,10 @@ function handleSearch() {
     searching.value = true
     try {
       const results = await friendsStore.searchUsers(searchQuery.value)
-      searchResults.value = results
+      // Store method already updates the store's searchResults
     } catch (error) {
       console.error('Search failed:', error)
-      searchResults.value = { users: [], count: 0, has_more: false }
+      friendsStore.clearSearchResults()
     } finally {
       searching.value = false
     }
@@ -267,12 +280,9 @@ async function sendRequest(user) {
     const result = await friendsStore.sendFriendRequest(user.id)
     console.log('✅ Friend request result:', result)
 
-    // Update user's friendship status in search results
-    const userIndex = searchResults.value.users.findIndex(u => u.id === user.id)
-    if (userIndex !== -1) {
-      searchResults.value.users[userIndex].friendship_status = 'pending_sent'
-      console.log('🔄 Updated friendship status to pending_sent for:', user.name)
-    }
+    // Update user's friendship status in search results using store method
+    friendsStore.updateSearchResultFriendshipStatus(user.id, 'pending_sent')
+    console.log('🔄 Updated friendship status to pending_sent for:', user.name)
 
     alert('Friend request sent!')
   } catch (error) {
@@ -431,6 +441,24 @@ function getFriendshipStatusText(status) {
   text-align: center;
   padding: 2rem;
   color: var(--theme-text-secondary, #6b46c1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--theme-border, #e0d4ff);
+  border-top: 2px solid var(--theme-primary, #8b5cf6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .empty-state {
