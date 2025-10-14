@@ -53,45 +53,38 @@ const catalogService = {
     } = options
 
     try {
-      // Get current user if excluding owned items
-      let userId = null
-      if (excludeOwned) {
-        const {
-          data: { user }
-        } = await supabase.auth.getUser()
-        userId = user?.id || null
+      // Build the query
+      let query = supabase
+        .from('catalog_items')
+        .select('*', { count: 'exact' })
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      // Apply filters
+      if (category) {
+        query = query.eq('category', category)
+      }
+      if (color) {
+        query = query.eq('primary_color', color)
+      }
+      if (brand) {
+        query = query.ilike('brand', `%${brand}%`)
+      }
+      if (season) {
+        query = query.eq('season', season)
       }
 
-      // Use RPC function to get catalog items excluding owned
-      const { data, error } = await supabase.rpc('get_catalog_excluding_owned', {
-        user_id_param: userId,
-        category_filter: category,
-        color_filter: color,
-        brand_filter: brand,
-        season_filter: season,
-        page_limit: limit,
-        page_offset: (page - 1) * limit
-      })
+      // Apply pagination
+      const from = (page - 1) * limit
+      const to = from + limit - 1
+      query = query.range(from, to)
+
+      const { data: items, error, count } = await query
 
       if (error) throw error
 
-      // Get total count for pagination
-      let countQuery = supabase
-        .from('catalog_items')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
-        .eq('privacy', 'public')
-
-      // Apply same filters for count
-      if (category) countQuery = countQuery.eq('category', category)
-      if (color) countQuery = countQuery.eq('primary_color', color)
-      if (brand) countQuery = countQuery.ilike('brand', `%${brand}%`)
-      if (season) countQuery = countQuery.eq('season', season)
-
-      const { count } = await countQuery
-
       return {
-        items: data || [],
+        items: items || [],
         pagination: {
           page,
           limit,
@@ -130,27 +123,43 @@ const catalogService = {
     } = options
 
     try {
-      // Use the search_catalog function from the database
-      const { data, error } = await supabase.rpc('search_catalog', {
-        search_query: q,
-        filter_category: category,
-        filter_color: color,
-        filter_brand: brand,
-        filter_season: season,
-        page_limit: limit,
-        page_offset: (page - 1) * limit
-      })
+      // Build the search query
+      let query = supabase
+        .from('catalog_items')
+        .select('*', { count: 'exact' })
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      // Apply search query using full-text search
+      if (q.trim()) {
+        query = query.or(`name.ilike.%${q}%,brand.ilike.%${q}%,style.ilike.%${q}%`)
+      }
+
+      // Apply other filters
+      if (category) {
+        query = query.eq('category', category)
+      }
+      if (color) {
+        query = query.eq('primary_color', color)
+      }
+      if (brand) {
+        query = query.ilike('brand', `%${brand}%`)
+      }
+      if (season) {
+        query = query.eq('season', season)
+      }
+
+      // Apply pagination
+      const from = (page - 1) * limit
+      const to = from + limit - 1
+      query = query.range(from, to)
+
+      const { data: items, error, count } = await query
 
       if (error) throw error
 
-      // Get total count for pagination (approximate)
-      const { count } = await supabase
-        .from('catalog_items')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
-
       return {
-        items: data || [],
+        items: items || [],
         pagination: {
           page,
           limit,
@@ -275,37 +284,19 @@ const catalogService = {
    */
   async getFilterOptions() {
     try {
-      // Get distinct brands
-      const { data: brandData } = await supabase
+      // Get unique values from the database
+      const { data: items, error } = await supabase
         .from('catalog_items')
-        .select('brand')
+        .select('brand, primary_color, season')
         .eq('is_active', true)
-        .eq('privacy', 'public')
         .not('brand', 'is', null)
-        .order('brand')
 
-      // Get distinct colors
-      const { data: colorData } = await supabase
-        .from('catalog_items')
-        .select('primary_color')
-        .eq('is_active', true)
-        .eq('privacy', 'public')
-        .not('primary_color', 'is', null)
-        .order('primary_color')
+      if (error) throw error
 
-      // Get distinct seasons
-      const { data: seasonData } = await supabase
-        .from('catalog_items')
-        .select('season')
-        .eq('is_active', true)
-        .eq('privacy', 'public')
-        .not('season', 'is', null)
-        .order('season')
-
-      // Remove duplicates
-      const brands = [...new Set(brandData?.map(b => b.brand) || [])]
-      const colors = [...new Set(colorData?.map(c => c.primary_color) || [])]
-      const seasons = [...new Set(seasonData?.map(s => s.season) || [])]
+      // Extract unique values
+      const brands = [...new Set(items.map(item => item.brand).filter(Boolean))].sort()
+      const colors = [...new Set(items.map(item => item.primary_color).filter(Boolean))].sort()
+      const seasons = [...new Set(items.map(item => item.season).filter(Boolean))].sort()
 
       return {
         brands,
@@ -316,7 +307,8 @@ const catalogService = {
       console.error('Error fetching filter options:', error)
       throw error
     }
-  }
+  },
+
 }
 
 export default catalogService

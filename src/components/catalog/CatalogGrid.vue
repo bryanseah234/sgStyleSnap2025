@@ -1,10 +1,12 @@
 <template>
   <div class="catalog-grid">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <CatalogItemCard
-        v-for="item in items"
+        v-for="(item, index) in items"
         :key="item.id"
         :item="item"
+        :style="{ 'animation-delay': `${index * 0.1}s` }"
+        class="animate-slide-up"
         @add-to-closet="emit('add-to-closet', item.id)"
         @click="emit('item-click', item)"
       />
@@ -71,5 +73,36 @@ onUnmounted(() => {
 <style scoped>
 .load-more-trigger {
   visibility: hidden;
+}
+
+/* Animation keyframes */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Grid animations */
+.catalog-grid {
+  animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 </style>

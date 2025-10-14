@@ -1,9 +1,33 @@
 <template>
   <div class="catalog-search">
-    <div class="relative">
-      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+    <div class="search-bar">
+      <!-- Search Icon -->
+      <div class="search-icon">
+        <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      
+      <!-- Search Input -->
+      <input
+        v-model="localQuery"
+        type="text"
+        placeholder="Search catalog items..."
+        class="search-input"
+        @keyup.enter="handleSearch"
+        @input="handleInput"
+      >
+      
+      
+      <!-- Clear Button -->
+      <button
+        v-if="localQuery"
+        class="clear-button"
+        type="button"
+        @click="handleClear"
+      >
         <svg
-          class="h-5 w-5 text-gray-400"
+          class="w-4 h-4"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -12,59 +36,29 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            d="M6 18L18 6M6 6l12 12"
           />
         </svg>
-      </div>
-      <input
-        v-model="localQuery"
-        type="text"
-        placeholder="Search catalog items..."
-        class="block w-full pl-10 pr-12 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        @keyup.enter="handleSearch"
-        @input="handleInput"
-      >
-      <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-        <button
-          v-if="localQuery"
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          type="button"
-          @click="handleClear"
-        >
-          <svg
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
+      </button>
     </div>
-
-    <!-- Recent Searches (future enhancement) -->
-    <!-- 
-    <div v-if="recentSearches.length > 0" class="mt-2">
-      <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Recent:</p>
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="search in recentSearches"
-          :key="search"
-          @click="handleRecentSearch(search)"
-          class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
-        >
-          {{ search }}
-        </button>
-      </div>
-    </div>
-    -->
   </div>
+
+  <!-- Recent Searches (future enhancement) -->
+  <!-- 
+  <div v-if="recentSearches.length > 0" class="mt-2">
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Recent:</p>
+    <div class="flex flex-wrap gap-2">
+      <button
+        v-for="search in recentSearches"
+        :key="search"
+        @click="handleRecentSearch(search)"
+        class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+      >
+        {{ search }}
+      </button>
+    </div>
+  </div>
+  -->
 </template>
 
 <script setup>
@@ -130,5 +124,214 @@ function handleClear() {
 </script>
 
 <style scoped>
-/* Additional custom styles if needed */
+.catalog-search {
+  width: 100%;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.search-bar:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Search Icon */
+.search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+/* Search Input */
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: #1f2937;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+
+/* Clear Button */
+.clear-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clear-button:hover {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .search-bar {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .search-bar:focus-within {
+    border-color: #3b82f6;
+  }
+  
+  .search-icon {
+    color: #9ca3af;
+  }
+  
+  .search-input {
+    color: white;
+  }
+  
+  .search-input::placeholder {
+    color: #6b7280;
+  }
+  
+  .clear-button {
+    color: #6b7280;
+  }
+  
+  .clear-button:hover {
+    background: #4b5563;
+    color: #9ca3af;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-bar {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    padding: 0.5rem;
+  }
+  
+  .search-icon svg,
+  .clear-button svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+/* Search suggestions (future enhancement) */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-suggestion {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-suggestion:hover {
+  background-color: #f9fafb;
+}
+
+.search-suggestion:first-child {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.search-suggestion:last-child {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+/* Dark mode search suggestions */
+.dark .search-suggestions {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .search-suggestion:hover {
+  background-color: #4b5563;
+}
+
+/* Loading state for search */
+.search-loading {
+  position: relative;
+}
+
+.search-loading::after {
+  content: '';
+  position: absolute;
+  right: 3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translateY(-50%) rotate(0deg); }
+  100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Focus styles for accessibility */
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
 </style>

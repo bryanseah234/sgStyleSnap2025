@@ -69,12 +69,35 @@
             v-if="!hasFilters"
             #empty-action
           >
-            <button
-              class="add-first-button"
-              @click="handleAddItem"
-            >
-              Add Item
-            </button>
+            <div class="add-item-container">
+              <button
+                class="add-first-button"
+                @click="toggleEmptyStateDropdown"
+              >
+                Add Item
+              </button>
+              
+              <!-- Empty State Dropdown -->
+              <div
+                v-if="showEmptyStateDropdown"
+                class="add-item-dropdown empty-state-dropdown"
+                :class="{ 'show': showEmptyStateDropdown }"
+                @click.stop
+              >
+                <button
+                  class="dropdown-option"
+                  @click="handleScanOrUpload"
+                >
+                  Scan or Upload
+                </button>
+                <button
+                  class="dropdown-option"
+                  @click="handleAddFromCatalog"
+                >
+                  Add from Catalogue
+                </button>
+              </div>
+            </div>
           </template>
         </ClosetGrid>
       </div>
@@ -89,10 +112,38 @@
           quotaUsed >= 45 ? 'animate-pulse-slow' : ''
         ]"
         title="Add new item"
-        @click="handleAddItem"
+        @click="toggleFabDropdown"
       >
         <span class="plus-icon transition-transform duration-300">+</span>
+        
+        <!-- Dropdown Menu -->
+        <div
+          v-if="showFabDropdown"
+          class="add-item-dropdown fab-dropdown"
+          :class="{ 'show': showFabDropdown }"
+          @click.stop
+        >
+          <button
+            class="dropdown-option"
+            @click.stop="handleScanOrUpload"
+          >
+            Scan or Upload
+          </button>
+          <button
+            class="dropdown-option"
+            @click.stop="handleAddFromCatalog"
+          >
+            Add from Catalogue
+          </button>
+        </div>
       </button>
+
+      <!-- Backdrop -->
+      <div
+        v-if="showFabDropdown || showEmptyStateDropdown"
+        class="dropdown-backdrop"
+        @click="closeAllDropdowns"
+      ></div>
 
       <!-- Item Detail Modal -->
       <ItemDetailModal
@@ -143,6 +194,10 @@ const showDetailModal = ref(false)
 // Add item modal state
 const showAddItemModal = ref(false)
 
+// Add item dropdown states
+const showFabDropdown = ref(false)
+const showEmptyStateDropdown = ref(false)
+
 const items = computed(() => {
   let filtered = closetStore.items
 
@@ -179,8 +234,40 @@ onMounted(() => {
   closetStore.fetchItems()
 })
 
-function handleAddItem() {
+// Dropdown functions
+function toggleFabDropdown() {
+  showFabDropdown.value = !showFabDropdown.value
+  // Close empty state dropdown if it's open
+  showEmptyStateDropdown.value = false
+}
+
+function toggleEmptyStateDropdown() {
+  showEmptyStateDropdown.value = !showEmptyStateDropdown.value
+  // Close FAB dropdown if it's open
+  showFabDropdown.value = false
+}
+
+function closeFabDropdown() {
+  showFabDropdown.value = false
+}
+
+function closeEmptyStateDropdown() {
+  showEmptyStateDropdown.value = false
+}
+
+function closeAllDropdowns() {
+  showFabDropdown.value = false
+  showEmptyStateDropdown.value = false
+}
+
+function handleScanOrUpload() {
+  closeAllDropdowns()
   showAddItemModal.value = true
+}
+
+function handleAddFromCatalog() {
+  closeAllDropdowns()
+  router.push('/catalog')
 }
 
 function closeAddItemModal() {
@@ -278,6 +365,12 @@ async function handleFavoriteClick(item) {
   font-weight: 600;
 }
 
+/* Add Item Container (for empty state) */
+.add-item-container {
+  position: relative;
+  display: inline-block;
+}
+
 /* Add First Button (for empty state) */
 .add-first-button {
   padding: 0.75rem 1.5rem;
@@ -310,7 +403,7 @@ async function handleFavoriteClick(item) {
 /* FAB - Floating Action Button */
 .fab {
   position: fixed;
-  bottom: 6rem;
+  bottom: 5.5rem;
   right: 2rem;
   width: 3.5rem;
   height: 3.5rem;
@@ -325,6 +418,94 @@ async function handleFavoriteClick(item) {
   justify-content: center;
   z-index: 50;
 }
+
+/* Add Item Dropdown - Base Styles */
+.add-item-dropdown {
+  position: absolute;
+  background: white !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #e5e7eb !important;
+  min-width: 200px !important;
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  pointer-events: none;
+  z-index: 100 !important;
+}
+
+/* FAB Dropdown - positioned above the FAB button */
+.add-item-dropdown.fab-dropdown {
+  bottom: 4.5rem;
+  right: 0;
+  transform: translateY(10px) scale(0.95);
+}
+
+/* Empty State Dropdown - positioned below the Add Item button */
+.add-item-container .add-item-dropdown.empty-state-dropdown {
+  top: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px) scale(0.95);
+}
+
+.add-item-dropdown.show {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.add-item-dropdown.fab-dropdown.show {
+  transform: translateY(0) scale(1);
+}
+
+.add-item-container .add-item-dropdown.empty-state-dropdown.show {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.dropdown-option {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  padding: 0.875rem 1rem !important;
+  border: none !important;
+  background: transparent !important;
+  color: #374151 !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  border-radius: 0.5rem !important;
+  margin: 0.25rem !important;
+  pointer-events: auto !important;
+}
+
+.dropdown-option:first-child {
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.dropdown-option:last-child {
+  border-radius: 0 0 0.5rem 0.5rem !important;
+}
+
+.dropdown-option:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.dropdown-option:active {
+  background-color: #e5e7eb !important;
+}
+
+
+/* Dropdown Backdrop */
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 40;
+}
+
 
 /* FAB Hover with Rotate and Scale */
 .fab:hover {
