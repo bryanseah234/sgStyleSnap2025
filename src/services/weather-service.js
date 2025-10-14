@@ -1,9 +1,9 @@
 /**
  * Weather Service for Outfit Suggestions
- *
+ * 
  * Integrates with OpenWeatherMap API to provide weather-aware outfit suggestions.
  * Helps users choose appropriate clothing based on temperature and conditions.
- *
+ * 
  * @module services/weather-service
  */
 
@@ -30,21 +30,21 @@ export const WEATHER_CONDITIONS = {
  * Temperature categories for outfit recommendations
  */
 export const TEMP_CATEGORIES = {
-  VERY_COLD: 'very_cold', // < 40°F
-  COLD: 'cold', // 40-55°F
-  COOL: 'cool', // 55-65°F
-  MILD: 'mild', // 65-75°F
-  WARM: 'warm', // 75-85°F
-  HOT: 'hot' // > 85°F
+  VERY_COLD: 'very_cold', // < 4°C
+  COLD: 'cold', // 4-13°C
+  COOL: 'cool', // 13-18°C
+  MILD: 'mild', // 18-24°C
+  WARM: 'warm', // 24-29°C
+  HOT: 'hot' // > 29°C
 }
 
 /**
  * Get current weather for a location
- *
+ * 
  * @param {number} lat - Latitude
  * @param {number} lon - Longitude
  * @returns {Promise<Object>} Weather data
- *
+ * 
  * @example
  * const weather = await getCurrentWeather(40.7128, -74.0060);
  * console.log(weather.temp, weather.condition);
@@ -52,7 +52,7 @@ export const TEMP_CATEGORIES = {
 export async function getCurrentWeather(lat, lon) {
   try {
     const response = await fetch(
-      `${WEATHER_API_BASE}/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=imperial`
+      `${WEATHER_API_BASE}/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`
     )
 
     if (!response.ok) {
@@ -79,7 +79,7 @@ export async function getCurrentWeather(lat, lon) {
 
 /**
  * Get weather forecast for next 5 days
- *
+ * 
  * @param {number} lat - Latitude
  * @param {number} lon - Longitude
  * @returns {Promise<Array>} Forecast data
@@ -87,7 +87,7 @@ export async function getCurrentWeather(lat, lon) {
 export async function getWeatherForecast(lat, lon) {
   try {
     const response = await fetch(
-      `${WEATHER_API_BASE}/forecast?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=imperial`
+      `${WEATHER_API_BASE}/forecast?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`
     )
 
     if (!response.ok) {
@@ -124,28 +124,28 @@ export async function getWeatherForecast(lat, lon) {
 
 /**
  * Categorize temperature for outfit selection
- *
- * @param {number} temp - Temperature in Fahrenheit
+ * 
+ * @param {number} temp - Temperature in Celsius
  * @returns {string} Temperature category
  */
 export function categorizeTemperature(temp) {
-  if (temp < 40) return TEMP_CATEGORIES.VERY_COLD
-  if (temp < 55) return TEMP_CATEGORIES.COLD
-  if (temp < 65) return TEMP_CATEGORIES.COOL
-  if (temp < 75) return TEMP_CATEGORIES.MILD
-  if (temp < 85) return TEMP_CATEGORIES.WARM
+  if (temp < 4) return TEMP_CATEGORIES.VERY_COLD
+  if (temp < 13) return TEMP_CATEGORIES.COLD
+  if (temp < 18) return TEMP_CATEGORIES.COOL
+  if (temp < 24) return TEMP_CATEGORIES.MILD
+  if (temp < 29) return TEMP_CATEGORIES.WARM
   return TEMP_CATEGORIES.HOT
 }
 
 /**
  * Get outfit recommendations based on weather
- *
- * @param {number} temp - Temperature in Fahrenheit
+ * 
+ * @param {number} temp - Temperature in Celsius
  * @param {string} condition - Weather condition
  * @returns {Object} Outfit recommendations
- *
+ * 
  * @example
- * const recommendations = getWeatherBasedRecommendations(45, 'rain');
+ * const recommendations = getWeatherBasedRecommendations(7, 'rain');
  * // Returns: { layers: 3, categories: ['outerwear', 'top', 'bottom'], waterproof: true }
  */
 export function getWeatherBasedRecommendations(temp, condition) {
@@ -220,7 +220,7 @@ export function getWeatherBasedRecommendations(temp, condition) {
       break
 
     case WEATHER_CONDITIONS.CLEAR:
-      if (temp > 75) {
+      if (temp > 24) {
         recommendations.notes.push('Sun protection recommended')
       }
       break
@@ -231,14 +231,14 @@ export function getWeatherBasedRecommendations(temp, condition) {
 
 /**
  * Filter clothing items based on weather conditions
- *
+ * 
  * @param {Array} items - Clothing items to filter
- * @param {number} temp - Temperature in Fahrenheit
+ * @param {number} temp - Temperature in Celsius
  * @param {string} condition - Weather condition
  * @returns {Array} Filtered items suitable for weather
- *
+ * 
  * @example
- * const suitableItems = filterItemsByWeather(allItems, 45, 'rain');
+ * const suitableItems = filterItemsByWeather(allItems, 7, 'rain');
  */
 export function filterItemsByWeather(items, temp, condition) {
   const recommendations = getWeatherBasedRecommendations(temp, condition)
@@ -292,14 +292,14 @@ export function filterItemsByWeather(items, temp, condition) {
 
 /**
  * Generate weather-aware outfit suggestion
- *
+ * 
  * @param {string} userId - User ID
- * @param {number} temp - Temperature in Fahrenheit
+ * @param {number} temp - Temperature in Celsius
  * @param {string} condition - Weather condition
  * @returns {Promise<Object>} Outfit suggestion
- *
+ * 
  * @example
- * const suggestion = await generateWeatherAwareOutfit(userId, 68, 'clear');
+ * const suggestion = await generateWeatherAwareOutfit(userId, 20, 'clear');
  */
 export async function generateWeatherAwareOutfit(userId, temp, condition) {
   try {
@@ -364,7 +364,7 @@ export async function generateWeatherAwareOutfit(userId, temp, condition) {
 
 /**
  * Get user's location from browser geolocation API
- *
+ * 
  * @returns {Promise<Object>} Coordinates {lat, lon}
  */
 export async function getUserLocation() {
@@ -395,10 +395,10 @@ export async function getUserLocation() {
 
 /**
  * Get weather-aware suggestions with user's location
- *
+ * 
  * @param {string} userId - User ID
  * @returns {Promise<Object>} Suggestion with weather data
- *
+ * 
  * @example
  * const suggestion = await getWeatherAwareSuggestion(userId);
  */
@@ -428,7 +428,7 @@ export async function getWeatherAwareSuggestion(userId) {
 
 /**
  * Save weather data with outfit history
- *
+ * 
  * @param {string} outfitHistoryId - Outfit history record ID
  * @param {number} temp - Temperature
  * @param {string} condition - Weather condition
@@ -448,4 +448,76 @@ export async function saveWeatherWithOutfit(outfitHistoryId, temp, condition) {
     console.error('Error saving weather data:', error)
     throw error
   }
+}
+
+/**
+ * Get weather icon URL from OpenWeatherMap
+ * 
+ * @param {string} iconCode - Weather icon code from API
+ * @returns {string} Icon URL
+ */
+export function getWeatherIconUrl(iconCode) {
+  return `https://openweathermap.org/img/wn/${iconCode}@2x.png`
+}
+
+/**
+ * Format temperature display with unit
+ * 
+ * @param {number} temp - Temperature in Celsius
+ * @param {boolean} showUnit - Whether to show °C unit
+ * @returns {string} Formatted temperature
+ */
+export function formatTemperature(temp, showUnit = true) {
+  return `${temp}${showUnit ? '°C' : ''}`
+}
+
+/**
+ * Get weather description with proper capitalization
+ * 
+ * @param {string} description - Weather description from API
+ * @returns {string} Formatted description
+ */
+export function formatWeatherDescription(description) {
+  return description
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+/**
+ * Check if weather conditions require special clothing
+ * 
+ * @param {string} condition - Weather condition
+ * @returns {Object} Special requirements
+ */
+export function getSpecialRequirements(condition) {
+  const requirements = {
+    needsWaterproof: false,
+    needsInsulation: false,
+    needsSunProtection: false,
+    needsWindProtection: false
+  }
+
+  switch (condition) {
+    case WEATHER_CONDITIONS.RAIN:
+    case WEATHER_CONDITIONS.DRIZZLE:
+    case WEATHER_CONDITIONS.THUNDERSTORM:
+      requirements.needsWaterproof = true
+      break
+
+    case WEATHER_CONDITIONS.SNOW:
+      requirements.needsWaterproof = true
+      requirements.needsInsulation = true
+      break
+
+    case WEATHER_CONDITIONS.CLEAR:
+      requirements.needsSunProtection = true
+      break
+
+    case WEATHER_CONDITIONS.CLOUDS:
+      requirements.needsWindProtection = true
+      break
+  }
+
+  return requirements
 }
