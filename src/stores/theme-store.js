@@ -17,10 +17,7 @@
  */
 
 import { defineStore } from 'pinia'
-<<<<<<< HEAD
-=======
 import { PURPLE_THEME } from '../config/colors'
->>>>>>> 1338a3b04d7f763f5709236ee1c338f23754b192
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
