@@ -251,7 +251,8 @@ async function handleFavoriteClick(item) {
 
 .header-content {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   gap: 1rem;
 }
 
@@ -260,6 +261,7 @@ async function handleFavoriteClick(item) {
   font-weight: 700;
   color: var(--theme-text);
   margin-bottom: 0.25rem;
+  text-align: center;
 }
 
 .quota-text {

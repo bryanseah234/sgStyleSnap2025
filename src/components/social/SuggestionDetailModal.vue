@@ -463,7 +463,7 @@ const showDeleteButton = computed(() => {
   background: #dc2626;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .items-grid {
     grid-template-columns: repeat(2, 1fr);
   }

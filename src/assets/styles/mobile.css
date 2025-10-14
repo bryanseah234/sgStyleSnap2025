@@ -238,9 +238,7 @@ button:active {
 /* Closet grid - 2 columns on mobile */
 .closet-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
-  padding: 1rem;
 }
 
 /* Outfit grid - single column on mobile */
@@ -464,9 +462,7 @@ button:active {
 
 @media (min-width: 768px) {
   .closet-grid {
-    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    padding: 1.5rem;
   }
 
   .outfit-grid {
@@ -493,7 +489,6 @@ button:active {
 
 @media (min-width: 1024px) {
   .closet-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
 
   .outfit-grid {
@@ -516,7 +511,6 @@ button:active {
 
 @media (min-width: 1280px) {
   .closet-grid {
-    grid-template-columns: repeat(5, 1fr);
   }
 
   .outfit-grid {

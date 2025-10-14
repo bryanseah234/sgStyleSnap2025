@@ -177,9 +177,8 @@ function handleFavoriteClick(item) {
   width: 100%;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 0.75rem;
   }
 }
