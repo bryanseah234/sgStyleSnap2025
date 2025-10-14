@@ -109,12 +109,14 @@ export async function uploadImage(file) {
  */
 export async function getItems(filters = {}) {
   try {
-    let query = supabase.from('clothes').select('*').is('removed_at', null) // Only active items
-
-    // Add owner_id filter
-    if (filters.owner_id) {
-      query = query.eq('owner_id', filters.owner_id)
+    if (!filters.user_id) {
+      throw new Error('user_id is required to fetch items')
     }
+
+    let query = supabase.from('clothes')
+      .select('*')
+      .is('removed_at', null)
+      .eq('user_id', filters.user_id) // Always filter by user_id
 
     // Apply category filter
     if (filters.category && filters.category !== 'all') {
