@@ -125,12 +125,20 @@ export const useClosetStore = defineStore('closet', {
   actions: {
     /**
      * Fetch all items from API
+     * @param {string} userId - Current user's ID
      */
     async fetchItems() {
       this.isLoading = true
       try {
         const clothesService = await import('../services/clothes-service')
-        const items = await clothesService.getItems(this.filters)
+
+        // Merge filters with user_id
+        const filters = {
+          ...this.filters,
+          user_id: userId
+        }
+
+        const items = await clothesService.getItems(filters)
         this.items = items
 
         // Count only user uploads (catalog_item_id is null) for quota

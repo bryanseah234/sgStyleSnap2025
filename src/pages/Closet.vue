@@ -169,6 +169,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth-store'
 import { useClosetStore } from '../stores/closet-store'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import UserGreeting from '../components/ui/UserGreeting.vue'
@@ -178,6 +179,7 @@ import ItemDetailModal from '../components/closet/ItemDetailModal.vue'
 import AddItemModal from '../components/closet/AddItemModal.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const closetStore = useClosetStore()
 
 const filters = ref({
@@ -231,7 +233,7 @@ const hasFilters = computed(
 )
 
 onMounted(() => {
-  closetStore.fetchItems()
+  closetStore.fetchItems(authStore.userId)
 })
 
 // Dropdown functions
@@ -276,7 +278,7 @@ function closeAddItemModal() {
 
 function handleAddItemSuccess() {
   // Item added successfully, refresh the closet
-  closetStore.fetchItems()
+  closetStore.fetchItems(authStore.userId)
   closeAddItemModal()
 }
 
@@ -298,12 +300,12 @@ function closeDetailModal() {
 
 function handleItemUpdated() {
   // Item updated in modal, refresh the closet
-  closetStore.fetchItems()
+  closetStore.fetchItems(authStore.userId)
 }
 
 function handleItemDeleted() {
   // Item deleted, refresh the closet
-  closetStore.fetchItems()
+  closetStore.fetchItems(authStore.userId)
 }
 
 function handleEditItem(item) {
