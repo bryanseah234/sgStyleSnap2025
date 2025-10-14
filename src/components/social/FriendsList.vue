@@ -228,7 +228,7 @@ function formatDate(dateString) {
 .friends-header h2 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--theme-text, #111827);
   margin-bottom: 1rem;
 }
 
@@ -237,24 +237,27 @@ function formatDate(dateString) {
 }
 
 .search-input {
-  width: 100%;
+  width: calc(100% - 4px);
   padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 2px solid var(--theme-text, #ffffff);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s;
+  background: var(--theme-surface, #ffffff);
+  color: var(--theme-text, #111827);
+  box-sizing: border-box;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border: 2px solid var(--theme-primary, #3b82f6);
+  box-shadow: 0 0 0 3px var(--theme-shadow, rgba(59, 130, 246, 0.1));
 }
 
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
 }
 
 .empty-state {
@@ -265,13 +268,13 @@ function formatDate(dateString) {
 .empty-message {
   font-size: 1rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--theme-text, #374151);
   margin-bottom: 0.5rem;
 }
 
 .empty-hint {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
 }
 
 .friends-grid {
@@ -285,16 +288,16 @@ function formatDate(dateString) {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--theme-surface, white);
+  border: 1px solid var(--theme-border, #e5e7eb);
   border-radius: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .friend-card:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+  border-color: var(--theme-primary, #3b82f6);
+  box-shadow: 0 4px 6px var(--theme-shadow, rgba(59, 130, 246, 0.1));
   transform: translateY(-2px);
 }
 
@@ -332,7 +335,7 @@ function formatDate(dateString) {
 .friend-name {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--theme-text, #111827);
   margin-bottom: 0.25rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -341,22 +344,22 @@ function formatDate(dateString) {
 
 .friend-since {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--theme-text-secondary, #6b7280);
 }
 
 .suggest-btn {
   flex-shrink: 0;
   padding: 0.5rem;
-  background: #f3f4f6;
+  background: var(--theme-surface-light, #f3f4f6);
   border: none;
   border-radius: 0.5rem;
-  color: #374151;
+  color: var(--theme-text, #374151);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .suggest-btn:hover {
-  background: #3b82f6;
+  background: var(--theme-primary, #3b82f6);
   color: white;
 }
 

@@ -395,19 +395,20 @@ function getFriendshipStatusText(status) {
 }
 
 .search-input {
-  width: 100%;
+  width: calc(100% - 4px);
   padding: 0.75rem 1rem;
-  border: 1px solid var(--theme-border, #e0d4ff);
+  border: 2px solid var(--theme-text, #ffffff);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s;
   background: var(--theme-surface, #ffffff);
   color: var(--theme-text, #1e1b4b);
+  box-sizing: border-box;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: var(--theme-primary, #8b5cf6);
+  border: 2px solid var(--theme-primary, #8b5cf6);
   box-shadow: 0 0 0 3px var(--theme-shadow, rgba(139, 92, 246, 0.1));
 }
 
