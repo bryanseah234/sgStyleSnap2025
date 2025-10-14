@@ -167,7 +167,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClosetStore } from '../stores/closet-store'
 import { supabase } from '../config/supabase'
@@ -253,6 +253,11 @@ onMounted(async () => {
   if (userId.value) {
     closetStore.fetchItems(userId.value)
   }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  // Cleanup any pending operations if needed
 })
 
 // Dropdown functions

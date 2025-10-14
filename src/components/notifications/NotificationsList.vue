@@ -128,11 +128,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useAuthStore } from '../../stores/auth-store'
 import { useSuggestionsStore } from '../../stores/suggestions-store'
 import NotificationItem from './NotificationItem.vue'
-import EmptyNotifications from './EmptyNotifications.vue'
 import SuggestionNotificationItem from './SuggestionNotificationItem.vue'
 
 const props = defineProps({
@@ -220,6 +219,11 @@ watch(activeTab, loadSuggestions)
 
 onMounted(() => {
   loadSuggestions()
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  // Cleanup any pending operations if needed
 })
 </script>
 

@@ -107,7 +107,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { getCategoryLabel, getColorHex } from '@/config/constants'
+import { getCategoryLabel, getColorHex, getColorLabel } from '@/config/constants'
 import { COLORS } from '@/config/constants'
 
 const props = defineProps({
@@ -139,10 +139,7 @@ function handleImageError(event) {
   event.target.src = 'https://via.placeholder.com/400x400?text=No+Image'
 }
 
-function getColorLabel(colorValue) {
-  const color = COLORS.find(c => c.value === colorValue)
-  return color ? color.label : colorValue
-}
+// Use the imported getColorLabel function instead of defining it locally
 </script>
 
 <style scoped>

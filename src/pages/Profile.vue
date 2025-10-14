@@ -185,7 +185,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
 import { useLikesStore } from '../stores/likes-store'
@@ -230,6 +230,11 @@ onMounted(async () => {
   if (authStore.isLoggedIn) {
     await loadLikedItems()
   }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  // Cleanup any pending operations if needed
 })
 
 async function loadLikedItems() {

@@ -100,7 +100,7 @@
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="Search by name or email (min 3 characters)..."
+                placeholder="Search by name or username (min 3 characters)..."
                 class="search-input"
                 @input="handleSearch"
               >
@@ -155,6 +155,9 @@
                     <h3 class="user-name">
                       {{ user.name }}
                     </h3>
+                    <p class="user-username" v-if="user.username">
+                      @{{ user.username }}
+                    </p>
                     <p class="friendship-status">
                       {{ getFriendshipStatusText(user.friendship_status) }}
                     </p>
@@ -534,6 +537,15 @@ function getFriendshipStatusText(status) {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--theme-text, #1e1b4b);
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-username {
+  font-size: 0.75rem;
+  color: var(--theme-text-muted, #9ca3af);
   margin-bottom: 0.25rem;
   overflow: hidden;
   text-overflow: ellipsis;

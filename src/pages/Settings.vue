@@ -233,7 +233,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
 import { signOut } from '../services/auth-service.js'
@@ -324,5 +324,10 @@ function goBack() {
 // Load profile on mount
 onMounted(() => {
   loadProfile()
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  // Cleanup any pending operations if needed
 })
 </script>

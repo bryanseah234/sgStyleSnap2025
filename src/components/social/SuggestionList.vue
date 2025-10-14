@@ -131,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useSuggestionsStore } from '../../stores/suggestions-store'
 import SuggestionItem from './SuggestionItem.vue'
 import SuggestionDetailModal from './SuggestionDetailModal.vue'
@@ -145,6 +145,11 @@ onMounted(async () => {
   await loadSuggestions()
 })
 
+// Cleanup on unmount
+onUnmounted(() => {
+  // Cleanup any pending operations if needed
+})
+
 async function loadSuggestions() {
   try {
     await Promise.all([
@@ -154,6 +159,8 @@ async function loadSuggestions() {
     ])
   } catch (error) {
     console.error('Failed to load suggestions:', error)
+    // Show user-friendly error message
+    alert('Failed to load suggestions. Please try again.')
   }
 }
 

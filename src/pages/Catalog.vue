@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useCatalogStore } from '@/stores/catalog-store'
 import { useClosetStore } from '@/stores/closet-store'
 import MainLayout from '@/components/layouts/MainLayout.vue'
@@ -139,8 +139,16 @@ const searchQuery = ref('')
 const selectedItem = ref(null)
 
 onMounted(async () => {
-  await catalogStore.fetchCatalog()
-  await catalogStore.fetchFilterOptions()
+  // Load data in parallel for better performance
+  await Promise.all([
+    catalogStore.fetchCatalog(),
+    catalogStore.fetchFilterOptions()
+  ])
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  // Cleanup any pending operations if needed
 })
 
 function handleSearch(query) {

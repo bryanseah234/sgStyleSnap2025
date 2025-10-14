@@ -200,11 +200,11 @@ export async function getPendingRequests() {
 }
 
 /**
- * Send friend request by email or user ID
- * @param {string} emailOrUserId - Target user's email or user ID
+ * Send friend request by user ID
+ * @param {string} userId - Target user's ID
  * @returns {Promise<Object>} Created request object
  */
-export async function sendFriendRequest(emailOrUserId) {
+export async function sendFriendRequest(userId) {
   try {
     if (!isSupabaseConfigured || !supabase) {
       throw new Error('Supabase client is not initialized. Please check your environment variables.')
@@ -223,40 +223,12 @@ export async function sendFriendRequest(emailOrUserId) {
       throw new Error('Not authenticated')
     }
 
-    let targetUserId = null
+    // Input is a user ID
+    const targetUserId = userId
 
-    // Check if input is a UUID (user ID) or email
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    if (uuidRegex.test(emailOrUserId)) {
-      // Input is a user ID
-      targetUserId = emailOrUserId
-
-      // Can't send request to yourself
-      if (targetUserId === userId) {
-        throw new Error('You cannot send a friend request to yourself')
-      }
-    } else {
-      // Input is an email
-      const email = emailOrUserId
-
-      // Can't send request to yourself (skip this check in dev mode since we don't have real email)
-      if (!import.meta.env.DEV && email === user?.email) {
-        throw new Error('You cannot send a friend request to yourself')
-      }
-
-      // Find target user by email
-      const { data: targetUser, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .single()
-
-      if (userError || !targetUser) {
-        // For security, return success even if user doesn't exist (prevent email enumeration)
-        return { id: null, status: 'pending', message: 'Friend request sent successfully' }
-      }
-
-      targetUserId = targetUser.id
+    // Can't send request to yourself
+    if (targetUserId === userId) {
+      throw new Error('You cannot send a friend request to yourself')
     }
 
     // Ensure canonical ordering (smaller ID first)
@@ -387,7 +359,7 @@ export async function unfriend(friendshipId) {
 }
 
 /**
- * **SECURE** Search users by name or email with anti-scraping protection
+ * **SECURE** Search users by name or username with anti-scraping protection
  *
  * CRITICAL Anti-Scraping Measures:
  * - Minimum 3-character query (prevents iteration)
@@ -395,9 +367,10 @@ export async function unfriend(friendshipId) {
  * - Result limit: 10 users maximum
  * - Random ordering (prevents enumeration)
  * - Email addresses never exposed in results
+ * - Only searches by name/username (NO email search for privacy)
  * - Includes friendship status for each result
  *
- * @param {string} query - Search query (min 3 characters)
+ * @param {string} query - Search query (min 3 characters, name/username only)
  * @returns {Promise<Object>} { users: Array, count: number, has_more: false }
  * @throws {Error} If query too short or rate limit exceeded
  */
@@ -422,19 +395,20 @@ export async function searchUsers(query) {
     }
 
     // Search users with friendship status
-    // Note: Fuzzy name search OR exact email match
+    // Note: Only fuzzy name/username search (NO email search for privacy)
     const { data: users, error } = await supabase
       .from('users')
       .select(
         `
         id, 
         name, 
+        username,
         avatar_url,
         friends_as_requester:friends!requester_id(id, receiver_id, status),
         friends_as_receiver:friends!receiver_id(id, requester_id, status)
       `
       )
-      .or(`name.ilike.%${query}%,email.eq.${query}`)
+      .or(`name.ilike.%${query}%,username.ilike.%${query}%`)
       .neq('id', userId) // Exclude current user
       .is('removed_at', null) // Only active users
       .limit(10) // Hard limit (anti-scraping)
@@ -461,6 +435,7 @@ export async function searchUsers(query) {
       return {
         id: searchUser.id,
         name: searchUser.name,
+        username: searchUser.username,
         avatar_url: searchUser.avatar_url,
         friendship_status
         // CRITICAL: Never return email in search results

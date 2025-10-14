@@ -210,6 +210,7 @@ onMounted(async () => {
 onUnmounted(() => {
   // Keep subscription active - don't stop it
   // The store manages its own lifecycle
+  // Cleanup any pending operations if needed
 })
 
 // Removed goBack function - no back button needed
