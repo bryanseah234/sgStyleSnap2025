@@ -6,26 +6,29 @@
   Form Fields:
   - name: string (required, max 100 chars)
   - category: enum (required, enhanced categories system)
-  - color: string (optional, max 50 chars)
+  - clothing_type: string (optional, specific clothing type)
   - brand: string (optional, max 100 chars)
   - season: enum (optional, one of: spring, summer, fall, winter, all)
-  - image: file upload (required, max 5MB, formats: jpg, png, webp)
+  - privacy: enum (required, friends or private)
+  - image: file upload (required, max 10MB, formats: jpg, png, webp)
   
   Features:
+  - AI-powered clothing classification using FashionRNN
   - Device-specific upload: Desktop/laptop = file upload only, Mobile/tablet = file upload + camera
-  - Image preview before upload
+  - Image preview before upload with color detection
   - Client-side image compression (using utils/image-compression.js)
   - Validation for all fields
   - Check quota before allowing upload (50 upload limit, unlimited catalog additions)
   - Upload progress indicator
-  - Error handling
+  - Error handling with detailed feedback
   
   Upload Flow:
-  1. User selects image -> compress on client side
-  2. Upload compressed image to Cloudinary
-  3. Get Cloudinary URL
-  4. Save item metadata + Cloudinary URL to Supabase
-  5. Update closet store
+  1. User selects image -> AI classification starts automatically
+  2. Compress on client side
+  3. Upload compressed image to Cloudinary
+  4. Get Cloudinary URL
+  5. Save item metadata + Cloudinary URL to Supabase
+  6. Update closet store
   
   Usage:
   <AddItemForm @success="handleSuccess" @cancel="handleCancel" />
@@ -86,6 +89,41 @@
               {{ cat.label }}
             </option>
           </optgroup>
+        </select>
+      </div>
+
+      <!-- Clothing Type -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Clothing Type
+        </label>
+        <select
+          v-model="form.clothing_type"
+          class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Select type (optional)</option>
+          <option value="t-shirt">T-Shirt</option>
+          <option value="shirt">Shirt</option>
+          <option value="blouse">Blouse</option>
+          <option value="polo">Polo</option>
+          <option value="tank-top">Tank Top</option>
+          <option value="sweater">Sweater</option>
+          <option value="hoodie">Hoodie</option>
+          <option value="blazer">Blazer</option>
+          <option value="jacket">Jacket</option>
+          <option value="coat">Coat</option>
+          <option value="jeans">Jeans</option>
+          <option value="pants">Pants</option>
+          <option value="shorts">Shorts</option>
+          <option value="skirt">Skirt</option>
+          <option value="dress">Dress</option>
+          <option value="sneakers">Sneakers</option>
+          <option value="boots">Boots</option>
+          <option value="sandals">Sandals</option>
+          <option value="heels">Heels</option>
+          <option value="hat">Hat</option>
+          <option value="bag">Bag</option>
+          <option value="accessory">Accessory</option>
         </select>
       </div>
 
@@ -160,6 +198,53 @@
             alt="Preview"
             class="w-full h-48 object-cover rounded-md"
           >
+
+          <!-- AI Classification Status -->
+          <div
+            v-if="classifying"
+            class="mt-3 flex items-center text-sm text-blue-600 dark:text-blue-400"
+          >
+            <svg
+              class="animate-spin h-4 w-4 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            AI analyzing clothing...
+          </div>
+
+          <!-- AI Classification Result -->
+          <div
+            v-else-if="classificationResult"
+            class="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-md"
+          >
+            <h4 class="text-sm font-medium text-green-900 dark:text-green-100 mb-2">
+              AI Detection
+              <span class="text-xs text-green-600 dark:text-green-400 ml-2">
+                ({{ Math.round(classificationResult.confidence * 100) }}% confident)
+              </span>
+            </h4>
+            <p class="text-sm text-green-800 dark:text-green-200">
+              Detected: <strong>{{ classificationResult.topPrediction }}</strong>
+            </p>
+            <p class="text-xs text-green-600 dark:text-green-400 mt-1">
+              Category and type auto-filled based on AI analysis
+            </p>
+          </div>
 
           <!-- Color Analysis -->
           <div
@@ -332,6 +417,7 @@ import { useClosetStore } from '@/stores/closet-store'
 import { CLOTHING_CATEGORIES, CATEGORY_GROUPS, SEASONS, PRIVACY_OPTIONS } from '@/config/constants'
 import { compressImage } from '@/utils/image-compression'
 import colorDetector from '@/utils/color-detector'
+import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 
 const emit = defineEmits(['success', 'cancel'])
 
@@ -340,6 +426,7 @@ const closetStore = useClosetStore()
 const form = ref({
   name: '',
   category: '',
+  clothing_type: '',
   brand: '',
   season: '',
   privacy: 'friends',
@@ -355,6 +442,8 @@ const isDragging = ref(false)
 const fileInput = ref(null)
 const detectingColors = ref(false)
 const detectedColors = ref(null)
+const classifying = ref(false)
+const classificationResult = ref(null)
 
 const quotaUsed = computed(() => closetStore.quota?.used || 0)
 const quotaWarning = computed(() => quotaUsed.value >= 45) // Warn at 90% of 50
@@ -397,8 +486,16 @@ async function handleDrop(event) {
 }
 
 async function processFile(file) {
+  // Validate file
+  const validation = validateImageForClassification(file)
+  if (!validation.isValid) {
+    imageError.value = validation.errors.join(', ')
+    return
+  }
+
   imageError.value = null
   detectedColors.value = null
+  classificationResult.value = null
 
   try {
     // Compress and convert to WebP
@@ -414,31 +511,90 @@ async function processFile(file) {
     // Store compressed file
     form.value.file = compressed
 
-    // Detect colors from the original file (better quality for detection)
-    detectingColors.value = true
-    try {
-      const colors = await colorDetector.detectColors(file, {
-        maxColors: 5,
-        quality: 10,
-        excludeWhiteBlack: true
-      })
+    // Start AI classification and color detection in parallel
+    const [classificationPromise, colorPromise] = await Promise.allSettled([
+      classifyImage(file),
+      detectColors(file)
+    ])
 
-      detectedColors.value = colors
+    // Handle classification result
+    if (classificationPromise.status === 'fulfilled') {
+      console.log('AI classification completed')
+    } else {
+      console.error('AI classification failed:', classificationPromise.reason)
+    }
 
-      // Store colors in form
-      form.value.primary_color = colors.primary
-      form.value.secondary_colors = colors.secondary || []
-
-      console.log('Detected colors:', colors)
-    } catch (colorError) {
-      console.error('Color detection failed:', colorError)
-      // Continue without color detection - not critical
-    } finally {
-      detectingColors.value = false
+    // Handle color detection result
+    if (colorPromise.status === 'fulfilled') {
+      console.log('Color detection completed')
+    } else {
+      console.error('Color detection failed:', colorPromise.reason)
     }
   } catch (error) {
     imageError.value = error.message
     console.error('Image processing error:', error)
+  }
+}
+
+// AI Classification function
+async function classifyImage(file) {
+  console.log('🧠 Starting AI classification for file:', file.name)
+  
+  if (classifying.value) {
+    console.log('⚠️ Classification already in progress, skipping...')
+    return
+  }
+  
+  classifying.value = true
+  
+  try {
+    const result = await classifyClothingItem(file)
+    
+    if (result.success) {
+      classificationResult.value = result
+      
+      // Auto-fill form fields
+      form.value.category = result.styleSnapCategory
+      form.value.clothing_type = result.clothingType
+      
+      // Generate name suggestion if empty
+      if (!form.value.name.trim()) {
+        form.value.name = result.topPrediction.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+      }
+      
+      console.log('✅ AI classification successful:', result)
+    } else {
+      console.warn('AI classification failed:', result.error)
+    }
+  } catch (error) {
+    console.error('AI classification error:', error)
+  } finally {
+    classifying.value = false
+  }
+}
+
+// Color detection function
+async function detectColors(file) {
+  detectingColors.value = true
+  try {
+    const colors = await colorDetector.detectColors(file, {
+      maxColors: 5,
+      quality: 10,
+      excludeWhiteBlack: true
+    })
+
+    detectedColors.value = colors
+
+    // Store colors in form
+    form.value.primary_color = colors.primary
+    form.value.secondary_colors = colors.secondary || []
+
+    console.log('Detected colors:', colors)
+  } catch (colorError) {
+    console.error('Color detection failed:', colorError)
+    // Continue without color detection - not critical
+  } finally {
+    detectingColors.value = false
   }
 }
 
@@ -450,6 +606,8 @@ function clearImage() {
   imageError.value = null
   detectedColors.value = null
   detectingColors.value = false
+  classificationResult.value = null
+  classifying.value = false
   if (fileInput.value) {
     fileInput.value.value = ''
   }
