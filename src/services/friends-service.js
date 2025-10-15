@@ -204,10 +204,10 @@ export async function getPendingRequests() {
 
 /**
  * Send friend request by user ID
- * @param {string} userId - Target user's ID
+ * @param {string} targetUserId - Target user's ID
  * @returns {Promise<Object>} Created request object
  */
-export async function sendFriendRequest(userId) {
+export async function sendFriendRequest(targetUserId) {
   try {
     if (!isSupabaseConfigured || !supabase) {
       throw new Error('Supabase client is not initialized. Please check your environment variables.')
@@ -218,25 +218,22 @@ export async function sendFriendRequest(userId) {
     } = await supabase.auth.getUser()
     
     // Development mode: Use mock user if authentication fails
-    let userId = user?.id
-    if (!userId && import.meta.env.DEV) {
+    let currentUserId = user?.id
+    if (!currentUserId && import.meta.env.DEV) {
       console.log('🔧 DEV MODE: Using mock user for sending friend request')
-      userId = 'dev-user-123' // Mock user ID for development
-    } else if (!userId) {
+      currentUserId = 'dev-user-123' // Mock user ID for development
+    } else if (!currentUserId) {
       throw new Error('Not authenticated')
     }
 
-    // Input is a user ID
-    const targetUserId = userId
-
     // Can't send request to yourself
-    if (targetUserId === userId) {
+    if (targetUserId === currentUserId) {
       throw new Error('You cannot send a friend request to yourself')
     }
 
     // Ensure canonical ordering (smaller ID first)
-    const requesterId = userId < targetUserId ? userId : targetUserId
-    const receiverId = userId < targetUserId ? targetUserId : userId
+    const requesterId = currentUserId < targetUserId ? currentUserId : targetUserId
+    const receiverId = currentUserId < targetUserId ? targetUserId : currentUserId
 
     // Check if friendship already exists
     const { data: existing } = await supabase

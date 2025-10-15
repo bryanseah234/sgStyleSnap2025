@@ -175,6 +175,14 @@ export const useFriendsStore = defineStore('friends', {
         )
       } catch (error) {
         console.error('Failed to cancel friend request:', error)
+        
+        // If the request was not found or already processed, refresh the data
+        // to ensure the UI is in sync with the database
+        if (error.message.includes('not found') || error.message.includes('already processed')) {
+          console.log('🔄 Request not found or already processed, refreshing pending requests...')
+          await this.fetchPendingRequests()
+        }
+        
         throw error
       } finally {
         this.isLoading = false

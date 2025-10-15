@@ -33,8 +33,6 @@
 <template>
   <div class="friends-list">
     <div class="friends-header">
-      <h2>My Friends ({{ friendsStore.friendsCount }})</h2>
-
       <!-- Search Bar -->
       <div class="search-box">
         <input

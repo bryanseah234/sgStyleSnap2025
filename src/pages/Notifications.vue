@@ -48,9 +48,6 @@
         <!-- Tab Content -->
         <div class="tab-content">
           <div class="panel-header">
-            <h2 class="section-title">
-              {{ activeTab === 'all' ? 'All Notifications' : 'Unread Notifications' }}
-            </h2>
             <button
               v-if="notificationsStore.hasUnread && activeTab === 'unread'"
               :disabled="markingAllRead"
@@ -461,7 +458,7 @@ const handleRejectSuggestion = async suggestionId => {
 
 .panel-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 1.5rem;
 }

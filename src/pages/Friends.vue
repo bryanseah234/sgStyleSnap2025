@@ -83,10 +83,6 @@
 
         <!-- Find Friends Tab -->
         <div v-if="activeTab === 'find'" class="tab-content">
-          <h2 class="section-title">
-            Find Friends
-          </h2>
-
           <div class="search-box">
             <input
               v-model="searchQuery"

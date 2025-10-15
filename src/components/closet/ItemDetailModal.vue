@@ -239,7 +239,7 @@ async function loadItemDetails() {
 
   try {
     const data = await getItemDetails(props.itemId)
-    item.value = data.item
+    item.value = data
     statistics.value = data.statistics
   } catch (err) {
     console.error('Failed to load item details:', err)

@@ -27,16 +27,29 @@ export async function getUserProfile() {
     } = await supabase.auth.getUser()
 
     if (authError) throw authError
-    if (!user) throw new Error('Not authenticated')
+    
+    // Development mode: Use mock user if authentication fails
+    let userId = user?.id
+    if (!userId && import.meta.env.DEV) {
+      console.log('🔧 DEV MODE: Using mock user for profile fetch')
+      userId = 'dev-user-123' // Mock user ID for development
+    } else if (!userId) {
+      throw new Error('Not authenticated')
+    }
 
     // Get user profile from users table
     const { data, error } = await supabase
       .from('users')
       .select('id, email, username, name, avatar_url, created_at')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
-    if (error) throw error
+    if (error) {
+      if (error.code === 'PGRST116') {
+        throw new Error('User profile not found. Please try logging out and logging back in.')
+      }
+      throw error
+    }
 
     return data
   } catch (error) {
@@ -104,7 +117,15 @@ export async function updateUserAvatar(avatarUrl) {
     } = await supabase.auth.getUser()
 
     if (authError) throw authError
-    if (!user) throw new Error('Not authenticated')
+    
+    // Development mode: Use mock user if authentication fails
+    let userId = user?.id
+    if (!userId && import.meta.env.DEV) {
+      console.log('🔧 DEV MODE: Using mock user for avatar update')
+      userId = 'dev-user-123' // Mock user ID for development
+    } else if (!userId) {
+      throw new Error('Not authenticated')
+    }
 
     // Update avatar in users table
     const { data, error } = await supabase
@@ -113,11 +134,16 @@ export async function updateUserAvatar(avatarUrl) {
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString()
       })
-      .eq('id', user.id)
+      .eq('id', userId)
       .select('id, email, username, name, avatar_url')
       .single()
 
-    if (error) throw error
+    if (error) {
+      if (error.code === 'PGRST116') {
+        throw new Error('User profile not found. Please try logging out and logging back in.')
+      }
+      throw error
+    }
 
     return data
   } catch (error) {

@@ -31,8 +31,6 @@
 <template>
   <div class="friend-requests">
     <div class="requests-header">
-      <h2>Friend Requests</h2>
-
       <!-- Tabs -->
       <div class="tabs">
         <button
@@ -243,7 +241,7 @@ async function handleAccept(requestId) {
     showSuccessNotification('Friend request accepted!')
   } catch (error) {
     console.error('Failed to accept request:', error)
-    alert('Failed to accept request. Please try again.')
+    showErrorNotification('Failed to accept request. Please try again.')
   } finally {
     processingRequest.value = null
   }
@@ -261,7 +259,7 @@ async function handleReject(requestId) {
     showSuccessNotification('Friend request rejected')
   } catch (error) {
     console.error('Failed to reject request:', error)
-    alert('Failed to reject request. Please try again.')
+    showErrorNotification('Failed to reject request. Please try again.')
   } finally {
     processingRequest.value = null
   }
@@ -279,7 +277,15 @@ async function handleCancel(requestId) {
     showSuccessNotification('Friend request canceled')
   } catch (error) {
     console.error('Failed to cancel request:', error)
-    alert('Failed to cancel request. Please try again.')
+    
+    // Provide more specific error messages
+    if (error.message.includes('not found') || error.message.includes('already processed')) {
+      showSuccessNotification('Request was already processed')
+      // Refresh the data to sync with database
+      await friendsStore.fetchPendingRequests()
+    } else {
+      showErrorNotification('Failed to cancel request. Please try again.')
+    }
   } finally {
     processingRequest.value = null
   }
@@ -292,6 +298,15 @@ function showSuccessNotification(message) {
   setTimeout(() => {
     showNotification.value = false
   }, 3000)
+}
+
+// Show error notification
+function showErrorNotification(message) {
+  notificationMessage.value = message
+  showNotification.value = true
+  setTimeout(() => {
+    showNotification.value = false
+  }, 5000) // Show error messages longer
 }
 
 // Get first initial from name

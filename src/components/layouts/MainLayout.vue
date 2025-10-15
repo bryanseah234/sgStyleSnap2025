@@ -298,14 +298,23 @@ onMounted(() => {
   .header-content {
     padding: 0.75rem;
     gap: 0.5rem;
+    /* Change layout for smaller screens */
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
   }
   
   .app-logo {
     font-size: 1rem;
+    /* Center the logo */
+    justify-self: center;
+    grid-column: 2;
   }
   
   .weather-widget-container {
-    display: none; /* Hide weather widget on very small screens */
+    /* Move weather to the right side */
+    grid-column: 3;
+    order: 3;
   }
 
   .nav-label {

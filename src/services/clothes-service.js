@@ -182,6 +182,9 @@ export async function getItem(id) {
       .single()
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        throw new Error('Item not found or has been removed')
+      }
       throw error
     }
 
@@ -276,6 +279,9 @@ export async function updateItem(id, itemData) {
       .single()
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        throw new Error('Item not found or has been removed')
+      }
       throw error
     }
 
@@ -331,6 +337,9 @@ export async function toggleFavorite(id, isFavorite) {
       .single()
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        throw new Error('Item not found or has been removed')
+      }
       throw error
     }
 
@@ -357,6 +366,9 @@ export async function getItemDetails(id) {
       .single()
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        throw new Error('Item not found or has been removed')
+      }
       throw error
     }
 
