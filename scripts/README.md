@@ -1,357 +1,180 @@
-# Scripts Documentation
+# Scripts Directory
 
-This directory contains utility scripts for database management, maintenance, and setup.
+This directory contains all utility scripts for StyleSnap organized by category.
 
-## Available Scripts
+## 📁 Directory Structure
 
-### 1. `populate-catalog.js`
-Populates the catalog database with curated clothing items for users to browse and add to their virtual closets.
+### `/catalog/`
+Scripts for managing the clothing catalog system.
 
-**Purpose:**
-- Provides alternative to scanning own items
-- Covers all 20 clothing types
-- Includes diverse brands, colors, and seasons
-- WebP optimized image URLs
+- **`populate-catalog.js`** - Populate catalog with items from CSV
+- **`seed-catalog-from-csv.js`** - Seed catalog from CSV file
+- **`catalog-items-template.csv`** - Template CSV for catalog items
 
 **Usage:**
 ```bash
-node scripts/populate-catalog.js
+npm run populate-catalog
+npm run seed-catalog-csv
 ```
 
-**Requirements:**
-- Supabase project set up
-- Environment variables configured (`.env` file)
-- Database migrations 005 (catalog system) and 009 (clothing types) applied
+### `/cleanup/`
+Scripts for cleaning up old data and maintaining database health.
 
-**What it does:**
-1. Checks if catalog is already populated
-2. Inserts 25+ sample items covering all clothing types
-3. Verifies data integrity
-4. Prints summary by clothing type
-
-**Clothing Types Included:**
-- T-Shirt, Shirt, Blouse, Longsleeve, Top, Polo
-- Hoodie, Blazer, Outwear
-- Dress, Pants, Shorts, Skirt
-- Shoes, Hat
-- Body, Undershirt
-
----
-
-### 2. `cloudinary-cleanup.js`
-Finds and deletes orphaned images in Cloudinary (images with no database record).
-
-**Purpose:**
-- Removes images that were uploaded but never saved to database
-- Frees up Cloudinary storage quota
-- 7-day grace period to avoid deleting recent uploads
+- **`cleanup-notifications.js`** - Clean up expired notifications (7-day retention)
+- **`cloudinary-cleanup.js`** - Clean up orphaned Cloudinary images
+- **`purge-old-items.js`** - Purge old clothing items (2+ years)
+- **`cleanup-test-users.js`** - Clean up test user data
 
 **Usage:**
 ```bash
-# Preview what would be deleted (dry run)
-node scripts/cloudinary-cleanup.js --dry-run
-
-# Actually delete orphaned images
-node scripts/cloudinary-cleanup.js
+npm run cleanup-notifications
+npm run cloudinary-cleanup
+npm run purge-old-items
 ```
 
-**Requirements:**
-- Supabase service role key in `.env` (not anon key!)
-- Cloudinary API credentials in `.env`
-- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+### `/database/`
+Scripts for database management and migrations.
 
-**What it does:**
-1. Fetches all images from Cloudinary
-2. Fetches all image URLs from database
-3. Compares lists to find orphans
-4. Filters orphans by grace period (7 days)
-5. Deletes orphaned images in batches
-6. Reports storage freed
-
-**Safety Features:**
-- Dry run mode (preview before deletion)
-- 7-day grace period for new uploads
-- Confirmation prompt before deletion
-- Batch processing to avoid API limits
-- Detailed logging and error handling
-
----
-
-### 3. `purge-old-items.js`
-Permanently deletes clothing items older than 2 years (configurable).
-
-**Purpose:**
-- Removes stale items to keep database clean
-- Deletes both database records and Cloudinary images
-- Configurable age threshold (default: 730 days / 2 years)
+- **`fix-existing-users.js`** - Fix existing user records
+- **`fix-user-insert-policy.js`** - Fix user insert policies
+- **`validate-migrations.js`** - Validate database migrations
+- **`setup-database.sh`** - Setup database environment
+- **`disable-auto-contribution.sql`** - Disable auto-contribution feature
 
 **Usage:**
 ```bash
-# Preview what would be deleted (dry run)
-node scripts/purge-old-items.js --dry-run
-
-# Actually delete old items
-node scripts/purge-old-items.js
-
-# Custom age threshold (1 year)
-MAX_AGE_DAYS=365 node scripts/purge-old-items.js
+node scripts/database/validate-migrations.js
+bash scripts/database/setup-database.sh
 ```
 
-**Requirements:**
-- Supabase service role key in `.env` (not anon key!)
-- Cloudinary API credentials in `.env`
-- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+### `/scraping/`
+Scripts for web scraping and data collection.
 
-**Environment Variables:**
-- `MAX_AGE_DAYS`: Age threshold in days (default: 730)
-
-**What it does:**
-1. Calculates cutoff date (now - MAX_AGE_DAYS)
-2. Queries items older than cutoff date
-3. For each old item:
-   - Deletes image from Cloudinary
-   - Deletes item from database
-4. Reports deletion summary
-
-**Safety Features:**
-- Dry run mode (preview before deletion)
-- Confirmation prompt before deletion
-- Batch processing
-- Transaction-safe deletion
-- Detailed logging and error handling
-
----
-
-### 4. `setup-database.sh`
-Bash script to run all SQL migrations in order.
+- **`00sitemap.py`** - Generate sitemap for scraping
+- **`01spider.py`** - Web spider for crawling
+- **`02downloader.py`** - Download scraped content
+- **`03processor.py`** - Process downloaded data
+- **`scrape-catalog.py`** - Scrape clothing catalog data
+- **`scrape-urls.txt`** - URLs to scrape
 
 **Usage:**
 ```bash
-./scripts/setup-database.sh
+python scripts/scraping/00sitemap.py
+python scripts/scraping/01spider.py
 ```
 
-**Requirements:**
-- PostgreSQL client tools (`psql`)
-- Supabase database connection string
+### `/utilities/`
+General utility scripts.
 
----
-
-### 5. `validate-migrations.js`
-Validates that all SQL migration files are syntactically correct and in proper order.
+- **`generate-avatars.sh`** - Generate default avatar images
 
 **Usage:**
 ```bash
-node scripts/validate-migrations.js
+bash scripts/utilities/generate-avatars.sh
 ```
 
----
-
-## Setup Instructions
+## 🚀 Quick Start
 
 ### Prerequisites
-1. Install dependencies:
+- Node.js 18+
+- Python 3.8+ (for scraping scripts)
+- Database access (for database scripts)
+
+### Environment Setup
 ```bash
-npm install @supabase/supabase-js dotenv
+# Copy environment variables
+cp .env.example .env
+
+# Install dependencies
+npm install
+
+# Install Python dependencies (for scraping)
+pip install -r requirements.txt
 ```
 
-2. Create `.env` file with required variables:
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-```
+### Common Operations
 
-3. Apply database migrations:
+#### Catalog Management
 ```bash
-./scripts/setup-database.sh
+# Populate catalog from CSV
+npm run populate-catalog
+
+# Seed catalog with sample data
+npm run seed-catalog-csv
 ```
 
-### First-Time Catalog Setup
+#### Database Maintenance
 ```bash
-# 1. Ensure migrations are applied
-./scripts/setup-database.sh
+# Clean up expired notifications
+npm run cleanup-notifications
 
-# 2. Populate catalog
-node scripts/populate-catalog.js
+# Clean up old items
+npm run purge-old-items
 
-# 3. Verify in Supabase dashboard
-# Navigate to: Table Editor > catalog_items
+# Validate migrations
+node scripts/database/validate-migrations.js
 ```
 
-## Scheduling Maintenance Scripts
-
-The `purge-old-items.js` and `cloudinary-cleanup.js` scripts should be run automatically on a schedule.
-
-### Option 1: GitHub Actions (Recommended)
-
-Create `.github/workflows/maintenance.yml`:
-
-```yaml
-name: Scheduled Maintenance
-
-on:
-  schedule:
-    # Run purge script monthly (1st of month at 2 AM UTC)
-    - cron: '0 2 1 * *'
-    # Run cleanup script weekly (every Sunday at 3 AM UTC)
-    - cron: '0 3 * * 0'
-  workflow_dispatch: # Allow manual runs
-
-jobs:
-  purge-old-items:
-    runs-on: ubuntu-latest
-    if: github.event.schedule == '0 2 1 * *' || github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm install
-      - name: Purge old items
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-        run: node scripts/purge-old-items.js
-
-  cleanup-cloudinary:
-    runs-on: ubuntu-latest
-    if: github.event.schedule == '0 3 * * 0' || github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm install
-      - name: Cleanup Cloudinary
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-        run: node scripts/cloudinary-cleanup.js
-```
-
-**Setup:**
-1. Add secrets to GitHub repository settings
-2. Navigate to: Settings > Secrets and variables > Actions
-3. Add these secrets:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_KEY` (service role key, not anon key!)
-   - `CLOUDINARY_CLOUD_NAME`
-   - `CLOUDINARY_API_KEY`
-   - `CLOUDINARY_API_SECRET`
-
-### Option 2: Cron Jobs (Linux Server)
-
-Add to crontab (`crontab -e`):
-
+#### Data Scraping
 ```bash
-# Purge old items - Monthly (1st of month at 2 AM)
-0 2 1 * * cd /path/to/sgStyleSnap2025 && node scripts/purge-old-items.js >> /var/log/stylesnap-purge.log 2>&1
-
-# Cleanup Cloudinary - Weekly (every Sunday at 3 AM)
-0 3 * * 0 cd /path/to/sgStyleSnap2025 && node scripts/cloudinary-cleanup.js >> /var/log/stylesnap-cleanup.log 2>&1
+# Run full scraping pipeline
+python scripts/scraping/00sitemap.py
+python scripts/scraping/01spider.py
+python scripts/scraping/02downloader.py
+python scripts/scraping/03processor.py
 ```
 
-**Setup:**
-1. Set environment variables in `~/.bashrc` or `~/.profile`
-2. Ensure log directory exists: `sudo mkdir -p /var/log && sudo chmod 755 /var/log`
-3. Test manually first: `node scripts/purge-old-items.js --dry-run`
+## 📋 Script Categories
 
-### Option 3: Render Cron Jobs (Render.com)
+| Category | Purpose | Frequency |
+|----------|---------|-----------|
+| **Catalog** | Manage clothing catalog | As needed |
+| **Cleanup** | Database maintenance | Daily/Weekly |
+| **Database** | Schema management | As needed |
+| **Scraping** | Data collection | Periodic |
+| **Utilities** | General tools | As needed |
 
-If hosting on Render.com, use their Cron Jobs feature:
+## 🔧 Configuration
 
-1. Create new Cron Job in Render dashboard
-2. Command: `node scripts/purge-old-items.js`
-3. Schedule: `0 2 1 * *` (monthly)
-4. Add environment variables
-5. Create another for `cloudinary-cleanup.js` with schedule `0 3 * * 0`
+### Environment Variables
+Most scripts require these environment variables:
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key
+- `CLOUDINARY_CLOUD_NAME` - Cloudinary cloud name
+- `CLOUDINARY_API_KEY` - Cloudinary API key
+- `CLOUDINARY_API_SECRET` - Cloudinary API secret
 
-### Recommended Schedule
+### Script Options
+Many scripts support command-line options:
+- `--dry-run` - Preview changes without executing
+- `--verbose` - Show detailed output
+- `--help` - Show help information
 
-| Script | Frequency | Schedule | Reason |
-|--------|-----------|----------|--------|
-| `purge-old-items.js` | Monthly | 1st at 2 AM | Items older than 2 years, infrequent |
-| `cloudinary-cleanup.js` | Weekly | Sunday at 3 AM | Failed uploads, more frequent |
+## 📚 Documentation
 
-**Testing scheduled jobs:**
-```bash
-# Test purge script (dry run)
-node scripts/purge-old-items.js --dry-run
+For detailed documentation on specific scripts, see:
+- [Catalog Seeding Guide](../docs/scripts/CATALOG_SEEDING_QUICKSTART.md)
+- [Scripts Documentation](../docs/scripts/scripts-readme.md)
+- [Database Guide](../docs/guides/DATABASE_GUIDE.md)
+- [Cloudinary Monitoring](../docs/guides/CLOUDINARY_MONITORING.md)
 
-# Test cleanup script (dry run)
-node scripts/cloudinary-cleanup.js --dry-run
+## ⚠️ Safety Notes
 
-# Verify environment variables are loaded
-node -e "console.log(process.env.SUPABASE_SERVICE_KEY ? 'OK' : 'MISSING')"
-```
+- Always run scripts with `--dry-run` first to preview changes
+- Backup your database before running cleanup scripts
+- Test scripts in development environment before production
+- Some scripts require service role permissions
 
-## Maintenance
+## 🆘 Troubleshooting
 
-### Weekly Tasks
-- `cloudinary-cleanup.js` runs automatically (scheduled)
-- Check catalog item popularity and add trending items
+### Common Issues
+1. **Permission errors** - Ensure proper database permissions
+2. **Environment variables** - Check all required variables are set
+3. **Dependencies** - Ensure all packages are installed
+4. **Network issues** - Check internet connection for scraping scripts
 
-### Monthly Tasks
-- `purge-old-items.js` runs automatically (scheduled)
-- Review and update catalog items based on user feedback
-
-### Quarterly Tasks
-- Audit catalog for outdated items
-- Add seasonal collections
-- Update image URLs if needed
-- Review maintenance script logs for errors
-
-## Troubleshooting
-
-### "Catalog already has items"
-The populate script won't overwrite existing data. To repopulate:
-1. Delete existing items via Supabase dashboard
-2. Run script again
-
-### "Error: Missing environment variables"
-Ensure `.env` file exists with all required variables:
-```bash
-# Check .env file
-cat .env
-
-# Verify variables are loaded
-node -e "require('dotenv').config(); console.log(process.env.VITE_SUPABASE_URL)"
-```
-
-### "Error inserting catalog items"
-Check that migrations 005 and 009 are applied:
-```bash
-# Connect to database
-psql $DATABASE_URL
-
-# Check if table exists
-\dt catalog_items
-
-# Check columns
-\d catalog_items
-```
-
-## Contributing
-
-When adding new scripts:
-1. Add documentation to this README
-2. Include error handling
-3. Add console logging for progress tracking
-4. Use environment variables for configuration
-5. Add dry-run mode for destructive operations
-
-## Resources
-
-- [Supabase Client Documentation](https://supabase.com/docs/reference/javascript/introduction)
-- [Cloudinary Node.js SDK](https://cloudinary.com/documentation/node_integration)
-- [Database Schema](../sql/)
+### Getting Help
+- Check script documentation in `/docs/scripts/`
+- Review error logs for specific issues
+- Test with `--dry-run` flag first
+- Contact development team for assistance

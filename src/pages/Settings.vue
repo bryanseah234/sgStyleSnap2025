@@ -181,7 +181,7 @@
             </div>
             
             <button
-              @click="signOut"
+              @click="handleSignOut"
               class="w-full mt-4 bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors"
             >
               Sign Out
@@ -197,7 +197,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
-import { signOut } from '../services/auth-service.js'
 import { AVAILABLE_FONT_THEMES } from '../config/fonts'
 import { COLOR_THEMES } from '../config/color-themes'
 import { changeFontTheme } from '../utils/font-system'
@@ -350,7 +349,7 @@ function cancelChanges() {
   applyColorTheme(originalColorTheme.value, false)
 }
 
-async function signOut() {
+async function handleSignOut() {
   try {
     await authStore.logout()
     router.push('/login')
