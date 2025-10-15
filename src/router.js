@@ -43,6 +43,7 @@ import ManualOutfitCreator from './pages/ManualOutfitCreator.vue' // Manual outf
 import Notifications from './pages/Notifications.vue' // Notifications page
 import DebugAuth from './pages/DebugAuth.vue' // Debug authentication
 import FriendProfileView from './pages/FriendProfileView.vue' // Friend profile page
+import StyleSettings from './pages/FontDemo.vue' // Style preferences page
 
 const routes = [
   {
@@ -98,6 +99,12 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: Settings,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/style-settings',
+    name: 'StyleSettings',
+    component: StyleSettings,
     meta: { requiresAuth: true }
   },
   {
