@@ -252,6 +252,11 @@ async function handleGoogleSignIn() {
   errorMessage.value = ''
 
   try {
+    // Clear any existing stored sessions before starting OAuth
+    // This ensures we don't use old session data
+    const { clearAllSessions } = await import('../services/session-service')
+    clearAllSessions()
+    
     await authStore.login()
     // The auth service will handle the redirect to Google OAuth
     // After successful login, Google will redirect back to /closet

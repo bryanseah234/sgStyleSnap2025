@@ -220,7 +220,8 @@ async function handleSignOut() {
   try {
     await authStore.logout()
     closeDropdown()
-    router.push('/login')
+    // Reload the page to ensure clean state
+    window.location.reload()
   } catch (error) {
     console.error('Failed to sign out:', error)
     alert('Failed to sign out. Please try again.')

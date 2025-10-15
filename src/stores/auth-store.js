@@ -67,6 +67,10 @@ export const useAuthStore = defineStore('auth', {
       
       // Store user session if authenticated
       if (userData) {
+        // Clear any existing sessions for this user to avoid conflicts
+        removeUserSession(userData.id)
+        
+        // Store the new session
         storeUserSession(userData)
       }
       
@@ -103,7 +107,9 @@ export const useAuthStore = defineStore('auth', {
           console.log('✅ AuthStore: Setting user from session:', session.user.email)
           this.setUser(session.user)
         } else {
-          console.log('❌ AuthStore: No session found')
+          console.log('❌ AuthStore: No session found, clearing any stored sessions')
+          // Clear any stored sessions if no valid Supabase session exists
+          clearActiveSession()
         }
       } catch (error) {
         console.error('❌ AuthStore: Failed to initialize auth:', error)

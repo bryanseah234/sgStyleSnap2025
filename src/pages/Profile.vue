@@ -294,7 +294,8 @@ async function handleLogout() {
     isLoggingOut.value = true
     try {
       await authStore.logout()
-      router.push('/login')
+      // Reload the page to ensure clean state
+      window.location.reload()
     } catch (error) {
       console.error('Logout failed:', error)
       alert('Failed to logout. Please try again.')

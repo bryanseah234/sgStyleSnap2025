@@ -70,38 +70,6 @@
             </div>
           </div>
 
-          <!-- Profile Information -->
-          <div class="profile-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">Name</label>
-                <input
-                  v-model="editableProfile.name"
-                  type="text"
-                  class="form-input"
-                >
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Username</label>
-                <input
-                  v-model="editableProfile.username"
-                  type="text"
-                  class="form-input"
-                >
-              </div>
-
-              <div class="form-group full-width">
-                <label class="form-label">Email</label>
-                <input
-                  v-model="editableProfile.email"
-                  type="email"
-                  disabled
-                  class="form-input disabled"
-                >
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -323,8 +291,6 @@ const hasChanges = computed(() => {
          selectedColorTheme.value !== originalColorTheme.value ||
          selectedFont.value !== originalFont.value ||
          selectedColor.value !== originalColor.value ||
-         editableProfile.value.name !== profile.value.name ||
-         editableProfile.value.username !== profile.value.username ||
          editableProfile.value.avatar_url !== profile.value.avatar_url
 })
 
@@ -342,7 +308,8 @@ async function loadProfile() {
     editableProfile.value = { ...profileData }
     
     // Load available avatars
-    availableAvatars.value = await getDefaultAvatars()
+    const avatarObjects = await getDefaultAvatars()
+    availableAvatars.value = avatarObjects.map(avatar => avatar.url)
     defaultAvatar.value = availableAvatars.value[0] || ''
     
   } catch (error) {
@@ -447,18 +414,10 @@ async function saveAllSettings() {
   try {
     saving.value = true
     
-    // Save profile changes
-    if (editableProfile.value.name !== profile.value.name ||
-        editableProfile.value.username !== profile.value.username ||
-        editableProfile.value.avatar_url !== profile.value.avatar_url) {
-      
-      // Update profile in database
-      await updateUserProfile(editableProfile.value.name, editableProfile.value.username)
-      
+    // Save profile changes (only avatar can be changed now)
+    if (editableProfile.value.avatar_url !== profile.value.avatar_url) {
       // Update avatar if changed
-      if (editableProfile.value.avatar_url !== profile.value.avatar_url) {
-        await updateUserAvatar(editableProfile.value.avatar_url)
-      }
+      await updateUserAvatar(editableProfile.value.avatar_url)
     }
     
     // Save theme preference
@@ -519,7 +478,8 @@ function cancelChanges() {
 async function handleSignOut() {
   try {
     await authStore.logout()
-    router.push('/login')
+    // Reload the page to ensure clean state
+    window.location.reload()
   } catch (error) {
     console.error('Failed to sign out:', error)
   }
@@ -539,6 +499,17 @@ function handleStylePreferencesSaved(preferences) {
   
   // Close the modal
   showStyleModal.value = false
+}
+
+// Apply theme function
+function applyTheme(themeValue) {
+  if (themeValue === 'system') {
+    // Use system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
+  } else {
+    document.documentElement.setAttribute('data-theme', themeValue)
+  }
 }
 </script>
 
