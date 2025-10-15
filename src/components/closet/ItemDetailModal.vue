@@ -444,34 +444,34 @@ function formatDate(dateString) {
 }
 
 .info-section {
-  background: #ffffff;
-  border: 2px solid #e5e7eb;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: #f8fafc !important;
+  border: 3px solid #cbd5e1 !important;
+  border-radius: 1rem !important;
+  padding: 2rem !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  margin-bottom: 1rem !important;
 }
 
 .section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  position: relative;
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  color: #1e40af !important;
+  margin-bottom: 2rem !important;
+  padding-bottom: 1rem !important;
+  position: relative !important;
+  text-align: center !important;
 }
 
 .section-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 3rem;
-  height: 3px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 2px;
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 5rem !important;
+  height: 4px !important;
+  background: #1e40af !important;
+  border-radius: 2px !important;
 }
 
 .info-grid {
@@ -481,37 +481,39 @@ function formatDate(dateString) {
 }
 
 .info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.25rem;
-  background: #ffffff;
-  border-radius: 0.75rem;
-  border: 2px solid #e5e7eb;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  padding: 1.5rem !important;
+  background: #ffffff !important;
+  border-radius: 0.75rem !important;
+  border: 3px solid #d1d5db !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.2s ease !important;
+  margin-bottom: 0.5rem !important;
 }
 
 .info-item:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2) !important;
 }
 
 .info-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.75rem !important;
+  color: #374151 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  margin-bottom: 0.25rem !important;
 }
 
 .info-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #111827;
-  line-height: 1.4;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  line-height: 1.3 !important;
 }
 
 .color-display {
@@ -607,6 +609,34 @@ function formatDate(dateString) {
     background: #374151;
     border-color: #4b5563;
   }
+}
+
+/* FORCE HIGH CONTRAST OVERRIDES */
+:deep(.info-item) {
+  background: #ffffff !important;
+  border: 3px solid #d1d5db !important;
+  color: #000000 !important;
+}
+
+:deep(.info-label) {
+  color: #374151 !important;
+  font-weight: 700 !important;
+}
+
+:deep(.info-value) {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 1.5rem !important;
+}
+
+:deep(.info-section) {
+  background: #f8fafc !important;
+  border: 3px solid #cbd5e1 !important;
+}
+
+:deep(.section-title) {
+  color: #1e40af !important;
+  font-weight: 800 !important;
 }
 
 /* Responsive Design */
