@@ -1,6 +1,7 @@
 # 🚀 Complete Deployment Guide - StyleSnap
 
-**Last Updated:** October 8, 2025  
+**Last Updated:** January 2025  
+**Version:** 2.0.0  
 **This is your single source of truth for deployment.**
 
 ---
@@ -51,468 +52,515 @@ Before deploying, make sure you have:
 └─────────────────────────────────────────────────────────────┘
 ```
 
----
+### Required Environment Variables
 
-## 1️⃣ Local Development (.env.local)
+#### Frontend Variables (VITE_*)
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-Create `.env.local` in your project root:
+# Cloudinary Configuration
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 
-```bash
-# ==================================================
-# SUPABASE (Required)
-# ==================================================
-# Get from: https://supabase.com/dashboard/project/YOUR_PROJECT/settings/api
-VITE_SUPABASE_URL=https://xxxxxxxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
+# Weather API (Optional)
+VITE_OPENWEATHER_API_KEY=your_openweather_api_key
 
-# ==================================================
-# GOOGLE OAUTH (REQUIRED - Only Authentication Method)
-# ==================================================
-# Get from: https://console.cloud.google.com/
-# 1. Create OAuth 2.0 Client ID
-# 2. Add redirect URI: https://your-project.supabase.co/auth/v1/callback
-# 3. Configure in Supabase Dashboard → Authentication → Providers → Google
-VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+# Google OAuth (Optional - handled by Supabase)
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
 
-# ==================================================
-# CLOUDINARY (Required)
-# ==================================================
-# Get from: https://cloudinary.com/console
-VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
-VITE_CLOUDINARY_UPLOAD_PRESET=your-unsigned-preset
+#### Server Variables (Supabase Edge Functions)
+```env
+# Push Notifications (VAPID)
+VAPID_PRIVATE_KEY=your_vapid_private_key
+VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_SUBJECT=mailto:your-email@example.com
 
-# ==================================================
-# PUSH NOTIFICATIONS (Required for push features)
-# ==================================================
-# Generate with: npm install -g web-push && web-push generate-vapid-keys
-VITE_VAPID_PUBLIC_KEY=BKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# ==================================================
-# OPTIONAL FEATURES
-# ==================================================
-# Weather API (optional)
-VITE_OPENWEATHER_API_KEY=your-api-key-here
+# Service Role Key (for server operations)
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
 ---
 
-## 2️⃣ GitHub Secrets (Repository Settings → Secrets)
+## 🏗️ Architecture Overview
 
-Go to: `https://github.com/YOUR_USERNAME/YOUR_REPO/settings/secrets/actions`
+### Current Architecture (v2.0.0)
 
-Click **"New repository secret"** and add each of these:
-
-### Required Secrets
-
-```bash
-# Vercel Deployment
-VERCEL_TOKEN=xxxxx                    # From: https://vercel.com/account/tokens
-VERCEL_ORG_ID=team_xxxxx              # From: .vercel/project.json after running 'vercel link'
-VERCEL_PROJECT_ID=prj_xxxxx           # From: .vercel/project.json after running 'vercel link'
-
-# Supabase
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
-
-# Google OAuth (REQUIRED - only authentication method)
-VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-
-# Cloudinary
-VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
-VITE_CLOUDINARY_UPLOAD_PRESET=your-preset
-
-# Push Notifications
-VITE_VAPID_PUBLIC_KEY=BKxYjz3Q9YVs...
-
-# Weather API (only if using weather features)
-VITE_OPENWEATHER_API_KEY=your-api-key
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   External      │
+│   (Vercel)      │    │   (Supabase)    │    │   Services      │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ • Vue.js 3      │    │ • PostgreSQL    │    │ • Cloudinary    │
+│ • Pinia Store   │    │ • Auth          │    │ • Google OAuth  │
+│ • Tailwind CSS  │    │ • Real-time     │    │ • Weather API   │
+│ • PWA Support   │    │ • Edge Functions│    │ • AI Models     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-**⚠️ IMPORTANT:** Never add `VAPID_PRIVATE_KEY` to GitHub secrets - it goes in Supabase only!
+### Key Features
+- **7-Day Notification Retention** - Automatic cleanup system
+- **Multi-Theme Support** - 6 color themes and 6 font styles
+- **Session Management** - Enhanced user session handling
+- **Real-time Updates** - Live data synchronization
+- **Mobile-First Design** - Responsive across all devices
 
 ---
 
-## 3️⃣ Vercel Environment Variables
+## 🚀 Deployment Steps
 
-Go to: `https://vercel.com/YOUR_USERNAME/YOUR_PROJECT/settings/environment-variables`
+### Step 1: Supabase Setup
 
-Add these variables (same as GitHub, but without VERCEL_* tokens):
-
-```bash
-# Supabase
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
-
-# Cloudinary
-VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
-VITE_CLOUDINARY_UPLOAD_PRESET=your-preset
-
-# Push Notifications
-VITE_VAPID_PUBLIC_KEY=BKxYjz3Q9YVs...
-
-# Optional
-VITE_OPENWEATHER_API_KEY=your-api-key
-```
-
-**Apply to:** Production, Preview, and Development (select all three)
-
----
-
-## 4️⃣ Supabase Edge Function Secrets
-
-These are **server-side only** and used by your Edge Functions to send push notifications.
-
-### Install Supabase CLI
-
-```bash
-# macOS/Linux
-brew install supabase/tap/supabase
-
-# Windows (using Scoop)
-scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-scoop install supabase
-
-# Or download from: https://github.com/supabase/cli/releases
-```
-
-### Login and Get Project Reference
-
-```bash
-# Login
-supabase login
-
-# List your projects to get reference ID
-supabase projects list
-
-# Note your project reference ID (looks like: abcdefghijk)
-```
-
-### Generate VAPID Keys (First Time Only)
-
-```bash
-# Install web-push globally
-npm install -g web-push
-
-# Generate keys
-web-push generate-vapid-keys
-```
-
-**Save the output:**
-```
-=======================================
-Public Key:
-BKxYjz3Q9YVs... (87 characters)
-
-Private Key:
-4T1cZ8Hq... (43 characters)
-=======================================
-```
-
-### Deploy Edge Function & Set Secrets
-
-```bash
-# Navigate to your project
-cd /path/to/ClosetApp
-
-# Deploy the push notification function
-supabase functions deploy send-push-notification --project-ref YOUR_PROJECT_REF
-
-# Set VAPID secrets (replace with your actual keys)
-supabase secrets set VAPID_PRIVATE_KEY="4T1cZ8Hq..." --project-ref YOUR_PROJECT_REF
-supabase secrets set VAPID_PUBLIC_KEY="BKxYjz3Q9YVs..." --project-ref YOUR_PROJECT_REF
-supabase secrets set VAPID_SUBJECT="mailto:support@yourdomain.com" --project-ref YOUR_PROJECT_REF
-
-# Verify secrets were set
-supabase secrets list --project-ref YOUR_PROJECT_REF
-```
-
----
-
-## 📊 Complete Variables Reference Table
-
-| Variable | .env.local | GitHub Secrets | Vercel | Supabase | Example Value |
-|----------|------------|----------------|--------|----------|---------------|
-| **VITE_SUPABASE_URL** | ✅ | ✅ | ✅ | ❌ | `https://abc.supabase.co` |
-| **VITE_SUPABASE_ANON_KEY** | ✅ | ✅ | ✅ | ❌ | `eyJhbGciOi...` |
-| **VITE_GOOGLE_CLIENT_ID** | ✅ | ✅ | ✅ | ❌ | `123-abc.apps.googleusercontent.com` |
-| **VITE_CLOUDINARY_CLOUD_NAME** | ✅ | ✅ | ✅ | ❌ | `stylesnap-app` |
-| **VITE_CLOUDINARY_UPLOAD_PRESET** | ✅ | ✅ | ✅ | ❌ | `unsigned_preset` |
-| **VITE_VAPID_PUBLIC_KEY** | ✅ | ✅ | ✅ | ❌ | `BKxYjz3Q9YVs...` |
-| **VITE_OPENWEATHER_API_KEY** | ✅ | ✅ | ✅ | ❌ | `a1b2c3d4e5f6` |
-| **VERCEL_TOKEN** | ❌ | ✅ | ❌ | ❌ | `xxxxx` |
-| **VERCEL_ORG_ID** | ❌ | ✅ | ❌ | ❌ | `team_xxxxx` |
-| **VERCEL_PROJECT_ID** | ❌ | ✅ | ❌ | ❌ | `prj_xxxxx` |
-| **VAPID_PRIVATE_KEY** | ❌ | ❌ | ❌ | ✅ | `4T1cZ8Hq...` |
-| **VAPID_PUBLIC_KEY** | ❌ | ❌ | ❌ | ✅ | `BKxYjz3Q9YVs...` |
-| **VAPID_SUBJECT** | ❌ | ❌ | ❌ | ✅ | `mailto:you@example.com` |
-
-**Legend:**
-- ✅ = Must be added
-- ❌ = Do not add here
-
----
-
-## 🗄️ Supabase Database Setup
-
-### Apply All Migrations
-
-1. Go to your Supabase SQL Editor: `https://supabase.com/dashboard/project/YOUR_REF/sql`
-
-2. Run migrations in order:
-
-```bash
-# Copy and paste contents of each file into SQL Editor, then click "Run"
-sql/001_initial_schema.sql
-sql/002_rls_policies.sql
-sql/003_indexes_functions.sql
-sql/004_advanced_features.sql
-sql/005_catalog_system.sql
-sql/006_color_detection.sql
-sql/007_outfit_generation.sql
-sql/008_likes_feature.sql
-sql/009_notifications_system.sql
-sql/010_push_notifications.sql
-```
-
-### Enable Required Extensions
-
-Make sure these PostgreSQL extensions are enabled in Supabase:
-
-```sql
--- Run this in SQL Editor
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pg_trgm";
-```
-
-### Verify Database Setup
-
-```sql
--- Check if all tables exist
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
-ORDER BY table_name;
-
--- Should see: users, clothes, friends, suggestions, generated_outfits,
--- shared_outfits, notifications, push_subscriptions, etc.
-```
-
----
-
-## 🌐 Vercel/Frontend Deployment
-
-### Option 1: Automatic Deployment via GitHub
-
-**This is the recommended approach.**
-
-1. **Link Vercel to GitHub:**
-   - Go to https://vercel.com/new
-   - Import your GitHub repository
-   - Vercel will auto-detect Vue.js/Vite
-
-2. **Configure Build Settings:**
-   - Framework: Vite
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-   - Install Command: `npm install`
-
-3. **Add Environment Variables** (see section 3 above)
-
-4. **Deploy:**
-   - Push to `main` branch → auto-deploys to production
-   - Push to feature branch → creates preview deployment
-   - GitHub Actions workflow handles this automatically
-
-### Option 2: Manual Deployment via Vercel CLI
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Link your project (first time only)
-vercel link
-
-# Deploy to preview
-vercel
-
-# Deploy to production
-vercel --prod
-```
-
----
-
-## ⚙️ GitHub Actions Setup
-
-Your repository has automated workflows in `.github/workflows/`:
-
-### Required Workflows
-
-1. **`deploy.yml`** - Auto-deploys to Vercel on push to main
-2. **`e2e.yml`** - Runs end-to-end tests with Playwright
-3. **`node.js.yml`** - Runs build and unit tests
-
-### Setting Up GitHub Actions
-
-1. **Enable Actions:**
-   - Go to: `https://github.com/YOUR_USERNAME/YOUR_REPO/actions`
-   - Click "I understand my workflows, go ahead and enable them"
-
-2. **Add Secrets** (see section 2 above)
-
-3. **Push to Main:**
+1. **Create Supabase Project**
    ```bash
-   git add .
-   git commit -m "Enable GitHub Actions deployment"
-   git push origin main
+   # Go to https://supabase.com
+   # Create new project
+   # Note down your project URL and anon key
    ```
 
-4. **Monitor Deployment:**
-   - Go to Actions tab
-   - Watch workflows run
-   - Green checkmark = success! 🎉
+2. **Run Database Migrations**
+   ```bash
+   # Navigate to database directory
+   cd database/migrations
+   
+   # Run all migrations in order
+   # Use Supabase SQL Editor or CLI
+   ```
+
+3. **Configure Authentication**
+   ```bash
+   # Go to Authentication > Providers
+   # Enable Google provider
+   # Add your Google OAuth credentials
+   # Set redirect URL: https://your-domain.vercel.app/closet
+   ```
+
+4. **Set up Edge Functions**
+   ```bash
+   # Deploy push notifications function
+   supabase functions deploy push-notifications
+   
+   # Set environment variables
+   supabase secrets set VAPID_PRIVATE_KEY=your_key
+   supabase secrets set VAPID_PUBLIC_KEY=your_key
+   supabase secrets set VAPID_SUBJECT=mailto:your-email@example.com
+   ```
+
+### Step 2: Cloudinary Setup
+
+1. **Create Cloudinary Account**
+   ```bash
+   # Go to https://cloudinary.com
+   # Create free account
+   # Note down cloud name
+   ```
+
+2. **Configure Upload Preset**
+   ```bash
+   # Go to Settings > Upload
+   # Create unsigned upload preset
+   # Set folder: stylesnap
+   # Set transformation: auto-format, quality: auto
+   ```
+
+### Step 3: Vercel Deployment
+
+1. **Connect GitHub Repository**
+   ```bash
+   # Go to https://vercel.com
+   # Import your GitHub repository
+   # Select the repository
+   ```
+
+2. **Configure Build Settings**
+   ```bash
+   # Build Command: npm run build
+   # Output Directory: dist
+   # Install Command: npm install
+   # Node.js Version: 18.x
+   ```
+
+3. **Set Environment Variables**
+   ```bash
+   # In Vercel dashboard, go to Settings > Environment Variables
+   # Add all VITE_* variables
+   # Set for Production, Preview, and Development
+   ```
+
+4. **Deploy**
+   ```bash
+   # Vercel will automatically deploy
+   # Or manually trigger deployment
+   # Check deployment logs for any issues
+   ```
+
+### Step 4: Post-Deployment Configuration
+
+1. **Update OAuth Redirect URLs**
+   ```bash
+   # In Google Cloud Console
+   # Add your Vercel domain to authorized origins
+   # Add redirect URI: https://your-domain.vercel.app/closet
+   ```
+
+2. **Test All Features**
+   ```bash
+   # Test user registration
+   # Test item upload
+   # Test friend requests
+   # Test notifications
+   # Test theme switching
+   ```
 
 ---
 
-## 🧪 Testing Before Deployment
+## 🔧 Configuration Files
 
-### Run All Tests Locally
+### Vercel Configuration (`vercel.json`)
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "functions": {
+    "src/pages/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}
+```
 
+### Vite Configuration (`config/vite.config.js`)
+```javascript
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { fileURLToPath, URL } from 'node:url'
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('../src', import.meta.url))
+    }
+  },
+  server: {
+    port: 5173,
+    host: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'supabase': ['@supabase/supabase-js']
+        }
+      }
+    }
+  }
+})
+```
+
+---
+
+## 🗄️ Database Setup
+
+### Migration Order
 ```bash
-# Install dependencies
-npm install
+# Run migrations in this exact order
+001_initial_schema.sql
+002_rls_policies.sql
+003_indexes_functions.sql
+004_advanced_features.sql
+005_catalog_system.sql
+006_color_detection.sql
+007_outfit_generation.sql
+008_likes_feature.sql
+009_clothing_types.sql
+009_enhanced_categories.sql
+009_notifications_system.sql
+010_push_notifications.sql
+011_catalog_enhancements.sql
+012_auth_user_sync.sql
+014_fix_catalog_insert_policy.sql
+015_dev_user_setup.sql
+016_disable_auto_contribution.sql
+017_fix_catalog_privacy.sql
+018_notification_cleanup_system.sql
+```
 
-# Run unit tests
+### Key Database Features
+- **Row Level Security (RLS)** - Data isolation per user
+- **Real-time Subscriptions** - Live updates
+- **Custom Functions** - Complex business logic
+- **7-Day Notification Retention** - Automatic cleanup
+- **Triggers** - Automated data processing
+
+---
+
+## 🔐 Security Configuration
+
+### Supabase Security
+```sql
+-- Enable RLS on all tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE closet_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE friends ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for data access
+CREATE POLICY "Users can view own data" ON users
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can view own closet items" ON closet_items
+  FOR SELECT USING (auth.uid() = user_id);
+```
+
+### Vercel Security Headers
+```json
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## 📊 Monitoring and Analytics
+
+### Vercel Analytics
+```javascript
+// Enable Vercel Analytics
+import { Analytics } from '@vercel/analytics/react'
+
+// Add to main.js
+app.use(Analytics)
+```
+
+### Error Tracking
+```javascript
+// Add error tracking
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error)
+  // Send to your error tracking service
+})
+```
+
+### Performance Monitoring
+```javascript
+// Monitor Core Web Vitals
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
+
+getCLS(console.log)
+getFID(console.log)
+getFCP(console.log)
+getLCP(console.log)
+getTTFB(console.log)
+```
+
+---
+
+## 🧪 Testing Deployment
+
+### Pre-Deployment Checklist
+- [ ] All environment variables set
+- [ ] Database migrations completed
+- [ ] OAuth redirect URLs configured
+- [ ] Cloudinary upload preset created
+- [ ] Build process successful
+- [ ] No console errors
+
+### Post-Deployment Testing
+- [ ] User registration works
+- [ ] User login works
+- [ ] Item upload works
+- [ ] Friend requests work
+- [ ] Notifications work
+- [ ] Theme switching works
+- [ ] Mobile responsiveness works
+
+### Performance Testing
+```bash
+# Test page load times
+# Test image upload performance
+# Test real-time updates
+# Test mobile performance
+```
+
+---
+
+## 🔄 Maintenance and Updates
+
+### Regular Maintenance Tasks
+```bash
+# Clean up expired notifications (daily)
+npm run cleanup-notifications
+
+# Monitor Cloudinary usage
+# Check Supabase usage
+# Review error logs
+# Update dependencies
+```
+
+### Update Process
+```bash
+# 1. Update code
+git pull origin main
+
+# 2. Run tests
 npm test
 
-# Run linter
-npm run lint
-
-# Fix lint errors automatically
-npm run lint -- --fix
-
-# Build production bundle
+# 3. Build locally
 npm run build
 
-# Preview production build
-npm run preview
+# 4. Deploy to Vercel
+# (Automatic if connected to GitHub)
 
-# Run E2E tests (if Playwright configured)
-npm run test:e2e
+# 5. Test production
+# Verify all features work
 ```
 
-### Check Bundle Size
+### Database Maintenance
+```sql
+-- Clean up expired notifications
+SELECT cleanup_expired_notifications();
 
+-- Monitor database size
+SELECT pg_size_pretty(pg_database_size('stylesnap'));
+
+-- Check slow queries
+SELECT query, mean_time, calls 
+FROM pg_stat_statements 
+ORDER BY mean_time DESC 
+LIMIT 10;
+```
+
+---
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### Build Failures
 ```bash
-# Analyze bundle
-npm run build
+# Check Node.js version
+node --version  # Should be 18+
 
-# Look for large dependencies
-# Main bundle should be < 500KB gzipped
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Check for TypeScript errors
+npm run type-check
+```
+
+#### OAuth Issues
+```bash
+# Check redirect URLs in Google Console
+# Verify Supabase auth configuration
+# Check environment variables
+# Test OAuth flow manually
+```
+
+#### Database Issues
+```bash
+# Check Supabase connection
+# Verify RLS policies
+# Check migration status
+# Review error logs
+```
+
+#### Image Upload Issues
+```bash
+# Check Cloudinary configuration
+# Verify upload preset
+# Check file size limits
+# Test upload manually
+```
+
+### Debug Mode
+```javascript
+// Enable debug mode
+localStorage.setItem('debug', 'true')
+
+// Check console for debug logs
+// Review network requests
+// Check Supabase logs
 ```
 
 ---
 
-## 🐛 Troubleshooting
+## 📈 Performance Optimization
 
-### "Environment variable not found"
+### Frontend Optimization
+- **Code Splitting** - Lazy load components
+- **Image Optimization** - Compress images before upload
+- **Bundle Analysis** - Monitor bundle size
+- **Caching** - Implement proper caching strategies
 
-**Problem:** App can't find `VITE_SUPABASE_URL` or similar
+### Backend Optimization
+- **Database Indexes** - Optimize query performance
+- **Connection Pooling** - Manage database connections
+- **CDN** - Use Cloudinary CDN for images
+- **Caching** - Cache frequently accessed data
 
-**Solution:**
-1. Check variable name has `VITE_` prefix
-2. Restart dev server: `npm run dev`
-3. Verify `.env.local` exists and has no typos
-4. On Vercel: Check environment variables are set for Production
-
-### "VAPID keys invalid"
-
-**Problem:** Push notifications not working
-
-**Solution:**
-1. Verify public key is exactly 87 characters (Base64 URL-safe)
-2. Verify private key is exactly 43 characters
-3. Check Supabase Edge Function has secrets: `supabase secrets list --project-ref YOUR_REF`
-4. Redeploy Edge Function: `supabase functions deploy send-push-notification --project-ref YOUR_REF`
-
-### "Vercel deployment fails"
-
-**Problem:** GitHub Actions workflow fails on Vercel deployment
-
-**Solution:**
-1. Check all GitHub secrets are added (see section 2)
-2. Verify `VERCEL_TOKEN` is valid (regenerate if needed)
-3. Run `vercel link` locally to get correct `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`
-4. Check build logs in Actions tab for specific error
-
-### "Database queries fail"
-
-**Problem:** RLS policies blocking queries
-
-**Solution:**
-1. Verify user is authenticated: `const { data: { user } } = await supabase.auth.getUser()`
-2. Check RLS policies in Supabase dashboard
-3. Enable RLS logs in Supabase: Settings → Database → Enable Statement Logs
-4. Review logs to see which policy is blocking
-
-### "Images not uploading"
-
-**Problem:** Cloudinary upload fails
-
-**Solution:**
-1. Verify `VITE_CLOUDINARY_CLOUD_NAME` matches your Cloudinary account
-2. Check upload preset exists and is set to "Unsigned"
-3. In Cloudinary: Settings → Upload → Create unsigned preset
-4. Verify preset name matches `VITE_CLOUDINARY_UPLOAD_PRESET`
+### Monitoring
+- **Vercel Analytics** - Track performance metrics
+- **Supabase Monitoring** - Monitor database performance
+- **Error Tracking** - Track and fix errors
+- **User Analytics** - Understand user behavior
 
 ---
 
-## 📚 Additional Documentation
+## 🔮 Future Enhancements
 
-For more detailed information, see:
+### Planned Features
+- **Mobile App** - Native iOS and Android apps
+- **Advanced AI** - Enhanced outfit generation
+- **Social Features** - Enhanced social interactions
+- **Analytics** - Advanced analytics dashboard
 
-- **Push Notifications:** `docs/NOTIFICATIONS_GUIDE.md` - In-app & push notifications
-- **Database Guide:** `DATABASE_GUIDE.md` - Complete database setup and schema
-- **API Reference:** `API_GUIDE.md`
-- **Testing Guide:** `TESTS_GUIDE.md`
-- **Documentation Index:** `docs/README.md` - Complete feature guide index
-
----
-
-## ✅ Deployment Checklist
-
-Use this before going live:
-
-### Pre-Deployment
-- [ ] All migrations applied to Supabase
-- [ ] Edge Function deployed with VAPID secrets
-- [ ] All environment variables set (GitHub, Vercel, local)
-- [ ] Tests passing: `npm test`
-- [ ] Lint passing: `npm run lint`
-- [ ] Build successful: `npm run build`
-- [ ] Preview build works: `npm run preview`
-
-### Post-Deployment
-- [ ] Production URL loads correctly
-- [ ] User can sign up/login
-- [ ] Images upload to Cloudinary
-- [ ] Push notifications work (test subscription)
-- [ ] Database queries work (check browser console)
-- [ ] No errors in Vercel logs
-- [ ] No errors in Supabase logs
+### Technical Improvements
+- **Performance** - Further optimization
+- **Security** - Enhanced security measures
+- **Scalability** - Better handling of growth
+- **Monitoring** - Advanced monitoring tools
 
 ---
 
-## 🆘 Need Help?
-
-1. Check this guide first (you're reading it!)
-2. Review error logs:
-   - Vercel: `https://vercel.com/YOUR_USERNAME/YOUR_PROJECT/deployments`
-   - Supabase: `https://supabase.com/dashboard/project/YOUR_REF/logs`
-   - GitHub Actions: Repo → Actions tab
-3. Check specific docs in `/docs` folder
-4. Review migration files in `/sql` folder
-
----
-
-**Last Updated:** October 8, 2025  
-**Maintained By:** StyleSnap Team
+This deployment guide provides comprehensive instructions for deploying StyleSnap v2.0.0, ensuring a smooth and successful deployment process.
