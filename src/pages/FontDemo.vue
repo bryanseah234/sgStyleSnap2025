@@ -206,9 +206,9 @@ const router = useRouter()
 
 // State
 const selectedColorTheme = ref('purple')
-const selectedFontTheme = ref('modern')
+const selectedFontTheme = ref('openSans')
 const originalColorTheme = ref('purple')
-const originalFontTheme = ref('modern')
+const originalFontTheme = ref('openSans')
 
 // Available themes
 const availableColorThemes = COLOR_THEMES
