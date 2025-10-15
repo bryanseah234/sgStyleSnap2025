@@ -4,12 +4,13 @@
  * Purpose: Global CSS variables and theme styles that apply to the entire application
  * 
  * Features:
- * - CSS custom properties for theme colors
+ * - CSS custom properties for theme colors and fonts
  * - Global theme classes for light/dark mode
  * - Consistent styling across all components
+ * - Centralized font system integration
  */
 
-/* CSS Custom Properties for Theme Colors */
+/* CSS Custom Properties for Theme Colors and Fonts */
 :root {
   /* Light theme (default) - Light purple palette */
   --theme-primary: #c84dd6;
@@ -17,42 +18,102 @@
   --theme-background: #f8f4ff;
   --theme-surface: #ffffff;
   --theme-surface-light: #f0e8ff;
-  --theme-text: #2d1b69;
-  --theme-text-secondary: #6b46c1;
+  --theme-text: #1a0d3a;        /* Darker purple for better contrast */
+  --theme-text-secondary: #4c1d95; /* Darker purple secondary text */
+  --theme-text-muted: #6b46c1;   /* Purple instead of gray for better contrast */
   --theme-border: #e0d4ff;
   --theme-hover: #f0e8ff;
   --theme-shadow: rgba(200, 77, 214, 0.1);
   --theme-active-tab-bg: rgb(250, 245, 255);
   --theme-notification-container-bg: rgb(250, 245, 255);
+  
+  /* Font system variables */
+  --font-primary: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
+  --font-secondary: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
+  --font-mono: JetBrains Mono, Fira Code, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  
+  /* Font weights */
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  
+  /* Font sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  
+  /* Line heights */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
 }
 
 /* Dark theme - Much lighter vibrant purple palette */
 .dark {
   --theme-primary: #c84dd6; /* Your specified vibrant purple */
   --theme-secondary: #d66ee3; /* Lighter vibrant purple */
-  --theme-background: #5a2a6a; /* Much lighter purple background */
-  --theme-surface: #6a3a7a; /* Lighter purple surface */
-  --theme-surface-light: #7a4a8a; /* Even lighter purple surface */
+  --theme-background: #2d1b69; /* Darker purple background for better contrast */
+  --theme-surface: #1a0d3a; /* Much darker purple surface */
+  --theme-surface-light: #4c1d95; /* Darker purple surface */
   --theme-text: #FFFFFF;
   --theme-text-secondary: #E5E7EB;
+  --theme-text-muted: #A78BFA; /* Light purple for muted text in dark mode */
   --theme-border: #8a5a9a; /* Lighter purple border */
   --theme-hover: #7a4a8a; /* Lighter purple hover */
   --theme-shadow: rgba(200, 77, 214, 0.2); /* Lighter purple shadow */
-  --theme-active-tab-bg: rgb(31, 41, 55); /* Dark grey-blue for active tabs in dark mode */
-  --theme-notification-container-bg: rgb(31, 41, 55); /* Dark grey-blue for notification container in dark mode */
+  --theme-active-tab-bg: #4c1d95; /* Dark purple for active tabs in dark mode */
+  --theme-notification-container-bg: #4c1d95; /* Dark purple for notification container in dark mode */
 }
 
 /* Global theme application */
 html {
   background-color: var(--theme-background);
   color: var(--theme-text);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
   background-color: var(--theme-background);
   color: var(--theme-text);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global font system application */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+p, span, div, label, button, a {
+  font-family: var(--font-primary);
+  line-height: var(--line-height-normal);
+}
+
+code, pre {
+  font-family: var(--font-mono);
 }
 
 /* Global component styles */
@@ -96,7 +157,17 @@ body {
   color: var(--theme-text-secondary);
 }
 
-/* Ensure all text elements are white in dark mode */
+/* Ensure all text elements have proper contrast in both modes */
+/* Light mode text contrast fixes */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--theme-text) !important;
+}
+
+p, span, div, label, button, a {
+  color: var(--theme-text) !important;
+}
+
+/* Dark mode text contrast fixes */
 .dark h1,
 .dark h2,
 .dark h3,
@@ -110,6 +181,17 @@ body {
 .dark button,
 .dark a {
   color: var(--theme-text) !important;
+}
+
+/* Ensure secondary text has proper contrast */
+.text-secondary,
+.text-muted {
+  color: var(--theme-text-secondary) !important;
+}
+
+.dark .text-secondary,
+.dark .text-muted {
+  color: var(--theme-text-secondary) !important;
 }
 
 /* Ensure secondary text is also visible in dark mode */
@@ -141,6 +223,52 @@ body {
   color: var(--theme-text-secondary) !important;
 }
 
+/* Fix common problematic text classes */
+/* Light mode - ensure good contrast */
+.text-gray-500,
+.text-gray-400,
+.text-gray-300 {
+  color: var(--theme-text-muted) !important;
+}
+
+.text-gray-600,
+.text-gray-700,
+.text-gray-800,
+.text-gray-900 {
+  color: var(--theme-text) !important;
+}
+
+/* Dark mode - ensure white text is visible */
+.dark .text-white {
+  color: var(--theme-text) !important;
+}
+
+.dark .text-gray-100,
+.dark .text-gray-200 {
+  color: var(--theme-text) !important;
+}
+
+/* Fix specific problematic patterns */
+.dark .bg-white {
+  background-color: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+.dark .text-black {
+  color: var(--theme-text) !important;
+}
+
+/* Ensure form elements have proper contrast */
+input, textarea, select {
+  color: var(--theme-text) !important;
+  background-color: var(--theme-surface) !important;
+}
+
+.dark input, .dark textarea, .dark select {
+  color: var(--theme-text) !important;
+  background-color: var(--theme-surface) !important;
+}
+
 /* Override Tailwind background classes in dark mode */
 .dark .bg-gray-50,
 .dark .bg-gray-100,
@@ -164,6 +292,87 @@ body {
 .dark .border-gray-700,
 .dark .border-gray-800 {
   border-color: var(--theme-border) !important;
+}
+
+/* CRITICAL: Override all blue colors with purple theme colors */
+/* This fixes the dark blue cards issue throughout the app */
+
+/* Blue background overrides */
+.bg-blue-50, .bg-blue-100, .bg-blue-200, .bg-blue-300, .bg-blue-400, .bg-blue-500, .bg-blue-600, .bg-blue-700, .bg-blue-800, .bg-blue-900 {
+  background-color: var(--theme-surface-light) !important;
+}
+
+.dark .bg-blue-50, .dark .bg-blue-100, .dark .bg-blue-200, .dark .bg-blue-300, .dark .bg-blue-400, .dark .bg-blue-500, .dark .bg-blue-600, .dark .bg-blue-700, .dark .bg-blue-800, .dark .bg-blue-900 {
+  background-color: var(--theme-surface) !important;
+}
+
+/* Blue text overrides */
+.text-blue-50, .text-blue-100, .text-blue-200, .text-blue-300, .text-blue-400, .text-blue-500, .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900 {
+  color: var(--theme-primary) !important;
+}
+
+.dark .text-blue-50, .dark .text-blue-100, .dark .text-blue-200, .dark .text-blue-300, .dark .text-blue-400, .dark .text-blue-500, .dark .text-blue-600, .dark .text-blue-700, .dark .text-blue-800, .dark .text-blue-900 {
+  color: var(--theme-primary) !important;
+}
+
+/* Blue border overrides */
+.border-blue-50, .border-blue-100, .border-blue-200, .border-blue-300, .border-blue-400, .border-blue-500, .border-blue-600, .border-blue-700, .border-blue-800, .border-blue-900 {
+  border-color: var(--theme-primary) !important;
+}
+
+.dark .border-blue-50, .dark .border-blue-100, .dark .border-blue-200, .dark .border-blue-300, .dark .border-blue-400, .dark .border-blue-500, .dark .border-blue-600, .dark .border-blue-700, .dark .border-blue-800, .dark .border-blue-900 {
+  border-color: var(--theme-primary) !important;
+}
+
+/* Blue ring/focus overrides */
+.ring-blue-50, .ring-blue-100, .ring-blue-200, .ring-blue-300, .ring-blue-400, .ring-blue-500, .ring-blue-600, .ring-blue-700, .ring-blue-800, .ring-blue-900 {
+  --tw-ring-color: var(--theme-primary) !important;
+}
+
+.dark .ring-blue-50, .dark .ring-blue-100, .dark .ring-blue-200, .dark .ring-blue-300, .dark .ring-blue-400, .dark .ring-blue-500, .dark .ring-blue-600, .dark .ring-blue-700, .dark .ring-blue-800, .dark .ring-blue-900 {
+  --tw-ring-color: var(--theme-primary) !important;
+}
+
+/* Blue gradient overrides */
+.from-blue-50, .from-blue-100, .from-blue-200, .from-blue-300, .from-blue-400, .from-blue-500, .from-blue-600, .from-blue-700, .from-blue-800, .from-blue-900 {
+  --tw-gradient-from: var(--theme-primary) !important;
+}
+
+.to-blue-50, .to-blue-100, .to-blue-200, .to-blue-300, .to-blue-400, .to-blue-500, .to-blue-600, .to-blue-700, .to-blue-800, .to-blue-900 {
+  --tw-gradient-to: var(--theme-secondary) !important;
+}
+
+/* Specific blue class overrides for common patterns */
+.bg-blue-600 {
+  background-color: var(--theme-primary) !important;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: var(--theme-secondary) !important;
+}
+
+.focus\:ring-blue-500:focus {
+  --tw-ring-color: var(--theme-primary) !important;
+}
+
+.border-blue-500 {
+  border-color: var(--theme-primary) !important;
+}
+
+.text-blue-600 {
+  color: var(--theme-primary) !important;
+}
+
+.text-blue-800 {
+  color: var(--theme-text) !important;
+}
+
+.bg-blue-100 {
+  background-color: var(--theme-surface-light) !important;
+}
+
+.bg-blue-50 {
+  background-color: var(--theme-background) !important;
 }
 
 /* Button styles */

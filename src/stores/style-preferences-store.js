@@ -1,403 +1,180 @@
 /**
- * Style Preferences Store
- * Manages user style preferences and suggestion feedback
+ * Style Preferences Store - StyleSnap
+ *
+ * Purpose: Pinia store for managing user style preferences (fonts, colors, themes)
+ *
+ * Features:
+ * - Font theme management
+ * - Color theme management
+ * - Preference persistence
+ * - Session management
  */
 
 import { defineStore } from 'pinia'
-import stylePreferencesService from '@/services/style-preferences-service'
+import { 
+  changeFontTheme, 
+  getCurrentFontThemeInfo,
+  initializeFontSystem 
+} from '@/utils/font-system'
+import { 
+  changeColorTheme, 
+  getCurrentColorTheme,
+  initializeColorSystem,
+  shouldShowStylePrompt
+} from '@/utils/color-system'
 
 export const useStylePreferencesStore = defineStore('stylePreferences', {
   state: () => ({
-    preferences: null,
-    feedback: [],
-    loading: false,
-    error: null,
-    hasLoadedPreferences: false
+    // Font preferences
+    fontTheme: 'modern',
+    fontThemeInfo: null,
+    
+    // Color preferences
+    colorTheme: {
+      primary: '#c84dd6',
+      secondary: '#d66ee3',
+      background: '#f8f4ff'
+    },
+    
+    // UI state
+    showStyleModal: false,
+    preferencesSet: false,
+    
+    // Session tracking
+    sessionId: null
   }),
 
   getters: {
-    /**
-     * Check if preferences exist
-     */
-    hasPreferences: state => {
-      return state.preferences !== null
+    // Check if user has any style preferences set
+    hasPreferences: (state) => {
+      return state.fontTheme !== 'modern' || 
+             state.colorTheme.primary !== '#c84dd6' ||
+             state.preferencesSet
     },
-
-    /**
-     * Get favorite colors
-     */
-    favoriteColors: state => {
-      return state.preferences?.favorite_colors || []
+    
+    // Get current font theme name
+    currentFontThemeName: (state) => {
+      return state.fontThemeInfo?.name || 'Modern'
     },
-
-    /**
-     * Get avoided colors
-     */
-    avoidColors: state => {
-      return state.preferences?.avoid_colors || []
-    },
-
-    /**
-     * Get preferred styles
-     */
-    preferredStyles: state => {
-      return state.preferences?.preferred_styles || []
-    },
-
-    /**
-     * Get preferred brands
-     */
-    preferredBrands: state => {
-      return state.preferences?.preferred_brands || []
-    },
-
-    /**
-     * Get fit preference
-     */
-    fitPreference: state => {
-      return state.preferences?.fit_preference || 'regular'
-    },
-
-    /**
-     * Get common occasions
-     */
-    commonOccasions: state => {
-      return state.preferences?.common_occasions || []
-    },
-
-    /**
-     * Get feedback for specific suggestion
-     */
-    getFeedbackForSuggestion: state => suggestionId => {
-      return state.feedback.find(f => f.suggestion_id === suggestionId)
-    },
-
-    /**
-     * Get feedback statistics
-     */
-    feedbackStats: state => {
-      const stats = {
-        like: 0,
-        dislike: 0,
-        love: 0,
-        total: state.feedback.length
-      }
-
-      state.feedback.forEach(f => {
-        if (f.feedback_type in stats) {
-          stats[f.feedback_type]++
-        }
-      })
-
-      return stats
-    },
-
-    /**
-     * Get positive feedback percentage
-     */
-    positivePercentage: (state, getters) => {
-      const { like, love, total } = getters.feedbackStats
-      if (total === 0) return 0
-      return Math.round(((like + love) / total) * 100)
+    
+    // Check if should show style prompt
+    shouldShowPrompt: () => {
+      return shouldShowStylePrompt()
     }
   },
 
   actions: {
     /**
-     * Fetch style preferences
+     * Initialize the style preferences store
      */
-    async fetchPreferences() {
-      this.loading = true
-      this.error = null
-
-      try {
-        this.preferences = await stylePreferencesService.getPreferences()
-        this.hasLoadedPreferences = true
-      } catch (error) {
-        this.error = error.message
-        console.error('Failed to fetch preferences:', error)
-        throw error
-      } finally {
-        this.loading = false
+    async initialize() {
+      // Generate session ID
+      this.sessionId = Date.now().toString()
+      
+      // Initialize font system
+      this.fontTheme = initializeFontSystem()
+      this.fontThemeInfo = getCurrentFontThemeInfo()
+      
+      // Initialize color system
+      this.colorTheme = initializeColorSystem()
+      
+      // Check if preferences are set
+      this.preferencesSet = this.hasPreferences
+      
+      // Show modal if needed
+      this.showStyleModal = this.shouldShowPrompt
+    },
+    
+    /**
+     * Set font theme
+     * @param {string} themeKey - Font theme key
+     */
+    setFontTheme(themeKey) {
+      this.fontTheme = themeKey
+      changeFontTheme(themeKey)
+      this.fontThemeInfo = getCurrentFontThemeInfo()
+    },
+    
+    /**
+     * Set color theme
+     * @param {Object} colors - Color theme object
+     */
+    setColorTheme(colors) {
+      this.colorTheme = colors
+      changeColorTheme(colors)
+    },
+    
+    /**
+     * Save all preferences
+     * @param {Object} preferences - Preferences object
+     */
+    savePreferences(preferences) {
+      if (preferences.font) {
+        this.setFontTheme(preferences.font)
       }
-    },
-
-    /**
-     * Update style preferences
-     */
-    async updatePreferences(updates) {
-      this.loading = true
-      this.error = null
-
-      // Optimistic update
-      const oldPreferences = this.preferences
-      this.preferences = { ...this.preferences, ...updates }
-
-      try {
-        const updated = await stylePreferencesService.updatePreferences(updates)
-        this.preferences = updated
-        return updated
-      } catch (error) {
-        // Rollback on error
-        this.preferences = oldPreferences
-        this.error = error.message
-        console.error('Failed to update preferences:', error)
-        throw error
-      } finally {
-        this.loading = false
+      
+      if (preferences.color) {
+        this.setColorTheme(preferences.color)
       }
+      
+      this.preferencesSet = true
+      this.showStyleModal = false
+      
+      // Mark as set for this session
+      sessionStorage.setItem('style-preferences-set', 'true')
     },
-
+    
     /**
-     * Add favorite color
+     * Skip style preferences for this session
      */
-    async addFavoriteColor(color) {
-      const currentColors = this.favoriteColors
-      if (currentColors.includes(color)) return
-
-      await this.updatePreferences({
-        favorite_colors: [...currentColors, color]
-      })
+    skipPreferences() {
+      this.showStyleModal = false
+      sessionStorage.setItem('style-preferences-set', 'skipped')
     },
-
+    
     /**
-     * Remove favorite color
+     * Show style preferences modal
      */
-    async removeFavoriteColor(color) {
-      const currentColors = this.favoriteColors
-      await this.updatePreferences({
-        favorite_colors: currentColors.filter(c => c !== color)
-      })
+    showStylePreferences() {
+      this.showStyleModal = true
     },
-
+    
     /**
-     * Add avoided color
+     * Hide style preferences modal
      */
-    async addAvoidColor(color) {
-      const currentColors = this.avoidColors
-      if (currentColors.includes(color)) return
-
-      await this.updatePreferences({
-        avoid_colors: [...currentColors, color]
-      })
+    hideStylePreferences() {
+      this.showStyleModal = false
     },
-
+    
     /**
-     * Remove avoided color
+     * Reset all preferences to defaults
      */
-    async removeAvoidColor(color) {
-      const currentColors = this.avoidColors
-      await this.updatePreferences({
-        avoid_colors: currentColors.filter(c => c !== color)
-      })
-    },
-
-    /**
-     * Add preferred style
-     */
-    async addPreferredStyle(style) {
-      const currentStyles = this.preferredStyles
-      if (currentStyles.includes(style)) return
-
-      await this.updatePreferences({
-        preferred_styles: [...currentStyles, style]
-      })
-    },
-
-    /**
-     * Remove preferred style
-     */
-    async removePreferredStyle(style) {
-      const currentStyles = this.preferredStyles
-      await this.updatePreferences({
-        preferred_styles: currentStyles.filter(s => s !== style)
-      })
-    },
-
-    /**
-     * Add preferred brand
-     */
-    async addPreferredBrand(brand) {
-      const currentBrands = this.preferredBrands
-      if (currentBrands.includes(brand)) return
-
-      await this.updatePreferences({
-        preferred_brands: [...currentBrands, brand]
-      })
-    },
-
-    /**
-     * Remove preferred brand
-     */
-    async removePreferredBrand(brand) {
-      const currentBrands = this.preferredBrands
-      await this.updatePreferences({
-        preferred_brands: currentBrands.filter(b => b !== brand)
-      })
-    },
-
-    /**
-     * Update fit preference
-     */
-    async updateFitPreference(fit) {
-      await this.updatePreferences({
-        fit_preference: fit
-      })
-    },
-
-    /**
-     * Add common occasion
-     */
-    async addCommonOccasion(occasion) {
-      const currentOccasions = this.commonOccasions
-      if (currentOccasions.includes(occasion)) return
-
-      await this.updatePreferences({
-        common_occasions: [...currentOccasions, occasion]
-      })
-    },
-
-    /**
-     * Remove common occasion
-     */
-    async removeCommonOccasion(occasion) {
-      const currentOccasions = this.commonOccasions
-      await this.updatePreferences({
-        common_occasions: currentOccasions.filter(o => o !== occasion)
-      })
-    },
-
-    /**
-     * Submit feedback on suggestion
-     */
-    async submitFeedback(suggestionId, feedbackType, reason = null) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const feedback = await stylePreferencesService.submitFeedback(
-          suggestionId,
-          feedbackType,
-          reason
-        )
-
-        // Update or add to feedback array
-        const existingIndex = this.feedback.findIndex(f => f.suggestion_id === suggestionId)
-
-        if (existingIndex !== -1) {
-          this.feedback[existingIndex] = feedback
-        } else {
-          this.feedback.push(feedback)
-        }
-
-        return feedback
-      } catch (error) {
-        this.error = error.message
-        console.error('Failed to submit feedback:', error)
-        throw error
-      } finally {
-        this.loading = false
+    resetPreferences() {
+      this.fontTheme = 'modern'
+      this.colorTheme = {
+        primary: '#c84dd6',
+        secondary: '#d66ee3',
+        background: '#f8f4ff'
       }
+      
+      // Clear localStorage
+      localStorage.removeItem('font-theme')
+      localStorage.removeItem('color-theme')
+      
+      // Reinitialize systems
+      this.initialize()
     },
-
+    
     /**
-     * Fetch all user feedback
+     * Get current preferences as object
+     * @returns {Object} Current preferences
      */
-    async fetchAllFeedback() {
-      this.loading = true
-      this.error = null
-
-      try {
-        this.feedback = await stylePreferencesService.getAllFeedback()
-      } catch (error) {
-        this.error = error.message
-        console.error('Failed to fetch feedback:', error)
-        throw error
-      } finally {
-        this.loading = false
+    getCurrentPreferences() {
+      return {
+        font: this.fontTheme,
+        color: this.colorTheme,
+        fontInfo: this.fontThemeInfo
       }
-    },
-
-    /**
-     * Get feedback for specific suggestion
-     */
-    async fetchFeedback(suggestionId) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const feedback = await stylePreferencesService.getFeedback(suggestionId)
-
-        if (feedback) {
-          const existingIndex = this.feedback.findIndex(f => f.suggestion_id === suggestionId)
-
-          if (existingIndex !== -1) {
-            this.feedback[existingIndex] = feedback
-          } else {
-            this.feedback.push(feedback)
-          }
-        }
-
-        return feedback
-      } catch (error) {
-        this.error = error.message
-        console.error('Failed to fetch feedback:', error)
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Delete feedback for suggestion
-     */
-    async deleteFeedback(suggestionId) {
-      this.loading = true
-      this.error = null
-
-      try {
-        await stylePreferencesService.deleteFeedback(suggestionId)
-
-        this.feedback = this.feedback.filter(f => f.suggestion_id !== suggestionId)
-      } catch (error) {
-        this.error = error.message
-        console.error('Failed to delete feedback:', error)
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Initialize preferences if they don't exist
-     */
-    async initializePreferences() {
-      if (!this.hasLoadedPreferences) {
-        await this.fetchPreferences()
-      }
-
-      if (!this.hasPreferences) {
-        // Create default preferences
-        await this.updatePreferences({
-          favorite_colors: [],
-          avoid_colors: [],
-          preferred_styles: [],
-          preferred_brands: [],
-          fit_preference: 'regular',
-          common_occasions: []
-        })
-      }
-    },
-
-    /**
-     * Reset store state
-     */
-    reset() {
-      this.preferences = null
-      this.feedback = []
-      this.loading = false
-      this.error = null
-      this.hasLoadedPreferences = false
     }
   }
 })

@@ -5,6 +5,13 @@
 
 <template>
   <div class="main-layout">
+    <!-- Style Preferences Modal -->
+    <StylePreferenceModal
+      :show="stylePreferencesStore.showStyleModal"
+      @close="stylePreferencesStore.hideStylePreferences"
+      @preferences-saved="handlePreferencesSaved"
+    />
+
     <header class="main-header">
       <div class="header-content">
         <h1 class="app-logo">
@@ -92,12 +99,15 @@ import { computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth-store'
 import { useNotificationsStore } from '../../stores/notifications-store'
 import { useSuggestionsStore } from '../../stores/suggestions-store'
+import { useStylePreferencesStore } from '../../stores/style-preferences-store'
 import NotificationBadge from '../notifications/NotificationBadge.vue'
 import SettingsDropdown from '../ui/SettingsDropdown.vue'
+import StylePreferenceModal from '../ui/StylePreferenceModal.vue'
 
 const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
 const suggestionsStore = useSuggestionsStore()
+const stylePreferencesStore = useStylePreferencesStore()
 
 const userName = computed(() => authStore.userName)
 
@@ -110,6 +120,11 @@ function scrollToTop() {
   })
 }
 
+// Handle style preferences saved
+function handlePreferencesSaved(preferences) {
+  stylePreferencesStore.savePreferences(preferences)
+}
+
 onMounted(() => {
   // Initialize notifications when layout mounts
   if (!notificationsStore.initialized) {
@@ -118,6 +133,9 @@ onMounted(() => {
 
   // Fetch unread suggestions count
   suggestionsStore.fetchUnreadCount()
+  
+  // Initialize style preferences
+  stylePreferencesStore.initialize()
 })
 </script>
 

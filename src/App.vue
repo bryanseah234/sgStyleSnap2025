@@ -76,8 +76,18 @@
 import { ref, onMounted, watch } from 'vue'
 import { isSupabaseConfigured } from './config/supabase'
 import { useAuthStore, useLikesStore } from './stores'
+import { initializeVueFontSystem } from './utils/font-system'
+import { initializeVueColorSystem } from './utils/color-system'
 
 const isConfigured = ref(isSupabaseConfigured)
+
+// Initialize font and color systems
+onMounted(() => {
+  if (isConfigured.value) {
+    initializeVueFontSystem()
+    initializeVueColorSystem()
+  }
+})
 
 // Only initialize stores if Supabase is configured
 if (isConfigured.value) {
