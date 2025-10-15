@@ -46,6 +46,13 @@ export function authGuard(to, from, next) {
       path: '/login',
       query: { redirect: to.fullPath }
     })
+  } else if (requiresAuth && authStore.isAuthenticated && to.path !== '/session-confirmation') {
+    // If user is authenticated and trying to access a protected route,
+    // redirect to session confirmation first (unless already on session confirmation)
+    next({
+      path: '/session-confirmation',
+      query: { redirect: to.fullPath }
+    })
   } else {
     next()
   }

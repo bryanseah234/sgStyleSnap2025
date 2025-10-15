@@ -80,6 +80,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       this.isAuthenticated = false
       this.error = null
+      clearActiveSession()
     },
 
     /**
