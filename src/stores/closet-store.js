@@ -102,6 +102,17 @@ export const useClosetStore = defineStore('closet', {
       return items
     },
     favoriteItems: state => state.items.filter(item => item.is_favorite === true),
+    sortedItems: state => {
+      // Sort items: favorites first, then alphabetically by name
+      return [...state.items].sort((a, b) => {
+        // First, sort by favorite status (favorites first)
+        if (a.is_favorite && !b.is_favorite) return -1
+        if (!a.is_favorite && b.is_favorite) return 1
+        
+        // Then sort alphabetically by name
+        return (a.name || '').localeCompare(b.name || '')
+      })
+    },
     itemCount: state => state.items.length,
     quotaPercentage: state => (state.quota.used / state.quota.limit) * 100,
     isQuotaFull: state => state.quota.used >= state.quota.limit,

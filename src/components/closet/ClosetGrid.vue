@@ -342,12 +342,16 @@ function handleFavoriteClick(item) {
 .heart-icon {
   width: 1.25rem;
   height: 1.25rem;
-  color: #9ca3af;
+  color: #6b7280;
   transition: color 0.2s ease;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
 .favorite-button.is-favorite .heart-icon {
   color: #ef4444;
+  fill: #ef4444;
   animation: heart-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 

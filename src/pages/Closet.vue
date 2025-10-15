@@ -198,7 +198,8 @@ const showFabDropdown = ref(false)
 const showEmptyStateDropdown = ref(false)
 
 const items = computed(() => {
-  let filtered = closetStore.items
+  // Start with sorted items (favorites first, then alphabetical)
+  let filtered = closetStore.sortedItems
 
   if (filters.value.category) {
     filtered = filtered.filter(item => item.category === filters.value.category)
