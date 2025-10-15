@@ -213,6 +213,7 @@ import { useThemeStore } from '../stores/theme-store'
 import { getUserProfile, updateUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
 import { COLOR_THEMES } from '../config/color-themes'
 import { applyColorTheme } from '../config/color-themes'
+import { applyFontTheme, saveFontTheme, loadFontTheme } from '../utils/font-system'
 import MainLayout from '../components/layouts/MainLayout.vue'
 import StylePreferenceModal from '../components/ui/StylePreferenceModal.vue'
 import { SunIcon, MoonIcon, ComputerDesktopIcon } from '@heroicons/vue/24/outline'
@@ -351,7 +352,8 @@ function loadStylePreferences() {
   if (savedFont && fontOptions.some(font => font.value === savedFont)) {
     selectedFont.value = savedFont
     originalFont.value = savedFont
-    document.documentElement.style.setProperty('--font-family', savedFont)
+    // Apply font globally using font system
+    applyFontTheme(savedFont)
   }
   
   // Load color preference
@@ -391,8 +393,9 @@ function selectColorTheme(themeKey) {
 
 function selectFont(fontValue) {
   selectedFont.value = fontValue
-  // Apply font preview immediately
-  document.documentElement.style.setProperty('--font-family', fontValue)
+  // Apply font globally using the font system
+  applyFontTheme(fontValue)
+  saveFontTheme(fontValue)
 }
 
 function selectColor(colorValue) {
@@ -423,21 +426,29 @@ async function saveAllSettings() {
     // Save theme preference
     if (selectedTheme.value !== originalTheme.value) {
       localStorage.setItem('theme-preference', selectedTheme.value)
-      applyTheme(selectedTheme.value)
+      // Apply theme globally using theme store
+      if (selectedTheme.value === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        themeStore.setTheme(prefersDark)
+      } else {
+        themeStore.setTheme(selectedTheme.value === 'dark')
+      }
       originalTheme.value = selectedTheme.value
     }
     
     // Save color theme
     if (selectedColorTheme.value !== originalColorTheme.value) {
       localStorage.setItem('color-theme', selectedColorTheme.value)
-      applyColorTheme(selectedColorTheme.value, false)
+      applyColorTheme(selectedColorTheme.value, themeStore.isDarkMode)
       originalColorTheme.value = selectedColorTheme.value
     }
     
     // Save font preference
     if (selectedFont.value !== originalFont.value) {
       localStorage.setItem('font-preference', selectedFont.value)
-      document.documentElement.style.setProperty('--font-family', selectedFont.value)
+      // Apply font globally using font system
+      applyFontTheme(selectedFont.value)
+      saveFontTheme(selectedFont.value)
       originalFont.value = selectedFont.value
     }
     
@@ -468,10 +479,15 @@ function cancelChanges() {
   selectedFont.value = originalFont.value
   selectedColor.value = originalColor.value
   
-  // Reapply original themes and preferences
-  applyTheme(originalTheme.value)
-  applyColorTheme(originalColorTheme.value, false)
-  document.documentElement.style.setProperty('--font-family', originalFont.value)
+  // Reapply original themes and preferences using global systems
+  if (originalTheme.value === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    themeStore.setTheme(prefersDark)
+  } else {
+    themeStore.setTheme(originalTheme.value === 'dark')
+  }
+  applyColorTheme(originalColorTheme.value, themeStore.isDarkMode)
+  applyFontTheme(originalFont.value)
   document.documentElement.style.setProperty('--theme-text', originalColor.value)
 }
 
@@ -501,16 +517,6 @@ function handleStylePreferencesSaved(preferences) {
   showStyleModal.value = false
 }
 
-// Apply theme function
-function applyTheme(themeValue) {
-  if (themeValue === 'system') {
-    // Use system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
-  } else {
-    document.documentElement.setAttribute('data-theme', themeValue)
-  }
-}
 </script>
 
 <style scoped>
