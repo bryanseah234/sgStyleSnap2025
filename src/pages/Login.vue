@@ -47,6 +47,48 @@
         </div>
 
         <div class="login-section">
+          <!-- Available Sessions -->
+          <div v-if="hasAvailableSessions" class="sessions-section">
+            <h3 class="sessions-title">Continue with an existing account</h3>
+            <div class="sessions-list">
+              <div
+                v-for="session in availableSessions"
+                :key="session.id"
+                class="session-card"
+                @click="continueWithSession(session)"
+              >
+                <div class="session-avatar">
+                  <img
+                    v-if="session.avatar_url"
+                    :src="session.avatar_url"
+                    :alt="session.name"
+                    class="avatar-img"
+                  >
+                  <div v-else class="avatar-placeholder">
+                    {{ getInitial(session.name) }}
+                  </div>
+                </div>
+                
+                <div class="session-details">
+                  <h4 class="session-name">{{ session.name }}</h4>
+                  <p class="session-email">{{ session.email }}</p>
+                  <p class="session-last-login">{{ formatLastLogin(session.last_login) }}</p>
+                </div>
+                
+                <div class="session-action">
+                  <svg class="continue-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="divider">
+              <span>or</span>
+            </div>
+          </div>
+
+          <!-- Sign in with Google -->
           <Button
             variant="primary"
             size="lg"
@@ -55,7 +97,9 @@
             full-width
             @click="handleGoogleSignIn"
           >
-            <span v-if="!isLoading">Sign in with Google</span>
+            <span v-if="!isLoading">
+              {{ hasAvailableSessions ? 'Sign in with a different Google account' : 'Sign in with Google' }}
+            </span>
           </Button>
 
           <!-- Development Mock Login -->
@@ -114,9 +158,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
+import { 
+  getStoredSessions, 
+  formatLastLogin,
+  storeUserSession 
+} from '../services/session-service'
 import Button from '../components/ui/Button.vue'
 
 const router = useRouter()
@@ -124,9 +173,47 @@ const authStore = useAuthStore()
 
 const isLoading = ref(false)
 const errorMessage = ref('')
+const availableSessions = ref([])
 
 // Development mode detection
 const isDevelopment = import.meta.env.DEV
+
+// Computed properties
+const hasAvailableSessions = computed(() => availableSessions.value.length > 0)
+
+// Load available sessions on mount
+onMounted(() => {
+  loadAvailableSessions()
+})
+
+function loadAvailableSessions() {
+  try {
+    availableSessions.value = getStoredSessions()
+  } catch (error) {
+    console.error('Failed to load available sessions:', error)
+  }
+}
+
+function getInitial(name) {
+  return name ? name.charAt(0).toUpperCase() : '?'
+}
+
+async function continueWithSession(session) {
+  isLoading.value = true
+  errorMessage.value = ''
+  
+  try {
+    // Set the session as active and redirect
+    // Note: This would need to be implemented in the auth service
+    // For now, we'll just redirect to the session confirmation page
+    router.push('/session-confirmation')
+  } catch (error) {
+    console.error('Failed to continue with session:', error)
+    errorMessage.value = 'Failed to continue with this account. Please try again.'
+  } finally {
+    isLoading.value = false
+  }
+}
 
 async function handleGoogleSignIn() {
   isLoading.value = true
