@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 defineProps({
   modelValue: {
@@ -102,9 +102,8 @@ defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const inputId = computed(() => {
-  return `input-${Math.random().toString(36).substr(2, 9)}`
-})
+// Generate a stable ID once
+const inputId = ref(`input-${Math.random().toString(36).substr(2, 9)}`)
 
 const handleInput = event => {
   emit('update:modelValue', event.target.value)
