@@ -6,24 +6,18 @@
       <select
         v-model="localFilters.category"
         class="filter-select"
-        @change="emitFilters"
+        @change="handleCategoryChange"
       >
         <option value="">
           All Categories
         </option>
-        <optgroup
-          v-for="(items, group) in CATEGORY_GROUPS"
-          :key="group"
-          :label="group.charAt(0).toUpperCase() + group.slice(1)"
+        <option
+          v-for="category in MAIN_CATEGORIES"
+          :key="category.value"
+          :value="category.value"
         >
-          <option
-            v-for="cat in items"
-            :key="cat.value"
-            :value="cat.value"
-          >
-            {{ cat.label }}
-          </option>
-        </optgroup>
+          {{ category.label }}
+        </option>
       </select>
     </div>
 
@@ -33,17 +27,17 @@
       <select
         v-model="localFilters.clothing_type"
         class="filter-select"
-        @change="emitFilters"
+        @change="handleTypeChange"
       >
         <option value="">
           All Types
         </option>
         <option
-          v-for="type in CLOTHING_TYPES"
-          :key="type"
-          :value="type"
+          v-for="type in filteredTypes"
+          :key="type.value"
+          :value="type.value"
         >
-          {{ CLOTHING_TYPE_LABELS[type] || type }}
+          {{ type.label }}
         </option>
       </select>
     </div>
@@ -81,8 +75,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { CATEGORY_GROUPS } from '@/config/constants'
-import { CLOTHING_TYPES, CLOTHING_TYPE_LABELS } from '@/utils/clothing-constants'
+import { MAIN_CATEGORIES, CLOTHING_TYPES, getTypesForCategory, getCategoryFromType } from '@/config/constants'
 
 const props = defineProps({
   filters: {
@@ -107,11 +100,46 @@ watch(
   { deep: true }
 )
 
+// Computed property for filtered types based on selected category
+const filteredTypes = computed(() => {
+  if (localFilters.value.category) {
+    // If category is selected, only show types for that category
+    return getTypesForCategory(localFilters.value.category)
+  } else {
+    // If no category selected, show all types
+    return CLOTHING_TYPES
+  }
+})
+
 const hasActiveFilters = computed(() => {
   return (
     localFilters.value.category || localFilters.value.clothing_type || localFilters.value.privacy
   )
 })
+
+// Handle category change
+function handleCategoryChange() {
+  // Clear clothing type if it doesn't belong to the selected category
+  if (localFilters.value.clothing_type) {
+    const typeCategory = getCategoryFromType(localFilters.value.clothing_type)
+    if (typeCategory !== localFilters.value.category) {
+      localFilters.value.clothing_type = ''
+    }
+  }
+  emitFilters()
+}
+
+// Handle type change
+function handleTypeChange() {
+  // Auto-populate category based on selected type
+  if (localFilters.value.clothing_type) {
+    const category = getCategoryFromType(localFilters.value.clothing_type)
+    if (category) {
+      localFilters.value.category = category
+    }
+  }
+  emitFilters()
+}
 
 function emitFilters() {
   emit('update:filters', { ...localFilters.value })
