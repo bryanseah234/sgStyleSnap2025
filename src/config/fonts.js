@@ -355,5 +355,5 @@ export function getFontTheme(themeName) {
  * Get font theme info by name
  */
 export function getFontThemeInfo(themeName) {
-  return AVAILABLE_FONT_THEMES[themeName] || AVAILABLE_FONT_THEMES.modern
+  return AVAILABLE_FONT_THEMES[themeName] || AVAILABLE_FONT_THEMES.openSans
 }

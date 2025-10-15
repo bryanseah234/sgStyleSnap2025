@@ -19,7 +19,7 @@
  * - sql/006_color_detection.sql for database schema
  */
 
-import { COLOR_PALETTE } from '@/config/colors'
+import { COLOR_PALETTE } from '../config/colors'
 
 /**
  * Color Detector Class

@@ -412,12 +412,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useClosetStore } from '@/stores/closet-store'
+import { useClosetStore } from '../../stores/closet-store'
 // eslint-disable-next-line no-unused-vars
-import { CLOTHING_CATEGORIES, CATEGORY_GROUPS, SEASONS, PRIVACY_OPTIONS } from '@/config/constants'
-import { compressImage } from '@/utils/image-compression'
-import colorDetector from '@/utils/color-detector'
-import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
+import { CLOTHING_CATEGORIES, CATEGORY_GROUPS, SEASONS, PRIVACY_OPTIONS } from '../../config/constants'
+import { compressImage } from '../../utils/image-compression'
+import colorDetector from '../../utils/color-detector'
+import { classifyClothingItem, validateImageForClassification } from '../../services/fashion-rnn-service'
 
 const emit = defineEmits(['success', 'cancel'])
 

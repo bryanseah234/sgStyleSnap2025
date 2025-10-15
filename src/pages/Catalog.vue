@@ -125,12 +125,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useCatalogStore } from '@/stores/catalog-store'
-import { useClosetStore } from '@/stores/closet-store'
-import MainLayout from '@/components/layouts/MainLayout.vue'
-import CatalogSearch from '@/components/catalog/CatalogSearch.vue'
-import CatalogFilter from '@/components/catalog/CatalogFilter.vue'
-import CatalogItemCard from '@/components/catalog/CatalogItemCard.vue'
+import { useCatalogStore } from '../stores/catalog-store'
+import { useClosetStore } from '../stores/closet-store'
+import MainLayout from '../components/layouts/MainLayout.vue'
+import CatalogSearch from '../components/catalog/CatalogSearch.vue'
+import CatalogFilter from '../components/catalog/CatalogFilter.vue'
+import CatalogItemCard from '../components/catalog/CatalogItemCard.vue'
 
 const catalogStore = useCatalogStore()
 const closetStore = useClosetStore()

@@ -46,6 +46,43 @@ export async function getUserProfile() {
 }
 
 /**
+ * Update user's profile information
+ * @param {string} name - User's display name
+ * @param {string} username - User's username
+ * @returns {Promise<Object>} Updated user profile
+ */
+export async function updateUserProfile(name, username) {
+  try {
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
+    if (authError) throw authError
+    if (!user) throw new Error('Not authenticated')
+
+    // Update profile in users table
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        name: name,
+        username: username,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id)
+      .select('id, email, username, name, avatar_url')
+      .single()
+
+    if (error) throw error
+
+    return data
+  } catch (error) {
+    console.error('Failed to update profile:', error)
+    throw error
+  }
+}
+
+/**
  * Update user's profile photo
  * @param {string} avatarUrl - Path to default avatar (e.g., /avatars/default-1.png)
  * @returns {Promise<Object>} Updated user profile

@@ -59,7 +59,7 @@
 <script setup>
 import { computed } from 'vue'
 import ProgressBar from './ProgressBar.vue'
-import { calculateQuota, getQuotaColor, getQuotaMessage } from '@/utils/quota-calculator'
+import { calculateQuota, getQuotaColor, getQuotaMessage } from '../../utils/quota-calculator'
 
 const props = defineProps({
   currentCount: {

@@ -47,7 +47,7 @@
                 <div v-if="showAvatarSelector" class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <h4 class="text-sm font-medium mb-3">Choose Avatar</h4>
                   <div class="grid grid-cols-6 gap-3">
-                    <button
+          <button
                       v-for="avatar in availableAvatars"
                       :key="avatar"
                       @click="selectAvatar(avatar)"
@@ -58,21 +58,21 @@
                       <div
                         v-if="profile.avatar_url === avatar"
                         class="absolute inset-0 flex items-center justify-center bg-purple-500 bg-opacity-20 animate-fade-in"
-                      >
-                        <svg
+          >
+            <svg
                           class="w-12 h-12 text-purple-600 animate-bounce-subtle"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+            </svg>
                       </div>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
+          </button>
+        </div>
+      </div>
+    </div>
+
               <!-- Profile Information -->
               <div class="profile-info">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -83,8 +83,8 @@
                       type="text"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                  </div>
-                  
+      </div>
+
                   <div>
                     <label class="block text-sm font-medium mb-2">Username</label>
                     <input
@@ -92,11 +92,11 @@
                       type="text"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                  </div>
-                  
+      </div>
+
                   <div class="md:col-span-2">
                     <label class="block text-sm font-medium mb-2">Email</label>
-                    <input
+                <input
                       v-model="editableProfile.email"
                       type="email"
                       disabled
@@ -105,9 +105,9 @@
                   </div>
                 </div>
               </div>
+              </div>
             </div>
-          </div>
-          
+
           <!-- Font Style Section -->
           <div class="settings-section">
             <h2 class="text-xl font-semibold mb-6">Font Style</h2>
@@ -132,9 +132,9 @@
                   <div v-if="selectedFontTheme === key" class="selected-dot"></div>
                 </div>
               </div>
+              </div>
             </div>
-          </div>
-          
+
           <!-- Color Theme Section -->
           <div class="settings-section">
             <h2 class="text-xl font-semibold mb-6">Color Theme</h2>
@@ -157,9 +157,9 @@
                 <div class="theme-name">{{ theme.name }}</div>
                 <div class="theme-description">{{ theme.description }}</div>
               </div>
-            </div>
           </div>
-          
+        </div>
+
           <!-- Actions -->
           <div class="settings-actions">
             <div class="flex space-x-4">
@@ -179,7 +179,7 @@
                 Cancel
               </button>
             </div>
-            
+
             <button
               @click="handleSignOut"
               class="w-full mt-4 bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors"
@@ -196,14 +196,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
+import { useAuthStore } from '../stores/auth-store'
+import { getUserProfile, updateUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
 import { AVAILABLE_FONT_THEMES } from '../config/fonts'
 import { COLOR_THEMES } from '../config/color-themes'
 import { changeFontTheme } from '../utils/font-system'
-import { applyColorTheme } from '../utils/color-system'
+import { applyColorTheme } from '../config/color-themes'
 import MainLayout from '../components/layouts/MainLayout.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // Profile state
 const loading = ref(true)
@@ -308,8 +310,12 @@ async function saveAllSettings() {
         editableProfile.value.avatar_url !== profile.value.avatar_url) {
       
       // Update profile in database
-      // You'll need to implement this in your user service
-      console.log('Saving profile changes:', editableProfile.value)
+      await updateUserProfile(editableProfile.value.name, editableProfile.value.username)
+      
+      // Update avatar if changed
+      if (editableProfile.value.avatar_url !== profile.value.avatar_url) {
+        await updateUserAvatar(editableProfile.value.avatar_url)
+      }
     }
     
     // Save font theme

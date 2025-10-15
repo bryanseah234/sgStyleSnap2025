@@ -18,7 +18,7 @@
     "purge-old-items": "node scripts/purge-old-items.js",
     "cloudinary-cleanup": "node scripts/cloudinary-cleanup.js",
     "validate-migrations": "node scripts/validate-migrations.js",
-    "cleanup-notifications": "node scripts/cleanup-notifications.js"
+    "cleanup-notifications": "node scripts/cleanup/cleanup-notifications.js"
   },
   "dependencies": {
     "@heroicons/vue": "^2.1.0",

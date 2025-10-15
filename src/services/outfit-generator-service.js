@@ -10,7 +10,7 @@ import {
   OUTFIT_REQUIRED_CATEGORIES,
   WEATHER_CONDITIONS,
   OCCASIONS
-} from '@/utils/clothing-constants'
+} from '../utils/clothing-constants'
 
 // Outfit generation rules
 const OUTFIT_RULES = {

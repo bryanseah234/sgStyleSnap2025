@@ -5,19 +5,7 @@
  * 
  * State:
  * - items: Array (all user's closet items)
- * - currentItem: Object | null (        // Add to local state
-        this.items.push(newItem)
-        this.quota.used = this.items.length
-        
-        return newItem
-      } catch (error) {
-        console.error('Failed to add item:', error)
-        this.error = error.message
-        throw error
-      } finally {
-        this.isLoading = false
-        this.loading = false
-      }em for viewing/editing)
+ * - currentItem: Object | null (item for viewing/editing)
  * - isLoading: boolean
  * - filters: Object (category, search, sort)
  * - quota: Object

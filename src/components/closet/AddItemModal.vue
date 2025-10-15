@@ -264,9 +264,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useClosetStore } from '@/stores/closet-store'
-import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
-import { CATEGORY_GROUPS } from '@/config/constants'
+import { useClosetStore } from '../../stores/closet-store'
+import { classifyClothingItem, validateImageForClassification } from '../../services/fashion-rnn-service'
+import { CATEGORY_GROUPS } from '../../config/constants'
 
 const props = defineProps({
   isOpen: {

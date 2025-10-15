@@ -322,7 +322,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useCollectionsStore } from '@/stores/collections-store'
+import { useCollectionsStore } from '../../stores/collections-store'
 import draggable from 'vuedraggable'
 
 const props = defineProps({
