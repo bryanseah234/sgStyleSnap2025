@@ -51,7 +51,12 @@ const routes = [
     path: '/',
     redirect: () => {
       const authStore = useAuthStore()
-      return authStore.isAuthenticated ? '/closet' : '/login'
+      // Use a more reliable check for authentication
+      if (authStore.isAuthenticated && authStore.user) {
+        return '/closet'
+      } else {
+        return '/login'
+      }
     }
   },
   {
@@ -144,48 +149,66 @@ const routes = [
     component: FriendProfileView,
     meta: { requiresAuth: true }
   },
-  // Catch-all 404 route
+  // Catch-all 404 route - redirect to home
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/'
+    name: 'NotFound',
+    redirect: () => {
+      const authStore = useAuthStore()
+      // Redirect to appropriate page based on auth state
+      if (authStore.isAuthenticated && authStore.user) {
+        return '/closet'
+      } else {
+        return '/login'
+      }
+    }
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 
 // Global navigation guard
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
+  try {
+    const authStore = useAuthStore()
 
-  // Wait for auth initialization if it's still loading
-  if (authStore.loading) {
-    console.log('⏳ Router: Waiting for auth initialization...')
-    // Wait for auth to finish loading
-    const maxWait = 50 // 50 iterations = 5 seconds max
-    let waited = 0
-    while (authStore.loading && waited < maxWait) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      waited++
+    // Wait for auth initialization if it's still loading
+    if (authStore.loading) {
+      console.log('⏳ Router: Waiting for auth initialization...')
+      // Wait for auth to finish loading
+      const maxWait = 50 // 50 iterations = 5 seconds max
+      let waited = 0
+      while (authStore.loading && waited < maxWait) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        waited++
+      }
+      console.log('✅ Router: Auth initialization complete')
     }
-    console.log('✅ Router: Auth initialization complete')
-  }
 
-  // Check if route requires authentication
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('🔒 Router: Protected route, redirecting to login')
-    // Redirect to login if not authenticated
+    // More robust authentication check
+    const isAuthenticated = authStore.isAuthenticated && authStore.user && authStore.user.id
+
+    // Check if route requires authentication
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      console.log('🔒 Router: Protected route, redirecting to login')
+      // Redirect to login if not authenticated
+      next('/login')
+    } else if (to.meta.guestOnly && isAuthenticated) {
+      console.log('👤 Router: Guest-only route, redirecting to closet')
+      // Redirect to closet if already authenticated (e.g., on login page)
+      next('/closet')
+    } else {
+      console.log('✅ Router: Navigation allowed to:', to.path)
+      // Allow navigation
+      next()
+    }
+  } catch (error) {
+    console.error('❌ Router: Navigation guard error:', error)
+    // On error, redirect to login as fallback
     next('/login')
-  } else if (to.meta.guestOnly && authStore.isAuthenticated) {
-    console.log('👤 Router: Guest-only route, redirecting to closet')
-    // Redirect to closet if already authenticated (e.g., on login page)
-    next('/closet')
-  } else {
-    console.log('✅ Router: Navigation allowed to:', to.path)
-    // Allow navigation
-    next()
   }
 })
 

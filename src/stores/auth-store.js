@@ -145,11 +145,15 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.error = null
       try {
+        console.log('🚪 AuthStore: Starting logout process...')
         await authService.signOut()
         this.clearUser()
+        console.log('✅ AuthStore: Logout completed successfully')
       } catch (error) {
-        console.error('Logout failed:', error)
+        console.error('❌ AuthStore: Logout failed:', error)
         this.error = error.message
+        // Clear user data even if signOut fails
+        this.clearUser()
         throw error
       } finally {
         this.loading = false

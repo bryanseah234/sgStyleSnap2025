@@ -67,6 +67,18 @@ authStore.initializeAuth().then(() => {
   app.mount('#app')
 })
 
+// Global error handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', event => {
+  console.error('❌ Unhandled promise rejection:', event.reason)
+  // Prevent the default browser behavior
+  event.preventDefault()
+})
+
+// Global error handler for JavaScript errors
+window.addEventListener('error', event => {
+  console.error('❌ Global error:', event.error)
+})
+
 // Register service worker for PWA (if in production)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
