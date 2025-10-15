@@ -1,391 +1,202 @@
-# 📚 StyleSnap Documentation Index
-
-**Last Updated**: October 8, 2025
-
-Welcome to the StyleSnap documentation! This directory contains comprehensive guides for all features in the application.
-
----
-
-## 🤖 For LLM Agents: Documentation Navigation Guide
-
-### How to Use This Documentation
-
-**1. Start Here**:
-
-- **First Time**: Read [../PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md) for complete project overview
-- **Finding Tasks**: Check [../TASKS.md](../TASKS.md) for task index, then read specific task file in `../tasks/*.md`
-- **Finding Requirements**: Check [../REQUIREMENTS.md](../REQUIREMENTS.md), then read specific requirement in `../requirements/*.md`
-- **API Reference**: Always use [../API_GUIDE.md](../API_GUIDE.md) as **SINGLE SOURCE OF TRUTH** for APIs
-
-**2. Feature Implementation Workflow**:
-
-```text
-Step 1: Read task file (../tasks/XX-*.md)
-  ↓
-Step 2: Review requirements (../requirements/*.md)
-  ↓
-Step 3: Consult feature guide (docs/*_GUIDE.md) ← YOU ARE HERE
-  ↓
-Step 4: Check database schema (../DATABASE_GUIDE.md or ../sql/*.sql)
-  ↓
-Step 5: Review API endpoints (../API_GUIDE.md)
-  ↓
-Step 6: Follow code standards (./CODE_STANDARDS.md)
-  ↓
-Step 7: Implement & test (./TESTS_GUIDE.md)
-```
-
-**3. Quick Lookup Tables**:
-
-| Need to... | Go to... |
-|------------|----------|
-| Understand auth flow | `AUTHENTICATION_GUIDE.md` |
-| **Learn OAuth 2.0 in-depth** | **`OAUTH_COMPLETE_GUIDE.md`** 🆕 |
-| **Test OAuth authentication** | **`OAUTH_COMPLETE_GUIDE.md` + `TESTS_GUIDE.md`** 🆕 |
-| Work with closet/items | `CLOSET_GUIDE.md` |
-| Implement catalog browsing | `CATALOG_GUIDE.md` |
-| Add color detection | `COLOR_DETECTION_GUIDE.md` |
-| Build outfit generation | `OUTFIT_GENERATION_GUIDE.md` |
-| Create social features | `SOCIAL_GUIDE.md` |
-| Add likes functionality | `LIKES_GUIDE.md` |
-| Implement notifications | `NOTIFICATIONS_GUIDE.md` |
-| Use categories/types | `CATEGORIES_GUIDE.md` |
-| Understand architecture | `ARCHITECTURE.md` |
-| Follow coding rules | `CODE_STANDARDS.md` (**MANDATORY**) |
-| Set up database | `../DATABASE_GUIDE.md` |
-| Run tests | `../TESTS_GUIDE.md` |
-| Deploy to production | `../DEPLOYMENT_GUIDE.md` |
-
-**4. Critical Rules**:
-
-- ⚠️ **NEVER DELETE** any `.md` documentation files
-- ⚠️ **ALWAYS FOLLOW** [CODE_STANDARDS.md](./CODE_STANDARDS.md) conventions
-- ⚠️ **ALWAYS UPDATE** relevant documentation when changing code
-- ⚠️ **ALWAYS CROSS-REFERENCE** between task files, requirements, and guides
-
----
-
-## 🗂️ Feature Guides
-
-### Core Features
-
-#### [AUTHENTICATION_GUIDE.md](./AUTHENTICATION_GUIDE.md)
-
-Google OAuth 2.0 Authentication:
-
-- Google OAuth SSO (exclusive auth method)
-- Session management & token refresh
-- User profile creation
-- Row Level Security integration
-- Environment setup
-
-#### [OAUTH_COMPLETE_GUIDE.md](./OAUTH_COMPLETE_GUIDE.md) 🆕
-
-**Comprehensive Google OAuth Guide**:
-
-- OAuth 2.0 fundamentals & flow explanation
-- Complete setup guide (Google Console + Supabase)
-- Step-by-step configuration with screenshots
-- Security model (PKCE, state, token handling)
-- OAuth testing strategies (unit, integration, e2e)
-- Troubleshooting common OAuth errors
-- Best practices & code examples
-
-#### [CLOSET_GUIDE.md](./CLOSET_GUIDE.md)
-
-Digital Wardrobe Management:
-
-- Upload & manage clothing items (50 uploads + unlimited catalog)
-- Image optimization (WebP, Cloudinary)
-- Quota system (200 items total)
-- Soft delete with 30-day recovery
-- Favorite items, filtering, search
-- Categories & clothing types
-
-#### [CATALOG_GUIDE.md](./CATALOG_GUIDE.md)
-
-Pre-Populated Clothing Catalog:
-
-- Browse & search catalog items
-- Add to closet (quota-free)
-- Anonymous browsing (no owner attribution)
-- Auto-contribution system
-- Full-text search & filters
-- Smart de-duplication
-
----
-
-### AI & Intelligence
-
-#### [COLOR_DETECTION_GUIDE.md](./COLOR_DETECTION_GUIDE.md)
-
-AI-Powered Color Recognition:
-
-- Automatic color detection (40+ colors)
-- Primary & secondary color identification
-- Color harmony algorithms (complementary, analogous, triadic)
-- Manual color override
-- Color-based filtering
-- Analytics & insights
-
-#### [OUTFIT_GENERATION_GUIDE.md](./OUTFIT_GENERATION_GUIDE.md)
-
-Smart Outfit Combinations:
-
-- Permutation-based algorithm (no ML)
-- Category-aware combinations
-- Color harmony scoring
-- Weather & occasion filtering
-- Style matching
-- Performance optimized
-
----
-
-### Social Features
-
-#### [SOCIAL_GUIDE.md](./SOCIAL_GUIDE.md)
-
-Friends & Social Feed:
-
-- Friend requests & management
-- Canonical friendship storage
-- Outfit sharing to friends
-- Comments & interactions
-- Real-time feed updates
-- Privacy controls
-
-#### [LIKES_GUIDE.md](./LIKES_GUIDE.md)
-
-Like System:
-
-- Like items & outfits
-- Real-time like counts
-- View likers list
-- Popular items carousel
-- Friend-only liking
-- Notification integration
-
-#### [NOTIFICATIONS_GUIDE.md](./NOTIFICATIONS_GUIDE.md)
-
-In-App & Push Notifications:
-
-- Real-time WebSocket notifications
-- Browser push notifications (Web Push API)
-- 9 notification types
-- User preferences & quiet hours
-- Multi-device support
-- Delivery tracking & analytics
-
----
-
-### System Guides
-
-#### [CATEGORIES_GUIDE.md](./CATEGORIES_GUIDE.md)
-
-Category System:
-
-- 7 main categories
-- 20 detailed clothing types
-- Two-tier system
-- Database functions
-- Frontend helpers
-- Extensible design
-
-#### [ARCHITECTURE.md](./ARCHITECTURE.md)
-
-System Architecture:
-
-- Component diagrams
-- Class diagrams
-- Sequence diagrams
-- Data flow
-- Technology stack
-- Deployment architecture
-
-#### [USER_FLOWS.md](./USER_FLOWS.md)
-
-User Journey Maps:
-
-- Authentication flow
-- Closet management flow
-- Outfit generation flow
-- Social features flow
-- Notification flow
-- Error handling flows
-
----
-
-## 📖 Additional Documentation
-
-### Development
-
-- **[CODE_STANDARDS.md](./CODE_STANDARDS.md)** - Coding conventions & style guide
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Contribution guidelines
-- **[../API_GUIDE.md](../API_GUIDE.md)** - Complete API reference
-- **[../DATABASE_GUIDE.md](../DATABASE_GUIDE.md)** - Database schema & migrations
-- **[../TESTS_GUIDE.md](../TESTS_GUIDE.md)** - Testing documentation
-
-### Setup & Deployment
-
-- **[../REQUIREMENTS.md](../REQUIREMENTS.md)** - Feature requirements
-- **[../CREDENTIALS_SETUP.md](../CREDENTIALS_SETUP.md)** - API keys & credentials
-- **[../DEPLOYMENT_GUIDE.md](../DEPLOYMENT_GUIDE.md)** - Production deployment
-- **[../PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md)** - Project overview
-- **[../README.md](../README.md)** - Quick start guide
-
----
-
-## 🗺️ Documentation Map
-
-```text
-docs/
-├── README.md (this file)
-├── Feature Guides:
-│   ├── AUTHENTICATION_GUIDE.md
-│   ├── CLOSET_GUIDE.md
-│   ├── CATALOG_GUIDE.md
-│   ├── COLOR_DETECTION_GUIDE.md
-│   ├── OUTFIT_GENERATION_GUIDE.md
-│   ├── SOCIAL_GUIDE.md
-│   ├── LIKES_GUIDE.md
-│   ├── NOTIFICATIONS_GUIDE.md
-│   └── CATEGORIES_GUIDE.md
-├── System Guides:
-│   ├── ARCHITECTURE.md
-│   ├── USER_FLOWS.md
-│   ├── CODE_STANDARDS.md
-│   └── CONTRIBUTING.md
-└── design/
-    ├── DESIGN_REFERENCE.md
-    └── mobile-mockups/
-```
-
----
+# StyleSnap Documentation
+
+Welcome to the StyleSnap documentation hub. This directory contains comprehensive documentation for all aspects of the StyleSnap application.
+
+## 📚 Documentation Structure
+
+### 🚀 Getting Started
+- **[Project Structure](./PROJECT_STRUCTURE.md)** - Complete project organization overview
+- **[Deployment Guide](./deployment/DEPLOYMENT_GUIDE.md)** - How to deploy StyleSnap
+- **[OAuth Quick Start](./guides/OAUTH_QUICK_START.md)** - Quick OAuth setup
+- **[Credentials Setup](./guides/CREDENTIALS_SETUP.md)** - Environment setup
+
+### 🔧 API & Architecture
+- **[API Guide](./api/API_GUIDE.md)** - Complete API documentation
+- **[Architecture](./api/ARCHITECTURE.md)** - System architecture overview
+- **[Database Guide](./guides/DATABASE_GUIDE.md)** - Database management
+
+### 🎨 Features & Functionality
+
+#### Core Features
+- **[Closet Guide](./guides/CLOSET_GUIDE.md)** - Digital closet management
+- **[Catalog Guide](./guides/CATALOG_GUIDE.md)** - Clothing catalog system
+- **[Social Guide](./guides/SOCIAL_GUIDE.md)** - Friends and social features
+- **[Notifications Guide](./guides/NOTIFICATIONS_GUIDE.md)** - Notification system
+
+#### Advanced Features
+- **[Outfit Generation](./guides/OUTFIT_GENERATION_GUIDE.md)** - AI-powered outfit suggestions
+- **[Color Detection](./guides/COLOR_DETECTION_GUIDE.md)** - Automatic color detection
+- **[Likes System](./guides/LIKES_GUIDE.md)** - Item and outfit likes
+- **[Analytics](./guides/ANALYTICS_GUIDE.md)** - Wardrobe analytics
+
+### 🛠️ Development & Maintenance
+
+#### Setup & Configuration
+- **[Authentication Guide](./guides/AUTHENTICATION_GUIDE.md)** - Auth system setup
+- **[OAuth Complete Guide](./guides/OAUTH_COMPLETE_GUIDE.md)** - Full OAuth implementation
+- **[Secrets Reference](./guides/SECRETS_REFERENCE.md)** - Environment variables
+
+#### Data Management
+- **[Catalog Seeding](./guides/CATALOG_SEEDING.md)** - Populate catalog data
+- **[Seeding Guide](./guides/SEEDING_GUIDE.md)** - General data seeding
+- **[Categories Guide](./guides/CATEGORIES_GUIDE.md)** - Clothing categories
+
+#### Maintenance
+- **[Notification Cleanup](./guides/NOTIFICATION_CLEANUP_GUIDE.md)** - 7-day retention system
+- **[Cloudinary Monitoring](./guides/CLOUDINARY_MONITORING.md)** - Image management
+- **[Code Standards](./guides/CODE_STANDARDS.md)** - Development standards
+
+### 🎨 Customization
+- **[Theme Customization](./theme/THEME_CUSTOMIZATION_GUIDE.md)** - UI theming
+- **[User Flows](./guides/USER_FLOWS.md)** - User experience flows
+
+### 🧪 Testing & Quality
+- **[Tests Guide](./guides/TESTS_GUIDE.md)** - Testing framework
+- **[LLM Agent Guide](./guides/LLM_AGENT_GUIDE.md)** - AI integration
+
+### 🚨 Emergency & Troubleshooting
+- **[OAuth Emergency Fix](./emergency-fixes/OAUTH_EMERGENCY_FIX.md)** - OAuth issues
+- **[Routing Fix](./emergency-fixes/ROUTING_FIX.md)** - Routing problems
+- **[OAuth Fix Guide](./oauth/OAUTH_FIX_GUIDE.md)** - OAuth troubleshooting
+
+### 📦 Deployment & Infrastructure
+
+#### Deployment Platforms
+- **[Vercel Deployment](./deployment/vercel/)** - Vercel configuration
+- **[Railway Deployment](./deployment/railway/)** - Railway API setup
+
+#### AI & Models
+- **[AI Models](./ai-models/)** - Machine learning models
+- **[Model Deployment](./deployment/MODEL_DEPLOYMENT_GUIDE.md)** - Model deployment
+- **[Hugging Face Integration](./deployment/HUGGINGFACE_INTEGRATION.md)** - HF integration
+
+### 🔧 Scripts & Utilities
+- **[Scripts Documentation](./scripts/)** - All utility scripts
+- **[Catalog Seeding Quickstart](./scripts/CATALOG_SEEDING_QUICKSTART.md)** - Quick catalog setup
+
+### 📋 Project Management
+- **[Contributing](./deployment/CONTRIBUTING.md)** - How to contribute
+- **[Requirements](./deployment/REQUIREMENTS.md)** - Project requirements
+- **[Tasks](./deployment/TASKS.md)** - Task management
+- **[Project Context](./deployment/PROJECT_CONTEXT.md)** - Project background
 
 ## 🎯 Quick Navigation
 
-### By User Role
+### For Developers
+1. **[Project Structure](./PROJECT_STRUCTURE.md)** - Understand the codebase
+2. **[API Guide](./api/API_GUIDE.md)** - Learn the API
+3. **[Code Standards](./guides/CODE_STANDARDS.md)** - Follow best practices
+4. **[Tests Guide](./guides/TESTS_GUIDE.md)** - Write tests
 
-**New Developers**:
+### For DevOps
+1. **[Deployment Guide](./deployment/DEPLOYMENT_GUIDE.md)** - Deploy the app
+2. **[Database Guide](./guides/DATABASE_GUIDE.md)** - Manage database
+3. **[Cloudinary Monitoring](./guides/CLOUDINARY_MONITORING.md)** - Monitor images
+4. **[Notification Cleanup](./guides/NOTIFICATION_CLEANUP_GUIDE.md)** - Maintenance
 
-1. Start with [../PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md)
-2. Read [ARCHITECTURE.md](./ARCHITECTURE.md)
-3. Review [CODE_STANDARDS.md](./CODE_STANDARDS.md)
-4. Check [../API_GUIDE.md](../API_GUIDE.md)
+### For Product Managers
+1. **[User Flows](./guides/USER_FLOWS.md)** - Understand user journeys
+2. **[Features Overview](./PROJECT_STRUCTURE.md#key-features-by-directory)** - Feature breakdown
+3. **[Requirements](./deployment/REQUIREMENTS.md)** - Project requirements
+4. **[Tasks](./deployment/TASKS.md)** - Development tasks
 
-**Feature Developers**:
+### For New Team Members
+1. **[Project Context](./deployment/PROJECT_CONTEXT.md)** - Project background
+2. **[Getting Started](./guides/OAUTH_QUICK_START.md)** - Quick setup
+3. **[Contributing](./deployment/CONTRIBUTING.md)** - How to contribute
+4. **[Architecture](./api/ARCHITECTURE.md)** - System overview
 
-1. Find your feature guide above
-2. Check [../DATABASE_GUIDE.md](../DATABASE_GUIDE.md) for schema
-3. Review [../TESTS_GUIDE.md](../TESTS_GUIDE.md) for testing
-4. See [USER_FLOWS.md](./USER_FLOWS.md) for UX
+## 🔍 Search & Find
 
-**DevOps/Infrastructure**:
+### By Technology
+- **Vue.js**: Components, pages, stores
+- **Supabase**: Database, auth, real-time
+- **Tailwind**: Styling, themes
+- **Vite**: Build, development
+- **Python**: AI models, scraping
+- **Node.js**: Scripts, utilities
 
-1. Read [../DEPLOYMENT_GUIDE.md](../DEPLOYMENT_GUIDE.md)
-2. Check [../CREDENTIALS_SETUP.md](../CREDENTIALS_SETUP.md)
-3. Review [ARCHITECTURE.md](./ARCHITECTURE.md) deployment section
+### By Feature
+- **Authentication**: OAuth, sessions, users
+- **Social**: Friends, suggestions, likes
+- **Catalog**: Items, categories, search
+- **Closet**: Personal items, outfits
+- **Notifications**: Real-time, push, cleanup
+- **Analytics**: Usage, insights, charts
 
----
+### By Environment
+- **Development**: Setup, local, testing
+- **Staging**: Preview, testing, validation
+- **Production**: Deployment, monitoring, maintenance
 
-## 📝 Documentation Standards
+## 📖 Documentation Standards
 
-### File Naming Convention
+### Writing Guidelines
+- Use clear, concise language
+- Include code examples
+- Provide step-by-step instructions
+- Add troubleshooting sections
+- Keep documentation up-to-date
 
-- Feature guides: `FEATURENAME_GUIDE.md` (e.g., `CLOSET_GUIDE.md`)
-- System docs: `DESCRIPTIVE_NAME.md` (e.g., `ARCHITECTURE.md`)
-- Always UPPERCASE with underscores
+### File Naming
+- Use descriptive names
+- Follow kebab-case convention
+- Include file type in name
+- Group related files in directories
 
-### Content Structure
+### Structure
+- Start with overview
+- Include prerequisites
+- Provide detailed steps
+- Add examples and screenshots
+- Include troubleshooting
 
-1. **Overview** - High-level summary
-2. **Features** - Key capabilities
-3. **How It Works** - Technical explanation
-4. **Database Schema** - Tables & fields
-5. **API/Services** - Functions & usage
-6. **UI Components** - Component reference
-7. **Testing** - Test guidelines
-8. **Related Documentation** - Cross-references
-9. **Status** - Implementation status
+## 🆘 Getting Help
 
-### Cross-References
+### Documentation Issues
+- Check the relevant guide first
+- Look for troubleshooting sections
+- Search for similar issues
+- Check emergency fix guides
 
-- Use relative links: `[GUIDE](./GUIDE.md)`
-- Link to parent docs: `[../FILE.md](../FILE.md)`
-- Reference specific sections: `[Title](./FILE.md#section)`
+### Development Issues
+- Review code standards
+- Check API documentation
+- Look at existing implementations
+- Consult architecture docs
 
----
+### Deployment Issues
+- Check deployment guides
+- Review environment setup
+- Look at platform-specific docs
+- Check emergency fixes
 
-## 🔍 Search Tips
+## 🔄 Keeping Documentation Updated
 
-### Find Documentation By Feature Name
+### When to Update
+- After adding new features
+- When changing APIs
+- After fixing bugs
+- When updating dependencies
+- After deployment changes
 
-**Feature Name**:
+### How to Update
+- Update relevant guides
+- Add new documentation
+- Remove outdated information
+- Update examples and screenshots
+- Review and test instructions
 
-- Authentication → `AUTHENTICATION_GUIDE.md`
-- Closet → `CLOSET_GUIDE.md`
-- Catalog → `CATALOG_GUIDE.md`
-- Colors → `COLOR_DETECTION_GUIDE.md`
-- Outfits → `OUTFIT_GENERATION_GUIDE.md`
-- Social/Friends → `SOCIAL_GUIDE.md`
-- Likes → `LIKES_GUIDE.md`
-- Notifications → `NOTIFICATIONS_GUIDE.md`
+## 📝 Contributing to Documentation
 
-**Component Type**:
-
-- Database schemas → Feature guides or `../DATABASE_GUIDE.md`
-- API endpoints → `../API_GUIDE.md`
-- Services → Feature guides (API section)
-- Vue components → Feature guides (UI section)
-- Tests → `../TESTS_GUIDE.md`
-
-**Task/Implementation**:
-
-- Task files → `../tasks/*.md`
-- Requirements → `../requirements/*.md`
-- SQL migrations → `../sql/*.sql`
-
----
-
-## 🆕 What's New (October 2025)
-
-### Documentation Reorganization
-
-- ✅ Consolidated all feature docs into `*_GUIDE.md` format
-- ✅ Created comprehensive documentation index (this file)
-- ✅ Removed redundant/outdated docs
-- ✅ Updated all cross-references across codebase
-- ✅ Standardized naming conventions
-
-### New Guides
-
-- ✅ `AUTHENTICATION_GUIDE.md` - Complete auth documentation
-- ✅ `CLOSET_GUIDE.md` - Comprehensive closet guide
-- ✅ `CATALOG_GUIDE.md` - Catalog system guide
-- ✅ `COLOR_DETECTION_GUIDE.md` - Color AI guide
-- ✅ `NOTIFICATIONS_GUIDE.md` - Unified notifications guide
-- ✅ `LIKES_GUIDE.md` - Like system guide
-
-### Updated Guides
-
-- ✅ Renamed `OUTFIT_GENERATION.md` → `OUTFIT_GENERATION_GUIDE.md`
-- ✅ Renamed `CATEGORIES.md` → `CATEGORIES_GUIDE.md`
-- ✅ Renamed `SOCIAL_FEED.md` → `SOCIAL_GUIDE.md`
-
----
-
-## 📧 Support
-
-- **Issues**: [GitHub Issues](https://github.com/your-org/StyleSnap/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/StyleSnap/discussions)
-- **Email**: <support@stylesnap.app>
+1. **Identify the need** - What's missing or outdated?
+2. **Choose the right location** - Where should it go?
+3. **Follow the standards** - Use consistent format
+4. **Test the instructions** - Make sure they work
+5. **Submit for review** - Get feedback from team
 
 ---
 
-## 📜 License
-
-See [../LICENSE](../LICENSE) for details.
-
----
-
-Happy coding! 🚀
+**Last Updated**: January 2025  
+**Version**: 1.0.0  
+**Maintainer**: StyleSnap Development Team
