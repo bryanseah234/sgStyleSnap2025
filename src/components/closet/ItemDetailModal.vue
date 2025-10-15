@@ -372,7 +372,7 @@ function formatDate(dateString) {
 .modal-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 /* Image Section */
@@ -440,47 +440,76 @@ function formatDate(dateString) {
 .information-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .info-section {
   background: var(--theme-surface, #ffffff);
   border: 1px solid var(--theme-border, #e5e7eb);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .section-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--theme-text, #111827);
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--theme-border, #e5e7eb);
-  padding-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3rem;
+  height: 3px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--theme-surface-light, #f8fafc);
+  border-radius: 0.5rem;
+  border: 1px solid var(--theme-border-light, #e2e8f0);
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  background: var(--theme-surface-hover, #f1f5f9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .info-label {
   font-size: 0.875rem;
-  color: var(--theme-text-secondary, #6b7280);
-  font-weight: 500;
+  color: var(--theme-text-muted, #64748b);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .info-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--theme-text, #111827);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--theme-text-primary, #1e293b);
+  line-height: 1.4;
 }
 
 .color-display {
@@ -512,9 +541,12 @@ function formatDate(dateString) {
 .action-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--theme-border, #e5e7eb);
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  background: var(--theme-surface-light, #f8fafc);
+  border-radius: 0.75rem;
+  border: 1px solid var(--theme-border-light, #e2e8f0);
 }
 
 /* Dark Mode Support */
@@ -532,19 +564,36 @@ function formatDate(dateString) {
   .info-section {
     background: var(--theme-surface-dark, #1f2937);
     border-color: var(--theme-border-dark, #374151);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
 
   .section-title {
-    color: var(--theme-text-dark, #f9fafb);
-    border-color: var(--theme-border-dark, #374151);
+    background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-title::after {
+    background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%);
+  }
+
+  .info-item {
+    background: var(--theme-surface-dark-light, #2d3748);
+    border-color: var(--theme-border-dark-light, #4a5568);
+  }
+
+  .info-item:hover {
+    background: var(--theme-surface-dark-hover, #374151);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 
   .info-label {
-    color: var(--theme-text-secondary-dark, #9ca3af);
+    color: var(--theme-text-muted-dark, #a0aec0);
   }
 
   .info-value {
-    color: var(--theme-text-dark, #f9fafb);
+    color: var(--theme-text-primary-dark, #f7fafc);
   }
 
   .color-swatch {
@@ -552,7 +601,8 @@ function formatDate(dateString) {
   }
 
   .action-buttons {
-    border-color: var(--theme-border-dark, #374151);
+    background: var(--theme-surface-dark-light, #2d3748);
+    border-color: var(--theme-border-dark-light, #4a5568);
   }
 }
 
