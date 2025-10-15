@@ -41,122 +41,151 @@
         </p>
       </div>
 
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button
+            class="tab"
+            :class="{ 'active': activeTab === 'friends' }"
+            @click="activeTab = 'friends'"
+          >
+            My Friends
+            <span class="tab-count">{{ friendsStore.friendsCount }}</span>
+          </button>
+          <button
+            class="tab"
+            :class="{ 'active': activeTab === 'requests' }"
+            @click="activeTab = 'requests'"
+          >
+            Friend Requests
+            <span class="tab-count">{{ friendsStore.pendingRequestsCount }}</span>
+          </button>
+          <button
+            class="tab"
+            :class="{ 'active': activeTab === 'find' }"
+            @click="activeTab = 'find'"
+          >
+            Find Friends
+          </button>
+        </div>
+      </div>
+
       <div class="friends-content">
-        <!-- Friends List Section -->
-        <div class="friends-section">
+        <!-- My Friends Tab -->
+        <div v-if="activeTab === 'friends'" class="tab-content">
           <FriendsList />
         </div>
 
-        <!-- Requests Section -->
-        <div class="requests-section">
+        <!-- Friend Requests Tab -->
+        <div v-if="activeTab === 'requests'" class="tab-content">
           <FriendRequest />
         </div>
 
-        <!-- Search Section -->
-        <div class="search-section">
+        <!-- Find Friends Tab -->
+        <div v-if="activeTab === 'find'" class="tab-content">
           <h2 class="section-title">
             Find Friends
           </h2>
 
-            <div class="search-box">
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search by name or username (min 3 characters)..."
-                class="search-input"
-                @input="handleSearch"
-              >
+          <div class="search-box">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search by name or username (min 3 characters)..."
+              class="search-input"
+              @input="handleSearch"
+            >
+          </div>
+
+          <!-- Search Results -->
+          <div
+            v-if="searchQuery.length >= 3"
+            class="search-results"
+          >
+            <div
+              v-if="searching"
+              class="loading"
+            >
+              <div class="spinner"></div>
+              <p>Searching...</p>
             </div>
 
-            <!-- Search Results -->
             <div
-              v-if="searchQuery.length >= 3"
-              class="search-results"
+              v-else-if="searchResults.users && searchResults.users.length === 0"
+              class="empty-state"
+            >
+              <p class="empty-message">
+                No users found matching "{{ searchQuery }}"
+              </p>
+            </div>
+
+            <div
+              v-else-if="searchResults.users && searchResults.users.length > 0"
+              class="results-list"
             >
               <div
-                v-if="searching"
-                class="loading"
+                v-for="user in searchResults.users"
+                :key="user.id"
+                class="user-card"
               >
-                <div class="spinner"></div>
-                <p>Searching...</p>
-              </div>
-
-              <div
-                v-else-if="searchResults.users && searchResults.users.length === 0"
-                class="empty-state"
-              >
-                <p class="empty-message">
-                  No users found matching "{{ searchQuery }}"
-                </p>
-              </div>
-
-              <div
-                v-else-if="searchResults.users && searchResults.users.length > 0"
-                class="results-list"
-              >
-                <div
-                  v-for="user in searchResults.users"
-                  :key="user.id"
-                  class="user-card"
-                >
-                  <div class="user-avatar">
-                    <img
-                      v-if="user.avatar_url"
-                      :src="user.avatar_url"
-                      :alt="user.name"
-                    >
-                    <div
-                      v-else
-                      class="avatar-placeholder"
-                    >
-                      {{ getInitial(user.name) }}
-                    </div>
+                <div class="user-avatar">
+                  <img
+                    v-if="user.avatar_url"
+                    :src="user.avatar_url"
+                    :alt="user.name"
+                  >
+                  <div
+                    v-else
+                    class="avatar-placeholder"
+                  >
+                    {{ getInitial(user.name) }}
                   </div>
-
-                  <div class="user-info">
-                    <h3 class="user-name">
-                      {{ user.name }}
-                    </h3>
-                    <p class="user-username" v-if="user.username">
-                      @{{ user.username }}
-                    </p>
-                    <p class="friendship-status">
-                      {{ getFriendshipStatusText(user.friendship_status) }}
-                    </p>
-                  </div>
-
-                  <button
-                    v-if="user.friendship_status === 'none'"
-                    class="add-friend-btn"
-                    :disabled="sendingRequest === user.id"
-                    @click="sendRequest(user)"
-                  >
-                    {{ sendingRequest === user.id ? 'Sending...' : 'Add Friend' }}
-                  </button>
-                  <button
-                    v-else-if="user.friendship_status === 'pending_sent'"
-                    class="pending-btn"
-                    disabled
-                  >
-                    Request Sent
-                  </button>
-                  <button
-                    v-else-if="user.friendship_status === 'accepted'"
-                    class="friends-btn"
-                    disabled
-                  >
-                    Already Friends
-                  </button>
                 </div>
+
+                <div class="user-info">
+                  <h3 class="user-name">
+                    {{ user.name }}
+                  </h3>
+                  <p class="user-username" v-if="user.username">
+                    @{{ user.username }}
+                  </p>
+                  <p class="friendship-status">
+                    {{ getFriendshipStatusText(user.friendship_status) }}
+                  </p>
+                </div>
+
+                <button
+                  v-if="user.friendship_status === 'none'"
+                  class="add-friend-btn"
+                  :disabled="sendingRequest === user.id"
+                  @click="sendRequest(user)"
+                >
+                  {{ sendingRequest === user.id ? 'Sending...' : 'Add Friend' }}
+                </button>
+                <button
+                  v-else-if="user.friendship_status === 'pending_sent'"
+                  class="pending-btn"
+                  disabled
+                >
+                  Request Sent
+                </button>
+                <button
+                  v-else-if="user.friendship_status === 'accepted'"
+                  class="friends-btn"
+                  disabled
+                >
+                  Already Friends
+                </button>
               </div>
             </div>
+          </div>
 
-            <div
-              v-else
-              class="search-hint"
-            >
-              <p>Enter at least 3 characters to search for users</p>
-            </div>
+          <div
+            v-else
+            class="search-hint"
+          >
+            <p>Enter at least 3 characters to search for users</p>
+          </div>
         </div>
       </div>
     </div>
@@ -175,6 +204,7 @@ const friendsStore = useFriendsStore()
 const searchQuery = ref('')
 const searching = ref(false)
 const sendingRequest = ref(null)
+const activeTab = ref('friends')
 
 // Use computed property for search results to ensure reactivity
 const searchResults = computed(() => friendsStore.searchResults || {})
@@ -307,6 +337,64 @@ function getFriendshipStatusText(status) {
   font-weight: 400;
   color: var(--theme-text-secondary, #6b46c1);
   margin-left: 0.5rem;
+}
+
+/* Tabs */
+.tabs-container {
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  background: var(--theme-surface, #ffffff);
+  border: 1px solid var(--theme-border, #e0d4ff);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  gap: 0.25rem;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--theme-text-secondary, #6b46c1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: var(--theme-hover, #f3e8ff);
+  color: var(--theme-text, #1e1b4b);
+}
+
+.tab.active {
+  background: var(--theme-primary, #8b5cf6);
+  color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+.tab:not(.active) .tab-count {
+  background: var(--theme-primary, #8b5cf6);
+  color: white;
 }
 
 .friends-content {

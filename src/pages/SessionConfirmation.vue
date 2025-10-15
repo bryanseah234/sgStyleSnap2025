@@ -185,14 +185,44 @@ async function handleSwitchToSession(session) {
   loadingMessage.value = 'Switching account...'
   
   try {
-    // Switch to the selected session
-    await switchToSession(session)
+    // Since we can't restore actual authentication tokens from stored sessions,
+    // we'll create a mock user object and set it in the auth store
+    // This allows the user to continue with their previous account data
     
-    // Update auth store
-    await authStore.fetchUser()
+    const mockUser = {
+      id: session.id,
+      email: session.email,
+      user_metadata: {
+        name: session.name,
+        full_name: session.name,
+        avatar_url: session.avatar_url,
+        picture: session.avatar_url
+      },
+      app_metadata: {
+        provider: session.provider || 'google',
+        providers: [session.provider || 'google']
+      },
+      aud: 'authenticated',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    
+    // Set the user in the auth store
+    authStore.setUser(mockUser)
+    
+    // Update the session's last login time
+    const sessions = getStoredSessions()
+    const updatedSessions = sessions.map(s => 
+      s.id === session.id 
+        ? { ...s, last_login: new Date().toISOString() }
+        : s
+    )
+    localStorage.setItem('stylesnap_user_sessions', JSON.stringify(updatedSessions))
+    
+    // Small delay for UX
+    await new Promise(resolve => setTimeout(resolve, 1000))
     
     // Redirect to main app
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Small delay for UX
     router.push('/closet')
   } catch (error) {
     console.error('Failed to switch session:', error)

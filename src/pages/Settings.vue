@@ -1,201 +1,239 @@
 <template>
   <MainLayout>
     <div class="settings-page">
-      <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
-          <h1 class="text-3xl font-bold mb-8 text-center">Settings</h1>
-          
-          <!-- Profile Section -->
-          <div class="settings-section">
-            <h2 class="text-xl font-semibold mb-6">Profile</h2>
-            
-            <!-- Loading State -->
-            <div v-if="loading" class="flex justify-center items-center py-12">
-              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600" />
-            </div>
-            
-            <!-- Profile Content -->
-            <div v-else class="space-y-6">
-              <!-- Avatar Section -->
-              <div class="avatar-section">
-                <div class="flex items-center space-x-6">
-                  <div class="relative">
-                    <img
-                      :src="profile.avatar_url || defaultAvatar"
-                      :alt="profile.name"
-                      class="w-24 h-24 rounded-full object-cover border-4 border-purple-500"
-                    >
-                    <button
-                      @click="showAvatarSelector = !showAvatarSelector"
-                      class="absolute -bottom-2 -right-2 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors"
-                      :class="showAvatarSelector ? 'ring-4 ring-purple-500 ring-offset-2' : 'hover:ring-2 hover:ring-purple-300'"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div class="flex-1">
-                    <h3 class="text-lg font-semibold">{{ profile.name || 'Loading...' }}</h3>
-                    <p class="text-gray-600 dark:text-gray-400">{{ profile.email || 'Loading...' }}</p>
-                    <p v-if="profile.username" class="text-sm text-gray-500 dark:text-gray-400">@{{ profile.username }}</p>
-                  </div>
-                </div>
-                
-                <!-- Avatar Selector -->
-                <div v-if="showAvatarSelector" class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <h4 class="text-sm font-medium mb-3">Choose Avatar</h4>
-                  <div class="grid grid-cols-6 gap-3">
-          <button
-                      v-for="avatar in availableAvatars"
-                      :key="avatar"
-                      @click="selectAvatar(avatar)"
-                      class="relative p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                      :class="{ 'ring-2 ring-purple-500': profile.avatar_url === avatar }"
-                    >
-                      <img :src="avatar" alt="Avatar" class="w-12 h-12 rounded-full object-cover">
-                      <div
-                        v-if="profile.avatar_url === avatar"
-                        class="absolute inset-0 flex items-center justify-center bg-purple-500 bg-opacity-20 animate-fade-in"
-          >
-            <svg
-                          class="w-12 h-12 text-purple-600 animate-bounce-subtle"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-                      </div>
-          </button>
+      <div class="settings-header">
+        <h1>Settings</h1>
+        <p class="settings-description">Manage your profile and preferences</p>
+      </div>
+
+      <!-- Profile Section -->
+      <div class="settings-section">
+        <h2 class="section-title">Profile</h2>
+        
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-state">
+          <div class="spinner"></div>
+          <span>Loading profile...</span>
         </div>
-      </div>
-    </div>
-
-              <!-- Profile Information -->
-              <div class="profile-info">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Name</label>
-                    <input
-                      v-model="editableProfile.name"
-                      type="text"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-      </div>
-
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Username</label>
-                    <input
-                      v-model="editableProfile.username"
-                      type="text"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-      </div>
-
-                  <div class="md:col-span-2">
-                    <label class="block text-sm font-medium mb-2">Email</label>
-                <input
-                      v-model="editableProfile.email"
-                      type="email"
-                      disabled
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                    >
-                  </div>
-                </div>
-              </div>
-              </div>
-            </div>
-
-          <!-- Theme Section -->
-          <div class="settings-section">
-            <h2 class="text-xl font-semibold mb-6">Theme</h2>
-            <div class="flex space-x-4">
-              <button
-                v-for="theme in themeOptions"
-                :key="theme.value"
-                class="theme-option"
-                :class="{ 'selected': selectedTheme === theme.value }"
-                @click="selectTheme(theme.value)"
-              >
-                <div class="theme-icon">
-                  <component :is="theme.icon" class="w-6 h-6" />
-                </div>
-                <div class="theme-label">{{ theme.label }}</div>
-              </button>
-            </div>
-          </div>
-
-          <!-- Style Preference Section -->
-          <div class="settings-section">
-            <h2 class="text-xl font-semibold mb-6">Style Preference</h2>
-            <div class="flex items-center justify-between">
-              <div class="flex space-x-4">
-                <button
-                  v-for="(theme, key) in availableColorThemes"
-                  :key="key"
-                  class="style-option"
-                  :class="{ 'selected': selectedColorTheme === key }"
-                  @click="selectColorTheme(key)"
+        
+        <!-- Profile Content -->
+        <div v-else class="profile-content">
+          <!-- Avatar Section -->
+          <div class="avatar-section">
+            <div class="avatar-container">
+              <div class="avatar-wrapper">
+                <img
+                  :src="profile.avatar_url || defaultAvatar"
+                  :alt="profile.name"
+                  class="profile-avatar"
                 >
-                  <div class="color-preview">
-                    <div 
-                      v-for="(color, colorKey) in getThemeColors(theme)" 
-                      :key="colorKey"
-                      class="color-swatch"
-                      :style="{ backgroundColor: color }"
-                    ></div>
-                  </div>
-                  <div class="style-name">{{ theme.name }}</div>
+                <button
+                  @click="showAvatarSelector = !showAvatarSelector"
+                  class="avatar-edit-btn"
+                  :class="{ 'active': showAvatarSelector }"
+                >
+                  <svg class="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
                 </button>
               </div>
-              <button
-                @click="showStyleModal = true"
-                class="btn-secondary"
-              >
-                Customize
-              </button>
+              
+              <div class="profile-info">
+                <h3 class="profile-name">{{ profile.name || 'Loading...' }}</h3>
+                <p class="profile-email">{{ profile.email || 'Loading...' }}</p>
+                <p v-if="profile.username" class="profile-username">@{{ profile.username }}</p>
+              </div>
+            </div>
+            
+            <!-- Avatar Selector -->
+            <div v-if="showAvatarSelector" class="avatar-selector">
+              <h4 class="selector-title">Choose Avatar</h4>
+              <div class="avatar-grid">
+                <button
+                  v-for="avatar in availableAvatars"
+                  :key="avatar"
+                  @click="selectAvatar(avatar)"
+                  class="avatar-option"
+                  :class="{ 'selected': profile.avatar_url === avatar }"
+                >
+                  <img :src="avatar" alt="Avatar" class="avatar-preview">
+                  <div
+                    v-if="profile.avatar_url === avatar"
+                    class="selected-indicator"
+                  >
+                    <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Actions -->
-          <div class="settings-actions">
-            <div class="flex space-x-4">
-              <button
-                @click="saveAllSettings"
-                :disabled="saving || !hasChanges"
-                class="flex-1 bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {{ saving ? 'Saving...' : 'Save Changes' }}
-              </button>
-              
-              <button
-                @click="cancelChanges"
-                :disabled="saving || !hasChanges"
-                class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
+          <!-- Profile Information -->
+          <div class="profile-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Name</label>
+                <input
+                  v-model="editableProfile.name"
+                  type="text"
+                  class="form-input"
+                >
+              </div>
 
+              <div class="form-group">
+                <label class="form-label">Username</label>
+                <input
+                  v-model="editableProfile.username"
+                  type="text"
+                  class="form-input"
+                >
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">Email</label>
+                <input
+                  v-model="editableProfile.email"
+                  type="email"
+                  disabled
+                  class="form-input disabled"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance Section -->
+      <div class="settings-section">
+        <h2 class="section-title">Appearance</h2>
+        
+        <!-- Theme Toggle -->
+        <div class="setting-group">
+          <div class="setting-header">
+            <h3 class="setting-title">Theme</h3>
+            <p class="setting-description">Choose your preferred theme</p>
+          </div>
+          <div class="theme-options">
             <button
-              @click="handleSignOut"
-              class="w-full mt-4 bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              v-for="theme in themeOptions"
+              :key="theme.value"
+              class="theme-option"
+              :class="{ 'selected': selectedTheme === theme.value }"
+              @click="selectTheme(theme.value)"
             >
-              Sign Out
+              <div class="theme-icon">
+                <component :is="theme.icon" class="icon" />
+              </div>
+              <div class="theme-label">{{ theme.label }}</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Font Style -->
+        <div class="setting-group">
+          <div class="setting-header">
+            <h3 class="setting-title">Font Style</h3>
+            <p class="setting-description">Choose your preferred font family</p>
+          </div>
+          <div class="font-options">
+            <button
+              v-for="font in fontOptions"
+              :key="font.value"
+              class="font-option"
+              :class="{ 'selected': selectedFont === font.value }"
+              @click="selectFont(font.value)"
+              :style="{ fontFamily: font.value }"
+            >
+              {{ font.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Font Color -->
+        <div class="setting-group">
+          <div class="setting-header">
+            <h3 class="setting-title">Font Color</h3>
+            <p class="setting-description">Choose your preferred text color</p>
+          </div>
+          <div class="color-options">
+            <button
+              v-for="color in colorOptions"
+              :key="color.value"
+              class="color-option"
+              :class="{ 'selected': selectedColor === color.value }"
+              @click="selectColor(color.value)"
+              :style="{ backgroundColor: color.value }"
+            >
+              <div
+                v-if="selectedColor === color.value"
+                class="color-check"
+              >
+                <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Color Theme -->
+        <div class="setting-group">
+          <div class="setting-header">
+            <h3 class="setting-title">Color Theme</h3>
+            <p class="setting-description">Choose your preferred color scheme</p>
+          </div>
+          <div class="color-theme-options">
+            <button
+              v-for="(theme, key) in availableColorThemes"
+              :key="key"
+              class="color-theme-option"
+              :class="{ 'selected': selectedColorTheme === key }"
+              @click="selectColorTheme(key)"
+            >
+              <div class="color-preview">
+                <div 
+                  v-for="(color, colorKey) in getThemeColors(theme)" 
+                  :key="colorKey"
+                  class="color-swatch"
+                  :style="{ backgroundColor: color }"
+                ></div>
+              </div>
+              <div class="theme-name">{{ theme.name }}</div>
             </button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Style Preference Modal -->
-    <StylePreferenceModal
-      :show="showStyleModal"
-      @close="showStyleModal = false"
-      @preferences-saved="handleStylePreferencesSaved"
-    />
+      <!-- Actions -->
+      <div class="settings-actions">
+        <div class="action-buttons">
+          <button
+            @click="saveAllSettings"
+            :disabled="saving || !hasChanges"
+            class="save-btn"
+          >
+            {{ saving ? 'Saving...' : 'Save Changes' }}
+          </button>
+          
+          <button
+            @click="cancelChanges"
+            :disabled="saving || !hasChanges"
+            class="cancel-btn"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <button
+          @click="handleSignOut"
+          class="signout-btn"
+        >
+          Sign Out
+        </button>
+      </div>
+    </div>
   </MainLayout>
 </template>
 
@@ -228,8 +266,12 @@ const showStyleModal = ref(false)
 // Style preferences state
 const selectedTheme = ref('system') // light, dark, system
 const selectedColorTheme = ref('purple')
+const selectedFont = ref('Inter')
+const selectedColor = ref('#1f2937')
 const originalTheme = ref('system')
 const originalColorTheme = ref('purple')
+const originalFont = ref('Inter')
+const originalColor = ref('#1f2937')
 
 // Available themes
 const availableColorThemes = COLOR_THEMES
@@ -253,10 +295,34 @@ const themeOptions = [
   }
 ]
 
+// Font options
+const fontOptions = [
+  { value: 'Inter', label: 'Inter' },
+  { value: 'Roboto', label: 'Roboto' },
+  { value: 'Open Sans', label: 'Open Sans' },
+  { value: 'Lato', label: 'Lato' },
+  { value: 'Poppins', label: 'Poppins' },
+  { value: 'Montserrat', label: 'Montserrat' }
+]
+
+// Color options
+const colorOptions = [
+  { value: '#1f2937', label: 'Dark Gray' },
+  { value: '#374151', label: 'Medium Gray' },
+  { value: '#6b7280', label: 'Light Gray' },
+  { value: '#3b82f6', label: 'Blue' },
+  { value: '#10b981', label: 'Green' },
+  { value: '#f59e0b', label: 'Yellow' },
+  { value: '#ef4444', label: 'Red' },
+  { value: '#8b5cf6', label: 'Purple' }
+]
+
 // Computed properties
 const hasChanges = computed(() => {
   return selectedTheme.value !== originalTheme.value ||
          selectedColorTheme.value !== originalColorTheme.value ||
+         selectedFont.value !== originalFont.value ||
+         selectedColor.value !== originalColor.value ||
          editableProfile.value.name !== profile.value.name ||
          editableProfile.value.username !== profile.value.username ||
          editableProfile.value.avatar_url !== profile.value.avatar_url
@@ -312,6 +378,22 @@ function loadStylePreferences() {
     // Apply color theme with current mode
     applyColorTheme(savedColorTheme, themeStore.isDarkMode)
   }
+  
+  // Load font preference
+  const savedFont = localStorage.getItem('font-preference')
+  if (savedFont && fontOptions.some(font => font.value === savedFont)) {
+    selectedFont.value = savedFont
+    originalFont.value = savedFont
+    document.documentElement.style.setProperty('--font-family', savedFont)
+  }
+  
+  // Load color preference
+  const savedColor = localStorage.getItem('color-preference')
+  if (savedColor && colorOptions.some(color => color.value === savedColor)) {
+    selectedColor.value = savedColor
+    originalColor.value = savedColor
+    document.documentElement.style.setProperty('--theme-text', savedColor)
+  }
 }
 
 function selectAvatar(avatar) {
@@ -338,6 +420,18 @@ function selectColorTheme(themeKey) {
   selectedColorTheme.value = themeKey
   // Apply preview immediately with current theme mode
   applyColorTheme(themeKey, themeStore.isDarkMode)
+}
+
+function selectFont(fontValue) {
+  selectedFont.value = fontValue
+  // Apply font preview immediately
+  document.documentElement.style.setProperty('--font-family', fontValue)
+}
+
+function selectColor(colorValue) {
+  selectedColor.value = colorValue
+  // Apply color preview immediately
+  document.documentElement.style.setProperty('--theme-text', colorValue)
 }
 
 function getThemeColors(theme) {
@@ -381,6 +475,20 @@ async function saveAllSettings() {
       originalColorTheme.value = selectedColorTheme.value
     }
     
+    // Save font preference
+    if (selectedFont.value !== originalFont.value) {
+      localStorage.setItem('font-preference', selectedFont.value)
+      document.documentElement.style.setProperty('--font-family', selectedFont.value)
+      originalFont.value = selectedFont.value
+    }
+    
+    // Save color preference
+    if (selectedColor.value !== originalColor.value) {
+      localStorage.setItem('color-preference', selectedColor.value)
+      document.documentElement.style.setProperty('--theme-text', selectedColor.value)
+      originalColor.value = selectedColor.value
+    }
+    
     // Update profile state
     profile.value = { ...editableProfile.value }
     
@@ -398,10 +506,14 @@ function cancelChanges() {
   editableProfile.value = { ...profile.value }
   selectedTheme.value = originalTheme.value
   selectedColorTheme.value = originalColorTheme.value
+  selectedFont.value = originalFont.value
+  selectedColor.value = originalColor.value
   
-  // Reapply original themes
+  // Reapply original themes and preferences
   applyTheme(originalTheme.value)
   applyColorTheme(originalColorTheme.value, false)
+  document.documentElement.style.setProperty('--font-family', originalFont.value)
+  document.documentElement.style.setProperty('--theme-text', originalColor.value)
 }
 
 async function handleSignOut() {
@@ -433,93 +545,582 @@ function handleStylePreferencesSaved(preferences) {
 <style scoped>
 .settings-page {
   min-height: 100vh;
+  padding: 1rem;
   background-color: var(--theme-background);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.settings-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--theme-text);
+  margin-bottom: 0.5rem;
+}
+
+.settings-description {
+  color: var(--theme-text-secondary);
+  font-size: 1rem;
 }
 
 .settings-section {
-  @apply mb-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--theme-text);
+  margin-bottom: 1.5rem;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: var(--theme-text-secondary);
+}
+
+.spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--theme-border);
+  border-top-color: var(--theme-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Profile Section */
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .avatar-section {
-  @apply space-y-4;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.avatar-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--theme-primary);
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: -0.25rem;
+  right: -0.25rem;
+  width: 2rem;
+  height: 2rem;
+  background: var(--theme-primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-edit-btn:hover {
+  background: var(--theme-primary-dark);
+  transform: scale(1.05);
+}
+
+.avatar-edit-btn.active {
+  background: var(--theme-primary-dark);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.edit-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 .profile-info {
-  @apply space-y-4;
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--theme-text);
+  margin-bottom: 0.25rem;
+}
+
+.profile-email {
+  color: var(--theme-text-secondary);
+  margin-bottom: 0.125rem;
+}
+
+.profile-username {
+  color: var(--theme-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Avatar Selector */
+.avatar-selector {
+  background: var(--theme-hover);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.selector-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--theme-text);
+  margin-bottom: 0.75rem;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
+  gap: 0.75rem;
+}
+
+.avatar-option {
+  position: relative;
+  padding: 0.5rem;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  background: var(--theme-surface);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatar-option:hover {
+  border-color: var(--theme-border);
+  background: var(--theme-hover);
+}
+
+.avatar-option.selected {
+  border-color: var(--theme-primary);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.avatar-preview {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.selected-indicator {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--theme-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Profile Form */
+.profile-form {
+  margin-top: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-text);
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.disabled {
+  background: var(--theme-hover);
+  color: var(--theme-text-secondary);
+  cursor: not-allowed;
+}
+
+/* Setting Groups */
+.setting-group {
+  margin-bottom: 2rem;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.setting-header {
+  margin-bottom: 1rem;
+}
+
+.setting-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--theme-text);
+  margin-bottom: 0.25rem;
+}
+
+.setting-description {
+  font-size: 0.875rem;
+  color: var(--theme-text-secondary);
+}
+
+/* Theme Options */
+.theme-options {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .theme-option {
-  @apply flex flex-col items-center p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md bg-white dark:bg-gray-800;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border: 2px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-surface);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 5rem;
+}
+
+.theme-option:hover {
+  border-color: var(--theme-primary);
+  background: var(--theme-hover);
 }
 
 .theme-option.selected {
-  @apply border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20;
+  border-color: var(--theme-primary);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .theme-icon {
-  @apply mb-2 text-gray-600 dark:text-gray-400;
+  margin-bottom: 0.5rem;
+  color: var(--theme-text-secondary);
 }
 
 .theme-option.selected .theme-icon {
-  @apply text-purple-600 dark:text-purple-400;
+  color: var(--theme-primary);
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .theme-label {
-  @apply text-sm font-medium text-gray-900 dark:text-white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-text);
 }
 
-.style-option {
-  @apply flex flex-col items-center p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md bg-white dark:bg-gray-800;
+/* Font Options */
+.font-options {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.style-option.selected {
-  @apply border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20;
+.font-option {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.font-option:hover {
+  border-color: var(--theme-primary);
+  background: var(--theme-hover);
+}
+
+.font-option.selected {
+  border-color: var(--theme-primary);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--theme-primary);
+}
+
+/* Color Options */
+.color-options {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.color-option {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid var(--theme-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.color-option:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-option.selected {
+  border-color: var(--theme-text);
+  box-shadow: 0 0 0 2px var(--theme-primary);
+}
+
+.color-check {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1rem;
+  height: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-check .check-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--theme-text);
+}
+
+/* Color Theme Options */
+.color-theme-options {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.color-theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border: 2px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-surface);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 6rem;
+}
+
+.color-theme-option:hover {
+  border-color: var(--theme-primary);
+  background: var(--theme-hover);
+}
+
+.color-theme-option.selected {
+  border-color: var(--theme-primary);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .color-preview {
-  @apply flex space-x-1 mb-3;
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .color-swatch {
-  @apply w-6 h-6 rounded border border-gray-300 dark:border-gray-600;
-}
-
-.style-name {
-  @apply text-sm font-medium text-gray-900 dark:text-white;
-}
-
-.btn-secondary {
-  @apply bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--theme-border);
 }
 
 .theme-name {
-  @apply text-sm font-medium text-center text-gray-900 dark:text-white mb-1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-text);
+  text-align: center;
 }
 
-.theme-description {
-  @apply text-xs text-center text-gray-600 dark:text-gray-400;
-}
-
+/* Actions */
 .settings-actions {
-  @apply mt-8 space-y-4;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-/* Animation classes */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.action-buttons {
+  display: flex;
+  gap: 1rem;
 }
 
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+.save-btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: var(--theme-primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-in-out;
+.save-btn:hover:not(:disabled) {
+  background: var(--theme-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.animate-bounce-subtle {
-  animation: bounce-subtle 0.6s ease-in-out infinite;
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: var(--theme-text-secondary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: var(--theme-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.signout-btn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.signout-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .settings-page {
+    padding: 0.75rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .theme-options,
+  .font-options,
+  .color-options,
+  .color-theme-options {
+    justify-content: center;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .avatar-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .avatar-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 </style>

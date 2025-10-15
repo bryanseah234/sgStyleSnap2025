@@ -1,40 +1,44 @@
 <template>
   <div class="catalog-filter">
-    <div class="filter-header">
-      <h2 class="filter-title">Filters</h2>
-      <button
-        v-if="hasActiveFilters"
-        class="clear-button"
-        @click="emit('clear')"
-      >
-        Clear
-      </button>
-    </div>
-
     <!-- Category Filter -->
     <div class="filter-section">
       <label class="filter-label">Category</label>
       <select
         v-model="localFilters.category"
         class="filter-select"
-        @change="emitFilters"
+        @change="handleCategoryChange"
       >
-        <option :value="null">
+        <option value="">
           All Categories
         </option>
-        <optgroup
-          v-for="(items, group) in groupedCategories"
-          :key="group"
-          :label="group.charAt(0).toUpperCase() + group.slice(1)"
+        <option
+          v-for="category in MAIN_CATEGORIES"
+          :key="category.value"
+          :value="category.value"
         >
-          <option
-            v-for="cat in items"
-            :key="cat.value"
-            :value="cat.value"
-          >
-            {{ cat.label }}
-          </option>
-        </optgroup>
+          {{ category.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Clothing Type Filter -->
+    <div class="filter-section">
+      <label class="filter-label">Clothing Type</label>
+      <select
+        v-model="localFilters.clothing_type"
+        class="filter-select"
+        @change="handleTypeChange"
+      >
+        <option value="">
+          All Types
+        </option>
+        <option
+          v-for="type in filteredTypes"
+          :key="type.value"
+          :value="type.value"
+        >
+          {{ type.label }}
+        </option>
       </select>
     </div>
 
@@ -46,7 +50,7 @@
         class="filter-select"
         @change="emitFilters"
       >
-        <option :value="null">
+        <option value="">
           All Colors
         </option>
         <option
@@ -67,7 +71,7 @@
         class="filter-select"
         @change="emitFilters"
       >
-        <option :value="null">
+        <option value="">
           All Brands
         </option>
         <option
@@ -80,54 +84,30 @@
       </select>
     </div>
 
-    <!-- Season Filter -->
-    <div class="filter-section">
-      <label class="filter-label">Season</label>
-      <select
-        v-model="localFilters.season"
-        class="filter-select"
-        @change="emitFilters"
-      >
-        <option :value="null">
-          All Seasons
-        </option>
-        <option
-          v-for="season in SEASONS"
-          :key="season.value"
-          :value="season.value"
-        >
-          {{ season.label }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Active Filters Display -->
-    <div
+    <!-- Clear Filters Button -->
+    <button
       v-if="hasActiveFilters"
-      class="active-filters"
+      class="clear-button"
+      @click="clearFilters"
     >
-      <p class="active-filters-title">Active Filters:</p>
-      <div class="active-filters-list">
-        <span
-          v-for="(value, key) in activeFilters"
-          :key="key"
-          class="active-filter-tag"
-        >
-          {{ key }}: {{ getFilterLabel(key, value) }}
-        </span>
-      </div>
-    </div>
+      Clear Filters
+    </button>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { CLOTHING_CATEGORIES, CATEGORY_GROUPS, COLORS, SEASONS } from '@/config/constants'
+import { MAIN_CATEGORIES, CLOTHING_TYPES, getTypesForCategory, getCategoryFromType, COLORS } from '@/config/constants'
 
 const props = defineProps({
   filters: {
     type: Object,
-    required: true
+    default: () => ({
+      category: '',
+      clothing_type: '',
+      color: '',
+      brand: ''
+    })
   },
   filterOptions: {
     type: Object,
@@ -139,11 +119,10 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:filters', 'clear'])
+const emit = defineEmits(['update:filters'])
 
 const localFilters = ref({ ...props.filters })
 
-// Watch for external filter changes
 watch(
   () => props.filters,
   newFilters => {
@@ -152,92 +131,106 @@ watch(
   { deep: true }
 )
 
-const groupedCategories = computed(() => CATEGORY_GROUPS)
+// Computed property for filtered types based on selected category
+const filteredTypes = computed(() => {
+  if (localFilters.value.category) {
+    // If category is selected, only show types for that category
+    return getTypesForCategory(localFilters.value.category)
+  } else {
+    // If no category selected, show all types
+    return CLOTHING_TYPES
+  }
+})
 
 const hasActiveFilters = computed(() => {
-  return Object.values(localFilters.value).some(v => v !== null)
+  return (
+    localFilters.value.category || 
+    localFilters.value.clothing_type || 
+    localFilters.value.color || 
+    localFilters.value.brand
+  )
 })
 
-const activeFilters = computed(() => {
-  const active = {}
-  for (const [key, value] of Object.entries(localFilters.value)) {
-    if (value !== null) {
-      active[key] = value
+// Handle category change
+function handleCategoryChange() {
+  // Clear clothing type if it doesn't belong to the selected category
+  if (localFilters.value.clothing_type) {
+    const typeCategory = getCategoryFromType(localFilters.value.clothing_type)
+    if (typeCategory !== localFilters.value.category) {
+      localFilters.value.clothing_type = ''
     }
   }
-  return active
-})
+  emitFilters()
+}
+
+// Handle type change
+function handleTypeChange() {
+  // Auto-populate category based on selected type
+  if (localFilters.value.clothing_type) {
+    const category = getCategoryFromType(localFilters.value.clothing_type)
+    if (category) {
+      localFilters.value.category = category
+    }
+  }
+  emitFilters()
+}
 
 function emitFilters() {
   emit('update:filters', { ...localFilters.value })
 }
 
-function getFilterLabel(key, value) {
-  if (key === 'category') {
-    const cat = CLOTHING_CATEGORIES.find(c => c.value === value)
-    return cat ? cat.label : value
+function clearFilters() {
+  localFilters.value = {
+    category: '',
+    clothing_type: '',
+    color: '',
+    brand: ''
   }
-  if (key === 'color') {
-    const color = COLORS.find(c => c.value === value)
-    return color ? color.label : value
-  }
-  if (key === 'season') {
-    const season = SEASONS.find(s => s.value === value)
-    return season ? season.label : value
-  }
-  return value
+  emitFilters()
 }
 </script>
 
 <style scoped>
 .catalog-filter {
-  background: var(--theme-surface);
-  border: 1px solid var(--theme-border);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.filter-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   margin-bottom: 1rem;
-}
-
-.filter-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--theme-text);
-  margin: 0;
 }
 
 .filter-section {
-  margin-bottom: 1rem;
+  flex: 1;
+  min-width: 150px;
 }
 
 .filter-label {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--theme-text);
+  color: #374151;
   margin-bottom: 0.5rem;
 }
 
 .filter-select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--theme-border);
+  border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  background-color: var(--theme-surface);
-  color: var(--theme-text);
+  background-color: white;
+  color: #111827;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: var(--theme-primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  ring: 2px;
+  ring-color: #3b82f6;
 }
 
 .clear-button {
@@ -256,50 +249,20 @@ function getFilterLabel(key, value) {
   background-color: #dc2626;
 }
 
-.active-filters {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--theme-border);
-}
-
-.active-filters-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--theme-text);
-  margin-bottom: 0.5rem;
-}
-
-.active-filters-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.active-filter-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  background-color: var(--theme-primary);
-  color: white;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .catalog-filter {
-    background: var(--theme-surface);
+    background: #1f2937;
   }
 
   .filter-label {
-    color: var(--theme-text);
+    color: #d1d5db;
   }
 
   .filter-select {
-    background-color: var(--theme-surface);
-    color: var(--theme-text);
-    border-color: var(--theme-border);
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
   }
 }
 </style>

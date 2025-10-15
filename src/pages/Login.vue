@@ -203,10 +203,42 @@ async function continueWithSession(session) {
   errorMessage.value = ''
   
   try {
-    // Set the session as active and redirect
-    // Note: This would need to be implemented in the auth service
-    // For now, we'll just redirect to the session confirmation page
-    router.push('/session-confirmation')
+    // Since we can't restore actual authentication tokens from stored sessions,
+    // we'll create a mock user object and set it in the auth store
+    // This allows the user to continue with their previous account data
+    
+    const mockUser = {
+      id: session.id,
+      email: session.email,
+      user_metadata: {
+        name: session.name,
+        full_name: session.name,
+        avatar_url: session.avatar_url,
+        picture: session.avatar_url
+      },
+      app_metadata: {
+        provider: session.provider || 'google',
+        providers: [session.provider || 'google']
+      },
+      aud: 'authenticated',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    
+    // Set the user in the auth store
+    authStore.setUser(mockUser)
+    
+    // Update the session's last login time
+    const sessions = getStoredSessions()
+    const updatedSessions = sessions.map(s => 
+      s.id === session.id 
+        ? { ...s, last_login: new Date().toISOString() }
+        : s
+    )
+    localStorage.setItem('stylesnap_user_sessions', JSON.stringify(updatedSessions))
+    
+    // Redirect to the main app
+    router.push('/closet')
   } catch (error) {
     console.error('Failed to continue with session:', error)
     errorMessage.value = 'Failed to continue with this account. Please try again.'

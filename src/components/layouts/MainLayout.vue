@@ -7,37 +7,20 @@
   <div class="main-layout">
     <header class="main-header">
       <div class="header-content">
+        <!-- Profile Card -->
+        <ProfileCard 
+          :user-profile="userProfile"
+          :user-avatar="userAvatar"
+        />
+        
+        <!-- App Logo -->
         <h1 class="app-logo">
           StyleSnap
         </h1>
         
-        <!-- User Profile Section -->
-        <div class="user-profile-section">
-          <div class="user-info">
-            <div class="user-avatar">
-              <div v-if="userAvatar" class="avatar-image">
-                <img :src="userAvatar" :alt="userName" class="avatar-img">
-              </div>
-              <div v-else class="avatar-placeholder">
-                <svg class="avatar-icon" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                </svg>
-              </div>
-            </div>
-            <div class="user-details">
-              <span class="user-name">{{ userName }}</span>
-              <span v-if="userProfile?.username" class="user-username">@{{ userProfile.username }}</span>
-            </div>
-          </div>
-          
-          <!-- Weather Widget -->
-          <div class="weather-widget-container">
-            <WeatherWidget />
-          </div>
-        </div>
-        
-        <div class="header-actions">
-          <SettingsDropdown />
+        <!-- Weather Widget -->
+        <div class="weather-widget-container">
+          <WeatherWidget />
         </div>
       </div>
     </header>
@@ -121,7 +104,7 @@ import { useSuggestionsStore } from '../../stores/suggestions-store'
 import { useStylePreferencesStore } from '../../stores/style-preferences-store'
 import { getUserProfile } from '../../services/user-service.js'
 import NotificationBadge from '../notifications/NotificationBadge.vue'
-import SettingsDropdown from '../ui/SettingsDropdown.vue'
+import ProfileCard from '../ui/ProfileCard.vue'
 import WeatherWidget from '../ui/WeatherWidget.vue'
 
 const authStore = useAuthStore()
@@ -199,6 +182,7 @@ onMounted(() => {
   padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
+  gap: 1rem;
 }
 
 .app-logo {
@@ -206,6 +190,7 @@ onMounted(() => {
   font-weight: 700;
   color: var(--theme-primary);
   margin: 0;
+  flex-shrink: 0;
 }
 
 /* Make logo white in dark mode */
@@ -213,83 +198,10 @@ onMounted(() => {
   color: #FFFFFF;
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-/* User Profile Section */
-.user-profile-section {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex: 1;
-  justify-content: center;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.user-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.avatar-image {
-  width: 100%;
-  height: 100%;
-}
-
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  background-color: var(--theme-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-}
-
-.avatar-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.user-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--theme-text);
-  line-height: 1.2;
-}
-
-.user-username {
-  font-size: 0.75rem;
-  color: var(--theme-text-secondary);
-  line-height: 1.2;
-}
-
 .weather-widget-container {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 
@@ -373,36 +285,23 @@ onMounted(() => {
 
 /* Responsive Header Styles */
 @media (max-width: 768px) {
-  .user-profile-section {
-    gap: 1rem;
+  .header-content {
+    gap: 0.75rem;
   }
   
-  .user-details {
-    display: none; /* Hide user details on mobile to save space */
-  }
-  
-  .user-avatar {
-    width: 2rem;
-    height: 2rem;
-  }
-  
-  .avatar-icon {
-    width: 1rem;
-    height: 1rem;
+  .app-logo {
+    font-size: 1.125rem;
   }
 }
 
 @media (max-width: 640px) {
   .header-content {
     padding: 0.75rem;
+    gap: 0.5rem;
   }
   
   .app-logo {
-    font-size: 1.125rem;
-  }
-  
-  .user-profile-section {
-    gap: 0.75rem;
+    font-size: 1rem;
   }
   
   .weather-widget-container {

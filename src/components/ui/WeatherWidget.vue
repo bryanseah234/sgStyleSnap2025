@@ -59,10 +59,6 @@
           </div>
         </div>
       </div>
-      
-      <div class="weather-suggestion">
-        {{ outfitSuggestion }}
-      </div>
     </div>
     
     <!-- No Weather Data -->
@@ -173,17 +169,19 @@ onMounted(() => {
 .weather-widget {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
-  border-radius: 0.75rem;
-  border: 1px solid rgba(59, 130, 246, 0.1);
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
   transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .weather-widget:hover {
-  border-color: rgba(59, 130, 246, 0.2);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(139, 92, 246, 0.08));
+  background: var(--theme-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .weather-loading {
@@ -229,34 +227,34 @@ onMounted(() => {
 .weather-content {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .weather-main {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .weather-icon-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   flex-shrink: 0;
 }
 
 .weather-icon-image {
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   object-fit: contain;
 }
 
 .weather-icon-fallback {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: #3b82f6;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--theme-primary);
 }
 
 .weather-info {
@@ -264,80 +262,45 @@ onMounted(() => {
   flex-direction: column;
   gap: 0.125rem;
   flex: 1;
+  min-width: 0;
 }
 
 .weather-temp {
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--theme-text);
   line-height: 1.2;
 }
 
 .weather-condition {
-  font-size: 0.875rem;
-  color: #6b7280;
-  line-height: 1.2;
-}
-
-.weather-suggestion {
   font-size: 0.75rem;
-  color: #059669;
-  font-weight: 500;
-  padding: 0.375rem 0.75rem;
-  background: rgba(16, 185, 129, 0.1);
-  border-radius: 0.5rem;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--theme-text-secondary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .weather-widget {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-    border-color: rgba(59, 130, 246, 0.2);
-  }
-  
-  .weather-widget:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
-    border-color: rgba(59, 130, 246, 0.3);
-  }
-  
   .weather-loading,
   .weather-empty {
     color: #9ca3af;
-  }
-  
-  .weather-temp {
-    color: #f9fafb;
-  }
-  
-  .weather-condition {
-    color: #d1d5db;
-  }
-  
-  .weather-suggestion {
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.1);
-    border-color: rgba(52, 211, 153, 0.2);
   }
 }
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .weather-widget {
-    padding: 0.75rem;
+    padding: 0.375rem 0.5rem;
   }
   
   .weather-temp {
-    font-size: 1rem;
-  }
-  
-  .weather-condition {
     font-size: 0.8125rem;
   }
   
-  .weather-suggestion {
+  .weather-condition {
     font-size: 0.6875rem;
-    padding: 0.25rem 0.5rem;
   }
 }
 </style>

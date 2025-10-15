@@ -22,15 +22,37 @@
         </div>
       </div>
 
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button
+            class="tab"
+            :class="{ 'active': activeTab === 'all' }"
+            @click="activeTab = 'all'"
+          >
+            All
+            <span class="tab-count">{{ notificationsStore.notifications.length }}</span>
+          </button>
+          <button
+            class="tab"
+            :class="{ 'active': activeTab === 'unread' }"
+            @click="activeTab = 'unread'"
+          >
+            Unread
+            <span class="tab-count">{{ notificationsStore.unreadCount }}</span>
+          </button>
+        </div>
+      </div>
+
       <div class="notifications-content">
-        <!-- All Notifications Section -->
-        <div class="all-notifications-section">
+        <!-- Tab Content -->
+        <div class="tab-content">
           <div class="panel-header">
             <h2 class="section-title">
-              All Notifications
+              {{ activeTab === 'all' ? 'All Notifications' : 'Unread Notifications' }}
             </h2>
             <button
-              v-if="notificationsStore.hasUnread"
+              v-if="notificationsStore.hasUnread && activeTab === 'unread'"
               :disabled="markingAllRead"
               class="mark-all-btn"
               @click="handleMarkAllRead"
@@ -45,10 +67,10 @@
             <div class="notifications-column">
               <div class="column-header">
                 <h3 class="column-title">Likes</h3>
-                <span class="column-count">{{ likeNotifications.length }}</span>
+                <span class="column-count">{{ currentLikeNotifications.length }}</span>
               </div>
               <NotificationsList
-                :notifications="likeNotifications"
+                :notifications="currentLikeNotifications"
                 :loading="notificationsStore.loading"
                 :has-more="hasMore"
                 @notification-click="handleNotificationClick"
@@ -60,60 +82,10 @@
             <div class="notifications-column">
               <div class="column-header">
                 <h3 class="column-title">Suggestions</h3>
-                <span class="column-count">{{ suggestionNotifications.length }}</span>
+                <span class="column-count">{{ currentSuggestionNotifications.length }}</span>
               </div>
               <NotificationsList
-                :notifications="suggestionNotifications"
-                :loading="notificationsStore.loading"
-                :has-more="hasMore"
-                @notification-click="handleNotificationClick"
-                @load-more="handleLoadMore"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Unread Notifications Section -->
-        <div class="unread-notifications-section">
-          <div class="panel-header">
-            <h2 class="section-title">
-              Unread Notifications
-            </h2>
-            <button
-              v-if="notificationsStore.hasUnread"
-              :disabled="markingAllRead"
-              class="mark-all-btn"
-              @click="handleMarkAllRead"
-            >
-              {{ markingAllRead ? 'Marking...' : 'Mark all as read' }}
-            </button>
-          </div>
-          
-          <!-- Two Column Layout: Unread Likes and Unread Suggestions -->
-          <div class="notifications-layout">
-            <!-- Unread Likes Column -->
-            <div class="notifications-column">
-              <div class="column-header">
-                <h3 class="column-title">Likes</h3>
-                <span class="column-count">{{ unreadLikeNotifications.length }}</span>
-              </div>
-              <NotificationsList
-                :notifications="unreadLikeNotifications"
-                :loading="notificationsStore.loading"
-                :has-more="hasMore"
-                @notification-click="handleNotificationClick"
-                @load-more="handleLoadMore"
-              />
-            </div>
-
-            <!-- Unread Suggestions Column -->
-            <div class="notifications-column">
-              <div class="column-header">
-                <h3 class="column-title">Suggestions</h3>
-                <span class="column-count">{{ unreadSuggestionNotifications.length }}</span>
-              </div>
-              <NotificationsList
-                :notifications="unreadSuggestionNotifications"
+                :notifications="currentSuggestionNotifications"
                 :loading="notificationsStore.loading"
                 :has-more="hasMore"
                 @notification-click="handleNotificationClick"
@@ -188,6 +160,7 @@ const markingAllRead = ref(false)
 const showApprovalModal = ref(false)
 const currentSuggestion = ref(null)
 const loadingSuggestion = ref(false)
+const activeTab = ref('all')
 
 const hasMore = computed(() => {
   const { total, offset, limit } = notificationsStore.pagination
@@ -216,6 +189,15 @@ const unreadLikeNotifications = computed(() => {
 
 const unreadSuggestionNotifications = computed(() => {
   return unreadNotifications.value.filter(n => n.type === 'friend_outfit_suggestion')
+})
+
+// Current tab notifications
+const currentLikeNotifications = computed(() => {
+  return activeTab.value === 'all' ? likeNotifications.value : unreadLikeNotifications.value
+})
+
+const currentSuggestionNotifications = computed(() => {
+  return activeTab.value === 'all' ? suggestionNotifications.value : unreadSuggestionNotifications.value
 })
 
 onMounted(async () => {
@@ -401,6 +383,64 @@ const handleRejectSuggestion = async suggestionId => {
   background: var(--theme-surface, #1a0d3a);
   border-color: var(--theme-border, #4c1d95);
   color: var(--theme-text-secondary, #A78BFA);
+}
+
+/* Tabs */
+.tabs-container {
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  background: var(--theme-surface, #ffffff);
+  border: 1px solid var(--theme-border, #e0d4ff);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  gap: 0.25rem;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--theme-text-secondary, #6b46c1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: var(--theme-hover, #f3e8ff);
+  color: var(--theme-text, #1e1b4b);
+}
+
+.tab.active {
+  background: var(--theme-primary, #8b5cf6);
+  color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+.tab:not(.active) .tab-count {
+  background: var(--theme-primary, #8b5cf6);
+  color: white;
 }
 
 .notifications-content {
