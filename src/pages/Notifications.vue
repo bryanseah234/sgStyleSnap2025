@@ -2,7 +2,15 @@
   <MainLayout>
     <div class="notifications-page">
       <div class="notifications-header">
-        <h1>Notifications</h1>
+        <h1>
+          Notifications
+          <span
+            v-if="notificationsStore.unreadCount > 0"
+            class="counter"
+          >
+            ({{ notificationsStore.unreadCount }})
+          </span>
+        </h1>
         <p class="subtitle">
           Stay updated with your friends' activities
         </p>
@@ -14,42 +22,9 @@
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs-container">
-        <div class="tabs">
-          <button
-            :class="['tab', { active: activeTab === 'all' }]"
-            @click="activeTab = 'all'"
-          >
-            All
-            <span
-              v-if="notificationsStore.unreadCount > 0"
-              class="badge"
-            >
-              {{ notificationsStore.unreadCount }}
-            </span>
-          </button>
-          <button
-            :class="['tab', { active: activeTab === 'unread' }]"
-            @click="activeTab = 'unread'"
-          >
-            Unread
-            <span
-              v-if="notificationsStore.unreadCount > 0"
-              class="badge"
-            >
-              {{ notificationsStore.unreadCount }}
-            </span>
-          </button>
-        </div>
-      </div>
-
       <div class="notifications-content">
-        <!-- All Notifications Tab -->
-        <div
-          v-if="activeTab === 'all'"
-          class="tab-panel"
-        >
+        <!-- All Notifications Section -->
+        <div class="all-notifications-section">
           <div class="panel-header">
             <h2 class="section-title">
               All Notifications
@@ -98,11 +73,8 @@
           </div>
         </div>
 
-        <!-- Unread Notifications Tab -->
-        <div
-          v-if="activeTab === 'unread'"
-          class="tab-panel"
-        >
+        <!-- Unread Notifications Section -->
+        <div class="unread-notifications-section">
           <div class="panel-header">
             <h2 class="section-title">
               Unread Notifications
@@ -212,7 +184,6 @@ import SuggestionApprovalCard from '../components/social/SuggestionApprovalCard.
 const router = useRouter()
 const notificationsStore = useNotificationsStore()
 
-const activeTab = ref('all')
 const markingAllRead = ref(false)
 const showApprovalModal = ref(false)
 const currentSuggestion = ref(null)
@@ -399,6 +370,13 @@ const handleRejectSuggestion = async suggestionId => {
   margin-bottom: 1rem;
 }
 
+.counter {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--theme-text-secondary, #6b46c1);
+  margin-left: 0.5rem;
+}
+
 .retention-notice {
   display: flex;
   align-items: center;
@@ -425,69 +403,21 @@ const handleRejectSuggestion = async suggestionId => {
   color: var(--theme-text-secondary, #A78BFA);
 }
 
-/* Tabs */
-.tabs-container {
-  margin-bottom: 1.5rem;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 2px solid var(--theme-border, #e0d4ff);
-  overflow-x: hidden;
-  overflow: hidden;
-  flex-wrap: wrap;
-}
-
-.tab {
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--theme-text-secondary, #6b46c1);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: -2px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-}
-
-.tab:hover {
-  color: var(--theme-text, #1e1b4b);
-}
-
-.tab.active {
-  color: var(--theme-primary, #8b5cf6);
-  border-bottom-color: var(--theme-primary, #8b5cf6);
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 0.375rem;
-  background: var(--theme-primary, #8b5cf6);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 10px;
-}
-
 .notifications-content {
   min-height: 400px;
 }
 
-.tab-panel {
-  background: var(--theme-surface, #ffffff);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px var(--theme-shadow, rgba(139, 92, 246, 0.1));
+/* Section styling */
+.all-notifications-section,
+.unread-notifications-section {
+  margin-bottom: 2rem;
 }
+
+.all-notifications-section:last-child,
+.unread-notifications-section:last-child {
+  margin-bottom: 0;
+}
+
 
 .panel-header {
   display: flex;

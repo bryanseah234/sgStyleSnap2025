@@ -203,6 +203,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
+import { useThemeStore } from '../stores/theme-store'
 import { getUserProfile, updateUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
 import { COLOR_THEMES } from '../config/color-themes'
 import { applyColorTheme } from '../config/color-themes'
@@ -212,6 +213,7 @@ import { SunIcon, MoonIcon, ComputerDesktopIcon } from '@heroicons/vue/24/outlin
 
 const router = useRouter()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 
 // Profile state
 const loading = ref(true)
@@ -276,6 +278,7 @@ async function loadProfile() {
     // Load available avatars
     availableAvatars.value = await getDefaultAvatars()
     defaultAvatar.value = availableAvatars.value[0] || ''
+    
   } catch (error) {
     console.error('Failed to load profile:', error)
   } finally {
@@ -289,6 +292,16 @@ function loadStylePreferences() {
   if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
     selectedTheme.value = savedTheme
     originalTheme.value = savedTheme
+    
+    // Sync with theme store
+    if (savedTheme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      themeStore.setTheme(prefersDark)
+    } else if (savedTheme === 'dark') {
+      themeStore.setTheme(true)
+    } else {
+      themeStore.setTheme(false)
+    }
   }
   
   // Load color theme
@@ -296,6 +309,8 @@ function loadStylePreferences() {
   if (savedColorTheme && availableColorThemes[savedColorTheme]) {
     selectedColorTheme.value = savedColorTheme
     originalColorTheme.value = savedColorTheme
+    // Apply color theme with current mode
+    applyColorTheme(savedColorTheme, themeStore.isDarkMode)
   }
 }
 
@@ -306,26 +321,23 @@ function selectAvatar(avatar) {
 
 function selectTheme(themeValue) {
   selectedTheme.value = themeValue
-  applyTheme(themeValue)
-}
-
-function applyTheme(themeValue) {
-  // Apply theme based on selection
+  
+  // Use theme store to handle theme switching
   if (themeValue === 'system') {
-    // Use system preference
+    // For system theme, we need to detect the current system preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.classList.toggle('dark', prefersDark)
+    themeStore.setTheme(prefersDark)
   } else if (themeValue === 'dark') {
-    document.documentElement.classList.add('dark')
+    themeStore.setTheme(true)
   } else {
-    document.documentElement.classList.remove('dark')
+    themeStore.setTheme(false)
   }
 }
 
 function selectColorTheme(themeKey) {
   selectedColorTheme.value = themeKey
-  // Apply preview immediately
-  applyColorTheme(themeKey, false) // false for light mode, you might want to detect current mode
+  // Apply preview immediately with current theme mode
+  applyColorTheme(themeKey, themeStore.isDarkMode)
 }
 
 function getThemeColors(theme) {

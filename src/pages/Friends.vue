@@ -27,74 +27,36 @@
   <MainLayout>
     <div class="friends-page">
       <div class="friends-header">
-        <h1>Friends</h1>
+        <h1>
+          Friends
+          <span
+            v-if="friendsStore.friendsCount > 0"
+            class="counter"
+          >
+            ({{ friendsStore.friendsCount }})
+          </span>
+        </h1>
         <p class="subtitle">
           Connect with friends and share outfits
         </p>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs-container">
-        <div class="tabs">
-          <button
-            :class="['tab', { active: activeTab === 'friends' }]"
-            @click="activeTab = 'friends'"
-          >
-            My Friends
-            <span
-              v-if="friendsStore.friendsCount > 0"
-              class="badge"
-            >
-              {{ friendsStore.friendsCount }}
-            </span>
-          </button>
-          <button
-            :class="['tab', { active: activeTab === 'requests' }]"
-            @click="activeTab = 'requests'"
-          >
-            Requests
-            <span
-              v-if="friendsStore.hasPendingRequests"
-              class="badge"
-            >
-              {{ friendsStore.incomingRequestsCount }}
-            </span>
-          </button>
-          <button
-            :class="['tab', { active: activeTab === 'search' }]"
-            @click="activeTab = 'search'"
-          >
-            Find Friends
-          </button>
-        </div>
-      </div>
-
       <div class="friends-content">
-        <!-- Friends List Tab -->
-        <div
-          v-if="activeTab === 'friends'"
-          class="tab-panel"
-        >
+        <!-- Friends List Section -->
+        <div class="friends-section">
           <FriendsList />
         </div>
 
-        <!-- Requests Tab -->
-        <div
-          v-if="activeTab === 'requests'"
-          class="tab-panel"
-        >
+        <!-- Requests Section -->
+        <div class="requests-section">
           <FriendRequest />
         </div>
 
-        <!-- Search Tab -->
-        <div
-          v-if="activeTab === 'search'"
-          class="tab-panel"
-        >
-          <div class="search-section">
-            <h2 class="section-title">
-              Find Friends
-            </h2>
+        <!-- Search Section -->
+        <div class="search-section">
+          <h2 class="section-title">
+            Find Friends
+          </h2>
 
             <div class="search-box">
               <input
@@ -211,7 +173,6 @@ import FriendRequest from '../components/social/FriendRequest.vue'
 
 const friendsStore = useFriendsStore()
 
-const activeTab = ref('friends')
 const searchQuery = ref('')
 const searching = ref(false)
 const sendingRequest = ref(null)
@@ -342,74 +303,30 @@ function getFriendshipStatusText(status) {
   color: var(--theme-text-secondary, #6b46c1);
 }
 
-/* Tabs */
-.tabs-container {
-  margin-bottom: 1.5rem;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 2px solid var(--theme-border, #e0d4ff);
-  overflow-x: hidden;
-  overflow: hidden;
-  flex-wrap: wrap;
-}
-
-.tab {
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
+.counter {
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--theme-text-secondary, #6b46c1);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: -2px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-}
-
-.tab:hover {
-  color: var(--theme-text, #1e1b4b);
-}
-
-.tab.active {
-  color: var(--theme-primary, #8b5cf6);
-  border-bottom-color: var(--theme-primary, #8b5cf6);
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 0.375rem;
-  background: var(--theme-primary, #8b5cf6);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 10px;
+  margin-left: 0.5rem;
 }
 
 .friends-content {
   min-height: 400px;
 }
 
-.tab-panel {
-  background: var(--theme-surface, #ffffff);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px var(--theme-shadow, rgba(139, 92, 246, 0.1));
+/* Section styling */
+.friends-section,
+.requests-section,
+.search-section {
+  margin-bottom: 2rem;
 }
 
-/* Search Section */
-.search-section {
-  width: 100%;
+.friends-section:last-child,
+.requests-section:last-child,
+.search-section:last-child {
+  margin-bottom: 0;
 }
+
 
 .section-title {
   font-size: 1.25rem;

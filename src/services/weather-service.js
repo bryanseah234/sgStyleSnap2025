@@ -382,11 +382,20 @@ export async function getUserLocation() {
         })
       },
       error => {
-        reject(new Error('Failed to get location: ' + error.message))
+        // Provide more specific error messages
+        let errorMessage = 'Failed to get location'
+        if (error.code === error.TIMEOUT) {
+          errorMessage = 'Location request timed out. Please try again.'
+        } else if (error.code === error.PERMISSION_DENIED) {
+          errorMessage = 'Location access denied. Please enable location permissions.'
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMessage = 'Location information unavailable.'
+        }
+        reject(new Error(errorMessage))
       },
       {
         enableHighAccuracy: false,
-        timeout: 5000,
+        timeout: 15000, // Increased to 15 seconds
         maximumAge: 300000 // Cache for 5 minutes
       }
     )

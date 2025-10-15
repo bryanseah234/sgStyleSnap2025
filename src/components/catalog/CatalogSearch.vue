@@ -126,23 +126,23 @@ function handleClear() {
 <style scoped>
 .catalog-search {
   width: 100%;
+  margin-bottom: 1rem;
 }
 
 .search-bar {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
   padding: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 .search-bar:focus-within {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 /* Search Icon */
@@ -150,7 +150,7 @@ function handleClear() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--theme-text-secondary);
   flex-shrink: 0;
 }
 
@@ -159,14 +159,14 @@ function handleClear() {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 1rem;
-  color: #1f2937;
+  font-size: 0.875rem;
+  color: var(--theme-text);
   outline: none;
   transition: all 0.2s ease;
 }
 
 .search-input::placeholder {
-  color: #9ca3af;
+  color: var(--theme-text-muted);
 }
 
 .search-input:focus {
@@ -183,7 +183,7 @@ function handleClear() {
   height: 1.5rem;
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--theme-text-muted);
   cursor: pointer;
   border-radius: 50%;
   transition: all 0.2s ease;
@@ -191,40 +191,40 @@ function handleClear() {
 }
 
 .clear-button:hover {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--theme-hover);
+  color: var(--theme-text);
 }
 
-/* Dark mode */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .search-bar {
-    background: #374151;
-    border-color: #4b5563;
+    background: var(--theme-surface);
+    border-color: var(--theme-border);
   }
   
   .search-bar:focus-within {
-    border-color: #3b82f6;
+    border-color: var(--theme-primary);
   }
   
   .search-icon {
-    color: #9ca3af;
+    color: var(--theme-text-secondary);
   }
   
   .search-input {
-    color: white;
+    color: var(--theme-text);
   }
   
   .search-input::placeholder {
-    color: #6b7280;
+    color: var(--theme-text-muted);
   }
   
   .clear-button {
-    color: #6b7280;
+    color: var(--theme-text-muted);
   }
   
   .clear-button:hover {
-    background: #4b5563;
-    color: #9ca3af;
+    background: var(--theme-hover);
+    color: var(--theme-text);
   }
 }
 

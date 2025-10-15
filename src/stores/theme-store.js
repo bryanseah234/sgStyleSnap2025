@@ -18,6 +18,7 @@
 
 import { defineStore } from 'pinia'
 import { PURPLE_THEME } from '../config/colors'
+import { applyColorTheme, getCurrentColorTheme } from '../config/color-themes'
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
@@ -84,31 +85,13 @@ export const useThemeStore = defineStore('theme', {
 
       if (this.isDarkMode) {
         root.classList.add('dark')
-        // Dark theme colors - Purple palette
-        root.style.setProperty('--theme-primary', PURPLE_THEME.primary)
-        root.style.setProperty('--theme-secondary', PURPLE_THEME.secondary)
-        root.style.setProperty('--theme-background', '#1e1b4b') // Dark purple background
-        root.style.setProperty('--theme-surface', '#312e81') // Dark purple surface
-        root.style.setProperty('--theme-surface-light', '#4338ca') // Lighter dark purple surface
-        root.style.setProperty('--theme-text', '#ffffff')
-        root.style.setProperty('--theme-text-secondary', '#c7d2fe')
-        root.style.setProperty('--theme-border', '#4c1d95') // Dark purple border
-        root.style.setProperty('--theme-hover', '#4338ca') // Dark purple hover
-        root.style.setProperty('--theme-shadow', PURPLE_THEME.shadowDark)
       } else {
         root.classList.remove('dark')
-        // Light theme colors - Purple palette
-        root.style.setProperty('--theme-primary', PURPLE_THEME.primary)
-        root.style.setProperty('--theme-secondary', PURPLE_THEME.secondary)
-        root.style.setProperty('--theme-background', PURPLE_THEME.background)
-        root.style.setProperty('--theme-surface', PURPLE_THEME.surface)
-        root.style.setProperty('--theme-surface-light', PURPLE_THEME.surfaceLight)
-        root.style.setProperty('--theme-text', PURPLE_THEME.text)
-        root.style.setProperty('--theme-text-secondary', PURPLE_THEME.textSecondary)
-        root.style.setProperty('--theme-border', PURPLE_THEME.border)
-        root.style.setProperty('--theme-hover', PURPLE_THEME.surfaceLight)
-        root.style.setProperty('--theme-shadow', PURPLE_THEME.shadow)
       }
+      
+      // Reapply the current color theme with the new dark/light mode
+      const currentColorTheme = getCurrentColorTheme()
+      applyColorTheme(currentColorTheme, this.isDarkMode)
     },
 
     /**

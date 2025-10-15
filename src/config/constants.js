@@ -8,10 +8,56 @@
  */
 
 /**
- * Clothing Categories
- *
- * Detailed categories for precise filtering and organization
- * These categories replace the simple 5-category system (top, bottom, outerwear, shoes, accessory)
+ * Main Categories (for filtering)
+ * These are the primary categories that users can select from
+ */
+export const MAIN_CATEGORIES = [
+  { value: 'top', label: 'Top' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'outerwear', label: 'Outerwear' },
+  { value: 'shoes', label: 'Shoes' },
+  { value: 'accessory', label: 'Accessory' },
+  { value: 'dress', label: 'Dress' }
+]
+
+/**
+ * Clothing Types (specific subcategories)
+ * These are the detailed types that belong to main categories
+ */
+export const CLOTHING_TYPES = [
+  // Top types
+  { value: 'blouse', label: 'Blouse', category: 'top' },
+  { value: 'body', label: 'Bodysuit', category: 'top' },
+  { value: 'hoodie', label: 'Hoodie', category: 'top' },
+  { value: 'longsleeve', label: 'Long Sleeve Shirt', category: 'top' },
+  { value: 'polo', label: 'Polo Shirt', category: 'top' },
+  { value: 'shirt', label: 'Shirt', category: 'top' },
+  { value: 't-shirt', label: 'T-Shirt', category: 'top' },
+  { value: 'top', label: 'Top', category: 'top' },
+  { value: 'undershirt', label: 'Undershirt', category: 'top' },
+  
+  // Bottom types
+  { value: 'pants', label: 'Pants', category: 'bottom' },
+  { value: 'shorts', label: 'Shorts', category: 'bottom' },
+  { value: 'skirt', label: 'Skirt', category: 'bottom' },
+  
+  // Outerwear types
+  { value: 'blazer', label: 'Blazer', category: 'outerwear' },
+  { value: 'outerwear', label: 'Outerwear', category: 'outerwear' },
+  
+  // Shoes types
+  { value: 'shoes', label: 'Shoes', category: 'shoes' },
+  
+  // Accessory types
+  { value: 'hat', label: 'Hat', category: 'accessory' },
+  
+  // Dress types
+  { value: 'dress', label: 'Dress', category: 'dress' }
+]
+
+/**
+ * Legacy clothing categories for backward compatibility
+ * @deprecated Use MAIN_CATEGORIES and CLOTHING_TYPES instead
  */
 export const CLOTHING_CATEGORIES = [
   { value: 'blazer', label: 'Blazer', group: 'outerwear' },
@@ -21,15 +67,12 @@ export const CLOTHING_CATEGORIES = [
   { value: 'hat', label: 'Hat', group: 'accessory' },
   { value: 'hoodie', label: 'Hoodie', group: 'top' },
   { value: 'longsleeve', label: 'Longsleeve', group: 'top' },
-  { value: 'not-sure', label: 'Not sure', group: 'other' },
-  { value: 'other', label: 'Other', group: 'other' },
   { value: 'outerwear', label: 'Outerwear', group: 'outerwear' },
   { value: 'pants', label: 'Pants', group: 'bottom' },
   { value: 'polo', label: 'Polo', group: 'top' },
   { value: 'shirt', label: 'Shirt', group: 'top' },
   { value: 'shoes', label: 'Shoes', group: 'shoes' },
   { value: 'shorts', label: 'Shorts', group: 'bottom' },
-  { value: 'skip', label: 'Skip', group: 'other' },
   { value: 'skirt', label: 'Skirt', group: 'bottom' },
   { value: 't-shirt', label: 'T-Shirt', group: 'top' },
   { value: 'top', label: 'Top', group: 'top' },
@@ -55,7 +98,8 @@ export const SIMPLE_CATEGORIES = [
 export const CATEGORY_VALUES = CLOTHING_CATEGORIES.map(c => c.value)
 
 /**
- * Category groups for organization
+ * Category groups for organization (legacy)
+ * @deprecated Use MAIN_CATEGORIES and CLOTHING_TYPES instead
  */
 export const CATEGORY_GROUPS = {
   top: CLOTHING_CATEGORIES.filter(c => c.group === 'top'),
@@ -63,8 +107,22 @@ export const CATEGORY_GROUPS = {
   outerwear: CLOTHING_CATEGORIES.filter(c => c.group === 'outerwear'),
   shoes: CLOTHING_CATEGORIES.filter(c => c.group === 'shoes'),
   accessory: CLOTHING_CATEGORIES.filter(c => c.group === 'accessory'),
-  dress: CLOTHING_CATEGORIES.filter(c => c.group === 'dress'),
-  other: CLOTHING_CATEGORIES.filter(c => c.group === 'other')
+  dress: CLOTHING_CATEGORIES.filter(c => c.group === 'dress')
+}
+
+/**
+ * Get clothing types for a specific category
+ */
+export function getTypesForCategory(category) {
+  return CLOTHING_TYPES.filter(type => type.category === category)
+}
+
+/**
+ * Get category from clothing type
+ */
+export function getCategoryFromType(type) {
+  const clothingType = CLOTHING_TYPES.find(t => t.value === type)
+  return clothingType ? clothingType.category : null
 }
 
 /**

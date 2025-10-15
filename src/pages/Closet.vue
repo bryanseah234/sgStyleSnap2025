@@ -25,9 +25,6 @@
 <template>
   <MainLayout>
     <div class="closet-page">
-      <!-- User Greeting and Weather -->
-      <UserGreeting />
-      
       <div class="closet-header">
         <div class="header-content">
           <div>
@@ -172,7 +169,6 @@ import { useRouter } from 'vue-router'
 import { useClosetStore } from '../stores/closet-store'
 import { supabase } from '../config/supabase'
 import MainLayout from '../components/layouts/MainLayout.vue'
-import UserGreeting from '../components/ui/UserGreeting.vue'
 import ClosetFilter from '../components/closet/ClosetFilter.vue'
 import ClosetGrid from '../components/closet/ClosetGrid.vue'
 import ItemDetailModal from '../components/closet/ItemDetailModal.vue'

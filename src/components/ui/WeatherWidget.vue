@@ -147,7 +147,17 @@ async function fetchWeather() {
     weather.value = weatherData
   } catch (err) {
     console.error('Failed to fetch weather:', err)
-    error.value = 'Unable to load weather data'
+    
+    // Provide more specific error messages
+    if (err.message.includes('timeout')) {
+      error.value = 'Location request timed out'
+    } else if (err.message.includes('denied')) {
+      error.value = 'Location access denied'
+    } else if (err.message.includes('not supported')) {
+      error.value = 'Location not supported'
+    } else {
+      error.value = 'Unable to load weather data'
+    }
   } finally {
     loading.value = false
   }

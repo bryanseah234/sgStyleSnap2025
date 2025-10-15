@@ -21,7 +21,10 @@
             </div>
             
             <!-- Color Theme Cards - 3 per row -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-if="Object.keys(availableColorThemes).length === 0" class="text-center py-8 text-gray-500">
+              Loading color themes...
+            </div>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
                 v-for="(theme, key) in availableColorThemes"
                 :key="key"
@@ -32,7 +35,7 @@
                 <div class="card-header">
                   <h3 class="theme-name">{{ theme.name }}</h3>
                   <div v-if="selectedColorTheme === key" class="selected-badge">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg>
                   </div>
@@ -70,7 +73,10 @@
             </div>
             
             <!-- Font Theme Cards - 3 per row -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-if="Object.keys(availableFontThemes).length === 0" class="text-center py-8 text-gray-500">
+              Loading font themes...
+            </div>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
                 v-for="(theme, key) in availableFontThemes"
                 :key="key"
@@ -81,7 +87,7 @@
                 <div class="card-header">
                   <h3 class="theme-name">{{ theme.name }}</h3>
                   <div v-if="selectedFontTheme === key" class="selected-badge">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg>
                   </div>
@@ -194,15 +200,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/components/layouts/MainLayout.vue'
 import { COLOR_THEMES } from '@/config/color-themes'
 import { applyColorTheme } from '@/config/color-themes'
 import { AVAILABLE_FONT_THEMES, getFontFamily } from '@/config/fonts'
 import { changeFontTheme } from '@/utils/font-system'
+import { useThemeStore } from '@/stores/theme-store'
 
 const router = useRouter()
+const themeStore = useThemeStore()
 
 // State
 const selectedColorTheme = ref('purple')
@@ -223,7 +231,8 @@ const hasChanges = computed(() => {
 // Methods
 function selectColorTheme(themeKey) {
   selectedColorTheme.value = themeKey
-  applyColorTheme(themeKey, false) // Apply immediately for preview
+  // Apply theme with current dark/light mode
+  applyColorTheme(themeKey, themeStore.isDarkMode)
 }
 
 function selectFontTheme(themeKey) {
@@ -258,7 +267,7 @@ function getColorName(colorKey) {
 function saveChanges() {
   // Save color theme
   localStorage.setItem('color-theme', selectedColorTheme.value)
-  applyColorTheme(selectedColorTheme.value, true)
+  applyColorTheme(selectedColorTheme.value, themeStore.isDarkMode)
   
   // Save font theme
   localStorage.setItem('font-theme', selectedFontTheme.value)
@@ -277,8 +286,8 @@ function cancelChanges() {
   selectedColorTheme.value = originalColorTheme.value
   selectedFontTheme.value = originalFontTheme.value
   
-  // Reapply original themes
-  applyColorTheme(originalColorTheme.value, true)
+  // Reapply original themes with current dark/light mode
+  applyColorTheme(originalColorTheme.value, themeStore.isDarkMode)
   changeFontTheme(originalFontTheme.value)
 }
 
@@ -288,6 +297,8 @@ function loadPreferences() {
   if (savedColorTheme && availableColorThemes[savedColorTheme]) {
     selectedColorTheme.value = savedColorTheme
     originalColorTheme.value = savedColorTheme
+    // Apply with current dark/light mode
+    applyColorTheme(savedColorTheme, themeStore.isDarkMode)
   }
   
   // Load font theme
@@ -295,11 +306,18 @@ function loadPreferences() {
   if (savedFontTheme && availableFontThemes[savedFontTheme]) {
     selectedFontTheme.value = savedFontTheme
     originalFontTheme.value = savedFontTheme
+    changeFontTheme(savedFontTheme)
   }
 }
 
 onMounted(() => {
   loadPreferences()
+})
+
+// Watch for dark/light mode changes and reapply color theme
+watch(() => themeStore.isDarkMode, (newIsDark) => {
+  // Reapply current color theme with new mode
+  applyColorTheme(selectedColorTheme.value, newIsDark)
 })
 </script>
 
@@ -311,7 +329,7 @@ onMounted(() => {
 
 /* Color Theme Cards */
 .color-theme-card {
-  @apply p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600;
+  @apply p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 min-h-[200px] flex flex-col;
 }
 
 .color-theme-card.selected {
@@ -327,7 +345,7 @@ onMounted(() => {
 }
 
 .selected-badge {
-  @apply w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center;
+  @apply w-4 h-4 bg-purple-600 text-white rounded-full flex items-center justify-center;
 }
 
 .color-palette {
@@ -352,7 +370,7 @@ onMounted(() => {
 
 /* Font Theme Cards */
 .font-theme-card {
-  @apply p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600;
+  @apply p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 min-h-[250px] flex flex-col;
 }
 
 .font-theme-card.selected {
@@ -413,5 +431,21 @@ onMounted(() => {
   .color-swatch {
     @apply w-6 h-6;
   }
+  
+  .color-theme-card,
+  .font-theme-card {
+    @apply min-h-[180px];
+  }
+}
+
+/* Ensure cards are visible */
+.color-theme-card,
+.font-theme-card {
+  @apply shadow-sm;
+}
+
+.color-theme-card:hover,
+.font-theme-card:hover {
+  @apply shadow-md;
 }
 </style>

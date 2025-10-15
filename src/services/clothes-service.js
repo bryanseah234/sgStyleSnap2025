@@ -372,7 +372,7 @@ export async function getItemDetails(id) {
       const { count } = await supabase
         .from('outfit_history')
         .select('*', { count: 'exact', head: true })
-        .contains('item_ids', [id])
+        .contains('item_ids', `{${id}}`)
 
       timesWorn = count || 0
 
@@ -381,7 +381,7 @@ export async function getItemDetails(id) {
         const { data: lastWornData } = await supabase
           .from('outfit_history')
           .select('worn_date')
-          .contains('item_ids', [id])
+          .contains('item_ids', `{${id}}`)
           .order('worn_date', { ascending: false })
           .limit(1)
           .single()
@@ -398,7 +398,7 @@ export async function getItemDetails(id) {
       const { count } = await supabase
         .from('outfit_generation_history')
         .select('*', { count: 'exact', head: true })
-        .contains('item_ids', [id])
+        .contains('item_ids', `{${id}}`)
 
       inOutfits = count || 0
     } catch (err) {
@@ -411,7 +411,7 @@ export async function getItemDetails(id) {
       const { count } = await supabase
         .from('shared_outfits')
         .select('*', { count: 'exact', head: true })
-        .contains('item_ids', [id])
+        .contains('item_ids', `{${id}}`)
 
       timesShared = count || 0
     } catch (err) {
