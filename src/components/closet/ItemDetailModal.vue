@@ -6,18 +6,9 @@
   Features:
   - Full-resolution image display with zoom capability
   - Complete item information (name, category, brand, size, color, privacy, tags)
-  - Comprehensive statistics section:
-    * Days in closet (calculated from created_at)
-    * Favorite status with toggle
-    * Category and clothing type
-    * Detected color with visual swatch
-    * Times worn (from outfit_history)
-    * Last worn date
-    * In outfits count
-    * Times shared with friends
-    * Last updated timestamp
+  - Comprehensive statistics section
   - Action buttons (Edit, Delete, Share, Favorite/Unfavorite)
-  - Responsive design (full-screen mobile, centered desktop)
+  - Responsive design with dark mode support
   
   Usage:
   <ItemDetailModal
@@ -27,10 +18,6 @@
     @updated="handleItemUpdated"
     @deleted="handleItemDeleted"
   />
-  
-  Reference:
-  - tasks/03-closet-crud-image-management.md for requirements
-  - services/clothes-service.js for getItemDetails API
 -->
 
 <template>
@@ -41,49 +28,36 @@
     @close="handleClose"
   >
     <!-- Loading State -->
-    <div
-      v-if="loading"
-      class="flex justify-center items-center py-12"
-    >
+    <div v-if="loading" class="modal-loading">
       <Spinner size="lg" />
     </div>
 
     <!-- Error State -->
-    <div
-      v-else-if="error"
-      class="text-center py-12"
-    >
-      <p class="text-red-600 mb-4">
-        {{ error }}
-      </p>
-      <Button @click="loadItemDetails">
-        Retry
-      </Button>
+    <div v-else-if="error" class="modal-error">
+      <p class="error-message">{{ error }}</p>
+      <Button @click="loadItemDetails">Retry</Button>
     </div>
 
     <!-- Item Details -->
-    <div
-      v-else-if="item"
-      class="space-y-6"
-    >
+    <div v-else-if="item" class="modal-content">
       <!-- Image Section -->
-      <div class="relative bg-gray-100 rounded-lg overflow-hidden">
+      <div class="image-container">
         <img
           :src="item.image_url"
           :alt="item.name"
-          class="w-full h-auto max-h-[500px] object-contain cursor-zoom-in"
+          class="item-image"
           @click="toggleImageZoom"
         >
 
         <!-- Favorite Button Overlay -->
         <button
-          class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
+          class="favorite-button"
           :disabled="favoriting"
           @click="toggleFavoriteStatus"
         >
           <svg
-            class="w-6 h-6 transition-colors"
-            :class="item.is_favorite ? 'text-red-500 fill-current' : 'text-gray-400'"
+            class="favorite-icon"
+            :class="item.is_favorite ? 'favorite-active' : 'favorite-inactive'"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -99,137 +73,84 @@
       </div>
 
       <!-- Item Information -->
-      <div class="space-y-4">
+      <div class="information-section">
         <!-- Basic Info -->
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">
-            Information
-          </h3>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-sm text-gray-500">
-                Category
-              </p>
-              <p class="text-base font-medium text-gray-900 capitalize">
-                {{ item.category }}
-              </p>
+        <div class="info-section">
+          <h3 class="section-title">Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <p class="info-label">Category</p>
+              <p class="info-value capitalize">{{ item.category }}</p>
             </div>
-            <div v-if="item.clothing_type">
-              <p class="text-sm text-gray-500">
-                Type
-              </p>
-              <p class="text-base font-medium text-gray-900 capitalize">
-                {{ item.clothing_type }}
-              </p>
+            <div v-if="item.clothing_type" class="info-item">
+              <p class="info-label">Type</p>
+              <p class="info-value capitalize">{{ item.clothing_type }}</p>
             </div>
-            <div v-if="item.brand">
-              <p class="text-sm text-gray-500">
-                Brand
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ item.brand }}
-              </p>
+            <div v-if="item.brand" class="info-item">
+              <p class="info-label">Brand</p>
+              <p class="info-value">{{ item.brand }}</p>
             </div>
-            <div v-if="item.size">
-              <p class="text-sm text-gray-500">
-                Size
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ item.size }}
-              </p>
+            <div v-if="item.size" class="info-item">
+              <p class="info-label">Size</p>
+              <p class="info-value">{{ item.size }}</p>
             </div>
-            <div v-if="item.primary_color">
-              <p class="text-sm text-gray-500">
-                Color
-              </p>
-              <div class="flex items-center gap-2">
+            <div v-if="item.primary_color" class="info-item">
+              <p class="info-label">Color</p>
+              <div class="color-display">
                 <div
-                  class="w-6 h-6 rounded border border-gray-300"
+                  class="color-swatch"
                   :style="{ backgroundColor: getColorHex(item.primary_color) }"
                 />
-                <p class="text-base font-medium text-gray-900 capitalize">
-                  {{ item.primary_color }}
-                </p>
+                <p class="info-value capitalize">{{ item.primary_color }}</p>
               </div>
             </div>
-            <div>
-              <p class="text-sm text-gray-500">
-                Privacy
-              </p>
-              <Badge :variant="item.privacy === 'private' ? 'secondary' : 'primary'">
-                {{ item.privacy }}
-              </Badge>
+            <div class="info-item">
+              <p class="info-label">Privacy</p>
+              <p class="info-value capitalize">{{ item.privacy || 'private' }}</p>
             </div>
           </div>
         </div>
 
         <!-- Statistics -->
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">
-            Statistics
-          </h3>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-sm text-gray-500">
-                Days in Closet
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ daysInCloset }} days
-              </p>
+        <div class="info-section">
+          <h3 class="section-title">Statistics</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <p class="info-label">Days in Closet</p>
+              <p class="info-value">{{ daysInCloset }}</p>
             </div>
-            <div v-if="statistics?.times_worn !== undefined">
-              <p class="text-sm text-gray-500">
-                Times Worn
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ statistics.times_worn }} times
-              </p>
+            <div class="info-item">
+              <p class="info-label">Status</p>
+              <p class="info-value">{{ item.is_favorite ? 'Favorite' : 'Regular' }}</p>
             </div>
-            <div v-if="statistics?.last_worn">
-              <p class="text-sm text-gray-500">
-                Last Worn
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ formatDate(statistics.last_worn) }}
-              </p>
+            <div v-if="statistics" class="info-item">
+              <p class="info-label">Times Worn</p>
+              <p class="info-value">{{ statistics.times_worn || 0 }} times</p>
             </div>
-            <div v-if="statistics?.in_outfits !== undefined">
-              <p class="text-sm text-gray-500">
-                In Outfits
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ statistics.in_outfits }} outfits
-              </p>
+            <div v-if="statistics" class="info-item">
+              <p class="info-label">In Outfits</p>
+              <p class="info-value">{{ statistics.in_outfits || 0 }} outfits</p>
             </div>
-            <div v-if="statistics?.times_shared !== undefined">
-              <p class="text-sm text-gray-500">
-                Times Shared
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ statistics.times_shared }} times
-              </p>
+            <div v-if="statistics" class="info-item">
+              <p class="info-label">Times Shared</p>
+              <p class="info-value">{{ statistics.times_shared || 0 }} times</p>
             </div>
-            <div>
-              <p class="text-sm text-gray-500">
-                Last Updated
-              </p>
-              <p class="text-base font-medium text-gray-900">
-                {{ formatDate(item.updated_at) }}
-              </p>
+            <div class="info-item">
+              <p class="info-label">Last Updated</p>
+              <p class="info-value">{{ formatDate(item.updated_at) }}</p>
             </div>
           </div>
         </div>
 
         <!-- Tags -->
-        <div v-if="item.style_tags && item.style_tags.length > 0">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">
-            Tags
-          </h3>
-          <div class="flex flex-wrap gap-2">
+        <div v-if="item.style_tags && item.style_tags.length > 0" class="info-section">
+          <h3 class="section-title">Tags</h3>
+          <div class="tags-container">
             <Badge
               v-for="tag in item.style_tags"
               :key="tag"
               variant="outline"
+              class="tag-item"
             >
               {{ tag }}
             </Badge>
@@ -238,26 +159,10 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-3 pt-4 border-t">
-        <Button
-          variant="primary"
-          @click="handleEdit"
-        >
-          Edit
-        </Button>
-        <Button
-          variant="outline"
-          @click="handleShare"
-        >
-          Share
-        </Button>
-        <Button
-          variant="danger"
-          :loading="deleting"
-          @click="handleDelete"
-        >
-          Delete
-        </Button>
+      <div class="action-buttons">
+        <Button variant="primary" @click="handleEdit">Edit</Button>
+        <Button variant="outline" @click="handleShare">Share</Button>
+        <Button variant="danger" :loading="deleting" @click="handleDelete">Delete</Button>
       </div>
     </div>
   </Modal>
@@ -282,7 +187,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['close', 'updated', 'deleted'])
+const emit = defineEmits(['close', 'updated', 'deleted', 'edit', 'share'])
 
 // State
 const item = ref(null)
@@ -384,10 +289,7 @@ function handleShare() {
 async function handleDelete() {
   if (!item.value || deleting.value) return
 
-  const confirmed = confirm(
-    `Are you sure you want to delete "${item.value.name}"? This action cannot be undone.`
-  )
-  if (!confirmed) return
+  if (!confirm('Are you sure you want to delete this item?')) return
 
   deleting.value = true
   try {
@@ -403,6 +305,13 @@ async function handleDelete() {
 }
 
 /**
+ * Handle close
+ */
+function handleClose() {
+  emit('close')
+}
+
+/**
  * Toggle image zoom
  */
 function toggleImageZoom() {
@@ -410,57 +319,251 @@ function toggleImageZoom() {
 }
 
 /**
- * Handle modal close
+ * Get color hex value
  */
-function handleClose() {
-  imageZoomed.value = false
-  emit('close')
+function getColorHex(colorName) {
+  const colorMap = {
+    red: '#ef4444',
+    blue: '#3b82f6',
+    green: '#22c55e',
+    yellow: '#eab308',
+    orange: '#f97316',
+    purple: '#a855f7',
+    pink: '#ec4899',
+    brown: '#a3a3a3',
+    black: '#000000',
+    white: '#ffffff',
+    gray: '#6b7280',
+    grey: '#6b7280'
+  }
+  return colorMap[colorName?.toLowerCase()] || '#6b7280'
 }
 
 /**
- * Format date for display
+ * Format date
  */
 function formatDate(dateString) {
   if (!dateString) return 'Never'
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-/**
- * Get color hex code for color swatch
- */
-function getColorHex(colorName) {
-  const colorMap = {
-    red: '#EF4444',
-    blue: '#3B82F6',
-    green: '#10B981',
-    yellow: '#F59E0B',
-    orange: '#F97316',
-    purple: '#A855F7',
-    pink: '#EC4899',
-    black: '#1F2937',
-    white: '#F3F4F6',
-    gray: '#6B7280',
-    brown: '#92400E',
-    beige: '#D4A574',
-    navy: '#1E3A8A',
-    maroon: '#7C2D12',
-    teal: '#14B8A6',
-    cyan: '#06B6D4',
-    lime: '#84CC16',
-    indigo: '#6366F1',
-    violet: '#8B5CF6',
-    fuchsia: '#D946EF'
-  }
-
-  return colorMap[colorName?.toLowerCase()] || '#9CA3AF'
+  return date.toLocaleDateString()
 }
 </script>
 
 <style scoped>
-/* Add any component-specific styles here */
+/* Modal Content */
+.modal-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 0;
+}
+
+.modal-error {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.error-message {
+  color: var(--theme-error, #dc2626);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Image Section */
+.image-container {
+  position: relative;
+  background: var(--theme-surface-light, #f3f4f6);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--theme-border, #e5e7eb);
+}
+
+.item-image {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: contain;
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+.item-image:hover {
+  transform: scale(1.02);
+}
+
+.favorite-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--theme-surface, #ffffff);
+  border: 1px solid var(--theme-border, #e5e7eb);
+  border-radius: 50%;
+  padding: 0.5rem;
+  box-shadow: 0 4px 6px -1px var(--theme-shadow, rgba(0, 0, 0, 0.1));
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.favorite-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 12px -2px var(--theme-shadow, rgba(0, 0, 0, 0.15));
+}
+
+.favorite-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.favorite-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: color 0.2s ease;
+}
+
+.favorite-active {
+  color: var(--theme-error, #dc2626);
+  fill: currentColor;
+}
+
+.favorite-inactive {
+  color: var(--theme-text-muted, #9ca3af);
+}
+
+/* Information Section */
+.information-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-section {
+  background: var(--theme-surface, #ffffff);
+  border: 1px solid var(--theme-border, #e5e7eb);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--theme-text, #111827);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--theme-border, #e5e7eb);
+  padding-bottom: 0.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: var(--theme-text-secondary, #6b7280);
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--theme-text, #111827);
+}
+
+.color-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--theme-border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+/* Tags */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-item {
+  font-size: 0.875rem;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--theme-border, #e5e7eb);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .image-container {
+    background: var(--theme-surface-dark, #1f2937);
+    border-color: var(--theme-border-dark, #374151);
+  }
+
+  .favorite-button {
+    background: var(--theme-surface-dark, #1f2937);
+    border-color: var(--theme-border-dark, #374151);
+  }
+
+  .info-section {
+    background: var(--theme-surface-dark, #1f2937);
+    border-color: var(--theme-border-dark, #374151);
+  }
+
+  .section-title {
+    color: var(--theme-text-dark, #f9fafb);
+    border-color: var(--theme-border-dark, #374151);
+  }
+
+  .info-label {
+    color: var(--theme-text-secondary-dark, #9ca3af);
+  }
+
+  .info-value {
+    color: var(--theme-text-dark, #f9fafb);
+  }
+
+  .color-swatch {
+    border-color: var(--theme-border-dark, #374151);
+  }
+
+  .action-buttons {
+    border-color: var(--theme-border-dark, #374151);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+}
 </style>
