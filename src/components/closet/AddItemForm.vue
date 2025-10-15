@@ -565,6 +565,12 @@ async function classifyImage(file) {
       console.log('✅ AI classification successful:', result)
     } else {
       console.warn('AI classification failed:', result.error)
+      
+      // Show error message for rejected categories
+      if (result.rejected) {
+        // You can add error handling here if needed
+        console.error('Category rejected:', result.error)
+      }
     }
   } catch (error) {
     console.error('AI classification error:', error)

@@ -410,9 +410,16 @@ async function classifyImage(file) {
       }
     } else {
       console.warn('Classification failed:', result.error)
+      
+      // Show error message for rejected categories
+      if (result.rejected) {
+        imageError.value = result.error
+        classificationResult.value = null
+      }
     }
   } catch (error) {
     console.error('Classification error:', error)
+    imageError.value = 'Failed to analyze image. Please try again.'
   } finally {
     classifying.value = false
   }

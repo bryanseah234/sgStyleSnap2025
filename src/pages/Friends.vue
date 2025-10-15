@@ -157,7 +157,6 @@
             >
               <p>Enter at least 3 characters to search for users</p>
             </div>
-          </div>
         </div>
       </div>
     </div>

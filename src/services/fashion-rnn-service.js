@@ -190,6 +190,18 @@ export async function classifyClothingItem(image) {
       }
     ]
 
+    // Check if the top prediction is a rejected category
+    const rejectedCategories = ['Other', 'Not sure', 'Skip']
+    if (rejectedCategories.includes(topPrediction)) {
+      return {
+        success: false,
+        error: `AI detected "${topPrediction}" category which is not supported. Please try uploading a different image or manually select the category.`,
+        topPrediction: topPrediction,
+        confidence: topConfidence,
+        rejected: true
+      }
+    }
+
     return {
       success: true,
       predictions: predictions,
@@ -226,15 +238,12 @@ function getFallbackClassification() {
     'Hat',
     'Hoodie',
     'Longsleeve',
-    'Not sure',
-    'Other',
     'Outwear',
     'Pants',
     'Polo',
     'Shirt',
     'Shoes',
     'Shorts',
-    'Skip',
     'Skirt',
     'T-Shirt',
     'Top',
