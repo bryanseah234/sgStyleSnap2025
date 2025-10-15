@@ -137,7 +137,8 @@
           >
             <div class="relative">
               <button
-                class="absolute top-4 right-4 z-10 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                class="absolute top-4 right-4 z-10 p-2 rounded-full shadow-lg transition-colors"
+                style="background-color: var(--theme-surface); color: var(--theme-text);"
                 @click="closeApprovalModal"
               >
                 <svg

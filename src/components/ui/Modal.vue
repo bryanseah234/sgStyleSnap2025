@@ -156,12 +156,13 @@ watch(
 }
 
 .modal {
-  background: white;
+  background: var(--theme-surface);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   max-height: 90vh;
   overflow-y: auto;
   cursor: default;
+  border: 1px solid var(--theme-border);
 }
 
 .modal-sm {
@@ -192,13 +193,14 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .modal-title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--theme-text);
 }
 
 .modal-close {
@@ -207,7 +209,7 @@ watch(
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--theme-text-secondary);
   padding: 0;
   width: 2rem;
   height: 2rem;
@@ -219,8 +221,8 @@ watch(
 }
 
 .modal-close:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--theme-hover);
+  color: var(--theme-text);
 }
 
 .modal-body {

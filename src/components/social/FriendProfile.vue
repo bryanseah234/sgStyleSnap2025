@@ -489,22 +489,23 @@ function goBack() {
 }
 
 .modal {
-  background: white;
+  background: var(--theme-surface);
   border-radius: 0.75rem;
   padding: 1.5rem;
   max-width: 400px;
   width: 100%;
+  border: 1px solid var(--theme-border);
 }
 
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--theme-text);
   margin-bottom: 0.5rem;
 }
 
 .modal-message {
-  color: #6b7280;
+  color: var(--theme-text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
@@ -526,12 +527,12 @@ function goBack() {
 }
 
 .cancel-btn {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--theme-surface-light);
+  color: var(--theme-text);
 }
 
 .cancel-btn:hover {
-  background: #e5e7eb;
+  background: var(--theme-hover);
 }
 
 .confirm-btn {
