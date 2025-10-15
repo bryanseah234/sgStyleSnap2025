@@ -69,7 +69,7 @@ export function loadFontTheme() {
  * Initialize font system with saved preference or default
  * @param {string} defaultTheme - Default theme if no saved preference
  */
-export function initializeFontSystem(defaultTheme = 'modern') {
+export function initializeFontSystem(defaultTheme = 'openSans') {
   const savedTheme = loadFontTheme()
   const themeToApply = savedTheme && AVAILABLE_FONT_THEMES[savedTheme] ? savedTheme : defaultTheme
   
@@ -82,7 +82,7 @@ export function initializeFontSystem(defaultTheme = 'modern') {
  * @returns {Object} Current theme information
  */
 export function getCurrentFontThemeInfo() {
-  const currentTheme = loadFontTheme() || 'modern'
+  const currentTheme = loadFontTheme() || 'openSans'
   return getFontThemeInfo(currentTheme)
 }
 

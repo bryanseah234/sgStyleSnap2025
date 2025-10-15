@@ -130,12 +130,12 @@ export function loadColorTheme() {
  * Initialize color system with saved preference or default
  * @param {Object} defaultColors - Default colors if no saved preference
  */
-export function initializeColorSystem(defaultColors = { primary: '#c84dd6', secondary: '#d66ee3', background: '#f8f4ff' }) {
-  const savedColors = loadColorTheme()
-  const colorsToApply = savedColors || defaultColors
+export function initializeColorSystem(defaultTheme = 'purple') {
+  const savedTheme = localStorage.getItem('color-theme')
+  const themeToApply = savedTheme || defaultTheme
   
-  applyColorTheme(colorsToApply)
-  return colorsToApply
+  applyColorTheme(themeToApply, false) // false for light mode
+  return themeToApply
 }
 
 /**

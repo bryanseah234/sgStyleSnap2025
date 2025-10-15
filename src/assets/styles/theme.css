@@ -28,8 +28,8 @@
   --theme-notification-container-bg: rgb(250, 245, 255);
   
   /* Font system variables */
-  --font-primary: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
-  --font-secondary: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
+  --font-primary: Open Sans, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
+  --font-secondary: Open Sans, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
   --font-mono: JetBrains Mono, Fira Code, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   
   /* Font weights */
