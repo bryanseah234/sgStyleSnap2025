@@ -1,0 +1,44 @@
+# .gitattributes - StyleSnap
+# Ensures consistent line ending normalization across all systems
+# This is especially important for teams with mixed OS (Windows, macOS, Linux)
+
+# Normalize all text files to LF in repository
+* text=auto eol=lf
+
+# Allow Windows batch files to keep CRLF if needed
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Ensure these file types are always treated as text
+*.js text
+*.vue text
+*.ts text
+*.json text
+*.md text
+*.css text
+*.scss text
+*.html text
+*.xml text
+*.yml text
+*.yaml text
+
+# Ensure these file types are always treated as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+
+# Git LFS (if you plan to use it for large files)
+# *.psd filter=lfs diff=lfs merge=lfs -text
+# *.ai filter=lfs diff=lfs merge=lfs -text
+# *.sketch filter=lfs diff=lfs merge=lfs -text
