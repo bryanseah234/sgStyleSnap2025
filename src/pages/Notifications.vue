@@ -41,12 +41,6 @@
               {{ notificationsStore.unreadCount }}
             </span>
           </button>
-          <button
-            :class="['tab', { active: activeTab === 'suggestions' }]"
-            @click="activeTab = 'suggestions'"
-          >
-            Suggestions
-          </button>
         </div>
       </div>
 
@@ -69,14 +63,39 @@
               {{ markingAllRead ? 'Marking...' : 'Mark all as read' }}
             </button>
           </div>
-          <NotificationsList
-            :notifications="notificationsStore.notifications"
-            :unread-count="notificationsStore.unreadCount"
-            :loading="notificationsStore.loading"
-            :has-more="hasMore"
-            @notification-click="handleNotificationClick"
-            @load-more="handleLoadMore"
-          />
+          
+          <!-- Two Column Layout: Likes and Suggestions -->
+          <div class="notifications-layout">
+            <!-- Likes Column -->
+            <div class="notifications-column">
+              <div class="column-header">
+                <h3 class="column-title">Likes</h3>
+                <span class="column-count">{{ likeNotifications.length }}</span>
+              </div>
+              <NotificationsList
+                :notifications="likeNotifications"
+                :loading="notificationsStore.loading"
+                :has-more="hasMore"
+                @notification-click="handleNotificationClick"
+                @load-more="handleLoadMore"
+              />
+            </div>
+
+            <!-- Suggestions Column -->
+            <div class="notifications-column">
+              <div class="column-header">
+                <h3 class="column-title">Suggestions</h3>
+                <span class="column-count">{{ suggestionNotifications.length }}</span>
+              </div>
+              <NotificationsList
+                :notifications="suggestionNotifications"
+                :loading="notificationsStore.loading"
+                :has-more="hasMore"
+                @notification-click="handleNotificationClick"
+                @load-more="handleLoadMore"
+              />
+            </div>
+          </div>
         </div>
 
         <!-- Unread Notifications Tab -->
@@ -97,34 +116,39 @@
               {{ markingAllRead ? 'Marking...' : 'Mark all as read' }}
             </button>
           </div>
-          <NotificationsList
-            :notifications="unreadNotifications"
-            :unread-count="notificationsStore.unreadCount"
-            :loading="notificationsStore.loading"
-            :has-more="hasMore"
-            @notification-click="handleNotificationClick"
-            @load-more="handleLoadMore"
-          />
-        </div>
+          
+          <!-- Two Column Layout: Unread Likes and Unread Suggestions -->
+          <div class="notifications-layout">
+            <!-- Unread Likes Column -->
+            <div class="notifications-column">
+              <div class="column-header">
+                <h3 class="column-title">Likes</h3>
+                <span class="column-count">{{ unreadLikeNotifications.length }}</span>
+              </div>
+              <NotificationsList
+                :notifications="unreadLikeNotifications"
+                :loading="notificationsStore.loading"
+                :has-more="hasMore"
+                @notification-click="handleNotificationClick"
+                @load-more="handleLoadMore"
+              />
+            </div>
 
-        <!-- Suggestions Tab -->
-        <div
-          v-if="activeTab === 'suggestions'"
-          class="tab-panel"
-        >
-          <div class="panel-header">
-            <h2 class="section-title">
-              Outfit Suggestions
-            </h2>
+            <!-- Unread Suggestions Column -->
+            <div class="notifications-column">
+              <div class="column-header">
+                <h3 class="column-title">Suggestions</h3>
+                <span class="column-count">{{ unreadSuggestionNotifications.length }}</span>
+              </div>
+              <NotificationsList
+                :notifications="unreadSuggestionNotifications"
+                :loading="notificationsStore.loading"
+                :has-more="hasMore"
+                @notification-click="handleNotificationClick"
+                @load-more="handleLoadMore"
+              />
+            </div>
           </div>
-          <NotificationsList
-            :notifications="suggestionNotifications"
-            :unread-count="suggestionNotifications.filter(n => !n.is_read).length"
-            :loading="notificationsStore.loading"
-            :has-more="hasMore"
-            @notification-click="handleNotificationClick"
-            @load-more="handleLoadMore"
-          />
         </div>
       </div>
     </div>
@@ -205,6 +229,22 @@ const unreadNotifications = computed(() => {
 
 const suggestionNotifications = computed(() => {
   return notificationsStore.notifications.filter(n => n.type === 'friend_outfit_suggestion')
+})
+
+const likeNotifications = computed(() => {
+  return notificationsStore.notifications.filter(n => 
+    n.type === 'outfit_like' || n.type === 'item_like'
+  )
+})
+
+const unreadLikeNotifications = computed(() => {
+  return unreadNotifications.value.filter(n => 
+    n.type === 'outfit_like' || n.type === 'item_like'
+  )
+})
+
+const unreadSuggestionNotifications = computed(() => {
+  return unreadNotifications.value.filter(n => n.type === 'friend_outfit_suggestion')
 })
 
 onMounted(async () => {
@@ -524,5 +564,41 @@ const handleRejectSuggestion = async suggestionId => {
 
 .dark .overflow-y-auto::-webkit-scrollbar-thumb {
   background: var(--theme-border, #4c1d95);
+}
+
+/* Notifications Layout */
+.notifications-layout {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+}
+
+.notifications-column {
+  @apply space-y-4;
+}
+
+.column-header {
+  @apply flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-gray-700;
+}
+
+.column-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-white;
+}
+
+.column-count {
+  @apply px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-sm font-medium rounded-full;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 1024px) {
+  .notifications-layout {
+    @apply grid-cols-1;
+  }
+  
+  .notifications-column {
+    @apply mb-8;
+  }
+  
+  .notifications-column:last-child {
+    @apply mb-0;
+  }
 }
 </style>

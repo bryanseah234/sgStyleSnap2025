@@ -112,6 +112,7 @@ if (isConfigured.value) {
 
 <style>
 /* Import global styles */
+@import './assets/styles/fonts.css';
 @import './assets/styles/base.css';
 @import './assets/styles/components.css';
 @import './assets/styles/mobile.css';

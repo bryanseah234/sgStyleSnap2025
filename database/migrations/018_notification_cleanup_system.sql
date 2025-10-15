@@ -1,6 +1,18 @@
 -- Migration: Notification Cleanup System (7-day retention)
 -- Purpose: Implement automatic cleanup of notifications older than 7 days
 -- Date: 2025-01-27
+-- Safe to rerun: This migration uses IF NOT EXISTS and DROP IF EXISTS
+
+-- Start transaction to ensure atomicity
+BEGIN;
+
+-- Check if notifications table exists before proceeding
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'notifications') THEN
+        RAISE EXCEPTION 'notifications table does not exist. Please run previous migrations first.';
+    END IF;
+END $$;
 
 -- Add status field to notifications table to track lifecycle
 ALTER TABLE notifications 
@@ -104,7 +116,7 @@ RETURNS TABLE (
     actor_id UUID,
     type VARCHAR(50),
     reference_id UUID,
-    message TEXT,
+    custom_message TEXT,
     is_read BOOLEAN,
     status VARCHAR(20),
     expires_at TIMESTAMP WITH TIME ZONE,
@@ -121,7 +133,7 @@ BEGIN
         n.actor_id,
         n.type,
         n.reference_id,
-        n.message,
+        n.custom_message,
         n.is_read,
         n.status,
         n.expires_at,
@@ -174,7 +186,7 @@ CREATE TRIGGER trigger_set_notification_expiry
     FOR EACH ROW
     EXECUTE FUNCTION set_notification_expiry();
 
--- Update existing notifications to have proper expiry
+-- Update existing notifications to have proper expiry (only if they don't have expiry set)
 UPDATE notifications 
 SET 
     expires_at = created_at + INTERVAL '7 days',
@@ -189,7 +201,7 @@ CREATE TABLE IF NOT EXISTS system_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Grant necessary permissions
+-- Grant necessary permissions (safe to rerun - GRANT is idempotent)
 GRANT EXECUTE ON FUNCTION cleanup_expired_notifications() TO authenticated;
 GRANT EXECUTE ON FUNCTION update_notification_status(UUID, VARCHAR) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_user_notifications_with_retention(UUID, INTEGER, INTEGER, BOOLEAN) TO authenticated;
@@ -198,7 +210,8 @@ GRANT EXECUTE ON FUNCTION get_unread_notifications_count(UUID) TO authenticated;
 -- Add RLS policy for system_logs
 ALTER TABLE system_logs ENABLE ROW LEVEL SECURITY;
 
--- Only allow service role to insert system logs
+-- Only allow service role to insert system logs (drop if exists first)
+DROP POLICY IF EXISTS "Service role can manage system logs" ON system_logs;
 CREATE POLICY "Service role can manage system logs" ON system_logs
     FOR ALL USING (auth.role() = 'service_role');
 
@@ -209,3 +222,6 @@ COMMENT ON FUNCTION get_user_notifications_with_retention(UUID, INTEGER, INTEGER
 COMMENT ON FUNCTION get_unread_notifications_count(UUID) IS 'Gets count of unread notifications within retention period';
 COMMENT ON COLUMN notifications.status IS 'Notification lifecycle status: pending, accepted, rejected, expired';
 COMMENT ON COLUMN notifications.expires_at IS 'When this notification will be automatically deleted';
+
+-- Commit the transaction
+COMMIT;

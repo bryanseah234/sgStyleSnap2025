@@ -1,0 +1,18 @@
+/**
+ * Font Imports - StyleSnap
+ * 
+ * Purpose: Import Google Fonts for the application
+ * Only imports actual Google Fonts, not system fonts
+ */
+
+/* Import Open Sans - Primary font */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Import Inter - Secondary font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Import JetBrains Mono - Monospace font */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+/* Import Fira Code - Alternative monospace font */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');

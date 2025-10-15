@@ -108,57 +108,56 @@
               </div>
             </div>
 
-          <!-- Font Style Section -->
+          <!-- Theme Section -->
           <div class="settings-section">
-            <h2 class="text-xl font-semibold mb-6">Font Style</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div
-                v-for="(theme, key) in availableFontThemes"
-                :key="key"
-                class="font-theme-card"
-                :class="{ 'selected': selectedFontTheme === key }"
-                @click="selectFontTheme(key)"
+            <h2 class="text-xl font-semibold mb-6">Theme</h2>
+            <div class="flex space-x-4">
+              <button
+                v-for="theme in themeOptions"
+                :key="theme.value"
+                class="theme-option"
+                :class="{ 'selected': selectedTheme === theme.value }"
+                @click="selectTheme(theme.value)"
               >
-                <div class="font-preview">
-                  <h4 class="font-theme-name" :style="{ fontFamily: theme.theme.primary.join(', ') }">{{ theme.name }}</h4>
-                  <p class="font-theme-description">{{ theme.description }}</p>
-                  <div class="font-sample">
-                    <div class="sample-text" :style="{ fontFamily: theme.theme.primary.join(', ') }">
-                      The quick brown fox jumps over the lazy dog
-                    </div>
-                  </div>
+                <div class="theme-icon">
+                  <component :is="theme.icon" class="w-6 h-6" />
                 </div>
-                <div class="selection-indicator">
-                  <div v-if="selectedFontTheme === key" class="selected-dot"></div>
-                </div>
-              </div>
-              </div>
+                <div class="theme-label">{{ theme.label }}</div>
+              </button>
             </div>
-
-          <!-- Color Theme Section -->
-          <div class="settings-section">
-            <h2 class="text-xl font-semibold mb-6">Color Theme</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div
-                v-for="(theme, key) in availableColorThemes"
-                :key="key"
-                class="color-theme-card"
-                :class="{ 'selected': selectedColorTheme === key }"
-                @click="selectColorTheme(key)"
-              >
-                <div class="color-preview">
-                  <div 
-                    v-for="(color, colorKey) in getThemeColors(theme)" 
-                    :key="colorKey"
-                    class="color-swatch"
-                    :style="{ backgroundColor: color }"
-                  ></div>
-                </div>
-                <div class="theme-name">{{ theme.name }}</div>
-                <div class="theme-description">{{ theme.description }}</div>
-              </div>
           </div>
-        </div>
+
+          <!-- Style Preference Section -->
+          <div class="settings-section">
+            <h2 class="text-xl font-semibold mb-6">Style Preference</h2>
+            <div class="flex items-center justify-between">
+              <div class="flex space-x-4">
+                <button
+                  v-for="(theme, key) in availableColorThemes"
+                  :key="key"
+                  class="style-option"
+                  :class="{ 'selected': selectedColorTheme === key }"
+                  @click="selectColorTheme(key)"
+                >
+                  <div class="color-preview">
+                    <div 
+                      v-for="(color, colorKey) in getThemeColors(theme)" 
+                      :key="colorKey"
+                      class="color-swatch"
+                      :style="{ backgroundColor: color }"
+                    ></div>
+                  </div>
+                  <div class="style-name">{{ theme.name }}</div>
+                </button>
+              </div>
+              <button
+                @click="showStyleModal = true"
+                class="btn-secondary"
+              >
+                Customize
+              </button>
+            </div>
+          </div>
 
           <!-- Actions -->
           <div class="settings-actions">
@@ -190,6 +189,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Style Preference Modal -->
+    <StylePreferenceModal
+      :show="showStyleModal"
+      @close="showStyleModal = false"
+      @preferences-saved="handleStylePreferencesSaved"
+    />
   </MainLayout>
 </template>
 
@@ -198,11 +204,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth-store'
 import { getUserProfile, updateUserProfile, updateUserAvatar, getDefaultAvatars } from '../services/user-service.js'
-import { AVAILABLE_FONT_THEMES } from '../config/fonts'
 import { COLOR_THEMES } from '../config/color-themes'
-import { changeFontTheme } from '../utils/font-system'
 import { applyColorTheme } from '../config/color-themes'
 import MainLayout from '../components/layouts/MainLayout.vue'
+import StylePreferenceModal from '../components/ui/StylePreferenceModal.vue'
+import { SunIcon, MoonIcon, ComputerDesktopIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -215,20 +221,39 @@ const editableProfile = ref({})
 const showAvatarSelector = ref(false)
 const availableAvatars = ref([])
 const defaultAvatar = ref('')
+const showStyleModal = ref(false)
 
 // Style preferences state
-const selectedFontTheme = ref('openSans')
+const selectedTheme = ref('system') // light, dark, system
 const selectedColorTheme = ref('purple')
-const originalFontTheme = ref('openSans')
+const originalTheme = ref('system')
 const originalColorTheme = ref('purple')
 
 // Available themes
-const availableFontThemes = AVAILABLE_FONT_THEMES
 const availableColorThemes = COLOR_THEMES
+
+// Theme options for light/dark/system
+const themeOptions = [
+  {
+    value: 'light',
+    label: 'Light',
+    icon: SunIcon
+  },
+  {
+    value: 'dark', 
+    label: 'Dark',
+    icon: MoonIcon
+  },
+  {
+    value: 'system',
+    label: 'System',
+    icon: ComputerDesktopIcon
+  }
+]
 
 // Computed properties
 const hasChanges = computed(() => {
-  return selectedFontTheme.value !== originalFontTheme.value ||
+  return selectedTheme.value !== originalTheme.value ||
          selectedColorTheme.value !== originalColorTheme.value ||
          editableProfile.value.name !== profile.value.name ||
          editableProfile.value.username !== profile.value.username ||
@@ -259,11 +284,11 @@ async function loadProfile() {
 }
 
 function loadStylePreferences() {
-  // Load font theme
-  const savedFontTheme = localStorage.getItem('font-theme')
-  if (savedFontTheme && availableFontThemes[savedFontTheme]) {
-    selectedFontTheme.value = savedFontTheme
-    originalFontTheme.value = savedFontTheme
+  // Load theme preference (light/dark/system)
+  const savedTheme = localStorage.getItem('theme-preference')
+  if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+    selectedTheme.value = savedTheme
+    originalTheme.value = savedTheme
   }
   
   // Load color theme
@@ -279,10 +304,22 @@ function selectAvatar(avatar) {
   showAvatarSelector.value = false
 }
 
-function selectFontTheme(themeKey) {
-  selectedFontTheme.value = themeKey
-  // Apply preview immediately
-  changeFontTheme(themeKey)
+function selectTheme(themeValue) {
+  selectedTheme.value = themeValue
+  applyTheme(themeValue)
+}
+
+function applyTheme(themeValue) {
+  // Apply theme based on selection
+  if (themeValue === 'system') {
+    // Use system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.classList.toggle('dark', prefersDark)
+  } else if (themeValue === 'dark') {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
 }
 
 function selectColorTheme(themeKey) {
@@ -318,11 +355,11 @@ async function saveAllSettings() {
       }
     }
     
-    // Save font theme
-    if (selectedFontTheme.value !== originalFontTheme.value) {
-      localStorage.setItem('font-theme', selectedFontTheme.value)
-      changeFontTheme(selectedFontTheme.value)
-      originalFontTheme.value = selectedFontTheme.value
+    // Save theme preference
+    if (selectedTheme.value !== originalTheme.value) {
+      localStorage.setItem('theme-preference', selectedTheme.value)
+      applyTheme(selectedTheme.value)
+      originalTheme.value = selectedTheme.value
     }
     
     // Save color theme
@@ -347,11 +384,11 @@ async function saveAllSettings() {
 function cancelChanges() {
   // Reset to original values
   editableProfile.value = { ...profile.value }
-  selectedFontTheme.value = originalFontTheme.value
+  selectedTheme.value = originalTheme.value
   selectedColorTheme.value = originalColorTheme.value
   
   // Reapply original themes
-  changeFontTheme(originalFontTheme.value)
+  applyTheme(originalTheme.value)
   applyColorTheme(originalColorTheme.value, false)
 }
 
@@ -362,6 +399,22 @@ async function handleSignOut() {
   } catch (error) {
     console.error('Failed to sign out:', error)
   }
+}
+
+function handleStylePreferencesSaved(preferences) {
+  // Update the current selections
+  if (preferences.theme) {
+    selectedTheme.value = preferences.theme
+    originalTheme.value = preferences.theme
+  }
+  
+  if (preferences.color) {
+    selectedColorTheme.value = preferences.color
+    originalColorTheme.value = preferences.color
+  }
+  
+  // Close the modal
+  showStyleModal.value = false
 }
 </script>
 
@@ -383,47 +436,31 @@ async function handleSignOut() {
   @apply space-y-4;
 }
 
-.font-theme-card {
-  @apply relative p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md;
+.theme-option {
+  @apply flex flex-col items-center p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md bg-white dark:bg-gray-800;
 }
 
-.font-theme-card.selected {
+.theme-option.selected {
   @apply border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20;
 }
 
-.font-preview {
-  @apply space-y-2;
+.theme-icon {
+  @apply mb-2 text-gray-600 dark:text-gray-400;
 }
 
-.font-theme-name {
-  @apply text-lg font-semibold text-gray-900 dark:text-white;
+.theme-option.selected .theme-icon {
+  @apply text-purple-600 dark:text-purple-400;
 }
 
-.font-theme-description {
-  @apply text-sm text-gray-600 dark:text-gray-400;
+.theme-label {
+  @apply text-sm font-medium text-gray-900 dark:text-white;
 }
 
-.font-sample {
-  @apply space-y-1;
+.style-option {
+  @apply flex flex-col items-center p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md bg-white dark:bg-gray-800;
 }
 
-.sample-text {
-  @apply text-sm text-gray-700 dark:text-gray-300;
-}
-
-.selection-indicator {
-  @apply absolute top-3 right-3;
-}
-
-.selected-dot {
-  @apply w-4 h-4 bg-purple-500 rounded-full;
-}
-
-.color-theme-card {
-  @apply relative p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md;
-}
-
-.color-theme-card.selected {
+.style-option.selected {
   @apply border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20;
 }
 
@@ -432,7 +469,15 @@ async function handleSignOut() {
 }
 
 .color-swatch {
-  @apply w-8 h-8 rounded border border-gray-300 dark:border-gray-600;
+  @apply w-6 h-6 rounded border border-gray-300 dark:border-gray-600;
+}
+
+.style-name {
+  @apply text-sm font-medium text-gray-900 dark:text-white;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors;
 }
 
 .theme-name {

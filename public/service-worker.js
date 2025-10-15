@@ -30,11 +30,8 @@ const STATIC_ASSETS = [
 
 // Cache rules for different types of resources
 const CACHE_RULES = [
-  {
-    pattern: /^https:\/\/fonts\.googleapis\.com/,
-    strategy: CACHE_STRATEGY.CACHE_FIRST,
-    cacheName: 'google-fonts-stylesheets'
-  },
+  // Note: Google Fonts CSS files are not cached due to CORS restrictions
+  // Only font files (woff2, woff, ttf) are cached
   {
     pattern: /^https:\/\/fonts\.gstatic\.com/,
     strategy: CACHE_STRATEGY.CACHE_FIRST,
@@ -136,6 +133,11 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (method !== 'GET') {
     return;
+  }
+  
+  // Skip Google Fonts CSS files due to CORS restrictions
+  if (url.includes('fonts.googleapis.com/css2')) {
+    return; // Let the browser handle these normally
   }
   
   // Find matching cache rule

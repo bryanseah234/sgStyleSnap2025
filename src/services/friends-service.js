@@ -176,6 +176,7 @@ export async function getPendingRequests() {
     if (error) throw error
 
     // Separate into incoming and outgoing
+    // Incoming: requests where current user is the receiver (they receive the request)
     const incoming = data
       .filter(req => req.receiver_id === userId)
       .map(req => ({
@@ -184,8 +185,10 @@ export async function getPendingRequests() {
         requestedAt: req.created_at
       }))
 
+    // Outgoing: requests where current user is NOT the receiver (they sent the request)
+    // This handles canonical ordering correctly - user can be either requester_id or receiver_id
     const outgoing = data
-      .filter(req => req.requester_id === userId)
+      .filter(req => req.receiver_id !== userId)
       .map(req => ({
         requestId: req.id,
         ...req.receiver,
@@ -360,11 +363,51 @@ export async function rejectFriendRequest(requestId) {
  */
 export async function cancelFriendRequest(requestId) {
   try {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase client is not initialized. Please check your environment variables.')
+    }
+    
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+    
+    // Development mode: Use mock user if authentication fails
+    let userId = user?.id
+    if (!userId && import.meta.env.DEV) {
+      console.log('🔧 DEV MODE: Using mock user for canceling friend request')
+      userId = 'dev-user-123' // Mock user ID for development
+    } else if (!userId) {
+      throw new Error('Not authenticated')
+    }
+
+    // First, verify that this request exists and the current user can cancel it
+    const { data: request, error: fetchError } = await supabase
+      .from('friends')
+      .select('id, requester_id, receiver_id, status')
+      .eq('id', requestId)
+      .eq('status', 'pending')
+      .single()
+
+    if (fetchError) {
+      throw new Error('Friend request not found or already processed')
+    }
+
+    // Verify that the current user is involved in this request and can cancel it
+    // User can cancel if they are involved in the request AND they are not the receiver
+    // (meaning they sent the request, regardless of canonical ordering)
+    if (request.requester_id !== userId && request.receiver_id !== userId) {
+      throw new Error('You can only cancel your own friend requests')
+    }
+    
+    if (request.receiver_id === userId) {
+      throw new Error('You can only cancel outgoing friend requests')
+    }
+
+    // Now delete the request
     const { error } = await supabase
       .from('friends')
       .delete()
       .eq('id', requestId)
-      .eq('status', 'pending')
 
     if (error) throw error
   } catch (error) {

@@ -5,13 +5,6 @@
 
 <template>
   <div class="main-layout">
-    <!-- Style Preferences Modal -->
-    <StylePreferenceModal
-      :show="stylePreferencesStore.showStyleModal"
-      @close="stylePreferencesStore.hideStylePreferences"
-      @preferences-saved="handlePreferencesSaved"
-    />
-
     <header class="main-header">
       <div class="header-content">
         <h1 class="app-logo">
@@ -102,7 +95,6 @@ import { useSuggestionsStore } from '../../stores/suggestions-store'
 import { useStylePreferencesStore } from '../../stores/style-preferences-store'
 import NotificationBadge from '../notifications/NotificationBadge.vue'
 import SettingsDropdown from '../ui/SettingsDropdown.vue'
-import StylePreferenceModal from '../ui/StylePreferenceModal.vue'
 
 const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
@@ -120,10 +112,6 @@ function scrollToTop() {
   })
 }
 
-// Handle style preferences saved
-function handlePreferencesSaved(preferences) {
-  stylePreferencesStore.savePreferences(preferences)
-}
 
 onMounted(() => {
   // Initialize notifications when layout mounts

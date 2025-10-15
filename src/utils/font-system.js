@@ -111,8 +111,17 @@ export function preloadFonts(themeKey) {
   const theme = getFontTheme(themeKey)
   const fontsToPreload = [...new Set([...theme.primary, ...theme.secondary, ...theme.mono])]
   
+  // System fonts that don't need to be loaded from Google Fonts
+  const systemFonts = [
+    'serif', 'sans-serif', 'monospace',
+    '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 
+    'Helvetica Neue', 'Arial', 'Helvetica', 'Monaco', 'Consolas', 
+    'Liberation Mono', 'Courier New'
+  ]
+  
   fontsToPreload.forEach(font => {
-    if (font !== 'serif' && font !== 'sans-serif' && font !== 'monospace') {
+    // Only preload actual Google Fonts, not system fonts
+    if (!systemFonts.includes(font)) {
       const link = document.createElement('link')
       link.rel = 'preload'
       link.as = 'font'
@@ -206,8 +215,8 @@ export function initializeVueFontSystem() {
   // Initialize font system
   const currentTheme = initializeFontSystem()
   
-  // Preload fonts for better performance
-  preloadFonts(currentTheme)
+  // Note: Fonts are now imported via CSS @import in fonts.css
+  // No need to preload fonts dynamically to avoid CORS issues
   
   // Create initial theme classes
   createFontThemeClasses(currentTheme)
