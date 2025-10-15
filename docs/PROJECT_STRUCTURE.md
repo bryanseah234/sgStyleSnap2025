@@ -1,6 +1,6 @@
 # StyleSnap Project Structure
 
-This document provides a comprehensive overview of the StyleSnap project structure and organization.
+This document provides a comprehensive overview of the StyleSnap project structure and organization as of January 2025.
 
 ## 📁 Root Directory Structure
 
@@ -23,66 +23,66 @@ sgStyleSnap2025/
 ## 📁 Source Code (`src/`)
 
 ### Core Application Files
-- **`App.vue`** - Root Vue component
-- **`main.js`** - Application entry point
-- **`router.js`** - Vue Router configuration
+- **`App.vue`** - Root Vue component with global layout
+- **`main.js`** - Application entry point with store initialization
+- **`router.js`** - Vue Router configuration with auth guards
 
 ### Configuration (`src/config/`)
-- **`supabase.js`** - Supabase client configuration
-- **`colors.js`** - Color theme definitions
-- **`fonts.js`** - Font theme definitions
-- **`color-themes.js`** - Color theme configurations
-- **`theme.js`** - Theme configuration
-- **`constants.js`** - Application constants
-- **`env.js`** - Environment configuration
+- **`supabase.js`** - Supabase client configuration and connection
+- **`colors.js`** - Color palette definitions and utilities
+- **`fonts.js`** - Font theme definitions and configurations
+- **`color-themes.js`** - Complete color theme system (6 themes)
+- **`theme.js`** - Theme configuration and utilities
+- **`constants.js`** - Application constants and enums
+- **`icons.js`** - Icon definitions and mappings
 
 ### Components (`src/components/`)
 
 #### Analytics (`analytics/`)
-- **`WardrobeAnalytics.vue`** - Wardrobe analytics dashboard
-- **`MostWornChart.vue`** - Most worn items chart
-- **`SeasonalBreakdown.vue`** - Seasonal breakdown chart
+- **`WardrobeAnalytics.vue`** - Main analytics dashboard
+- **`MostWornChart.vue`** - Most worn items visualization
+- **`SeasonalBreakdown.vue`** - Seasonal usage analytics
 
 #### Catalog (`catalog/`)
-- **`CatalogGrid.vue`** - Catalog items grid
-- **`CatalogItemCard.vue`** - Individual catalog item
-- **`CatalogSearch.vue`** - Catalog search functionality
-- **`CatalogFilter.vue`** - Catalog filtering options
+- **`CatalogGrid.vue`** - Grid display for catalog items
+- **`CatalogItemCard.vue`** - Individual catalog item card
+- **`CatalogSearch.vue`** - Search functionality for catalog
+- **`CatalogFilter.vue`** - Filtering options for catalog
 
 #### Closet (`closet/`)
-- **`ClosetGrid.vue`** - User's closet items grid
-- **`ClosetFilter.vue`** - Closet filtering options
-- **`AddItemModal.vue`** - Modal for adding items
-- **`AddItemForm.vue`** - Form for adding new items
-- **`ItemDetailModal.vue`** - Item detail view
-- **`ItemLikeButton.vue`** - Like button for items
-- **`ItemLikersList.vue`** - List of item likers
-- **`LikedItemsGrid.vue`** - Grid of liked items
+- **`ClosetGrid.vue`** - User's personal closet items grid
+- **`ClosetFilter.vue`** - Filtering options for closet
+- **`AddItemModal.vue`** - Modal for adding new items
+- **`AddItemForm.vue`** - Form component for item creation
+- **`ItemDetailModal.vue`** - Detailed view of individual items
+- **`ItemLikeButton.vue`** - Like functionality for items
+- **`ItemLikersList.vue`** - Display list of item likers
+- **`LikedItemsGrid.vue`** - Grid of user's liked items
 
 #### Collections (`collections/`)
 - **`CollectionCard.vue`** - Collection display card
-- **`CollectionDetailView.vue`** - Collection detail view
-- **`CollectionsList.vue`** - List of collections
+- **`CollectionDetailView.vue`** - Detailed collection view
+- **`CollectionsList.vue`** - List of user collections
 - **`CreateCollectionModal.vue`** - Modal for creating collections
 
 #### Layouts (`layouts/`)
-- **`MainLayout.vue`** - Main application layout
-- **`AuthLayout.vue`** - Authentication layout
+- **`MainLayout.vue`** - Main application layout with navigation
+- **`AuthLayout.vue`** - Authentication-specific layout
 
 #### Notifications (`notifications/`)
 - **`NotificationBadge.vue`** - Notification count badge
-- **`NotificationBell.vue`** - Notification bell icon
-- **`NotificationItem.vue`** - Individual notification
+- **`NotificationItem.vue`** - Individual notification display
 - **`NotificationSettings.vue`** - Notification preferences
-- **`NotificationToggle.vue`** - Notification toggle
-- **`NotificationsList.vue`** - List of notifications
-- **`PushNotificationPrompt.vue`** - Push notification prompt
+- **`NotificationToggle.vue`** - Notification toggle switch
+- **`NotificationsList.vue`** - List of all notifications
+- **`PushNotificationPrompt.vue`** - Push notification permission prompt
 - **`EmptyNotifications.vue`** - Empty state for notifications
+- **`SuggestionNotificationItem.vue`** - Specialized notification for suggestions
 
 #### Outfits (`outfits/`)
 - **`ClosetItemsSidebar.vue`** - Sidebar for outfit creation
-- **`OutfitCanvas.vue`** - Outfit creation canvas
-- **`OutfitHistoryCard.vue`** - Outfit history card
+- **`OutfitCanvas.vue`** - Main outfit creation canvas
+- **`OutfitHistoryCard.vue`** - Individual outfit history card
 - **`OutfitHistoryList.vue`** - List of outfit history
 - **`RecordOutfitModal.vue`** - Modal for recording outfits
 
@@ -92,129 +92,128 @@ sgStyleSnap2025/
 - **`StyleSelector.vue`** - Style selection component
 
 #### Social (`social/`)
-- **`CreateSuggestionModal.vue`** - Modal for creating suggestions
-- **`FriendProfile.vue`** - Friend profile view
+- **`CreateSuggestionModal.vue`** - Modal for creating outfit suggestions
+- **`FriendProfile.vue`** - Friend profile display
 - **`FriendRequest.vue`** - Friend request component
 - **`FriendsList.vue`** - List of friends
-- **`LikersList.vue`** - List of likers
-- **`NotificationBell.vue`** - Notification bell
-- **`OutfitCommentsList.vue`** - Outfit comments
+- **`LikersList.vue`** - List of item likers
+- **`NotificationBell.vue`** - Notification bell icon
+- **`OutfitCommentsList.vue`** - Comments on outfits
 - **`PopularItemsCarousel.vue`** - Popular items carousel
-- **`SharedOutfitCard.vue`** - Shared outfit card
-- **`SharedOutfitsFeed.vue`** - Shared outfits feed
+- **`SharedOutfitCard.vue`** - Shared outfit display card
+- **`SharedOutfitsFeed.vue`** - Feed of shared outfits
 - **`ShareOutfitModal.vue`** - Modal for sharing outfits
-- **`SuggestionApprovalCard.vue`** - Suggestion approval card
-- **`SuggestionCanvas.vue`** - Suggestion canvas
-- **`SuggestionDetailModal.vue`** - Suggestion detail modal
-- **`SuggestionItem.vue`** - Individual suggestion
+- **`SuggestionApprovalCard.vue`** - Card for approving suggestions
+- **`SuggestionCanvas.vue`** - Canvas for creating suggestions
+- **`SuggestionDetailModal.vue`** - Detailed suggestion view
+- **`SuggestionItem.vue`** - Individual suggestion item
 - **`SuggestionList.vue`** - List of suggestions
-- **`SuggestionPreview.vue`** - Suggestion preview
+- **`SuggestionPreview.vue`** - Preview of suggestions
 
 #### UI Components (`ui/`)
 - **`Badge.vue`** - Badge component
 - **`Button.vue`** - Button component
-- **`ColorThemePicker.vue`** - Color theme picker
-- **`FontThemeSelector.vue`** - Font theme selector
+- **`ColorThemePicker.vue`** - Color theme selection
+- **`FontThemeSelector.vue`** - Font theme selection
 - **`FormInput.vue`** - Form input component
 - **`LikeButton.vue`** - Like button component
 - **`Modal.vue`** - Modal component
 - **`Notification.vue`** - Notification component
 - **`ProgressBar.vue`** - Progress bar component
-- **`QuotaIndicator.vue`** - Quota indicator
-- **`Select.vue`** - Select component
+- **`QuotaIndicator.vue`** - Quota usage indicator
+- **`Select.vue`** - Select dropdown component
 - **`SettingsDropdown.vue`** - Settings dropdown
-- **`Skeleton.vue`** - Loading skeleton
+- **`Skeleton.vue`** - Loading skeleton component
 - **`Spinner.vue`** - Loading spinner
 - **`StylePreferenceModal.vue`** - Style preference modal
-- **`ToggleSwitch.vue`** - Toggle switch
-- **`UserGreeting.vue`** - User greeting component
-- **`WeatherWidget.vue`** - Weather widget
+- **`ToggleSwitch.vue`** - Toggle switch component
+- **`UserGreeting.vue`** - User greeting with weather
+- **`WeatherWidget.vue`** - Weather information widget
 
 ### Pages (`src/pages/`)
-- **`Analytics.vue`** - Analytics dashboard
-- **`Catalog.vue`** - Catalog page
-- **`Closet.vue`** - Closet page (main dashboard)
-- **`DebugAuth.vue`** - Authentication debug page
+- **`Analytics.vue`** - Analytics dashboard page
+- **`Catalog.vue`** - Catalog browsing page
+- **`Closet.vue`** - Main closet page (dashboard)
+- **`DebugAuth.vue`** - Authentication debugging page
 - **`FontDemo.vue`** - Font demonstration page
-- **`Friends.vue`** - Friends page
-- **`FriendProfileView.vue`** - Friend profile view
-- **`Login.vue`** - Login page
-- **`ManualOutfitCreator.vue`** - Manual outfit creator
-- **`Notifications.vue`** - Notifications page
-- **`OutfitGenerator.vue`** - Outfit generator
+- **`Friends.vue`** - Friends management page
+- **`FriendProfileView.vue`** - Individual friend profile view
+- **`Login.vue`** - User login page
+- **`ManualOutfitCreator.vue`** - Manual outfit creation page
+- **`Notifications.vue`** - Notifications management page
+- **`OutfitGenerator.vue`** - AI outfit generation page
 - **`Profile.vue`** - User profile page
-- **`Register.vue`** - Registration page
-- **`SessionConfirmation.vue`** - Session confirmation
-- **`Settings.vue`** - Settings page
-- **`StyleSettings.vue`** - Style settings page
-- **`Suggestions.vue`** - Suggestions page
+- **`Register.vue`** - User registration page
+- **`SessionConfirmation.vue`** - Session confirmation page
+- **`Settings.vue`** - User settings page
+- **`Suggestions.vue`** - Outfit suggestions page
 
 ### Services (`src/services/`)
-- **`api.js`** - General API utilities
-- **`auth-service.js`** - Authentication service
-- **`catalog-service.js`** - Catalog management
-- **`cloudinary-service.js`** - Cloudinary integration
-- **`color-detection-service.js`** - Color detection
-- **`friend-suggestions-service.js`** - Friend suggestions
-- **`friends-service.js`** - Friends management
-- **`likes-service.js`** - Likes management
-- **`notifications-service.js`** - Notifications service
-- **`offline-sync.js`** - Offline synchronization
-- **`outfit-generation-service.js`** - Outfit generation
-- **`outfit-service.js`** - Outfit management
-- **`push-notifications.js`** - Push notifications
-- **`session-service.js`** - Session management
-- **`style-preferences-service.js`** - Style preferences
-- **`user-service.js`** - User management
-- **`weather-service.js`** - Weather integration
-- **`closet-service.js`** - Closet management
+- **`api.js`** - General API utilities and configuration
+- **`auth-service.js`** - Authentication service with Google OAuth
+- **`catalog-service.js`** - Catalog management service
+- **`clothes-service.js`** - Clothing items service
+- **`collections-service.js`** - Collections management service
+- **`fashion-rnn-service.js`** - AI clothing classification service
+- **`friend-suggestions-service.js`** - Friend suggestion service
+- **`friends-service.js`** - Friends management service
+- **`likes-service.js`** - Likes management service
+- **`manual-outfit-service.js`** - Manual outfit creation service
+- **`notifications-service.js`** - Notifications service with 7-day retention
+- **`offline-sync.js`** - Offline synchronization service
+- **`outfit-generator-service.js`** - AI outfit generation service
+- **`outfit-history-service.js`** - Outfit history service
+- **`push-notifications.js`** - Push notifications service
+- **`session-service.js`** - Session management service
+- **`shared-outfits-service.js`** - Shared outfits service
+- **`style-preferences-service.js`** - Style preferences service
+- **`suggestions-service.js`** - Suggestions service
+- **`user-service.js`** - User management service
+- **`weather-service.js`** - Weather integration service
 - **`analytics-service.js`** - Analytics service
-- **`collection-service.js`** - Collections service
-- **`item-service.js`** - Item management
-- **`suggestion-service.js`** - Suggestions service
 
 ### Stores (`src/stores/`)
-- **`auth-store.js`** - Authentication state
-- **`catalog-store.js`** - Catalog state
-- **`closet-store.js`** - Closet state
-- **`friends-store.js`** - Friends state
-- **`likes-store.js`** - Likes state
-- **`notifications-store.js`** - Notifications state
-- **`outfit-store.js`** - Outfit state
+- **`index.js`** - Store index and Pinia configuration
+- **`auth-store.js`** - Authentication state management
+- **`catalog-store.js`** - Catalog state management
+- **`closet-store.js`** - Closet state management
+- **`collections-store.js`** - Collections state management
+- **`friends-store.js`** - Friends state management
+- **`likes-store.js`** - Likes state management
+- **`notifications-store.js`** - Notifications state management
+- **`outfit-generation-store.js`** - Outfit generation state
+- **`outfit-history-store.js`** - Outfit history state
+- **`shared-outfits-store.js`** - Shared outfits state
 - **`style-preferences-store.js`** - Style preferences state
-- **`suggestions-store.js`** - Suggestions state
-- **`user-store.js`** - User state
-- **`weather-store.js`** - Weather state
-- **`analytics-store.js`** - Analytics state
-- **`collection-store.js`** - Collections state
-- **`item-store.js`** - Item state
-- **`session-store.js`** - Session state
+- **`suggestions-store.js`** - Suggestions state management
+- **`theme-store.js`** - Theme state management
+- **`analytics-store.js`** - Analytics state management
 
 ### Utils (`src/utils/`)
-- **`auth-guard.js`** - Route guards
+- **`auth-guard.js`** - Route guards for authentication
+- **`clothing-constants.js`** - Clothing-related constants
+- **`color-detector.js`** - AI color detection utilities
 - **`color-system.js`** - Color system utilities
+- **`debug-auth.js`** - Authentication debugging utilities
+- **`drag-drop-helpers.js`** - Drag and drop functionality
 - **`font-system.js`** - Font system utilities
-- **`quota-calculator.js`** - Quota calculations
-- **`date-utils.js`** - Date utilities
-- **`image-utils.js`** - Image utilities
-- **`validation.js`** - Validation utilities
-- **`constants.js`** - Application constants
-- **`helpers.js`** - General helpers
-- **`storage.js`** - Storage utilities
-- **`api-helpers.js`** - API helper functions
+- **`image-compression.js`** - Image compression utilities
+- **`maintenance-helpers.js`** - Maintenance utilities
+- **`performance.js`** - Performance monitoring utilities
+- **`quota-calculator.js`** - Quota calculation utilities
 
 ### Assets (`src/assets/`)
 - **`styles/`** - Global stylesheets
+  - **`base.css`** - Base styles and resets
+  - **`components.css`** - Component-specific styles
+  - **`mobile.css`** - Mobile-specific styles
   - **`theme.css`** - Theme variables and styles
-  - **`components.css`** - Component styles
-  - **`utilities.css`** - Utility classes
-  - **`animations.css`** - Animation styles
 
 ## 📁 Documentation (`docs/`)
 
 ### API Documentation (`api/`)
 - **`API_GUIDE.md`** - Complete API documentation
-- **`ARCHITECTURE.md`** - System architecture
+- **`ARCHITECTURE.md`** - System architecture overview
 
 ### Deployment (`deployment/`)
 - **`DEPLOYMENT_GUIDE.md`** - Deployment instructions
@@ -437,15 +436,15 @@ sgStyleSnap2025/
 
 | Directory | Key Features |
 |-----------|--------------|
-| **`src/components/`** | Reusable UI components |
-| **`src/pages/`** | Application pages/views |
-| **`src/services/`** | API and business logic |
-| **`src/stores/`** | State management |
-| **`src/utils/`** | Utility functions |
-| **`docs/`** | Comprehensive documentation |
-| **`scripts/`** | Maintenance and utility scripts |
-| **`database/`** | Database schema and migrations |
-| **`tests/`** | Test suites and helpers |
+| **`src/components/`** | Reusable UI components with 18 UI components, 6 notification components, 8 social components |
+| **`src/pages/`** | Application pages/views with 15 main pages |
+| **`src/services/`** | API and business logic with 20+ service files |
+| **`src/stores/`** | State management with 15+ Pinia stores |
+| **`src/utils/`** | Utility functions with 11 utility modules |
+| **`docs/`** | Comprehensive documentation with 50+ guide files |
+| **`scripts/`** | Maintenance and utility scripts organized by category |
+| **`database/`** | Database schema and migrations with 18 migration files |
+| **`tests/`** | Test suites and helpers with comprehensive coverage |
 
 ## 🚀 Getting Started
 
@@ -463,4 +462,20 @@ sgStyleSnap2025/
 - **Deployment**: `docs/deployment/`
 - **Scripts**: `scripts/README.md`
 
-This structure provides a clean, organized, and maintainable codebase for the StyleSnap application.
+## 🔄 Recent Updates (January 2025)
+
+### New Features Added
+- **7-Day Notification Retention System** - Automatic cleanup for optimal performance
+- **Multi-Theme Support** - 6 color themes and 6 font styles
+- **Session Management** - Enhanced user session handling
+- **Weather Integration** - Real-time weather widget
+- **Enhanced Analytics** - Comprehensive wardrobe analytics
+
+### Technical Improvements
+- **Code Organization** - Better file structure and organization
+- **Error Handling** - Improved error handling throughout
+- **Performance** - Optimized loading and rendering
+- **Accessibility** - Enhanced accessibility features
+- **Mobile Responsiveness** - Improved mobile experience
+
+This structure provides a clean, organized, and maintainable codebase for the StyleSnap application with comprehensive documentation and testing coverage.
