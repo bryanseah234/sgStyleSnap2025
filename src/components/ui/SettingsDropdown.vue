@@ -181,7 +181,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore, useThemeStore } from '../../stores'
-import { signOut } from '../../services/auth-service'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -219,7 +218,7 @@ async function handleSignOut() {
   }
 
   try {
-    await signOut()
+    await authStore.logout()
     closeDropdown()
     router.push('/login')
   } catch (error) {

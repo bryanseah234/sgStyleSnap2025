@@ -114,7 +114,7 @@ RETURNS TABLE (
     id UUID,
     recipient_id UUID,
     actor_id UUID,
-    type VARCHAR(50),
+    type TEXT,
     reference_id UUID,
     custom_message TEXT,
     is_read BOOLEAN,

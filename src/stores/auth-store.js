@@ -34,7 +34,7 @@
 
 import { defineStore } from 'pinia'
 import * as authService from '../services/auth-service'
-import { storeUserSession, getActiveSession, clearActiveSession } from '../services/session-service'
+import { storeUserSession, getActiveSession, clearActiveSession, removeUserSession } from '../services/session-service'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -77,6 +77,11 @@ export const useAuthStore = defineStore('auth', {
      * Clear user data and authentication state
      */
     clearUser() {
+      // Remove the current user's session from stored sessions
+      if (this.user?.id) {
+        removeUserSession(this.user.id)
+      }
+      
       this.user = null
       this.isAuthenticated = false
       this.error = null
