@@ -187,6 +187,14 @@ export function getColorHex(value) {
 }
 
 /**
+ * Get color label by value
+ */
+export function getColorLabel(value) {
+  const color = COLORS.find(c => c.value === value)
+  return color ? color.label : value
+}
+
+/**
  * Filter categories by group
  */
 export function getCategoriesByGroup(group) {
@@ -208,5 +216,6 @@ export default {
   getCategoryLabel,
   getCategoryGroup,
   getColorHex,
+  getColorLabel,
   getCategoriesByGroup
 }
