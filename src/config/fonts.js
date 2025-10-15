@@ -22,11 +22,11 @@
 
 // 🎨 FONT THEME OPTIONS - CHANGE THESE VALUES TO UPDATE THE ENTIRE APP FONTS
 
-// 1. MODERN THEME (Current Default)
-export const MODERN_FONT_THEME = {
+// 1. OPEN SANS THEME (New Default)
+export const OPEN_SANS_FONT_THEME = {
   // Primary font families
-  primary: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-  secondary: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  primary: ['Open Sans', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  secondary: ['Open Sans', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
   mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
   
   // Font weights
@@ -67,91 +67,9 @@ export const MODERN_FONT_THEME = {
   }
 }
 
-// 2. ELEGANT THEME
-export const ELEGANT_FONT_THEME = {
-  primary: ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
-  secondary: ['Lato', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-  mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
-  
-  weights: {
-    thin: 100,
-    extralight: 200,
-    light: 300,
-    normal: 400,
-    medium: 500,
-    semibold: 600,
-    bold: 700,
-    extrabold: 800,
-    black: 900
-  },
-  
-  sizes: {
-    xs: '0.75rem',
-    sm: '0.875rem',
-    base: '1rem',
-    lg: '1.125rem',
-    xl: '1.25rem',
-    '2xl': '1.5rem',
-    '3xl': '1.875rem',
-    '4xl': '2.25rem',
-    '5xl': '3rem',
-    '6xl': '3.75rem'
-  },
-  
-  lineHeights: {
-    none: 1,
-    tight: 1.25,
-    snug: 1.375,
-    normal: 1.5,
-    relaxed: 1.625,
-    loose: 2
-  }
-}
-
-// 3. FRIENDLY THEME
-export const FRIENDLY_FONT_THEME = {
-  primary: ['Nunito', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-  secondary: ['Open Sans', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-  mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
-  
-  weights: {
-    thin: 100,
-    extralight: 200,
-    light: 300,
-    normal: 400,
-    medium: 500,
-    semibold: 600,
-    bold: 700,
-    extrabold: 800,
-    black: 900
-  },
-  
-  sizes: {
-    xs: '0.75rem',
-    sm: '0.875rem',
-    base: '1rem',
-    lg: '1.125rem',
-    xl: '1.25rem',
-    '2xl': '1.5rem',
-    '3xl': '1.875rem',
-    '4xl': '2.25rem',
-    '5xl': '3rem',
-    '6xl': '3.75rem'
-  },
-  
-  lineHeights: {
-    none: 1,
-    tight: 1.25,
-    snug: 1.375,
-    normal: 1.5,
-    relaxed: 1.625,
-    loose: 2
-  }
-}
-
-// 4. TECH THEME
-export const TECH_FONT_THEME = {
-  primary: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+// 2. INTER THEME
+export const INTER_FONT_THEME = {
+  primary: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
   secondary: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
   mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
   
@@ -190,10 +108,10 @@ export const TECH_FONT_THEME = {
   }
 }
 
-// 5. CREATIVE THEME
-export const CREATIVE_FONT_THEME = {
-  primary: ['Poppins', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-  secondary: ['Source Sans Pro', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+// 3. ROBOTO THEME
+export const ROBOTO_FONT_THEME = {
+  primary: ['Roboto', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  secondary: ['Roboto', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
   mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
   
   weights: {
@@ -231,11 +149,93 @@ export const CREATIVE_FONT_THEME = {
   }
 }
 
-// 6. MINIMAL THEME
-export const MINIMAL_FONT_THEME = {
-  primary: ['Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
-  secondary: ['Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
-  mono: ['Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+// 4. POPPINS THEME
+export const POPPINS_FONT_THEME = {
+  primary: ['Poppins', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  secondary: ['Poppins', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+  
+  weights: {
+    thin: 100,
+    extralight: 200,
+    light: 300,
+    normal: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+    extrabold: 800,
+    black: 900
+  },
+  
+  sizes: {
+    xs: '0.75rem',
+    sm: '0.875rem',
+    base: '1rem',
+    lg: '1.125rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '1.875rem',
+    '4xl': '2.25rem',
+    '5xl': '3rem',
+    '6xl': '3.75rem'
+  },
+  
+  lineHeights: {
+    none: 1,
+    tight: 1.25,
+    snug: 1.375,
+    normal: 1.5,
+    relaxed: 1.625,
+    loose: 2
+  }
+}
+
+// 5. NUNITO THEME
+export const NUNITO_FONT_THEME = {
+  primary: ['Nunito', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  secondary: ['Nunito', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+  
+  weights: {
+    thin: 100,
+    extralight: 200,
+    light: 300,
+    normal: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+    extrabold: 800,
+    black: 900
+  },
+  
+  sizes: {
+    xs: '0.75rem',
+    sm: '0.875rem',
+    base: '1rem',
+    lg: '1.125rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '1.875rem',
+    '4xl': '2.25rem',
+    '5xl': '3rem',
+    '6xl': '3.75rem'
+  },
+  
+  lineHeights: {
+    none: 1,
+    tight: 1.25,
+    snug: 1.375,
+    normal: 1.5,
+    relaxed: 1.625,
+    loose: 2
+  }
+}
+
+// 6. LATO THEME
+export const LATO_FONT_THEME = {
+  primary: ['Lato', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  secondary: ['Lato', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
   
   weights: {
     thin: 100,
@@ -273,39 +273,39 @@ export const MINIMAL_FONT_THEME = {
 }
 
 // 🎨 CURRENT ACTIVE FONT THEME - CHANGE THIS TO SWITCH THE ENTIRE APP FONT
-export const FONT_THEME = MODERN_FONT_THEME
+export const FONT_THEME = OPEN_SANS_FONT_THEME
 
 // Available font themes for selection
 export const AVAILABLE_FONT_THEMES = {
-  modern: {
-    name: 'Modern',
-    description: 'Clean, professional design with Inter font family',
-    theme: MODERN_FONT_THEME
+  openSans: {
+    name: 'Open Sans',
+    description: 'Clean, friendly, and highly readable design with Open Sans',
+    theme: OPEN_SANS_FONT_THEME
   },
-  elegant: {
-    name: 'Elegant',
-    description: 'Sophisticated, refined design with Playfair Display and Lato',
-    theme: ELEGANT_FONT_THEME
+  inter: {
+    name: 'Inter',
+    description: 'Modern, professional design with Inter font family',
+    theme: INTER_FONT_THEME
   },
-  friendly: {
-    name: 'Friendly',
-    description: 'Warm, approachable design with Nunito and Open Sans',
-    theme: FRIENDLY_FONT_THEME
+  roboto: {
+    name: 'Roboto',
+    description: 'Google\'s modern, geometric design with Roboto',
+    theme: ROBOTO_FONT_THEME
   },
-  tech: {
-    name: 'Tech',
-    description: 'Modern, tech-focused design with JetBrains Mono',
-    theme: TECH_FONT_THEME
+  poppins: {
+    name: 'Poppins',
+    description: 'Geometric, friendly design with Poppins',
+    theme: POPPINS_FONT_THEME
   },
-  creative: {
-    name: 'Creative',
-    description: 'Artistic, expressive design with Poppins and Source Sans Pro',
-    theme: CREATIVE_FONT_THEME
+  nunito: {
+    name: 'Nunito',
+    description: 'Rounded, friendly design with Nunito',
+    theme: NUNITO_FONT_THEME
   },
-  minimal: {
-    name: 'Minimal',
-    description: 'Ultra-clean, simple design with Helvetica',
-    theme: MINIMAL_FONT_THEME
+  lato: {
+    name: 'Lato',
+    description: 'Humanist, elegant design with Lato',
+    theme: LATO_FONT_THEME
   }
 }
 
