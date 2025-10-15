@@ -199,7 +199,8 @@ import { useRouter } from 'vue-router'
 import MainLayout from '@/components/layouts/MainLayout.vue'
 import { COLOR_THEMES } from '@/config/color-themes'
 import { applyColorTheme } from '@/config/color-themes'
-import { AVAILABLE_FONT_THEMES, getFontFamily, changeFontTheme } from '@/config/fonts'
+import { AVAILABLE_FONT_THEMES, getFontFamily } from '@/config/fonts'
+import { changeFontTheme } from '@/utils/font-system'
 
 const router = useRouter()
 
