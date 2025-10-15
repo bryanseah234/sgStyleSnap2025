@@ -666,15 +666,17 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .section-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #64748b;
-  margin: 0;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
 }
 
 @media (prefers-color-scheme: dark) {
   .section-label {
-    color: #94a3b8;
+    color: #ffffff !important;
   }
 }
 
@@ -887,49 +889,50 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .field-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #475569;
-  margin: 0;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
 }
 
 @media (prefers-color-scheme: dark) {
   .field-label {
-    color: #cbd5e1;
+    color: #ffffff !important;
   }
 }
 
 .field-input,
 .field-select {
-  width: 100%;
-  min-width: 0;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(145deg, #ffffff, #f8fafc);
-  border: 2px solid transparent;
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  color: #1e293b;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: #ffffff !important;
+  border: 3px solid #d1d5db !important;
+  border-radius: 1rem !important;
+  font-size: 1rem !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+  box-sizing: border-box !important;
 }
 
 .field-input:focus,
 .field-select:focus {
-  outline: none;
-  border-color: rgba(139, 92, 246, 0.3);
+  outline: none !important;
+  border-color: #1e40af !important;
   box-shadow: 
-    0 8px 25px rgba(139, 92, 246, 0.15),
-    0 0 0 3px rgba(139, 92, 246, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+    0 8px 25px rgba(30, 64, 175, 0.3),
+    0 0 0 3px rgba(30, 64, 175, 0.2) !important;
+  transform: translateY(-1px) !important;
 }
 
 .field-input::placeholder {
-  color: #94a3b8;
-  font-style: italic;
+  color: #6b7280 !important;
+  font-style: italic !important;
+  font-weight: 500 !important;
 }
 
 .field-input:hover,
@@ -971,9 +974,10 @@ watch(() => props.isOpen, (isOpen) => {
   align-items: center;
   gap: 1.5rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.02));
+  background: #ffffff !important;
   border-radius: 1rem;
-  border: 1px solid rgba(139, 92, 246, 0.1);
+  border: 2px solid #e5e7eb !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 .progress-item {
@@ -996,31 +1000,33 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .progress-text {
-  font-size: 0.75rem;
-  color: #64748b;
-  font-weight: 500;
+  font-size: 0.875rem !important;
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
 }
 
 .progress-item.complete .progress-text {
-  color: #059669;
+  color: #059669 !important;
 }
 
 @media (prefers-color-scheme: dark) {
   .progress-section {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.05));
-    border-color: rgba(139, 92, 246, 0.2);
+    background: #374151 !important;
+    border-color: #4b5563 !important;
   }
   
   .progress-dot {
-    background: #475569;
+    background: #6b7280 !important;
   }
   
   .progress-text {
-    color: #94a3b8;
+    color: #ffffff !important;
   }
   
   .progress-item.complete .progress-text {
-    color: #34d399;
+    color: #34d399 !important;
   }
 }
 
@@ -1076,26 +1082,28 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .cancel-btn {
-  background: linear-gradient(145deg, #f8fafc, #e2e8f0);
-  color: #64748b;
-  border: 2px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  background: #ffffff !important;
+  color: #374151 !important;
+  border: 3px solid #d1d5db !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+  font-weight: 700 !important;
 }
 
 .cancel-btn:hover {
-  background: linear-gradient(145deg, #e2e8f0, #cbd5e1);
-  border-color: rgba(148, 163, 184, 0.3);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-  color: white;
-  border: 2px solid transparent;
+  background: linear-gradient(135deg, #1e40af, #3b82f6) !important;
+  color: #ffffff !important;
+  border: 3px solid #1e40af !important;
   box-shadow: 
-    0 8px 25px rgba(139, 92, 246, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 8px 25px rgba(30, 64, 175, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  font-weight: 700 !important;
 }
 
 .submit-btn::before {
@@ -1166,5 +1174,79 @@ watch(() => props.isOpen, (isOpen) => {
   border: 0;
   opacity: 0;
   pointer-events: none;
+}
+
+/* FORCE HIGH CONTRAST OVERRIDES */
+:deep(.section-label) {
+  color: #1e40af !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+:deep(.field-label) {
+  color: #1e40af !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 0.5rem !important;
+}
+
+:deep(.field-input) {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 3px solid #d1d5db !important;
+  font-weight: 600 !important;
+}
+
+:deep(.field-select) {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 3px solid #d1d5db !important;
+  font-weight: 600 !important;
+}
+
+:deep(.cancel-btn) {
+  background: #ffffff !important;
+  color: #374151 !important;
+  border: 3px solid #d1d5db !important;
+  font-weight: 700 !important;
+}
+
+:deep(.submit-btn) {
+  background: linear-gradient(135deg, #1e40af, #3b82f6) !important;
+  color: #ffffff !important;
+  border: 3px solid #1e40af !important;
+  font-weight: 700 !important;
+}
+
+:deep(.progress-section) {
+  background: #ffffff !important;
+  border: 2px solid #e5e7eb !important;
+}
+
+:deep(.progress-text) {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+}
+
+/* ADDITIONAL LABEL OVERRIDES FOR MAXIMUM VISIBILITY */
+label {
+  color: #1e40af !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Override any dark theme styles */
+@media (prefers-color-scheme: dark) {
+  label {
+    color: #60a5fa !important;
+  }
 }
 </style>
