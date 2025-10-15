@@ -222,6 +222,28 @@ export const friendSuggestionsService = {
 
       if (error) throw error
 
+      // Update notification status to 'accepted' (extends expiry by 7 days)
+      try {
+        const { notificationsService } = await import('./notifications-service')
+        // Find the notification for this suggestion
+        const { data: notification } = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('type', 'friend_outfit_suggestion')
+          .eq('reference_id', suggestionId)
+          .single()
+
+        if (notification) {
+          await notificationsService.updateNotificationStatus(
+            notification.id,
+            'accepted'
+          )
+        }
+      } catch (notifError) {
+        console.warn('Failed to update notification status:', notifError)
+        // Don't fail the suggestion approval if notification update fails
+      }
+
       return {
         success: true,
         outfit_id: data,
@@ -248,6 +270,28 @@ export const friendSuggestionsService = {
       })
 
       if (error) throw error
+
+      // Update notification status to 'rejected' (extends expiry by 7 days)
+      try {
+        const { notificationsService } = await import('./notifications-service')
+        // Find the notification for this suggestion
+        const { data: notification } = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('type', 'friend_outfit_suggestion')
+          .eq('reference_id', suggestionId)
+          .single()
+
+        if (notification) {
+          await notificationsService.updateNotificationStatus(
+            notification.id,
+            'rejected'
+          )
+        }
+      } catch (notifError) {
+        console.warn('Failed to update notification status:', notifError)
+        // Don't fail the suggestion rejection if notification update fails
+      }
 
       return {
         success: true,

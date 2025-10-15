@@ -290,6 +290,18 @@ export async function acceptFriendRequest(requestId) {
     if (error) throw error
     if (!data) throw new Error('Request not found or already processed')
 
+    // Update notification status to 'accepted' (extends expiry by 7 days)
+    try {
+      const { notificationsService } = await import('./notifications-service')
+      await notificationsService.updateNotificationStatus(
+        data.notification_id, // Assuming notification_id is stored in friends table
+        'accepted'
+      )
+    } catch (notifError) {
+      console.warn('Failed to update notification status:', notifError)
+      // Don't fail the friend request if notification update fails
+    }
+
     return data
   } catch (error) {
     console.error('Failed to accept friend request:', error)
@@ -304,6 +316,17 @@ export async function acceptFriendRequest(requestId) {
  */
 export async function rejectFriendRequest(requestId) {
   try {
+    // Get the friend request data first to find the notification
+    const { data: friendRequest, error: fetchError } = await supabase
+      .from('friends')
+      .select('*')
+      .eq('id', requestId)
+      .eq('status', 'pending')
+      .single()
+
+    if (fetchError) throw fetchError
+    if (!friendRequest) throw new Error('Request not found or already processed')
+
     // Update status to rejected
     const { error } = await supabase
       .from('friends')
@@ -312,6 +335,18 @@ export async function rejectFriendRequest(requestId) {
       .eq('status', 'pending')
 
     if (error) throw error
+
+    // Update notification status to 'rejected' (extends expiry by 7 days)
+    try {
+      const { notificationsService } = await import('./notifications-service')
+      await notificationsService.updateNotificationStatus(
+        friendRequest.notification_id, // Assuming notification_id is stored in friends table
+        'rejected'
+      )
+    } catch (notifError) {
+      console.warn('Failed to update notification status:', notifError)
+      // Don't fail the friend request if notification update fails
+    }
   } catch (error) {
     console.error('Failed to reject friend request:', error)
     throw new Error(`Failed to reject friend request: ${error.message}`)

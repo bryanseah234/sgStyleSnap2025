@@ -7,7 +7,7 @@ import { supabase } from '../config/supabase'
 
 export const notificationsService = {
   /**
-   * Get user notifications with pagination
+   * Get user notifications with pagination (7-day retention)
    * @param {Object} options - Query options
    * @param {number} options.limit - Max results (default: 20, max: 50)
    * @param {number} options.offset - Pagination offset (default: 0)
@@ -16,41 +16,34 @@ export const notificationsService = {
    */
   async getNotifications({ limit = 20, offset = 0, unreadOnly = false } = {}) {
     try {
-      let query = supabase
-        .from('notifications')
-        .select(
-          `
-          *,
-          actor:users!notifications_actor_id_fkey (
-            id,
-            username,
-            avatar_url
-          )
-        `,
-          { count: 'exact' }
-        )
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1)
-
-      if (unreadOnly) {
-        query = query.eq('is_read', false)
-      }
-
-      const { data, error, count } = await query
+      // Use the new database function that respects 7-day retention
+      const { data, error } = await supabase.rpc('get_user_notifications_with_retention', {
+        user_id: (await supabase.auth.getUser()).data.user.id,
+        limit_count: limit,
+        offset_count: offset,
+        unread_only: unreadOnly
+      })
 
       if (error) throw error
 
-      // Get unread count
+      // Get total count within retention period
+      const { count: totalCount } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .gt('expires_at', new Date().toISOString())
+
+      // Get unread count within retention period
       const { count: unreadCount } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false)
+        .gt('expires_at', new Date().toISOString())
 
       return {
         success: true,
-        data,
+        data: data || [],
         pagination: {
-          total: count,
+          total: totalCount || 0,
           limit,
           offset,
           unread_count: unreadCount || 0
@@ -66,24 +59,24 @@ export const notificationsService = {
   },
 
   /**
-   * Get unread notification count
+   * Get unread notification count (7-day retention)
    * @returns {Promise<Object>} Unread count
    */
   async getUnreadCount() {
     try {
-      const { count, error } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_read', false)
+      // Use the new database function that respects 7-day retention
+      const { data, error } = await supabase.rpc('get_unread_notifications_count', {
+        user_id: (await supabase.auth.getUser()).data.user.id
+      })
 
       if (error) throw error
 
       return {
         success: true,
-        count: count || 0
+        count: data || 0
       }
     } catch (error) {
-      console.error('Error fetching unread count:', error)
+      console.error('Error getting unread count:', error)
       return {
         success: false,
         error: error.message
@@ -146,6 +139,34 @@ export const notificationsService = {
   },
 
   /**
+   * Update notification status (for lifecycle management)
+   * @param {string} notificationId - Notification ID
+   * @param {string} status - New status ('pending', 'accepted', 'rejected', 'expired')
+   * @returns {Promise<Object>} Success status
+   */
+  async updateNotificationStatus(notificationId, status) {
+    try {
+      const { data, error } = await supabase.rpc('update_notification_status', {
+        notification_id: notificationId,
+        new_status: status
+      })
+
+      if (error) throw error
+
+      return {
+        success: true,
+        message: `Notification status updated to ${status}`
+      }
+    } catch (error) {
+      console.error('Error updating notification status:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  },
+
+  /**
    * Delete notification
    * @param {string} notificationId - Notification ID
    * @returns {Promise<Object>} Success status
@@ -162,6 +183,30 @@ export const notificationsService = {
       }
     } catch (error) {
       console.error('Error deleting notification:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  },
+
+  /**
+   * Clean up expired notifications (admin function)
+   * @returns {Promise<Object>} Cleanup result
+   */
+  async cleanupExpiredNotifications() {
+    try {
+      const { data, error } = await supabase.rpc('cleanup_expired_notifications')
+
+      if (error) throw error
+
+      return {
+        success: true,
+        deleted_count: data || 0,
+        message: `Cleaned up ${data || 0} expired notifications`
+      }
+    } catch (error) {
+      console.error('Error cleaning up notifications:', error)
       return {
         success: false,
         error: error.message

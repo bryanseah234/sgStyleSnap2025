@@ -28,6 +28,26 @@
           <span class="ml-1">{{ notificationMessage }}</span>
         </p>
 
+        <!-- Status and Expiry Info -->
+        <div class="flex items-center gap-2 mt-1">
+          <!-- Status Badge -->
+          <span
+            v-if="notification.status"
+            :class="getStatusBadgeClass(notification.status)"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+          >
+            {{ getStatusText(notification.status) }}
+          </span>
+          
+          <!-- Expiry Info -->
+          <span
+            v-if="notification.expires_at"
+            class="text-xs text-gray-500 dark:text-gray-400"
+          >
+            Expires {{ formatExpiry(notification.expires_at) }}
+          </span>
+        </div>
+
         <!-- Type-Specific Content -->
         <div
           v-if="hasPreview"
@@ -183,6 +203,58 @@ const iconColorClass = computed(() => {
       return 'text-gray-400'
   }
 })
+
+// Status badge styling
+function getStatusBadgeClass(status) {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+    case 'accepted':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+    case 'rejected':
+      return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+    case 'expired':
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+    default:
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+  }
+}
+
+// Status text
+function getStatusText(status) {
+  switch (status) {
+    case 'pending':
+      return 'Pending'
+    case 'accepted':
+      return 'Accepted'
+    case 'rejected':
+      return 'Rejected'
+    case 'expired':
+      return 'Expired'
+    default:
+      return 'Unknown'
+  }
+}
+
+// Format expiry time
+function formatExpiry(expiresAt) {
+  try {
+    const expiryDate = new Date(expiresAt)
+    const now = new Date()
+    const diffInHours = Math.ceil((expiryDate - now) / (1000 * 60 * 60))
+    
+    if (diffInHours <= 0) {
+      return 'soon'
+    } else if (diffInHours < 24) {
+      return `in ${diffInHours}h`
+    } else {
+      const diffInDays = Math.ceil(diffInHours / 24)
+      return `in ${diffInDays}d`
+    }
+  } catch (e) {
+    return 'soon'
+  }
+}
 
 const handleClick = () => {
   emit('click', props.notification)

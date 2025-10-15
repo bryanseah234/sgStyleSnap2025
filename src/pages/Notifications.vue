@@ -6,6 +6,12 @@
         <p class="subtitle">
           Stay updated with your friends' activities
         </p>
+        <div class="retention-notice">
+          <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Notifications are kept for 7 days. After you act on them, they stay for an additional 7 days.</span>
+        </div>
       </div>
 
       <!-- Tabs -->
@@ -350,6 +356,33 @@ const handleRejectSuggestion = async suggestionId => {
 .subtitle {
   font-size: 0.875rem;
   color: var(--theme-text-secondary, #6b46c1);
+  margin-bottom: 1rem;
+}
+
+.retention-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--theme-surface-light, #f3e8ff);
+  border: 1px solid var(--theme-border, #e0d4ff);
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--theme-text-secondary, #6b46c1);
+}
+
+.info-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--theme-primary, #8b5cf6);
+}
+
+.dark .retention-notice {
+  background: var(--theme-surface, #1a0d3a);
+  border-color: var(--theme-border, #4c1d95);
+  color: var(--theme-text-secondary, #A78BFA);
 }
 
 /* Tabs */
