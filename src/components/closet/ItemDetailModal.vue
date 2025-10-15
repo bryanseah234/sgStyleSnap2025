@@ -444,8 +444,8 @@ function formatDate(dateString) {
 }
 
 .info-section {
-  background: var(--theme-surface, #ffffff);
-  border: 1px solid var(--theme-border, #e5e7eb);
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -484,31 +484,33 @@ function formatDate(dateString) {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1rem;
-  background: var(--theme-surface-light, #f8fafc);
-  border-radius: 0.5rem;
-  border: 1px solid var(--theme-border-light, #e2e8f0);
+  padding: 1.25rem;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
 
 .info-item:hover {
-  background: var(--theme-surface-hover, #f1f5f9);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .info-label {
   font-size: 0.875rem;
-  color: var(--theme-text-muted, #64748b);
+  color: #6b7280;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .info-value {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--theme-text-primary, #1e293b);
+  color: #111827;
   line-height: 1.4;
 }
 
@@ -544,9 +546,9 @@ function formatDate(dateString) {
   gap: 1rem;
   padding: 1.5rem;
   margin-top: 1rem;
-  background: var(--theme-surface-light, #f8fafc);
+  background: #f8fafc;
   border-radius: 0.75rem;
-  border: 1px solid var(--theme-border-light, #e2e8f0);
+  border: 2px solid #e2e8f0;
 }
 
 /* Dark Mode Support */
@@ -562,8 +564,8 @@ function formatDate(dateString) {
   }
 
   .info-section {
-    background: var(--theme-surface-dark, #1f2937);
-    border-color: var(--theme-border-dark, #374151);
+    background: #1f2937;
+    border-color: #374151;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
 
@@ -579,21 +581,22 @@ function formatDate(dateString) {
   }
 
   .info-item {
-    background: var(--theme-surface-dark-light, #2d3748);
-    border-color: var(--theme-border-dark-light, #4a5568);
+    background: #374151;
+    border-color: #4b5563;
   }
 
   .info-item:hover {
-    background: var(--theme-surface-dark-hover, #374151);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    background: #4b5563;
+    border-color: #6b7280;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   }
 
   .info-label {
-    color: var(--theme-text-muted-dark, #a0aec0);
+    color: #d1d5db;
   }
 
   .info-value {
-    color: var(--theme-text-primary-dark, #f7fafc);
+    color: #ffffff;
   }
 
   .color-swatch {
@@ -601,8 +604,8 @@ function formatDate(dateString) {
   }
 
   .action-buttons {
-    background: var(--theme-surface-dark-light, #2d3748);
-    border-color: var(--theme-border-dark-light, #4a5568);
+    background: #374151;
+    border-color: #4b5563;
   }
 }
 
