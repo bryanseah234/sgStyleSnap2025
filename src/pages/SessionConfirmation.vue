@@ -55,7 +55,7 @@
               v-for="session in availableSessions"
               :key="session.id"
               class="session-card"
-              @click="switchToSession(session)"
+              @click="handleSwitchToSession(session)"
             >
               <div class="session-avatar">
                 <img
@@ -180,7 +180,7 @@ async function continueWithCurrentUser() {
   }
 }
 
-async function switchToSession(session) {
+async function handleSwitchToSession(session) {
   loading.value = true
   loadingMessage.value = 'Switching account...'
   
