@@ -352,7 +352,7 @@ function cancelChanges() {
 
 async function signOut() {
   try {
-    await signOut()
+    await authStore.logout()
     router.push('/login')
   } catch (error) {
     console.error('Failed to sign out:', error)

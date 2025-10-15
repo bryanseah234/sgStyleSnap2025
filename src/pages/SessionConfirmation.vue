@@ -215,15 +215,15 @@ async function signInWithNewAccount() {
       removeUserSession(currentUser.value.id)
     }
     
-    // Sign in with new account
+    // Sign in with new account - this will redirect to Google OAuth
+    // The OAuth flow will handle the redirect back to the app
     await signInWithGoogle()
     
-    // Redirect to main app
-    router.push('/closet')
+    // Note: We don't need to redirect here as signInWithGoogle() will redirect to Google OAuth
+    // and Google will redirect back to the app after authentication
   } catch (error) {
     console.error('Failed to sign in with new account:', error)
     alert('Failed to sign in with new account. Please try again.')
-  } finally {
     loading.value = false
   }
 }
