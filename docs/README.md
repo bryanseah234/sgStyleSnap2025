@@ -1,6 +1,27 @@
 # StyleSnap Documentation
 
-Welcome to the StyleSnap documentation hub. This directory contains comprehensive documentation for all aspects of the StyleSnap application.
+Welcome to the StyleSnap documentation hub. This directory contains comprehensive documentation for all aspects of the StyleSnap application - a modern digital closet and social fashion platform.
+
+## 🎯 Project Overview
+
+**StyleSnap** is a comprehensive digital closet application that combines personal wardrobe management with social features, AI-powered outfit suggestions, and advanced analytics. Built with Vue.js 3, Supabase, and modern web technologies.
+
+### 🌟 Key Features
+
+#### Core Functionality
+- **Digital Closet Management** - Upload, organize, and manage personal clothing items
+- **AI-Powered Outfit Generation** - Get intelligent outfit suggestions based on weather, occasion, and personal style
+- **Social Fashion Network** - Connect with friends, share outfits, and get suggestions
+- **Real-time Notifications** - Stay updated with friend activities and suggestions
+- **Advanced Analytics** - Track wardrobe usage, seasonal trends, and style preferences
+
+#### Technical Features
+- **7-Day Notification Retention** - Automatic cleanup system for optimal performance
+- **Multi-Theme Support** - 6 color themes and 6 font styles for personalization
+- **Session Management** - Secure user session handling with Google OAuth
+- **Responsive Design** - Mobile-first design with desktop optimization
+- **PWA Support** - Progressive Web App capabilities
+- **Real-time Updates** - Live data synchronization across devices
 
 ## 📚 Documentation Structure
 
@@ -27,7 +48,7 @@ Welcome to the StyleSnap documentation hub. This directory contains comprehensiv
 - **[Outfit Generation](./guides/OUTFIT_GENERATION_GUIDE.md)** - AI-powered outfit suggestions
 - **[Color Detection](./guides/COLOR_DETECTION_GUIDE.md)** - Automatic color detection
 - **[Likes System](./guides/LIKES_GUIDE.md)** - Item and outfit likes
-- **[Analytics](./guides/ANALYTICS_GUIDE.md)** - Wardrobe analytics
+- **[Analytics Guide](./guides/ANALYTICS_GUIDE.md)** - Wardrobe analytics
 
 ### 🛠️ Development & Maintenance
 
@@ -198,5 +219,5 @@ Welcome to the StyleSnap documentation hub. This directory contains comprehensiv
 ---
 
 **Last Updated**: January 2025  
-**Version**: 1.0.0  
+**Version**: 2.0.0  
 **Maintainer**: StyleSnap Development Team
