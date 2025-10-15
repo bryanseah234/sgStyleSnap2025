@@ -253,9 +253,6 @@ function getColorName(colorKey) {
   return names[colorKey] || 'Color'
 }
 
-function getFontFamily(fonts) {
-  return fonts.join(', ')
-}
 
 function saveChanges() {
   // Save color theme
