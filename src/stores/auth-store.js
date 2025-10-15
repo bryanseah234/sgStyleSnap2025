@@ -34,6 +34,7 @@
 
 import { defineStore } from 'pinia'
 import * as authService from '../services/auth-service'
+import { storeUserSession, getActiveSession, clearActiveSession } from '../services/session-service'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -63,6 +64,12 @@ export const useAuthStore = defineStore('auth', {
       console.log('🔧 AuthStore: Setting user:', userData ? userData.email : 'null')
       this.user = userData
       this.isAuthenticated = !!userData
+      
+      // Store user session if authenticated
+      if (userData) {
+        storeUserSession(userData)
+      }
+      
       console.log('🔧 AuthStore: isAuthenticated set to:', this.isAuthenticated)
     },
 
