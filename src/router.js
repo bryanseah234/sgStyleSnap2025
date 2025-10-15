@@ -44,6 +44,7 @@ import Notifications from './pages/Notifications.vue' // Notifications page
 import DebugAuth from './pages/DebugAuth.vue' // Debug authentication
 import FriendProfileView from './pages/FriendProfileView.vue' // Friend profile page
 import StyleSettings from './pages/FontDemo.vue' // Style preferences page
+import SessionConfirmation from './pages/SessionConfirmation.vue' // Session confirmation page
 
 const routes = [
   {
@@ -105,6 +106,12 @@ const routes = [
     path: '/style-settings',
     name: 'StyleSettings',
     component: StyleSettings,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/session-confirmation',
+    name: 'SessionConfirmation',
+    component: SessionConfirmation,
     meta: { requiresAuth: true }
   },
   {

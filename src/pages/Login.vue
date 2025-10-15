@@ -293,6 +293,132 @@ async function handleMockLogin() {
   margin-bottom: 1.5rem;
 }
 
+/* Sessions Section */
+.sessions-section {
+  margin-bottom: 1.5rem;
+}
+
+.sessions-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--theme-text, #1f2937);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.sessions-list {
+  margin-bottom: 1rem;
+}
+
+.session-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.session-card:hover {
+  border-color: var(--theme-primary, #3b82f6);
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.session-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-primary, #3b82f6), var(--theme-secondary, #8b5cf6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.session-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-text, #1f2937);
+  margin: 0 0 0.125rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-email {
+  font-size: 0.75rem;
+  color: var(--theme-text-secondary, #6b7280);
+  margin: 0 0 0.125rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-last-login {
+  font-size: 0.6875rem;
+  color: var(--theme-text-muted, #9ca3af);
+  margin: 0;
+}
+
+.session-action {
+  color: var(--theme-primary, #3b82f6);
+  flex-shrink: 0;
+}
+
+.continue-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.divider {
+  text-align: center;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.divider span {
+  background: white;
+  padding: 0 0.75rem;
+  color: var(--theme-text-muted, #9ca3af);
+  font-size: 0.75rem;
+}
+
 .error-message {
   margin-top: 1rem;
   padding: 0.75rem;
