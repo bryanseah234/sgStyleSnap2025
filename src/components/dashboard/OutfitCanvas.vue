@@ -156,8 +156,15 @@ const startDrag = (itemId, event) => {
     itemY: item.y
   }
   
-  document.addEventListener('mousemove', (e) => handleDrag(e, itemId))
-  document.addEventListener('mouseup', () => stopDrag())
+  const handleMouseMove = (e) => handleDrag(e, itemId)
+  const handleMouseUp = () => stopDrag()
+  
+  document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('mouseup', handleMouseUp)
+  
+  // Store references for cleanup
+  dragStart.value.handleMouseMove = handleMouseMove
+  dragStart.value.handleMouseUp = handleMouseUp
 }
 
 const handleDrag = (event, itemId) => {
@@ -174,8 +181,14 @@ const handleDrag = (event, itemId) => {
 
 const stopDrag = () => {
   isDragging.value = false
-  document.removeEventListener('mousemove', handleDrag)
-  document.removeEventListener('mouseup', stopDrag)
+  
+  // Clean up event listeners
+  if (dragStart.value.handleMouseMove) {
+    document.removeEventListener('mousemove', dragStart.value.handleMouseMove)
+  }
+  if (dragStart.value.handleMouseUp) {
+    document.removeEventListener('mouseup', dragStart.value.handleMouseUp)
+  }
 }
 
 const removeItem = (itemId) => {

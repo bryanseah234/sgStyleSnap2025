@@ -386,6 +386,12 @@ const handleUpload = async () => {
       brand: '',
       image_url: ''
     }
+    
+    // Reset file input
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
+    
     showUpload.value = false
   } catch (error) {
     console.error('Error uploading item:', error)

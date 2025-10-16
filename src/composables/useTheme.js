@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { api } from '@/api/client'
 
+// Global theme state
 const theme = ref('light')
 const user = ref(null)
 
@@ -21,7 +22,11 @@ export function useTheme() {
     const newTheme = theme.value === 'light' ? 'dark' : 'light'
     theme.value = newTheme
     if (user.value) {
-      await api.auth.updateMe({ theme: newTheme })
+      try {
+        await api.auth.updateMe({ theme: newTheme })
+      } catch (error) {
+        console.error('Error updating theme:', error)
+      }
     }
   }
 
