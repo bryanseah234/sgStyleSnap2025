@@ -104,15 +104,25 @@
               :aria-label="item.is_favorite ? 'Unfavorite' : 'Favorite'"
               @click.stop="handleFavoriteClick(item)"
             >
-              <svg
-                class="heart-icon"
+            <i
+              :class="[
+                'fa-heart',
+                item.is_favorite ? 'fa-solid text-red-500' : 'fa-regular text-gray-400'
+              ]"
+            ></i>
+              <!-- <svg
+                class="favorite-icon"
+                :fill="item.is_favorite ? '#ef4444' : 'none'"
+                :stroke="item.is_favorite ? '#ef4444' : '#6b7280'"
                 viewBox="0 0 24 24"
-                fill="currentColor"
               >
                 <path
-                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                 />
-              </svg>
+              </svg> -->
             </button>
           </div>
         </div>
@@ -160,6 +170,7 @@ function handleItemClick(item) {
 }
 
 function handleFavoriteClick(item) {
+  console.log('Heart clicked for item:', item.name, 'Current favorite status:', item.is_favorite)
   emit('favorite-click', item)
 }
 </script>
@@ -339,21 +350,35 @@ function handleFavoriteClick(item) {
 }
 
 /* Heart Icon with Bounce Animation */
-.heart-icon {
+/* .heart-icon {
   width: 1.25rem;
   height: 1.25rem;
   color: #6b7280;
   transition: color 0.2s ease;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
+  fill: currentColor;
 }
 
 .favorite-button.is-favorite .heart-icon {
   color: #ef4444;
   fill: #ef4444;
   animation: heart-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+} */
+
+.favorite-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: color 0.2s ease;
 }
+
+.favorite-active {
+  color: var(--theme-error, #dc2626);
+  fill: currentColor;
+}
+
+.favorite-inactive {
+  color: var(--theme-text-muted, #9ca3af);
+}
+
 
 @keyframes heart-bounce {
   0%,
@@ -372,7 +397,7 @@ function handleFavoriteClick(item) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .favorite-button.is-favorite .heart-icon {
+  .favorite-button.is-favorite .favorite-icon {
     animation: none;
   }
 }

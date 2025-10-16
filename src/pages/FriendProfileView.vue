@@ -46,3 +46,6 @@ const friendId = computed(() => route.params.friendId)
   background-color: var(--theme-background, #faf5ff);
 }
 </style>
+
+
+

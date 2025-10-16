@@ -22,6 +22,11 @@
 
       <!-- Dark Overlay on Hover -->
       <div class="item-overlay">
+        <!-- Category Badge -->
+        <div class="category-badge">
+          {{ getCategoryLabel(item.category) }}
+        </div>
+
         <!-- Quick Add Button -->
         <button
           :disabled="adding"
@@ -30,7 +35,8 @@
           title="Add to closet"
           @click.stop="handleAddToCloset"
         >
-          <svg
+        <i class="fa-solid fa-plus"></i>
+          <!-- <svg
             v-if="!adding"
             class="add-icon"
             fill="none"
@@ -47,13 +53,9 @@
           <div
             v-else
             class="loading-spinner"
-          />
+          /> -->
         </button>
-
-        <!-- Category Badge -->
-        <div class="category-badge">
-          {{ getCategoryLabel(item.category) }}
-        </div>
+        
       </div>
     </div>
 
@@ -281,7 +283,7 @@ function handleImageError(event) {
 .item-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #f3f4f6;
   margin: 0 0 0.5rem 0;
   line-height: 1.4;
 }
@@ -297,6 +299,7 @@ function handleImageError(event) {
 
 .item-brand {
   font-weight: 500;
+  color: #f3f4f6;
 }
 
 .item-color {
