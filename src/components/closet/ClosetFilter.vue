@@ -216,12 +216,12 @@ function clearFilters() {
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .closet-filter {
-    background: #1f2937;
+  .catalog-filter .filter-label {
+    color: #d1d5db;
   }
 
-  .filter-label {
-    color: #d1d5db;
+  .catalog-filter {
+    background: #1f2937;
   }
 
   .filter-select {
