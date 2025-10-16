@@ -47,3 +47,5 @@ const friendId = computed(() => route.params.friendId)
 }
 </style>
 
+
+
