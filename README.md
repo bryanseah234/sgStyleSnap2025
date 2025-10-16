@@ -1,94 +1,126 @@
-# StyleSnap - Digital Closet App
+# StyleSnap
 
-A modern Vue.js application for managing your digital closet with AI-powered outfit suggestions and social features.
+A modern React application for managing your digital wardrobe and creating outfits.
 
-## 🏗️ Project Structure
+## Features
 
-```
-├── src/                          # Source code
-│   ├── components/               # Vue components
-│   │   ├── analytics/           # Analytics components
-│   │   ├── catalog/             # Catalog browsing components
-│   │   ├── closet/              # Closet management components
-│   │   ├── collections/         # Outfit collections components
-│   │   ├── layouts/             # Layout components
-│   │   ├── notifications/       # Notification components
-│   │   ├── outfits/             # Outfit creation components
-│   │   ├── preferences/         # User preferences components
-│   │   ├── social/              # Social features components
-│   │   └── ui/                  # Reusable UI components
-│   ├── pages/                   # Page components
-│   ├── stores/                  # Pinia stores
-│   ├── services/                # API services
-│   ├── utils/                   # Utility functions
-│   ├── config/                  # Configuration files
-│   └── assets/                  # Static assets
-├── tests/                       # Test files
-│   ├── unit/                    # Unit tests
-│   ├── integration/             # Integration tests
-│   ├── e2e/                     # End-to-end tests
-│   ├── fixtures/                # Test fixtures
-│   └── helpers/                 # Test helpers
-├── docs/                        # Documentation
-│   ├── api/                     # API documentation
-│   ├── guides/                  # User and developer guides
-│   ├── design/                  # Design assets and mockups
-│   └── deployment/              # Deployment guides
-├── database/                    # Database files
-│   ├── migrations/              # SQL migration files
-│   ├── seeds/                   # Database seed files
-│   └── functions/               # Database functions
-├── ai-models/                   # AI/ML models and related files
-├── deployment/                  # Deployment configurations
-├── scripts/                     # Build and utility scripts
-└── config/                      # Build configuration files
+- 🏠 **Dashboard**: Overview of your wardrobe with quick stats
+- 👕 **Cabinet**: Manage your clothing items and saved outfits
+- 🎨 **Outfit Studio**: Create and save outfit combinations
+- 👥 **Friends**: Connect with friends and share wardrobes
+- 👤 **Profile**: Manage your account settings
+- 🌙 **Dark/Light Mode**: Toggle between themes
+
+## Tech Stack
+
+- **React 18** with functional components and hooks
+- **React Router** for navigation
+- **TanStack Query** for data fetching and caching
+- **Framer Motion** for animations
+- **Tailwind CSS** for styling
+- **Lucide React** for icons
+- **Vite** for build tooling
+- **Vitest** for testing
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 16+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd stylesnap
 ```
 
-## 🚀 Quick Start
+2. Install dependencies:
 
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-2. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Supabase credentials
-   ```
+3. Start the development server:
 
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
-4. **Run tests**
-   ```bash
-   npm test
-   ```
+4. Open [http://localhost:5173](http://localhost:5173) in your browser
 
-## 📚 Documentation
+### Available Scripts
 
-- [API Documentation](docs/api/)
-- [User Guides](docs/guides/)
-- [Deployment Guide](docs/deployment/)
-- [Design Reference](docs/design/)
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm test` - Run tests
+- `npm run test:ui` - Run tests with UI
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues
 
-## 🛠️ Development
 
-- **Linting**: `npm run lint`
-- **Formatting**: `npm run format`
-- **Build**: `npm run build`
-- **E2E Tests**: `npm run test:e2e`
 
-## 🏷️ Features
+## Testing
 
-- **Digital Closet**: Upload and organize clothing items
-- **AI Outfit Generation**: Smart outfit suggestions
-- **Social Features**: Friends, sharing, and suggestions
-- **Analytics**: Wardrobe insights and usage tracking
-- **Mobile-First**: Responsive design with PWA support
+The project uses Vitest for testing with React Testing Library:
 
-## 📄 License
+```bash
+# Run all tests
+npm test
 
-MIT License - see [LICENSE](LICENSE) for details.
+# Run tests with UI
+npm run test:ui
+
+# Run tests in watch mode
+npm test -- --watch
+```
+
+## Development
+
+### Adding New Components
+
+1. Create component files in the appropriate directory
+2. Use the established naming conventions (PascalCase for components)
+3. Include proper TypeScript types if using TypeScript
+4. Add tests for new components
+
+### Styling
+
+- Use Tailwind CSS classes for styling
+- Follow the established design system
+- Use the theme context for dark/light mode support
+- Maintain consistent spacing and typography
+
+### State Management
+
+- Use React Query for server state
+- Use React hooks for local state
+- Follow the established patterns for data fetching
+
+## Deployment
+
+The application is configured for deployment on Base44:
+
+1. Build the application:
+
+```bash
+npm run build
+```
+
+2. Deploy to your Base44 instance
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
