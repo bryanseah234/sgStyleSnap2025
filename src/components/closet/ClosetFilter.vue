@@ -177,7 +177,7 @@ function clearFilters() {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: #d1d5db;
   margin-bottom: 0.5rem;
 }
 
