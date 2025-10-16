@@ -149,11 +149,12 @@ const { theme } = useTheme()
 const user = ref(null)
 const items = ref([])
 const outfits = ref([])
+const friends = ref([])
 
 const stats = computed(() => [
   { label: 'Items', value: items.value.length, icon: Shirt },
   { label: 'Outfits', value: outfits.value.length, icon: Palette },
-  { label: 'Friends', value: 0, icon: Users },
+  { label: 'Friends', value: friends.value.length, icon: Users },
 ])
 
 const loadUser = async () => {
@@ -189,9 +190,19 @@ const loadOutfits = async () => {
   }
 }
 
+const loadFriends = async () => {
+  try {
+    const friendsData = await api.entities.Friend.list()
+    friends.value = friendsData
+  } catch (error) {
+    console.error('Error loading friends:', error)
+  }
+}
+
 onMounted(async () => {
   await loadUser()
   await loadItems()
   await loadOutfits()
+  await loadFriends()
 })
 </script>

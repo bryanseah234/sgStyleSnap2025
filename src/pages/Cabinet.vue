@@ -346,9 +346,7 @@ const loadItems = async () => {
 
 const toggleFavorite = async (item) => {
   try {
-    await api.entities.ClothingItem.update(item.id, {
-      is_favorite: !item.is_favorite
-    })
+    await api.entities.ClothingItem.toggleFavorite(item.id)
     item.is_favorite = !item.is_favorite
   } catch (error) {
     console.error('Error toggling favorite:', error)

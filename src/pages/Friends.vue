@@ -2,15 +2,24 @@
   <div class="min-h-screen p-6 md:p-12">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
-        <h1 :class="`text-4xl font-bold ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
-          Friends
-        </h1>
+      <div class="flex items-start justify-between mb-8">
+        <div>
+          <h1 :class="`text-4xl font-bold mb-2 ${
+            theme.value === 'dark' ? 'text-white' : 'text-black'
+          }`">
+            Friends
+          </h1>
+          <p :class="`text-lg ${
+            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          }`">
+            Connect and get inspired by others
+          </p>
+        </div>
+        
+        <!-- Add Friend Button -->
         <button
-          @click="showAddFriend = true"
-          :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+          @click="showAddFriendModal = true"
+          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
             theme.value === 'dark'
               ? 'bg-white text-black hover:bg-zinc-200'
               : 'bg-black text-white hover:bg-zinc-800'
@@ -21,196 +30,210 @@
         </button>
       </div>
 
-      <!-- Search and Filter -->
-      <div :class="`rounded-xl p-6 mb-8 ${
-        theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-      }`">
-        <div class="flex flex-col md:flex-row gap-4">
-          <div class="flex-1">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search friends..."
-              :class="`w-full px-4 py-3 rounded-lg border ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                  : 'bg-white border-stone-300 text-black placeholder-stone-500'
-              }`"
-            />
-          </div>
-          <div class="flex gap-2">
-            <button
-              v-for="filter in filterOptions"
-              :key="filter.value"
-              @click="activeFilter = filter.value"
-              :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                activeFilter === filter.value
-                  ? theme.value === 'dark'
-                    ? 'bg-white text-black'
-                    : 'bg-black text-white'
-                  : theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`"
-            >
-              {{ filter.label }}
-            </button>
-          </div>
+      <!-- Tab Navigation -->
+      <div class="flex gap-2 mb-6">
+        <button
+          @click="activeTab = 'friends'"
+          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+            activeTab === 'friends'
+              ? theme.value === 'dark'
+                ? 'bg-white text-black'
+                : 'bg-black text-white'
+              : theme.value === 'dark'
+              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+          }`"
+        >
+          My Friends
+        </button>
+        <button
+          @click="activeTab = 'requests'"
+          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+            activeTab === 'requests'
+              ? theme.value === 'dark'
+                ? 'bg-white text-black'
+                : 'bg-black text-white'
+              : theme.value === 'dark'
+              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+          }`"
+        >
+          <Bell class="w-5 h-5" />
+          Friend Requests
+          <span v-if="friendRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
+            activeTab === 'requests'
+              ? 'bg-black text-white'
+              : theme.value === 'dark'
+              ? 'bg-zinc-600 text-zinc-200'
+              : 'bg-stone-300 text-stone-800'
+          }`">
+            {{ friendRequests.length }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="mb-8">
+        <div class="relative">
+          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            v-model="searchTerm"
+            type="text"
+            placeholder="Search friends..."
+            :class="`w-full pl-10 pr-4 py-3 rounded-lg border ${
+              theme.value === 'dark'
+                ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+                : 'bg-stone-100 border-stone-300 text-black placeholder-stone-500'
+            }`"
+            @input="handleSearch"
+          />
         </div>
       </div>
 
-      <!-- Friends List -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="friend in filteredFriends"
-          :key="friend.id"
-          :class="`rounded-xl p-6 transition-all duration-200 hover:scale-105 ${
-            theme.value === 'dark'
-              ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
-              : 'bg-white border border-stone-200 hover:border-stone-300'
-          }`"
-        >
-          <!-- Friend Avatar and Info -->
-          <div class="flex items-center gap-4 mb-4">
-            <div :class="`w-16 h-16 rounded-full overflow-hidden ${
-              theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-            }`">
-              <img
-                v-if="friend.avatar_url"
-                :src="friend.avatar_url"
-                :alt="friend.name"
-                class="w-full h-full object-cover"
-              />
-              <div
-                v-else
-                :class="`w-full h-full flex items-center justify-center ${
-                  theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                }`"
-              >
-                <User :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+      <!-- Content Area -->
+      <div v-if="activeTab === 'friends'">
+        <!-- My Friends -->
+        <div v-if="filteredFriends.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            v-for="friend in filteredFriends"
+            :key="friend.id"
+            :class="`p-6 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer ${
+              theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
+            }`"
+            @click="viewFriendProfile(friend.id)"
+          >
+            <!-- Avatar -->
+            <div class="text-center mb-4">
+              <div :class="`w-16 h-16 mx-auto rounded-full overflow-hidden ${
+                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+              }`">
+                <img
+                  v-if="friend.avatar_url"
+                  :src="friend.avatar_url"
+                  :alt="friend.name"
+                  class="w-full h-full object-cover"
+                />
+                <div
+                  v-else
+                  :class="`w-full h-full flex items-center justify-center ${
+                    theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
+                  }`"
+                >
+                  <span :class="`text-xl font-bold ${
+                    theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
+                  }`">
+                    {{ (friend.name || friend.email || 'F').charAt(0).toUpperCase() }}
+                  </span>
+                </div>
               </div>
             </div>
-            <div class="flex-1">
-              <h3 :class="`text-lg font-semibold ${
+            
+            <!-- Friend Info -->
+            <div class="text-center">
+              <h3 :class="`font-bold text-lg mb-1 ${
                 theme.value === 'dark' ? 'text-white' : 'text-black'
               }`">
-                {{ friend.name }}
+                {{ friend.name || 'Friend User' }}
               </h3>
               <p :class="`text-sm ${
                 theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`">
-                {{ friend.username }}
+                {{ friend.email || 'friend@example.com' }}
               </p>
             </div>
           </div>
-
-          <!-- Friend Stats -->
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="text-center">
-              <p :class="`text-2xl font-bold ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">
-                {{ friend.outfit_count || 0 }}
-              </p>
-              <p :class="`text-xs ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">
-                Outfits
-              </p>
-            </div>
-            <div class="text-center">
-              <p :class="`text-2xl font-bold ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">
-                {{ friend.item_count || 0 }}
-              </p>
-              <p :class="`text-xs ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">
-                Items
-              </p>
-            </div>
-          </div>
-
-          <!-- Recent Activity -->
-          <div class="mb-4">
-            <p :class="`text-sm font-medium mb-2 ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
-              Recent Activity
-            </p>
-            <div class="space-y-2">
-              <div
-                v-for="activity in friend.recent_activities?.slice(0, 2)"
-                :key="activity.id"
-                :class="`text-xs p-2 rounded ${
-                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-                }`"
-              >
-                <span :class="`${
-                  theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-                }`">
-                  {{ activity.description }}
-                </span>
-                <span :class="`ml-2 ${
-                  theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-                }`">
-                  {{ formatDate(activity.created_at) }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex gap-2">
-            <button
-              @click="viewFriendCabinet(friend)"
-              :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`"
-            >
-              View Closet
-            </button>
-            <button
-              @click="removeFriend(friend)"
-              :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme.value === 'dark'
-                  ? 'bg-red-900 text-red-300 hover:bg-red-800'
-                  : 'bg-red-100 text-red-700 hover:bg-red-200'
-              }`"
-            >
-              <UserMinus class="w-4 h-4" />
-            </button>
-          </div>
+        </div>
+        
+        <div v-else class="text-center py-12">
+          <Users :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+          <p :class="`text-lg ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+            {{ searchTerm ? 'No friends found matching your search.' : 'You don\'t have any friends yet.' }}
+          </p>
+          <p v-if="!searchTerm" :class="`text-sm mt-2 ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
+            Click "Add Friend" to start connecting!
+          </p>
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-if="filteredFriends.length === 0" class="text-center py-12">
-        <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center ${
-          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-        }`">
-          <Users :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+      <!-- Friend Requests Tab -->
+      <div v-else-if="activeTab === 'requests'">
+        <div v-if="friendRequests.length > 0" class="space-y-4">
+          <div
+            v-for="request in friendRequests"
+            :key="request.id"
+            :class="`p-6 rounded-xl ${
+              theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
+            }`"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <!-- Avatar -->
+                <div :class="`w-12 h-12 rounded-full overflow-hidden ${
+                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+                }`">
+                  <img
+                    v-if="request.requester.avatar_url"
+                    :src="request.requester.avatar_url"
+                    :alt="request.requester.name"
+                    class="w-full h-full object-cover"
+                  />
+                  <div
+                    v-else
+                    :class="`w-full h-full flex items-center justify-center ${
+                      theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
+                    }`"
+                  >
+                    <span :class="`text-sm font-bold ${
+                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
+                    }`">
+                      {{ (request.requester.name || 'U').charAt(0).toUpperCase() }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Request Info -->
+                <div>
+                  <h3 :class="`font-medium ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
+                    {{ request.requester.name }}
+                  </h3>
+                  <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+                    @{{ request.requester.username }}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Action Buttons -->
+              <div class="flex gap-2">
+                <button
+                  @click="acceptFriendRequest(request.id)"
+                  class="px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 transition-all duration-200"
+                >
+                  Accept
+                </button>
+                <button
+                  @click="declineFriendRequest(request.id)"
+                  class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <h2 :class="`text-2xl font-semibold mb-2 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
-          No friends found
-        </h2>
-        <p :class="`text-lg ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
-          {{ searchQuery ? 'Try adjusting your search' : 'Add some friends to get started' }}
-        </p>
+        
+        <div v-else class="text-center py-12">
+          <Bell :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+          <p :class="`text-lg ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+            No pending friend requests.
+          </p>
+        </div>
       </div>
 
       <!-- Add Friend Modal -->
       <div
-        v-if="showAddFriend"
+        v-if="showAddFriendModal"
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        @click="showAddFriend = false"
+        @click="showAddFriendModal = false"
       >
         <div
           :class="`w-full max-w-md rounded-xl p-6 ${
@@ -218,49 +241,42 @@
           }`"
           @click.stop
         >
-          <h2 :class="`text-xl font-bold mb-4 ${
+          <h3 :class="`text-xl font-bold mb-4 ${
             theme.value === 'dark' ? 'text-white' : 'text-black'
           }`">
             Add Friend
-          </h2>
+          </h3>
           
           <div class="space-y-4">
             <div>
               <label :class="`block text-sm font-medium mb-2 ${
                 theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
               }`">
-                Username or Email
+                Search by username or email
               </label>
               <input
-                v-model="newFriendQuery"
+                v-model="addFriendSearch"
                 type="text"
-                placeholder="Enter username or email"
+                placeholder="Enter username or email..."
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white'
                     : 'bg-white border-stone-300 text-black'
                 }`"
+                @keyup.enter="searchAndAddFriend"
               />
             </div>
             
-            <div v-if="searchResults.length > 0" class="space-y-2">
-              <p :class="`text-sm font-medium ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
-                Search Results:
-              </p>
+            <div v-if="addFriendResults.length > 0" class="space-y-2 max-h-40 overflow-y-auto">
               <div
-                v-for="user in searchResults"
+                v-for="user in addFriendResults"
                 :key="user.id"
-                @click="sendFriendRequest(user)"
-                :class="`p-3 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${
-                  theme.value === 'dark'
-                    ? 'bg-zinc-800 hover:bg-zinc-700'
-                    : 'bg-stone-100 hover:bg-stone-200'
+                :class="`flex items-center justify-between p-3 rounded-lg ${
+                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
                 }`"
               >
                 <div class="flex items-center gap-3">
-                  <div :class="`w-10 h-10 rounded-full overflow-hidden ${
+                  <div :class="`w-8 h-8 rounded-full overflow-hidden ${
                     theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
                   }`">
                     <img
@@ -275,29 +291,40 @@
                         theme.value === 'dark' ? 'bg-zinc-600' : 'bg-stone-300'
                       }`"
                     >
-                      <User :class="`w-5 h-5 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+                      <span :class="`text-xs font-bold ${
+                        theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
+                      }`">
+                        {{ (user.name || 'U').charAt(0).toUpperCase() }}
+                      </span>
                     </div>
                   </div>
                   <div>
-                    <p :class="`font-medium ${
-                      theme.value === 'dark' ? 'text-white' : 'text-black'
-                    }`">
+                    <p :class="`font-medium text-sm ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
                       {{ user.name }}
                     </p>
-                    <p :class="`text-sm ${
-                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-                    }`">
+                    <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
                       @{{ user.username }}
                     </p>
                   </div>
                 </div>
+                <button
+                  @click="sendFriendRequest(user.id)"
+                  :disabled="isRequestSent(user.id) || isFriend(user.id)"
+                  :class="`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    isRequestSent(user.id) || isFriend(user.id)
+                      ? 'bg-zinc-600 text-zinc-300 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`"
+                >
+                  {{ isFriend(user.id) ? 'Friends' : isRequestSent(user.id) ? 'Pending' : 'Add' }}
+                </button>
               </div>
             </div>
           </div>
           
           <div class="flex gap-3 mt-6">
             <button
-              @click="showAddFriend = false"
+              @click="showAddFriendModal = false"
               :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 theme.value === 'dark'
                   ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
@@ -307,13 +334,12 @@
               Cancel
             </button>
             <button
-              @click="searchUsers"
-              :disabled="!newFriendQuery"
+              @click="searchAndAddFriend"
               :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 theme.value === 'dark'
                   ? 'bg-white text-black hover:bg-zinc-200'
                   : 'bg-black text-white hover:bg-zinc-800'
-              } ${!newFriendQuery ? 'opacity-50 cursor-not-allowed' : ''}`"
+              }`"
             >
               Search
             </button>
@@ -325,96 +351,122 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { api } from '@/api/client'
-import { formatDate } from '@/utils'
-import { Users, User, UserPlus, UserMinus } from 'lucide-vue-next'
+import { Users, UserPlus, Bell, Search } from 'lucide-vue-next'
 
 const router = useRouter()
 const { theme } = useTheme()
+
+// State
+const activeTab = ref('friends')
+const searchTerm = ref('')
 const friends = ref([])
-const searchQuery = ref('')
-const activeFilter = ref('all')
-const showAddFriend = ref(false)
-const newFriendQuery = ref('')
-const searchResults = ref([])
+const friendRequests = ref([])
+const sentRequests = ref([])
+const showAddFriendModal = ref(false)
+const addFriendSearch = ref('')
+const addFriendResults = ref([])
 
-const filterOptions = [
-  { label: 'All', value: 'all' },
-  { label: 'Online', value: 'online' },
-  { label: 'Recently Active', value: 'recent' }
-]
-
+// Computed
 const filteredFriends = computed(() => {
-  let filtered = friends.value
-
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(friend => 
-      friend.name.toLowerCase().includes(query) ||
-      friend.username.toLowerCase().includes(query)
-    )
-  }
-
-  if (activeFilter.value === 'online') {
-    filtered = filtered.filter(friend => friend.is_online)
-  } else if (activeFilter.value === 'recent') {
-    filtered = filtered.filter(friend => {
-      const lastActive = new Date(friend.last_active_at)
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      return lastActive > oneWeekAgo
-    })
-  }
-
-  return filtered
+  if (!searchTerm.value) return friends.value
+  
+  const query = searchTerm.value.toLowerCase()
+  return friends.value.filter(friend => 
+    friend.name?.toLowerCase().includes(query) ||
+    friend.email?.toLowerCase().includes(query) ||
+    friend.username?.toLowerCase().includes(query)
+  )
 })
 
-const loadFriends = async () => {
+// Methods
+const loadFriendsData = async () => {
   try {
-    const friendsData = await api.entities.Friend.list('-created_date')
-    friends.value = friendsData
+    const [friendsData, requestsData] = await Promise.all([
+      api.entities.Friend.list(),
+      api.entities.Friend.getRequests()
+    ])
+    friends.value = friendsData || []
+    friendRequests.value = requestsData || []
+    sentRequests.value = [] // This would need to be implemented in the service
   } catch (error) {
-    console.error('Error loading friends:', error)
+    console.error('Error loading friends data:', error)
   }
 }
 
-const searchUsers = async () => {
+const handleSearch = () => {
+  // Search is handled by computed property
+}
+
+const searchAndAddFriend = async () => {
+  if (!addFriendSearch.value.trim()) return
+  
   try {
-    const users = await api.entities.User.search(newFriendQuery.value)
-    searchResults.value = users
+    const result = await api.entities.User.search(addFriendSearch.value)
+    addFriendResults.value = result || []
   } catch (error) {
     console.error('Error searching users:', error)
+    addFriendResults.value = []
   }
 }
 
-const sendFriendRequest = async (user) => {
+const sendFriendRequest = async (userId) => {
   try {
-    await api.entities.Friend.sendRequest(user.id)
-    showAddFriend.value = false
-    newFriendQuery.value = ''
-    searchResults.value = []
-    await loadFriends()
+    await api.entities.Friend.sendRequest(userId)
+    await loadFriendsData() // Reload to update sent requests status
+    alert('Friend request sent!')
   } catch (error) {
     console.error('Error sending friend request:', error)
+    alert(error.message)
   }
 }
 
-const removeFriend = async (friend) => {
+const acceptFriendRequest = async (requestId) => {
   try {
-    await api.entities.Friend.remove(friend.id)
-    await loadFriends()
+    await api.entities.Friend.acceptRequest(requestId)
+    await loadFriendsData() // Reload to update friends and requests
+    alert('Friend request accepted!')
   } catch (error) {
-    console.error('Error removing friend:', error)
+    console.error('Error accepting friend request:', error)
+    alert(error.message)
   }
 }
 
-const viewFriendCabinet = (friend) => {
-  router.push(`/friend-cabinet?friendId=${friend.id}`)
+const declineFriendRequest = async (requestId) => {
+  try {
+    await api.entities.Friend.rejectRequest(requestId)
+    await loadFriendsData() // Reload to update requests
+    alert('Friend request declined.')
+  } catch (error) {
+    console.error('Error declining friend request:', error)
+    alert(error.message)
+  }
 }
 
-onMounted(async () => {
-  await loadFriends()
+const viewFriendProfile = (friendId) => {
+  router.push(`/friend-cabinet/${friendId}`)
+}
+
+const isRequestSent = (userId) => {
+  return sentRequests.value.some(req => req.receiver.id === userId)
+}
+
+const isFriend = (userId) => {
+  return friends.value.some(friend => friend.id === userId)
+}
+
+// Lifecycle
+onMounted(loadFriendsData)
+
+// Watch for search changes
+watch(addFriendSearch, (newValue) => {
+  if (newValue.length >= 2) {
+    searchAndAddFriend()
+  } else {
+    addFriendResults.value = []
+  }
 })
 </script>

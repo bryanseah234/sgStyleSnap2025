@@ -73,12 +73,20 @@ export const api = {
   // Feature-specific services
   outfits: {
     generateOutfit: (preferences) => outfitsService.generateOutfit(preferences),
+    createOutfit: (outfitData) => outfitsService.createOutfit(outfitData),
     saveOutfit: (outfitData) => outfitsService.createOutfit(outfitData),
     getOutfitSuggestions: (itemId) => outfitsService.getOutfitSuggestions(itemId),
     getWeatherBasedOutfits: (weatherData) => outfitsService.getWeatherBasedOutfits(weatherData)
   },
 
   friends: {
+    getFriends: () => friendsService.getFriends(),
+    getFriendRequests: () => friendsService.getFriendRequests(),
+    getSentRequests: () => friendsService.getSentRequests(),
+    sendFriendRequest: (userId) => friendsService.sendFriendRequest(userId),
+    acceptFriendRequest: (requestId) => friendsService.acceptFriendRequest(requestId),
+    declineFriendRequest: (requestId) => friendsService.declineFriendRequest(requestId),
+    searchUsers: (query) => friendsService.searchUsers(query),
     getActivityFeed: (limit = 20) => friendsService.getActivityFeed({ limit }),
     getMutualFriends: (userId) => friendsService.getMutualFriends(userId),
     getFriendSuggestions: () => friendsService.getFriendSuggestions()
