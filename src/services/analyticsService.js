@@ -1,61 +1,143 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 
 export class AnalyticsService {
-  async getWardrobeAnalytics() {
+  async getWardrobeStats() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      // Get basic wardrobe stats
-      const { data: clothes, error: clothesError } = await supabase
+      // Get basic wardrobe counts
+      const { data: items, error: itemsError } = await supabase
         .from('clothes')
-        .select('category, is_favorite, created_at, likes_count')
+        .select('category, brand, color_tags, style_tags, created_at, is_favorite')
         .eq('owner_id', user.id)
         .eq('removed_at', null)
 
-      if (clothesError) throw clothesError
+      if (itemsError) throw itemsError
 
-      // Get most worn items
-      const { data: mostWorn, error: mostWornError } = await supabase
-        .rpc('get_most_worn_items', {
-          p_user_id: user.id,
-          p_limit: 5
-        })
-
-      if (mostWornError) throw mostWornError
-
-      // Get outfit stats
-      const { data: outfitStats, error: outfitStatsError } = await supabase
-        .rpc('get_user_outfit_stats', {
-          p_user_id: user.id
-        })
-
-      if (outfitStatsError) throw outfitStatsError
-
-      // Calculate analytics
-      const analytics = {
-        total_items: clothes.length,
-        favorites_count: clothes.filter(item => item.is_favorite).length,
-        total_likes_received: clothes.reduce((sum, item) => sum + (item.likes_count || 0), 0),
-        category_distribution: {},
-        most_worn_items: mostWorn || [],
-        outfit_stats: outfitStats[0] || {},
-        recent_uploads: clothes.filter(item => {
-          const weekAgo = new Date()
-          weekAgo.setDate(weekAgo.getDate() - 7)
-          return new Date(item.created_at) > weekAgo
-        }).length
+      const stats = {
+        total_items: items.length,
+        categories: {},
+        brands: {},
+        colors: {},
+        styles: {},
+        favorites: 0,
+        recent_additions: 0,
+        monthly_additions: 0
       }
 
-      // Calculate category breakdown
-      clothes.forEach(item => {
-        analytics.category_distribution[item.category] = (analytics.category_distribution[item.category] || 0) + 1
+      // Calculate category distribution
+      items.forEach(item => {
+        if (item.category) {
+          stats.categories[item.category] = (stats.categories[item.category] || 0) + 1
+        }
+        if (item.brand) {
+          stats.brands[item.brand] = (stats.brands[item.brand] || 0) + 1
+        }
+        if (item.is_favorite) {
+          stats.favorites++
+        }
+        if (item.color_tags && Array.isArray(item.color_tags)) {
+          item.color_tags.forEach(color => {
+            stats.colors[color] = (stats.colors[color] || 0) + 1
+          })
+        }
+        if (item.style_tags && Array.isArray(item.style_tags)) {
+          item.style_tags.forEach(style => {
+            stats.styles[style] = (stats.styles[style] || 0) + 1
+          })
+        }
       })
 
-      return { success: true, data: analytics }
+      // Calculate recent additions
+      const oneWeekAgo = new Date()
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+      stats.recent_additions = items.filter(item => 
+        new Date(item.created_at) > oneWeekAgo
+      ).length
+
+      // Calculate monthly additions
+      const oneMonthAgo = new Date()
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+      stats.monthly_additions = items.filter(item => 
+        new Date(item.created_at) > oneMonthAgo
+      ).length
+
+      return stats
     } catch (error) {
-      handleSupabaseError(error, 'get wardrobe analytics')
+      handleSupabaseError(error, 'get wardrobe stats')
     }
+  }
+
+  async getOutfitStats() {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      // Get outfit counts and data
+      const { data: outfits, error: outfitsError } = await supabase
+        .from('outfits')
+        .select('occasion, weather_condition, temperature, created_at, likes_count')
+        .eq('owner_id', user.id)
+        .eq('removed_at', null)
+
+      if (outfitsError) throw outfitsError
+
+      const stats = {
+        total_outfits: outfits.length,
+        occasions: {},
+        weather_conditions: {},
+        temperature_ranges: {},
+        total_likes: 0,
+        recent_outfits: 0,
+        most_liked_outfit: null
+      }
+
+      // Calculate outfit distribution
+      outfits.forEach(outfit => {
+        if (outfit.occasion) {
+          stats.occasions[outfit.occasion] = (stats.occasions[outfit.occasion] || 0) + 1
+        }
+        if (outfit.weather_condition) {
+          stats.weather_conditions[outfit.weather_condition] = (stats.weather_conditions[outfit.weather_condition] || 0) + 1
+        }
+        if (outfit.temperature) {
+          const tempRange = this.getTemperatureRange(outfit.temperature)
+          stats.temperature_ranges[tempRange] = (stats.temperature_ranges[tempRange] || 0) + 1
+        }
+        if (outfit.likes_count) {
+          stats.total_likes += outfit.likes_count
+        }
+      })
+
+      // Calculate recent outfits
+      const oneWeekAgo = new Date()
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+      stats.recent_outfits = outfits.filter(outfit => 
+        new Date(outfit.created_at) > oneWeekAgo
+      ).length
+
+      // Find most liked outfit
+      const mostLiked = outfits.reduce((max, outfit) => 
+        (outfit.likes_count || 0) > (max.likes_count || 0) ? outfit : max, 
+        { likes_count: 0 }
+      )
+      if (mostLiked.likes_count > 0) {
+        stats.most_liked_outfit = mostLiked
+      }
+
+      return stats
+    } catch (error) {
+      handleSupabaseError(error, 'get outfit stats')
+    }
+  }
+
+  getTemperatureRange(temperature) {
+    if (temperature < 0) return 'Below 0°C'
+    if (temperature < 10) return '0-10°C'
+    if (temperature < 20) return '10-20°C'
+    if (temperature < 30) return '20-30°C'
+    return 'Above 30°C'
   }
 
   async getStyleInsights() {
@@ -63,228 +145,318 @@ export class AnalyticsService {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      // Get color statistics
-      const { data: colorStats, error: colorError } = await supabase
-        .rpc('get_color_stats', {
-          user_id_param: user.id
-        })
+      // Get user's items and outfits
+      const [itemsResult, outfitsResult] = await Promise.all([
+        supabase
+          .from('clothes')
+          .select('category, color_tags, style_tags, created_at')
+          .eq('owner_id', user.id)
+          .eq('removed_at', null),
+        supabase
+          .from('outfits')
+          .select('occasion, style_tags, created_at')
+          .eq('owner_id', user.id)
+          .eq('removed_at', null)
+      ])
 
-      if (colorError) throw colorError
+      if (itemsResult.error) throw itemsResult.error
+      if (outfitsResult.error) throw outfitsResult.error
 
-      // Get complementary color suggestions
-      const { data: complementaryColors, error: compError } = await supabase
-        .rpc('suggest_complementary_colors', {
-          user_id_param: user.id
-        })
-
-      if (compError) throw compError
-
-      // Get unworn combinations
-      const { data: unwornItems, error: unwornError } = await supabase
-        .rpc('get_unworn_combinations', {
-          p_user_id: user.id
-        })
-
-      if (unwornError) throw unwornError
+      const items = itemsResult.data || []
+      const outfits = outfitsResult.data || []
 
       const insights = {
-        color_distribution: colorStats || [],
-        complementary_colors: complementaryColors || [],
-        unworn_items: unwornItems || [],
-        style_recommendations: this.generateStyleRecommendations(colorStats, unwornItems)
+        dominant_style: null,
+        color_palette: [],
+        most_used_categories: [],
+        style_evolution: [],
+        seasonal_preferences: {},
+        occasion_preferences: {}
       }
 
-      return { success: true, data: insights }
+      // Analyze dominant style
+      const styleCount = {}
+      items.forEach(item => {
+        if (item.style_tags && Array.isArray(item.style_tags)) {
+          item.style_tags.forEach(style => {
+            styleCount[style] = (styleCount[style] || 0) + 1
+          })
+        }
+      })
+      insights.dominant_style = Object.entries(styleCount)
+        .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Casual'
+
+      // Analyze color palette
+      const colorCount = {}
+      items.forEach(item => {
+        if (item.color_tags && Array.isArray(item.color_tags)) {
+          item.color_tags.forEach(color => {
+            colorCount[color] = (colorCount[color] || 0) + 1
+          })
+        }
+      })
+      insights.color_palette = Object.entries(colorCount)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 5)
+        .map(([color]) => color)
+
+      // Analyze most used categories
+      const categoryCount = {}
+      items.forEach(item => {
+        if (item.category) {
+          categoryCount[item.category] = (categoryCount[item.category] || 0) + 1
+        }
+      })
+      insights.most_used_categories = Object.entries(categoryCount)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 3)
+        .map(([category]) => category)
+
+      // Analyze style evolution over time
+      const monthlyStyles = {}
+      items.forEach(item => {
+        const month = new Date(item.created_at).toISOString().slice(0, 7) // YYYY-MM
+        if (!monthlyStyles[month]) monthlyStyles[month] = {}
+        
+        if (item.style_tags && Array.isArray(item.style_tags)) {
+          item.style_tags.forEach(style => {
+            monthlyStyles[month][style] = (monthlyStyles[month][style] || 0) + 1
+          })
+        }
+      })
+      insights.style_evolution = Object.entries(monthlyStyles)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, styles]) => ({
+          month,
+          dominant_style: Object.entries(styles)
+            .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Unknown'
+        }))
+
+      // Analyze occasion preferences
+      const occasionCount = {}
+      outfits.forEach(outfit => {
+        if (outfit.occasion) {
+          occasionCount[outfit.occasion] = (occasionCount[outfit.occasion] || 0) + 1
+        }
+      })
+      insights.occasion_preferences = occasionCount
+
+      return insights
     } catch (error) {
       handleSupabaseError(error, 'get style insights')
     }
   }
 
-  generateStyleRecommendations(colorStats, unwornItems) {
-    const recommendations = []
-
-    // Recommend items that haven't been worn in a while
-    if (unwornItems && unwornItems.length > 0) {
-      recommendations.push({
-        type: 'unworn_items',
-        title: 'Items to Wear',
-        description: `You have ${unwornItems.length} items that haven't been worn recently`,
-        items: unwornItems.slice(0, 3)
-      })
-    }
-
-    // Recommend based on color distribution
-    if (colorStats && colorStats.length > 0) {
-      const dominantColor = colorStats[0]
-      if (dominantColor.percentage > 40) {
-        recommendations.push({
-          type: 'color_balance',
-          title: 'Color Balance',
-          description: `${dominantColor.color} dominates your wardrobe (${dominantColor.percentage}%). Consider adding more variety.`,
-          suggestion: 'Try adding items in complementary colors'
-        })
-      }
-    }
-
-    return recommendations
-  }
-
-  async getOutfitAnalytics() {
+  async getUsageStats(period = '30d') {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      // Get outfit generation stats
-      const { data: generationStats, error: genError } = await supabase
-        .from('outfit_generation_history')
-        .select('success, generation_time_ms, created_at')
+      const now = new Date()
+      let startDate
+
+      switch (period) {
+        case '7d':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          break
+        case '30d':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          break
+        case '90d':
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+          break
+        case '1y':
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
+          break
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      }
+
+      // Get daily usage data
+      const { data: activities, error: activitiesError } = await supabase
+        .from('activities')
+        .select('type, created_at')
         .eq('user_id', user.id)
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
+        .gte('created_at', startDate.toISOString())
+        .order('created_at', { ascending: true })
 
-      if (genError) throw genError
+      if (activitiesError) throw activitiesError
 
-      // Get outfit ratings
-      const { data: outfitRatings, error: ratingError } = await supabase
-        .from('generated_outfits')
-        .select('user_rating, occasion, created_at')
-        .eq('user_id', user.id)
-        .not('user_rating', 'is', null)
-
-      if (ratingError) throw ratingError
-
-      const analytics = {
-        generation_stats: {
-          total_generations: generationStats.length,
-          success_rate: generationStats.filter(s => s.success).length / Math.max(generationStats.length, 1),
-          avg_generation_time: generationStats.reduce((sum, s) => sum + (s.generation_time_ms || 0), 0) / Math.max(generationStats.length, 1)
-        },
-        rating_stats: {
-          total_rated: outfitRatings.length,
-          average_rating: outfitRatings.reduce((sum, o) => sum + o.user_rating, 0) / Math.max(outfitRatings.length, 1),
-          occasion_breakdown: {}
+      // Group by day
+      const dailyUsage = {}
+      activities.forEach(activity => {
+        const day = activity.created_at.split('T')[0]
+        if (!dailyUsage[day]) {
+          dailyUsage[day] = { items_added: 0, outfits_created: 0, friends_added: 0 }
         }
-      }
-
-      // Calculate occasion breakdown
-      outfitRatings.forEach(outfit => {
-        analytics.rating_stats.occasion_breakdown[outfit.occasion] = 
-          (analytics.rating_stats.occasion_breakdown[outfit.occasion] || 0) + 1
+        
+        switch (activity.type) {
+          case 'item_added':
+            dailyUsage[day].items_added++
+            break
+          case 'outfit_created':
+            dailyUsage[day].outfits_created++
+            break
+          case 'friend_added':
+            dailyUsage[day].friends_added++
+            break
+        }
       })
 
-      return { success: true, data: analytics }
-    } catch (error) {
-      handleSupabaseError(error, 'get outfit analytics')
-    }
-  }
+      // Convert to array format for charts
+      const usageData = Object.entries(dailyUsage)
+        .map(([date, data]) => ({
+          date,
+          ...data,
+          total_activity: data.items_added + data.outfits_created + data.friends_added
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date))
 
-  async getSocialAnalytics() {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      // Get friends count
-      const { data: friends, error: friendsError } = await supabase
-        .from('friends')
-        .select('id')
-        .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .eq('status', 'accepted')
-
-      if (friendsError) throw friendsError
-
-      // Get likes received
-      const { data: likesReceived, error: likesError } = await supabase
-        .from('item_likes')
-        .select('id')
-        .in('item_id', 
-          supabase
-            .from('clothes')
-            .select('id')
-            .eq('owner_id', user.id)
-        )
-
-      if (likesError) throw likesError
-
-      // Get notifications count
-      const { data: notifications, error: notifError } = await supabase
-        .from('notifications')
-        .select('id, type, is_read')
-        .eq('recipient_id', user.id)
-
-      if (notifError) throw notifError
-
-      const analytics = {
-        friends_count: friends.length,
-        likes_received: likesReceived.length,
-        notifications: {
-          total: notifications.length,
-          unread: notifications.filter(n => !n.is_read).length,
-          by_type: {}
-        }
-      }
-
-      // Calculate notifications by type
-      notifications.forEach(notif => {
-        analytics.notifications.by_type[notif.type] = (analytics.notifications.by_type[notif.type] || 0) + 1
-      })
-
-      return { success: true, data: analytics }
-    } catch (error) {
-      handleSupabaseError(error, 'get social analytics')
-    }
-  }
-
-  async getUsageStats() {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-
-      // Get recent activity
-      const [clothesAdded, outfitsGenerated, friendsAdded] = await Promise.all([
-        supabase
-          .from('clothes')
-          .select('id')
-          .eq('owner_id', user.id)
-          .gte('created_at', thirtyDaysAgo),
-        
-        supabase
-          .from('outfit_generation_history')
-          .select('id')
-          .eq('user_id', user.id)
-          .gte('created_at', thirtyDaysAgo),
-        
-        supabase
-          .from('friends')
-          .select('id')
-          .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
-          .eq('status', 'accepted')
-          .gte('created_at', thirtyDaysAgo)
-      ])
-
-      const stats = {
-        last_30_days: {
-          clothes_added: clothesAdded.data?.length || 0,
-          outfits_generated: outfitsGenerated.data?.length || 0,
-          friends_added: friendsAdded.data?.length || 0
-        },
-        engagement_score: this.calculateEngagementScore(
-          clothesAdded.data?.length || 0,
-          outfitsGenerated.data?.length || 0,
-          friendsAdded.data?.length || 0
+      return {
+        period,
+        start_date: startDate.toISOString(),
+        end_date: now.toISOString(),
+        daily_usage: usageData,
+        total_activities: activities.length,
+        most_active_day: usageData.reduce((max, day) => 
+          day.total_activity > max.total_activity ? day : max, 
+          { total_activity: 0 }
         )
       }
-
-      return { success: true, data: stats }
     } catch (error) {
       handleSupabaseError(error, 'get usage stats')
     }
   }
 
-  calculateEngagementScore(clothesAdded, outfitsGenerated, friendsAdded) {
-    // Simple engagement scoring algorithm
-    const score = (clothesAdded * 2) + (outfitsGenerated * 3) + (friendsAdded * 5)
-    return Math.min(score, 100) // Cap at 100
+  async getColorAnalysis() {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { data: items, error: itemsError } = await supabase
+        .from('clothes')
+        .select('color_tags, category')
+        .eq('owner_id', user.id)
+        .eq('removed_at', null)
+
+      if (itemsError) throw itemsError
+
+      const colorAnalysis = {
+        total_colors: 0,
+        color_distribution: {},
+        colors_by_category: {},
+        most_used_color: null,
+        least_used_color: null,
+        color_diversity_score: 0
+      }
+
+      // Analyze colors
+      const colorCount = {}
+      items.forEach(item => {
+        if (item.color_tags && Array.isArray(item.color_tags)) {
+          item.color_tags.forEach(color => {
+            colorCount[color] = (colorCount[color] || 0) + 1
+            
+            // Track colors by category
+            if (!colorAnalysis.colors_by_category[item.category]) {
+              colorAnalysis.colors_by_category[item.category] = {}
+            }
+            colorAnalysis.colors_by_category[item.category][color] = 
+              (colorAnalysis.colors_by_category[item.category][color] || 0) + 1
+          })
+        }
+      })
+
+      colorAnalysis.total_colors = Object.keys(colorCount).length
+      colorAnalysis.color_distribution = colorCount
+
+      // Find most and least used colors
+      const sortedColors = Object.entries(colorCount).sort(([,a], [,b]) => b - a)
+      colorAnalysis.most_used_color = sortedColors[0]?.[0] || null
+      colorAnalysis.least_used_color = sortedColors[sortedColors.length - 1]?.[0] || null
+
+      // Calculate color diversity score (0-100)
+      const totalItems = items.length
+      const uniqueColors = Object.keys(colorCount).length
+      colorAnalysis.color_diversity_score = Math.min(100, (uniqueColors / totalItems) * 100)
+
+      return colorAnalysis
+    } catch (error) {
+      handleSupabaseError(error, 'get color analysis')
+    }
+  }
+
+  async getBrandAnalysis() {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { data: items, error: itemsError } = await supabase
+        .from('clothes')
+        .select('brand, category, created_at')
+        .eq('owner_id', user.id)
+        .eq('removed_at', null)
+
+      if (itemsError) throw itemsError
+
+      const brandAnalysis = {
+        total_brands: 0,
+        brand_distribution: {},
+        brands_by_category: {},
+        most_used_brand: null,
+        brand_diversity_score: 0,
+        recent_brands: []
+      }
+
+      // Analyze brands
+      const brandCount = {}
+      const brandDates = {}
+      
+      items.forEach(item => {
+        if (item.brand) {
+          brandCount[item.brand] = (brandCount[item.brand] || 0) + 1
+          
+          // Track brands by category
+          if (!brandAnalysis.brands_by_category[item.category]) {
+            brandAnalysis.brands_by_category[item.category] = {}
+          }
+          brandAnalysis.brands_by_category[item.category][item.brand] = 
+            (brandAnalysis.brands_by_category[item.category][item.brand] || 0) + 1
+
+          // Track brand dates for recent analysis
+          if (!brandDates[item.brand]) {
+            brandDates[item.brand] = []
+          }
+          brandDates[item.brand].push(item.created_at)
+        }
+      })
+
+      brandAnalysis.total_brands = Object.keys(brandCount).length
+      brandAnalysis.brand_distribution = brandCount
+
+      // Find most used brand
+      const sortedBrands = Object.entries(brandCount).sort(([,a], [,b]) => b - a)
+      brandAnalysis.most_used_brand = sortedBrands[0]?.[0] || null
+
+      // Calculate brand diversity score
+      const totalItems = items.length
+      const uniqueBrands = Object.keys(brandCount).length
+      brandAnalysis.brand_diversity_score = Math.min(100, (uniqueBrands / totalItems) * 100)
+
+      // Find recent brands (added in last 30 days)
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      
+      brandAnalysis.recent_brands = Object.entries(brandDates)
+        .filter(([brand, dates]) => 
+          dates.some(date => new Date(date) > thirtyDaysAgo)
+        )
+        .map(([brand]) => brand)
+
+      return brandAnalysis
+    } catch (error) {
+      handleSupabaseError(error, 'get brand analysis')
+    }
   }
 }
 

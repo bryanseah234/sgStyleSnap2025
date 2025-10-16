@@ -1,6 +1,11 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 
 export class NotificationsService {
+  constructor() {
+    this.subscriptions = new Map()
+    this.setupRealtimeSubscription()
+  }
+
   async getNotifications(filters = {}) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -8,55 +13,25 @@ export class NotificationsService {
 
       let query = supabase
         .from('notifications')
-        .select(`
-          *,
-          actor:users!notifications_actor_id_fkey(id, name, username, avatar_url)
-        `)
-        .eq('recipient_id', user.id)
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('removed_at', null)
         .order('created_at', { ascending: false })
-
-      if (filters.unread_only) {
-        query = query.eq('is_read', false)
-      }
-
-      if (filters.type) {
-        query = query.eq('type', filters.type)
-      }
 
       if (filters.limit) {
         query = query.limit(filters.limit)
       }
 
-      if (filters.offset) {
-        query = query.range(filters.offset, filters.offset + (filters.limit || 20) - 1)
+      if (filters.unread_only) {
+        query = query.eq('is_read', false)
       }
 
       const { data, error } = await query
 
       if (error) throw error
-
-      return { success: true, data: data || [] }
+      return data || []
     } catch (error) {
       handleSupabaseError(error, 'get notifications')
-    }
-  }
-
-  async getUnreadCount() {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact' })
-        .eq('recipient_id', user.id)
-        .eq('is_read', false)
-
-      if (error) throw error
-
-      return { success: true, data: { count: data?.length || 0 } }
-    } catch (error) {
-      handleSupabaseError(error, 'get unread count')
     }
   }
 
@@ -69,13 +44,12 @@ export class NotificationsService {
         .from('notifications')
         .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('id', notificationId)
-        .eq('recipient_id', user.id)
+        .eq('user_id', user.id)
         .select()
         .single()
 
       if (error) throw error
-
-      return { success: true, data }
+      return data
     } catch (error) {
       handleSupabaseError(error, 'mark notification as read')
     }
@@ -88,14 +62,16 @@ export class NotificationsService {
 
       const { data, error } = await supabase
         .from('notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq('recipient_id', user.id)
+        .update({ 
+          is_read: true, 
+          read_at: new Date().toISOString() 
+        })
+        .eq('user_id', user.id)
         .eq('is_read', false)
         .select()
 
       if (error) throw error
-
-      return { success: true, data: { updated_count: data?.length || 0 } }
+      return data
     } catch (error) {
       handleSupabaseError(error, 'mark all notifications as read')
     }
@@ -108,252 +84,195 @@ export class NotificationsService {
 
       const { data, error } = await supabase
         .from('notifications')
-        .delete()
+        .update({ removed_at: new Date().toISOString() })
         .eq('id', notificationId)
-        .eq('recipient_id', user.id)
+        .eq('user_id', user.id)
         .select()
         .single()
 
       if (error) throw error
-
-      return { success: true, data }
+      return data
     } catch (error) {
       handleSupabaseError(error, 'delete notification')
     }
   }
 
-  // Friend outfit suggestions
-  async getFriendOutfitSuggestions() {
+  async getUnreadCount() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
-        .from('friend_outfit_suggestions')
-        .select(`
-          *,
-          suggester:users!friend_outfit_suggestions_suggester_id_fkey(id, name, username, avatar_url)
-        `)
-        .eq('owner_id', user.id)
-        .order('created_at', { ascending: false })
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+        .eq('removed_at', null)
 
       if (error) throw error
-
-      return { success: true, data: data || [] }
+      return count || 0
     } catch (error) {
-      handleSupabaseError(error, 'get friend outfit suggestions')
+      handleSupabaseError(error, 'get unread count')
     }
   }
 
-  async approveFriendOutfitSuggestion(suggestionId) {
+  async sendNotification(notificationData) {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
       const { data, error } = await supabase
-        .rpc('approve_friend_outfit_suggestion', {
-          p_suggestion_id: suggestionId
-        })
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'approve friend outfit suggestion')
-    }
-  }
-
-  async rejectFriendOutfitSuggestion(suggestionId) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .rpc('reject_friend_outfit_suggestion', {
-          p_suggestion_id: suggestionId
-        })
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'reject friend outfit suggestion')
-    }
-  }
-
-  async createFriendOutfitSuggestion(ownerId, outfitItems, message = '') {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      if (user.id === ownerId) {
-        throw new Error('Cannot suggest outfit to yourself')
-      }
-
-      const { data, error } = await supabase
-        .from('friend_outfit_suggestions')
+        .from('notifications')
         .insert({
-          owner_id: ownerId,
-          suggester_id: user.id,
-          outfit_items: outfitItems,
-          message: message
+          user_id: notificationData.user_id,
+          type: notificationData.type,
+          title: notificationData.title,
+          message: notificationData.message,
+          data: notificationData.data || {},
+          is_read: false
         })
         .select()
         .single()
 
       if (error) throw error
-
-      return { success: true, data }
+      return data
     } catch (error) {
-      handleSupabaseError(error, 'create friend outfit suggestion')
+      handleSupabaseError(error, 'send notification')
     }
   }
 
-  // Item likes
-  async likeItem(itemId) {
+  subscribe(callback) {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      const { data: { user }, error: userError } = supabase.auth.getUser()
+      if (userError || !user) return null
 
-      const { data, error } = await supabase
-        .from('item_likes')
-        .insert({
-          item_id: itemId,
-          user_id: user.id
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'like item')
-    }
-  }
-
-  async unlikeItem(itemId) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('item_likes')
-        .delete()
-        .eq('item_id', itemId)
-        .eq('user_id', user.id)
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'unlike item')
-    }
-  }
-
-  async getItemLikes(itemId) {
-    try {
-      const { data, error } = await supabase
-        .from('item_likes')
-        .select(`
-          *,
-          user:users!item_likes_user_id_fkey(id, name, username, avatar_url)
-        `)
-        .eq('item_id', itemId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      return { success: true, data: data || [] }
-    } catch (error) {
-      handleSupabaseError(error, 'get item likes')
-    }
-  }
-
-  async hasUserLikedItem(itemId) {
-    try {
-      const user = await supabase.auth.getUser()
-      if (!user) return { success: true, data: false }
-
-      const { data, error } = await supabase
-        .from('item_likes')
-        .select('id')
-        .eq('item_id', itemId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') throw error
-
-      return { success: true, data: !!data }
-    } catch (error) {
-      handleSupabaseError(error, 'check if user liked item')
-    }
-  }
-
-  // Push notification preferences
-  async getNotificationPreferences() {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') throw error
-
-      // Return default preferences if none exist
-      if (!data) {
-        return {
-          success: true,
-          data: {
-            push_enabled: true,
-            friend_requests: true,
-            friend_accepted: true,
-            outfit_likes: true,
-            outfit_comments: true,
-            item_likes: true,
-            friend_outfit_suggestions: true,
-            daily_suggestions: false,
-            weather_alerts: false,
-            quota_warnings: true,
-            quiet_hours_enabled: false,
-            quiet_hours_start: '22:00:00',
-            quiet_hours_end: '08:00:00'
+      const subscription = supabase
+        .channel('notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            callback(payload)
           }
-        }
-      }
+        )
+        .subscribe()
 
-      return { success: true, data }
+      this.subscriptions.set(callback, subscription)
+      return subscription
     } catch (error) {
-      handleSupabaseError(error, 'get notification preferences')
+      console.error('Error setting up notification subscription:', error)
+      return null
     }
   }
 
-  async updateNotificationPreferences(preferences) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('notification_preferences')
-        .upsert({
-          user_id: user.id,
-          ...preferences
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'update notification preferences')
+  unsubscribe(subscription) {
+    if (subscription) {
+      supabase.removeChannel(subscription)
     }
+  }
+
+  setupRealtimeSubscription() {
+    // Set up automatic cleanup for old notifications (7 days)
+    this.scheduleNotificationCleanup()
+  }
+
+  async scheduleNotificationCleanup() {
+    try {
+      // Run cleanup every hour
+      setInterval(async () => {
+        await this.cleanupOldNotifications()
+      }, 60 * 60 * 1000) // 1 hour
+
+      // Run initial cleanup
+      await this.cleanupOldNotifications()
+    } catch (error) {
+      console.error('Error setting up notification cleanup:', error)
+    }
+  }
+
+  async cleanupOldNotifications() {
+    try {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+      const { error } = await supabase
+        .from('notifications')
+        .update({ removed_at: new Date().toISOString() })
+        .lt('created_at', sevenDaysAgo.toISOString())
+        .is('removed_at', null)
+
+      if (error) {
+        console.error('Error cleaning up old notifications:', error)
+      }
+    } catch (error) {
+      console.error('Error in notification cleanup:', error)
+    }
+  }
+
+  // Notification types and templates
+  static getNotificationTemplates() {
+    return {
+      friend_request: {
+        title: 'New Friend Request',
+        message: 'You have a new friend request from {requester_name}',
+        icon: 'user-plus'
+      },
+      friend_request_accepted: {
+        title: 'Friend Request Accepted',
+        message: '{accepter_name} accepted your friend request',
+        icon: 'user-check'
+      },
+      outfit_shared: {
+        title: 'Outfit Shared',
+        message: '{sharer_name} shared an outfit with you',
+        icon: 'share'
+      },
+      outfit_liked: {
+        title: 'Outfit Liked',
+        message: '{liker_name} liked your outfit',
+        icon: 'heart'
+      },
+      new_follower: {
+        title: 'New Follower',
+        message: '{follower_name} started following you',
+        icon: 'user-plus'
+      },
+      style_suggestion: {
+        title: 'Style Suggestion',
+        message: 'Check out this outfit suggestion based on your wardrobe',
+        icon: 'sparkles'
+      },
+      weather_alert: {
+        title: 'Weather Alert',
+        message: 'Consider updating your outfit for today\'s weather',
+        icon: 'cloud-rain'
+      }
+    }
+  }
+
+  // Helper method to create notification with template
+  async createNotificationFromTemplate(type, userId, data = {}) {
+    const templates = NotificationsService.getNotificationTemplates()
+    const template = templates[type]
+    
+    if (!template) {
+      throw new Error(`Unknown notification type: ${type}`)
+    }
+
+    let message = template.message
+    Object.keys(data).forEach(key => {
+      message = message.replace(`{${key}}`, data[key])
+    })
+
+    return this.sendNotification({
+      user_id: userId,
+      type,
+      title: template.title,
+      message,
+      data
+    })
   }
 }
 

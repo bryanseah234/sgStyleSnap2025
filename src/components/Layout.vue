@@ -55,20 +55,18 @@
 
       <!-- Theme Toggle & Logout -->
       <div class="space-y-2">
-        <button
-          @click="toggleTheme"
-          :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-150 hover:scale-105 ${
-            theme.value === 'dark'
-              ? 'hover:bg-zinc-900 text-zinc-300 hover:text-white'
-              : 'hover:bg-stone-100 text-stone-700 hover:text-black'
-          }`"
-        >
-          <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
-          <Moon v-else class="w-5 h-5" />
-          <span class="font-medium">
-            {{ theme.value === 'dark' ? 'Light Mode' : 'Dark Mode' }}
+        <div :class="`flex items-center justify-between px-4 py-3 rounded-xl ${
+          theme.value === 'dark'
+            ? 'bg-zinc-800'
+            : 'bg-stone-100'
+        }`">
+          <span :class="`font-medium ${
+            theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+          }`">
+            {{ theme.value === 'dark' ? 'Dark Mode' : 'Light Mode' }}
           </span>
-        </button>
+          <ThemeToggle />
+        </div>
 
         <button
           @click="handleLogout"
@@ -142,6 +140,11 @@
             />
           </div>
         </router-link>
+        
+        <!-- Theme Toggle for Mobile -->
+        <div class="flex-1 flex justify-center">
+          <ThemeToggle />
+        </div>
       </div>
     </nav>
 
@@ -169,13 +172,12 @@ import {
   Users, 
   Palette, 
   User as UserIcon,
-  Sun,
-  Moon,
   LogOut
 } from 'lucide-vue-next'
+import ThemeToggle from './ThemeToggle.vue'
 
 const router = useRouter()
-const { theme, toggleTheme, loadUser } = useTheme()
+const { theme, loadUser } = useTheme()
 const loading = ref(true)
 
 const navigationItems = [

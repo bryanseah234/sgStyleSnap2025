@@ -1,153 +1,36 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 
 export class OutfitsService {
-  async generateOutfit(params = {}) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      // Get user's clothes
-      const { data: clothes, error: clothesError } = await supabase
-        .from('clothes')
-        .select('*')
-        .eq('owner_id', user.id)
-        .eq('removed_at', null)
-
-      if (clothesError) throw clothesError
-
-      if (!clothes || clothes.length === 0) {
-        throw new Error('No clothes available for outfit generation')
-      }
-
-      // Simple outfit generation algorithm
-      const outfit = this.generateOutfitAlgorithm(clothes, params)
-      
-      // Save generation history
-      await this.saveGenerationHistory(user.id, params, outfit)
-
-      return { success: true, data: outfit }
-    } catch (error) {
-      handleSupabaseError(error, 'generate outfit')
-    }
-  }
-
-  generateOutfitAlgorithm(clothes, params) {
-    const { occasion = 'casual', weather = 'mild', temperature = 20 } = params
-
-    // Filter clothes by weather appropriateness
-    const weatherAppropriate = clothes.filter(item => {
-      if (weather === 'hot' && item.category === 'outerwear') return false
-      if (weather === 'cold' && item.category === 'shorts') return false
-      return true
-    })
-
-    // Simple algorithm: pick one item from each category
-    const categories = ['top', 'bottom', 'shoes']
-    const outfit = {
-      items: [],
-      confidence_score: 0.8,
-      reasoning: `Generated for ${occasion} ${weather} weather`,
-      occasion,
-      weather_condition: weather,
-      temperature
-    }
-
-    categories.forEach(category => {
-      const categoryItems = weatherAppropriate.filter(item => item.category === category)
-      if (categoryItems.length > 0) {
-        const randomItem = categoryItems[Math.floor(Math.random() * categoryItems.length)]
-        outfit.items.push({
-          id: randomItem.id,
-          name: randomItem.name,
-          category: randomItem.category,
-          image_url: randomItem.image_url,
-          thumbnail_url: randomItem.thumbnail_url
-        })
-      }
-    })
-
-    // Add outerwear if cold weather
-    if (weather === 'cold' || temperature < 15) {
-      const outerwear = weatherAppropriate.filter(item => item.category === 'outerwear')
-      if (outerwear.length > 0) {
-        const randomOuterwear = outerwear[Math.floor(Math.random() * outerwear.length)]
-        outfit.items.push({
-          id: randomOuterwear.id,
-          name: randomOuterwear.name,
-          category: randomOuterwear.category,
-          image_url: randomOuterwear.image_url,
-          thumbnail_url: randomOuterwear.thumbnail_url
-        })
-      }
-    }
-
-    return outfit
-  }
-
-  async saveGenerationHistory(userId, params, outfit) {
-    try {
-      const { error } = await supabase
-        .from('outfit_generation_history')
-        .insert({
-          user_id: userId,
-          request_params: params,
-          generation_time_ms: 100, // Simple generation is fast
-          success: true
-        })
-
-      if (error) throw error
-    } catch (error) {
-      console.error('Failed to save generation history:', error)
-      // Don't throw - this is not critical
-    }
-  }
-
-  async saveOutfit(outfitData) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('generated_outfits')
-        .insert({
-          user_id: user.id,
-          item_ids: outfitData.items.map(item => item.id),
-          outfit_items: outfitData.items,
-          occasion: outfitData.occasion,
-          weather_condition: outfitData.weather_condition,
-          is_manual: outfitData.is_manual || false,
-          outfit_name: outfitData.name,
-          outfit_notes: outfitData.notes,
-          ai_score: Math.round(outfitData.confidence_score * 100)
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'save outfit')
-    }
-  }
-
   async getOutfits(filters = {}) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
       let query = supabase
-        .from('generated_outfits')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .from('outfits')
+        .select(`
+          *,
+          outfit_items (
+            *,
+            clothing_item:outfit_items_clothing_item_id_fkey (
+              id,
+              name,
+              category,
+              brand,
+              image_url,
+              thumbnail_url
+            )
+          ),
+          likes_count
+        `)
+        .eq('owner_id', user.id)
+        .eq('removed_at', null)
 
-      if (filters.is_saved !== undefined) {
-        query = query.eq('is_saved', filters.is_saved)
-      }
-
-      if (filters.occasion) {
-        query = query.eq('occasion', filters.occasion)
+      if (filters.orderBy) {
+        const [column, direction] = filters.orderBy.startsWith('-') 
+          ? [filters.orderBy.slice(1), 'desc'] 
+          : [filters.orderBy, 'asc']
+        query = query.order(column, { ascending: direction === 'asc' })
       }
 
       if (filters.limit) {
@@ -157,188 +40,406 @@ export class OutfitsService {
       const { data, error } = await query
 
       if (error) throw error
-
-      return { success: true, data: data || [] }
+      return data || []
     } catch (error) {
       handleSupabaseError(error, 'get outfits')
     }
   }
 
-  async getOutfitById(id) {
+  async getOutfit(outfitId) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
       const { data, error } = await supabase
-        .from('generated_outfits')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', user.id)
+        .from('outfits')
+        .select(`
+          *,
+          outfit_items (
+            *,
+            clothing_item:outfit_items_clothing_item_id_fkey (
+              id,
+              name,
+              category,
+              brand,
+              image_url,
+              thumbnail_url
+            )
+          ),
+          likes_count
+        `)
+        .eq('id', outfitId)
+        .eq('owner_id', user.id)
+        .eq('removed_at', null)
         .single()
 
       if (error) throw error
-
-      return { success: true, data }
+      return data
     } catch (error) {
-      handleSupabaseError(error, 'get outfit by id')
+      handleSupabaseError(error, 'get outfit')
     }
   }
 
-  async updateOutfit(id, updates) {
+  async createOutfit(outfitData) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { data: outfit, error: outfitError } = await supabase
+        .from('outfits')
+        .insert({
+          owner_id: user.id,
+          outfit_name: outfitData.name,
+          description: outfitData.description,
+          occasion: outfitData.occasion,
+          weather_condition: outfitData.weather,
+          temperature: outfitData.temperature,
+          is_public: outfitData.is_public || false,
+          style_tags: outfitData.style_tags || []
+        })
+        .select()
+        .single()
+
+      if (outfitError) throw outfitError
+
+      // Add outfit items
+      if (outfitData.items && outfitData.items.length > 0) {
+        const outfitItems = outfitData.items.map((item, index) => ({
+          outfit_id: outfit.id,
+          clothing_item_id: item.id,
+          position_x: item.x || 0,
+          position_y: item.y || 0,
+          z_index: item.z_index || index,
+          notes: item.notes || ''
+        }))
+
+        const { error: itemsError } = await supabase
+          .from('outfit_items')
+          .insert(outfitItems)
+
+        if (itemsError) throw itemsError
+      }
+
+      return outfit
+    } catch (error) {
+      handleSupabaseError(error, 'create outfit')
+    }
+  }
+
+  async updateOutfit(outfitId, updates) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
       const { data, error } = await supabase
-        .from('generated_outfits')
+        .from('outfits')
         .update(updates)
-        .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('id', outfitId)
+        .eq('owner_id', user.id)
         .select()
         .single()
 
       if (error) throw error
-
-      return { success: true, data }
+      return data
     } catch (error) {
       handleSupabaseError(error, 'update outfit')
     }
   }
 
-  async deleteOutfit(id) {
+  async deleteOutfit(outfitId) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
+      // Soft delete
       const { data, error } = await supabase
-        .from('generated_outfits')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id)
+        .from('outfits')
+        .update({ removed_at: new Date().toISOString() })
+        .eq('id', outfitId)
+        .eq('owner_id', user.id)
         .select()
         .single()
 
       if (error) throw error
-
-      return { success: true, data }
+      return data
     } catch (error) {
       handleSupabaseError(error, 'delete outfit')
     }
   }
 
-  async rateOutfit(id, rating) {
+  async likeOutfit(outfitId) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      if (rating < 1 || rating > 5) {
-        throw new Error('Rating must be between 1 and 5')
+      // Check if already liked
+      const { data: existingLike } = await supabase
+        .from('outfit_likes')
+        .select('id')
+        .eq('outfit_id', outfitId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (existingLike) {
+        throw new Error('Outfit already liked')
       }
 
       const { data, error } = await supabase
-        .from('generated_outfits')
-        .update({ user_rating: rating })
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'rate outfit')
-    }
-  }
-
-  async saveOutfit(id) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('generated_outfits')
-        .update({ is_saved: true })
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'save outfit')
-    }
-  }
-
-  async unsaveOutfit(id) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('generated_outfits')
-        .update({ is_saved: false })
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'unsave outfit')
-    }
-  }
-
-  async getOutfitStats() {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .rpc('get_user_outfit_stats', {
-          p_user_id: user.id
+        .from('outfit_likes')
+        .insert({
+          outfit_id: outfitId,
+          user_id: user.id
         })
+        .select()
+        .single()
 
       if (error) throw error
 
-      return { success: true, data: data[0] || {} }
+      // Update likes count
+      await supabase.rpc('increment_outfit_likes', { outfit_id: outfitId })
+
+      return data
     } catch (error) {
-      handleSupabaseError(error, 'get outfit stats')
+      handleSupabaseError(error, 'like outfit')
     }
   }
 
-  async getMostWornItems(limit = 10) {
+  async unlikeOutfit(outfitId) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
-        .rpc('get_most_worn_items', {
-          p_user_id: user.id,
-          p_limit: limit
-        })
+      const { error } = await supabase
+        .from('outfit_likes')
+        .delete()
+        .eq('outfit_id', outfitId)
+        .eq('user_id', user.id)
 
       if (error) throw error
 
-      return { success: true, data: data || [] }
+      // Update likes count
+      await supabase.rpc('decrement_outfit_likes', { outfit_id: outfitId })
+
+      return { success: true }
     } catch (error) {
-      handleSupabaseError(error, 'get most worn items')
+      handleSupabaseError(error, 'unlike outfit')
     }
   }
 
-  // Alias methods for compatibility with components
-  async list(orderBy, limit) {
-    const result = await this.getOutfits({ limit })
-    return result.data || []
+  async shareOutfit(outfitId, friendIds) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      // Create notifications for friends
+      const notifications = friendIds.map(friendId => ({
+        user_id: friendId,
+        type: 'outfit_shared',
+        title: 'Outfit Shared',
+        message: `${user.name || user.username} shared an outfit with you`,
+        data: {
+          outfit_id: outfitId,
+          sharer_id: user.id
+        }
+      }))
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications)
+
+      if (error) throw error
+
+      return { success: true }
+    } catch (error) {
+      handleSupabaseError(error, 'share outfit')
+    }
   }
 
-  async filter(filters, orderBy, limit) {
-    const result = await this.getOutfits({ ...filters, limit })
-    return result.data || []
+  async generateOutfit(preferences) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      // Get user's clothing items
+      const { data: items, error: itemsError } = await supabase
+        .from('clothes')
+        .select('*')
+        .eq('owner_id', user.id)
+        .eq('removed_at', null)
+
+      if (itemsError) throw itemsError
+
+      // Simple AI outfit generation logic
+      const outfit = this.generateOutfitLogic(items, preferences)
+      
+      return {
+        items: outfit,
+        preferences,
+        generated_at: new Date().toISOString()
+      }
+    } catch (error) {
+      handleSupabaseError(error, 'generate outfit')
+    }
+  }
+
+  generateOutfitLogic(items, preferences) {
+    const { occasion, weather, temperature } = preferences
+    
+    // Filter items based on weather and temperature
+    let suitableItems = items.filter(item => {
+      if (weather === 'cold' && temperature < 10) {
+        return ['outerwear', 'tops', 'bottoms', 'shoes'].includes(item.category)
+      } else if (weather === 'hot' && temperature > 25) {
+        return ['tops', 'bottoms', 'shoes', 'accessories'].includes(item.category)
+      } else if (weather === 'rainy') {
+        return ['outerwear', 'tops', 'bottoms', 'shoes'].includes(item.category)
+      }
+      return true
+    })
+
+    // Filter by occasion
+    if (occasion === 'formal') {
+      suitableItems = suitableItems.filter(item => 
+        item.category === 'tops' || item.category === 'bottoms' || item.category === 'shoes'
+      )
+    } else if (occasion === 'casual') {
+      suitableItems = suitableItems.filter(item => 
+        !item.style_tags?.includes('formal')
+      )
+    }
+
+    // Generate outfit (1 top, 1 bottom, 1 shoe, optional outerwear/accessories)
+    const outfit = []
+    
+    // Add top
+    const tops = suitableItems.filter(item => item.category === 'tops')
+    if (tops.length > 0) {
+      outfit.push(tops[Math.floor(Math.random() * tops.length)])
+    }
+
+    // Add bottom
+    const bottoms = suitableItems.filter(item => item.category === 'bottoms')
+    if (bottoms.length > 0) {
+      outfit.push(bottoms[Math.floor(Math.random() * bottoms.length)])
+    }
+
+    // Add shoes
+    const shoes = suitableItems.filter(item => item.category === 'shoes')
+    if (shoes.length > 0) {
+      outfit.push(shoes[Math.floor(Math.random() * shoes.length)])
+    }
+
+    // Add outerwear if cold/rainy
+    if ((weather === 'cold' || weather === 'rainy') && temperature < 15) {
+      const outerwear = suitableItems.filter(item => item.category === 'outerwear')
+      if (outerwear.length > 0) {
+        outfit.push(outerwear[Math.floor(Math.random() * outerwear.length)])
+      }
+    }
+
+    // Add accessories for formal occasions
+    if (occasion === 'formal') {
+      const accessories = suitableItems.filter(item => item.category === 'accessories')
+      if (accessories.length > 0) {
+        outfit.push(accessories[Math.floor(Math.random() * accessories.length)])
+      }
+    }
+
+    return outfit
+  }
+
+  async getOutfitSuggestions(itemId) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      // Get the item details
+      const { data: item, error: itemError } = await supabase
+        .from('clothes')
+        .select('*')
+        .eq('id', itemId)
+        .eq('owner_id', user.id)
+        .single()
+
+      if (itemError) throw itemError
+
+      // Get other items that would work well with this item
+      const { data: suggestions, error: suggestionsError } = await supabase
+        .from('clothes')
+        .select('*')
+        .eq('owner_id', user.id)
+        .eq('removed_at', null)
+        .neq('id', itemId)
+
+      if (suggestionsError) throw suggestionsError
+
+      // Simple suggestion logic based on color and style
+      const compatibleItems = suggestions.filter(suggestion => {
+        // Different category
+        if (suggestion.category === item.category) return false
+        
+        // Color compatibility (simplified)
+        const itemColors = item.color_tags || []
+        const suggestionColors = suggestion.color_tags || []
+        
+        // Style compatibility
+        const itemStyles = item.style_tags || []
+        const suggestionStyles = suggestion.style_tags || []
+        
+        return itemColors.some(color => suggestionColors.includes(color)) ||
+               itemStyles.some(style => suggestionStyles.includes(style))
+      })
+
+      return compatibleItems.slice(0, 6) // Return top 6 suggestions
+    } catch (error) {
+      handleSupabaseError(error, 'get outfit suggestions')
+    }
+  }
+
+  async getWeatherBasedOutfits(weatherData) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { temperature, condition } = weatherData
+      
+      // Generate multiple outfit options based on weather
+      const outfits = []
+      
+      // Warm weather outfit
+      if (temperature > 20) {
+        const warmOutfit = await this.generateOutfit({
+          occasion: 'casual',
+          weather: 'sunny',
+          temperature: temperature
+        })
+        outfits.push({ ...warmOutfit, name: 'Warm Weather Look' })
+      }
+      
+      // Cool weather outfit
+      if (temperature < 15) {
+        const coolOutfit = await this.generateOutfit({
+          occasion: 'casual',
+          weather: 'cold',
+          temperature: temperature
+        })
+        outfits.push({ ...coolOutfit, name: 'Cool Weather Look' })
+      }
+      
+      // Rainy weather outfit
+      if (condition === 'rain') {
+        const rainyOutfit = await this.generateOutfit({
+          occasion: 'casual',
+          weather: 'rainy',
+          temperature: temperature
+        })
+        outfits.push({ ...rainyOutfit, name: 'Rainy Day Look' })
+      }
+
+      return outfits
+    } catch (error) {
+      handleSupabaseError(error, 'get weather based outfits')
+    }
   }
 }
 
