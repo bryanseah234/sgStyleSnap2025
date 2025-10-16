@@ -106,9 +106,8 @@
             >
               <svg
                 class="favorite-icon"
-                :class="item.is_favorite ? 'favorite-active' : 'favorite-inactive'"
-                fill="none"
-                stroke="currentColor"
+                :fill="item.is_favorite ? '#ef4444' : 'none'"
+                :stroke="item.is_favorite ? '#ef4444' : '#6b7280'"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -304,7 +303,7 @@ function handleFavoriteClick(item) {
   height: 2rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #9ea0a3;
+  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
