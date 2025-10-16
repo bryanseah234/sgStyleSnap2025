@@ -6,12 +6,12 @@
   >
     <div
       :class="`w-full max-w-md rounded-xl p-6 ${
-        theme === 'dark' ? 'bg-zinc-900' : 'bg-white'
+        theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
       }`"
       @click.stop
     >
       <h2 :class="`text-xl font-bold mb-4 ${
-        theme === 'dark' ? 'text-white' : 'text-black'
+        theme.value === 'dark' ? 'text-white' : 'text-black'
       }`">
         Add New Item
       </h2>
@@ -20,7 +20,7 @@
         <div class="space-y-4">
           <div>
             <label :class="`block text-sm font-medium mb-2 ${
-              theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
             }`">
               Item Name
             </label>
@@ -29,7 +29,7 @@
               type="text"
               required
               :class="`w-full px-3 py-2 rounded-lg border ${
-                theme === 'dark'
+                theme.value === 'dark'
                   ? 'bg-zinc-800 border-zinc-700 text-white'
                   : 'bg-white border-stone-300 text-black'
               }`"
@@ -39,7 +39,7 @@
           
           <div>
             <label :class="`block text-sm font-medium mb-2 ${
-              theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
             }`">
               Category
             </label>
@@ -47,7 +47,7 @@
               v-model="formData.category"
               required
               :class="`w-full px-3 py-2 rounded-lg border ${
-                theme === 'dark'
+                theme.value === 'dark'
                   ? 'bg-zinc-800 border-zinc-700 text-white'
                   : 'bg-white border-stone-300 text-black'
               }`"
@@ -65,7 +65,7 @@
           
           <div>
             <label :class="`block text-sm font-medium mb-2 ${
-              theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
             }`">
               Brand
             </label>
@@ -73,7 +73,7 @@
               v-model="formData.brand"
               type="text"
               :class="`w-full px-3 py-2 rounded-lg border ${
-                theme === 'dark'
+                theme.value === 'dark'
                   ? 'bg-zinc-800 border-zinc-700 text-white'
                   : 'bg-white border-stone-300 text-black'
               }`"
@@ -83,7 +83,7 @@
           
           <div>
             <label :class="`block text-sm font-medium mb-2 ${
-              theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
             }`">
               Image
             </label>
@@ -93,7 +93,7 @@
               accept="image/*"
               @change="handleFileSelect"
               :class="`w-full px-3 py-2 rounded-lg border ${
-                theme === 'dark'
+                theme.value === 'dark'
                   ? 'bg-zinc-800 border-zinc-700 text-white'
                   : 'bg-white border-stone-300 text-black'
               }`"
@@ -106,7 +106,7 @@
             type="button"
             @click="$emit('close')"
             :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              theme === 'dark'
+              theme.value === 'dark'
                 ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                 : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
             }`"
@@ -117,7 +117,7 @@
             type="submit"
             :disabled="uploading"
             :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              theme === 'dark'
+              theme.value === 'dark'
                 ? 'bg-white text-black hover:bg-zinc-200'
                 : 'bg-black text-white hover:bg-zinc-800'
             } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`"
@@ -180,9 +180,15 @@ const handleSubmit = async () => {
 
   uploading.value = true
   try {
+    // Get current user
+    const user = await api.auth.me()
+    if (!user?.id) {
+      throw new Error('User not authenticated')
+    }
+
     const itemData = {
       ...formData.value,
-      created_by: 'demo@stylesnap.com', // This would come from auth context
+      owner_id: user.id,
       is_favorite: false
     }
     

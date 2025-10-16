@@ -4,14 +4,14 @@
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex items-center justify-between mb-6">
         <h1 :class="`text-4xl font-bold ${
-          theme === 'dark' ? 'text-white' : 'text-black'
+          theme.value === 'dark' ? 'text-white' : 'text-black'
         }`">
           Your Cabinet
         </h1>
         <button
           @click="showUpload = true"
           :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
-            theme === 'dark'
+            theme.value === 'dark'
               ? 'bg-white text-black hover:bg-zinc-200'
               : 'bg-black text-white hover:bg-zinc-800'
           }`"
@@ -29,10 +29,10 @@
           @click="activeCategory = category"
           :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
             activeCategory === category
-              ? theme === 'dark'
+              ? theme.value === 'dark'
                 ? 'bg-white text-black'
                 : 'bg-black text-white'
-              : theme === 'dark'
+              : theme.value === 'dark'
               ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
               : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
           }`"
@@ -44,10 +44,10 @@
           @click="showFavoritesOnly = !showFavoritesOnly"
           :class="`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
             showFavoritesOnly
-              ? theme === 'dark'
+              ? theme.value === 'dark'
                 ? 'bg-red-600 text-white'
                 : 'bg-red-500 text-white'
-              : theme === 'dark'
+              : theme.value === 'dark'
               ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
               : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
           }`"
@@ -65,24 +65,24 @@
           v-for="i in 8"
           :key="i"
           :class="`aspect-square rounded-xl animate-pulse ${
-            theme === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
+            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
           }`"
         />
       </div>
 
       <div v-else-if="filteredItems.length === 0" class="text-center py-12">
         <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center ${
-          theme === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
         }`">
-          <Shirt :class="`w-12 h-12 ${theme === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+          <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
         </div>
         <h3 :class="`text-xl font-semibold mb-2 ${
-          theme === 'dark' ? 'text-white' : 'text-black'
+          theme.value === 'dark' ? 'text-white' : 'text-black'
         }`">
           No items found
         </h3>
         <p :class="`text-lg ${
-          theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">
           Start building your wardrobe by adding your first item!
         </p>
@@ -93,7 +93,7 @@
           v-for="item in filteredItems"
           :key="item.id"
           :class="`group cursor-pointer transition-all duration-300 hover:scale-105 ${
-            theme === 'dark'
+            theme.value === 'dark'
               ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
               : 'bg-white border border-stone-200 hover:border-stone-300'
           } rounded-xl overflow-hidden`"
@@ -108,10 +108,10 @@
             <div
               v-else
               :class="`w-full h-full flex items-center justify-center ${
-                theme === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
               }`"
             >
-              <Shirt :class="`w-12 h-12 ${theme === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+              <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
             </div>
             
             <button
@@ -119,7 +119,7 @@
               :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
                 item.is_favorite
                   ? 'bg-red-500 text-white'
-                  : theme === 'dark'
+                  : theme.value === 'dark'
                   ? 'bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700/80'
                   : 'bg-white/80 text-stone-500 hover:bg-stone-100/80'
               }`"
@@ -130,17 +130,17 @@
           
           <div class="p-4">
             <h3 :class="`font-semibold mb-1 ${
-              theme === 'dark' ? 'text-white' : 'text-black'
+              theme.value === 'dark' ? 'text-white' : 'text-black'
             }`">
               {{ item.name }}
             </h3>
             <p :class="`text-sm ${
-              theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
             }`">
               {{ item.brand || 'No brand' }}
             </p>
             <span :class="`inline-block px-2 py-1 mt-2 text-xs rounded-full ${
-              theme === 'dark' ? 'bg-zinc-800 text-zinc-300' : 'bg-stone-100 text-stone-700'
+              theme.value === 'dark' ? 'bg-zinc-800 text-zinc-300' : 'bg-stone-100 text-stone-700'
             }`">
               {{ item.category }}
             </span>
@@ -157,12 +157,12 @@
     >
       <div
         :class="`w-full max-w-md rounded-xl p-6 ${
-          theme === 'dark' ? 'bg-zinc-900' : 'bg-white'
+          theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
         }`"
         @click.stop
       >
         <h2 :class="`text-xl font-bold mb-4 ${
-          theme === 'dark' ? 'text-white' : 'text-black'
+          theme.value === 'dark' ? 'text-white' : 'text-black'
         }`">
           Add New Item
         </h2>
@@ -171,7 +171,7 @@
           <div class="space-y-4">
             <div>
               <label :class="`block text-sm font-medium mb-2 ${
-                theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
               }`">
                 Item Name
               </label>
@@ -180,7 +180,7 @@
                 type="text"
                 required
                 :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme === 'dark'
+                  theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white'
                     : 'bg-white border-stone-300 text-black'
                 }`"
@@ -190,7 +190,7 @@
             
             <div>
               <label :class="`block text-sm font-medium mb-2 ${
-                theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
               }`">
                 Category
               </label>
@@ -198,7 +198,7 @@
                 v-model="newItem.category"
                 required
                 :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme === 'dark'
+                  theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white'
                     : 'bg-white border-stone-300 text-black'
                 }`"
@@ -214,7 +214,7 @@
             
             <div>
               <label :class="`block text-sm font-medium mb-2 ${
-                theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
               }`">
                 Brand
               </label>
@@ -222,7 +222,7 @@
                 v-model="newItem.brand"
                 type="text"
                 :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme === 'dark'
+                  theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white'
                     : 'bg-white border-stone-300 text-black'
                 }`"
@@ -232,7 +232,7 @@
             
             <div>
               <label :class="`block text-sm font-medium mb-2 ${
-                theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
               }`">
                 Image
               </label>
@@ -242,7 +242,7 @@
                 accept="image/*"
                 @change="handleFileSelect"
                 :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme === 'dark'
+                  theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white'
                     : 'bg-white border-stone-300 text-black'
                 }`"
@@ -255,7 +255,7 @@
               type="button"
               @click="showUpload = false"
               :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme === 'dark'
+                theme.value === 'dark'
                   ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`"
@@ -266,7 +266,7 @@
               type="submit"
               :disabled="uploading"
               :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme === 'dark'
+                theme.value === 'dark'
                   ? 'bg-white text-black hover:bg-zinc-200'
                   : 'bg-black text-white hover:bg-zinc-800'
               } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`"
@@ -330,9 +330,9 @@ const loadUser = async () => {
 
 const loadItems = async () => {
   try {
-    if (currentUser.value?.email) {
+    if (currentUser.value?.id) {
       const itemsData = await api.entities.ClothingItem.filter(
-        { created_by: currentUser.value.email },
+        { owner_id: currentUser.value.id },
         '-created_date'
       )
       items.value = itemsData
@@ -373,7 +373,7 @@ const handleUpload = async () => {
   try {
     const itemData = {
       ...newItem.value,
-      created_by: currentUser.value.email
+      owner_id: currentUser.value.id
     }
     
     const newItemData = await api.entities.ClothingItem.create(itemData)

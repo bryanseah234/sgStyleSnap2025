@@ -2,7 +2,7 @@
   <div
     ref="canvasRef"
     :class="`relative w-full h-96 rounded-xl overflow-hidden ${
-      theme === 'dark' ? 'bg-zinc-900' : 'bg-stone-100'
+      theme.value === 'dark' ? 'bg-zinc-900' : 'bg-stone-100'
     }`"
   >
     <!-- Grid Background -->
@@ -11,8 +11,8 @@
       class="absolute inset-0 opacity-20"
       :style="{
         backgroundImage: `
-          linear-gradient(to right, ${theme === 'dark' ? '#3f3f46' : '#d6d3d1'} 1px, transparent 1px),
-          linear-gradient(to bottom, ${theme === 'dark' ? '#3f3f46' : '#d6d3d1'} 1px, transparent 1px)
+          linear-gradient(to right, ${theme.value === 'dark' ? '#3f3f46' : '#d6d3d1'} 1px, transparent 1px),
+          linear-gradient(to bottom, ${theme.value === 'dark' ? '#3f3f46' : '#d6d3d1'} 1px, transparent 1px)
         `,
         backgroundSize: '20px 20px'
       }"
@@ -44,10 +44,10 @@
         <div
           v-else
           :class="`w-full h-full flex items-center justify-center ${
-            theme === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
+            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
           }`"
         >
-          <Shirt :class="`w-8 h-8 ${theme === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+          <Shirt :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
         </div>
       </div>
       
@@ -55,13 +55,13 @@
       <div
         v-if="selectedItemId === item.id"
         :class="`absolute -top-10 left-0 flex gap-1 p-1 rounded-lg ${
-          theme === 'dark' ? 'bg-zinc-800' : 'bg-white'
+          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-white'
         } shadow-lg`"
       >
         <button
           @click="removeItem(item.id)"
           :class="`p-1 rounded transition-colors ${
-            theme === 'dark'
+            theme.value === 'dark'
               ? 'hover:bg-red-600 text-zinc-300'
               : 'hover:bg-red-500 text-stone-600'
           }`"
@@ -71,7 +71,7 @@
         <button
           @click="bringForward(item.id)"
           :class="`p-1 rounded transition-colors ${
-            theme === 'dark'
+            theme.value === 'dark'
               ? 'hover:bg-zinc-700 text-zinc-300'
               : 'hover:bg-stone-200 text-stone-600'
           }`"
@@ -81,7 +81,7 @@
         <button
           @click="sendBackward(item.id)"
           :class="`p-1 rounded transition-colors ${
-            theme === 'dark'
+            theme.value === 'dark'
               ? 'hover:bg-zinc-700 text-zinc-300'
               : 'hover:bg-stone-200 text-stone-600'
           }`"
@@ -98,12 +98,12 @@
     >
       <div class="text-center">
         <div :class="`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-          theme === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
+          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
         }`">
-          <Palette :class="`w-8 h-8 ${theme === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+          <Palette :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
         </div>
         <p :class="`text-lg ${
-          theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">
           Drag items here to create your outfit
         </p>

@@ -2,7 +2,7 @@
   <div class="min-h-screen p-6 md:p-12">
     <!-- Loading Bar Animation -->
     <div :class="`h-1 w-full mb-12 rounded-full ${
-      theme === 'dark' 
+      theme.value === 'dark' 
         ? 'bg-gradient-to-r from-zinc-700 via-white to-zinc-700' 
         : 'bg-gradient-to-r from-stone-300 via-black to-stone-300'
     }`" />
@@ -10,12 +10,12 @@
     <!-- Hero Section -->
     <div class="max-w-6xl mx-auto mb-16">
       <h1 :class="`text-5xl md:text-7xl font-bold tracking-tight mb-4 ${
-        theme === 'dark' ? 'text-white' : 'text-black'
+        theme.value === 'dark' ? 'text-white' : 'text-black'
       }`">
-        Welcome back{{ user?.full_name ? `, ${user.full_name.split(' ')[0]}` : '' }}
+        Welcome back{{ user?.name ? `, ${user.name.split(' ')[0]}` : '' }}
       </h1>
       <p :class="`text-xl md:text-2xl ${
-        theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
       } max-w-2xl`">
         Your digital wardrobe awaits. Create stunning outfits, discover new styles, and share your fashion journey.
       </p>
@@ -27,25 +27,25 @@
         v-for="(stat, index) in stats"
         :key="stat.label"
         :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer hover:-translate-y-2 hover:scale-105 ${
-          theme === 'dark'
+          theme.value === 'dark'
             ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
             : 'bg-white border border-stone-200 hover:border-stone-300'
         }`"
       >
         <div class="flex items-center justify-between mb-4">
           <div :class="`p-3 rounded-2xl transition-transform duration-300 group-hover:scale-110 ${
-            theme === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
           }`">
             <component :is="stat.icon" class="w-6 h-6" />
           </div>
           <span :class="`text-4xl font-bold ${
-            theme === 'dark' ? 'text-white' : 'text-black'
+            theme.value === 'dark' ? 'text-white' : 'text-black'
           }`">
             {{ stat.value }}
           </span>
         </div>
         <p :class="`text-lg font-medium ${
-          theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">
           {{ stat.label }}
         </p>
@@ -57,12 +57,12 @@
       <!-- Cabinet Preview -->
       <router-link to="/cabinet">
         <div :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer overflow-hidden relative h-64 hover:scale-105 ${
-          theme === 'dark'
+          theme.value === 'dark'
             ? 'bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700'
             : 'bg-gradient-to-br from-white to-stone-50 border border-stone-200'
         }`">
           <div :class="`absolute inset-0 bg-gradient-to-br transition-opacity duration-500 ${
-            theme === 'dark' 
+            theme.value === 'dark' 
               ? 'from-blue-500/10 to-purple-500/10' 
               : 'from-blue-500/5 to-purple-500/5'
           } opacity-0 group-hover:opacity-100`" />
@@ -70,16 +70,16 @@
           <div class="relative z-10">
             <div class="flex items-center justify-between mb-6">
               <h3 :class="`text-2xl font-bold ${
-                theme === 'dark' ? 'text-white' : 'text-black'
+                theme.value === 'dark' ? 'text-white' : 'text-black'
               }`">
                 Your Cabinet
               </h3>
               <ArrowRight :class="`w-6 h-6 transform transition-transform duration-300 group-hover:translate-x-2 ${
-                theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`" />
             </div>
             <p :class="`text-lg mb-6 ${
-              theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
             }`">
               Browse and organize your wardrobe
             </p>
@@ -88,7 +88,7 @@
                 v-for="(item, i) in items.slice(0, 3)"
                 :key="item.id"
                 :class="`w-16 h-16 rounded-xl overflow-hidden ${
-                  theme === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
                 }`"
               >
                 <img
@@ -106,12 +106,12 @@
       <!-- Outfit Studio Preview -->
       <router-link to="/dashboard">
         <div :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer overflow-hidden relative h-64 hover:scale-105 ${
-          theme === 'dark'
+          theme.value === 'dark'
             ? 'bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700'
             : 'bg-gradient-to-br from-white to-stone-50 border border-stone-200'
         }`">
           <div :class="`absolute inset-0 bg-gradient-to-br transition-opacity duration-500 ${
-            theme === 'dark' 
+            theme.value === 'dark' 
               ? 'from-pink-500/10 to-orange-500/10' 
               : 'from-pink-500/5 to-orange-500/5'
           } opacity-0 group-hover:opacity-100`" />
@@ -119,16 +119,16 @@
           <div class="relative z-10">
             <div class="flex items-center justify-between mb-6">
               <h3 :class="`text-2xl font-bold ${
-                theme === 'dark' ? 'text-white' : 'text-black'
+                theme.value === 'dark' ? 'text-white' : 'text-black'
               }`">
                 Outfit Studio
               </h3>
               <ArrowRight :class="`w-6 h-6 transform transition-transform duration-300 group-hover:translate-x-2 ${
-                theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`" />
             </div>
             <p :class="`text-lg ${
-              theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
             }`">
               Mix and match your items on the canvas
             </p>
@@ -167,9 +167,9 @@ const loadUser = async () => {
 
 const loadItems = async () => {
   try {
-    if (user.value?.email) {
+    if (user.value?.id) {
       const itemsData = await api.entities.ClothingItem.filter(
-        { created_by: user.value.email },
+        { owner_id: user.value.id },
         '-created_date',
         6
       )

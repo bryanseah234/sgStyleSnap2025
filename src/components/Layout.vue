@@ -1,19 +1,19 @@
 <template>
   <div v-if="loading" :class="`min-h-screen flex items-center justify-center ${
-    theme === 'dark' ? 'bg-black' : 'bg-stone-50'
+    theme.value === 'dark' ? 'bg-black' : 'bg-stone-50'
   }`">
     <div class="w-16 h-16 rounded-full border-4 border-black dark:border-white animate-pulse" />
   </div>
 
   <div v-else :class="`min-h-screen ${
-    theme === 'dark' 
+    theme.value === 'dark' 
       ? 'bg-black text-white' 
       : 'bg-stone-50 text-black'
   }`" style="transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out">
     
     <!-- Desktop Sidebar Navigation -->
     <aside :class="`hidden md:flex fixed left-0 top-0 h-full w-64 ${
-      theme === 'dark' 
+      theme.value === 'dark' 
         ? 'bg-zinc-950 border-r border-zinc-800' 
         : 'bg-white border-r border-stone-200'
     } flex-col items-stretch py-8 px-4 z-50`"
@@ -22,7 +22,7 @@
       <!-- Logo -->
       <div class="mb-12 text-center md:text-left">
         <h1 :class="`text-2xl font-bold tracking-tight ${
-          theme === 'dark' ? 'text-white' : 'text-black'
+          theme.value === 'dark' ? 'text-white' : 'text-black'
         }`">
           StyleSnap
         </h1>
@@ -38,10 +38,10 @@
         >
           <div :class="`flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative transition-all duration-150 hover:scale-105 hover:translate-x-1 ${
             $route.path === item.path
-              ? theme === 'dark'
+              ? theme.value === 'dark'
                 ? 'bg-white text-black'
                 : 'bg-black text-white'
-              : theme === 'dark'
+              : theme.value === 'dark'
               ? 'hover:bg-zinc-900 text-zinc-400 hover:text-white'
               : 'hover:bg-stone-100 text-stone-600 hover:text-black'
           }`">
@@ -58,22 +58,22 @@
         <button
           @click="toggleTheme"
           :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-150 hover:scale-105 ${
-            theme === 'dark'
+            theme.value === 'dark'
               ? 'hover:bg-zinc-900 text-zinc-300 hover:text-white'
               : 'hover:bg-stone-100 text-stone-700 hover:text-black'
           }`"
         >
-          <Sun v-if="theme === 'dark'" class="w-5 h-5" />
+          <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
           <Moon v-else class="w-5 h-5" />
           <span class="font-medium">
-            {{ theme === 'dark' ? 'Light Mode' : 'Dark Mode' }}
+            {{ theme.value === 'dark' ? 'Light Mode' : 'Dark Mode' }}
           </span>
         </button>
 
         <button
           @click="handleLogout"
           :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-150 hover:scale-105 ${
-            theme === 'dark'
+            theme.value === 'dark'
               ? 'hover:bg-red-950 text-zinc-300 hover:text-red-400'
               : 'hover:bg-red-50 text-stone-700 hover:text-red-600'
           }`"
@@ -86,7 +86,7 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav :class="`md:hidden fixed bottom-0 left-0 right-0 ${
-      theme === 'dark'
+      theme.value === 'dark'
         ? 'bg-zinc-950/95 border-t border-zinc-800'
         : 'bg-white/95 border-t border-stone-200'
     } backdrop-blur-xl z-50 px-2 py-3 pb-safe`"
@@ -102,7 +102,7 @@
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               $route.path === item.path
-                ? theme === 'dark'
+                ? theme.value === 'dark'
                   ? 'bg-white scale-110 -translate-y-0.5'
                   : 'bg-black scale-110 -translate-y-0.5'
                 : 'bg-transparent'
@@ -111,10 +111,10 @@
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
                   $route.path === item.path
-                    ? theme === 'dark'
+                    ? theme.value === 'dark'
                       ? 'text-black'
                       : 'text-white'
-                    : theme === 'dark'
+                    : theme.value === 'dark'
                     ? 'text-zinc-400'
                     : 'text-stone-600'
                 }`"
@@ -123,10 +123,10 @@
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
               $route.path === item.path
-                ? theme === 'dark'
+                ? theme.value === 'dark'
                   ? 'text-white opacity-100 scale-100'
                   : 'text-black opacity-100 scale-100'
-                : theme === 'dark'
+                : theme.value === 'dark'
                 ? 'text-zinc-500 opacity-60 scale-90'
                 : 'text-stone-500 opacity-60 scale-90'
             }`">
@@ -137,7 +137,7 @@
             <div
               v-if="$route.path === item.path"
               :class="`absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full ${
-                theme === 'dark' ? 'bg-white' : 'bg-black'
+                theme.value === 'dark' ? 'bg-white' : 'bg-black'
               }`"
             />
           </div>
