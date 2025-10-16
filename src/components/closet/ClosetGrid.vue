@@ -104,7 +104,13 @@
               :aria-label="item.is_favorite ? 'Unfavorite' : 'Favorite'"
               @click.stop="handleFavoriteClick(item)"
             >
-              <svg
+            <i
+              :class="[
+                'fa-heart',
+                item.is_favorite ? 'fa-solid text-red-500' : 'fa-regular text-gray-400'
+              ]"
+            ></i>
+              <!-- <svg
                 class="favorite-icon"
                 :fill="item.is_favorite ? '#ef4444' : 'none'"
                 :stroke="item.is_favorite ? '#ef4444' : '#6b7280'"
@@ -116,7 +122,7 @@
                   stroke-width="2"
                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                 />
-              </svg>
+              </svg> -->
             </button>
           </div>
         </div>
