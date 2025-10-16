@@ -160,6 +160,7 @@ function handleItemClick(item) {
 }
 
 function handleFavoriteClick(item) {
+  console.log('Heart clicked for item:', item.name, 'Current favorite status:', item.is_favorite)
   emit('favorite-click', item)
 }
 </script>
@@ -298,7 +299,7 @@ function handleFavoriteClick(item) {
   height: 2rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);
-  border: none;
+  border: 1px solid #9ea0a3;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -344,9 +345,7 @@ function handleFavoriteClick(item) {
   height: 1.25rem;
   color: #6b7280;
   transition: color 0.2s ease;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
+  fill: currentColor;
 }
 
 .favorite-button.is-favorite .heart-icon {
