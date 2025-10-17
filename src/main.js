@@ -70,9 +70,16 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
   try {
-    // Skip auth check for OAuth callback routes
-    if (to.path.includes('/auth/callback') || to.query.code) {
-      console.log('🔒 Route guard: OAuth callback detected, allowing navigation')
+    // Check for OAuth callback parameters in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const hasAuthCode = urlParams.has('code') || urlParams.has('access_token') || urlParams.has('error')
+    
+    console.log('🔒 Route guard: Checking route', to.path, 'from', from.path)
+    console.log('🔒 Route guard: URL params:', Object.fromEntries(urlParams))
+    console.log('🔒 Route guard: Has auth code:', hasAuthCode)
+    
+    if (hasAuthCode) {
+      console.log('🔒 Route guard: OAuth callback detected, allowing navigation without auth check')
       next()
       return
     }
@@ -83,10 +90,10 @@ router.beforeEach(async (to, from, next) => {
       await authStore.initializeAuth()
     }
     
-    // Wait a bit for auth state to settle after OAuth redirect
-    if (to.path === '/cabinet' && from.path === '/login') {
-      console.log('🔒 Route guard: Potential OAuth redirect, waiting for auth state...')
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+    // Wait longer for OAuth callback processing when coming from login
+    if (to.path === '/' && from.path === '/login') {
+      console.log('🔒 Route guard: Potential OAuth redirect from login, waiting for auth state...')
+      await new Promise(resolve => setTimeout(resolve, 3000)) // Wait 3 seconds
       await authStore.initializeAuth() // Re-initialize auth
     }
     
