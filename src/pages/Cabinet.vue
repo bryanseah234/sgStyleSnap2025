@@ -283,11 +283,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import { api } from '@/api/client'
+import { useAuthStore } from '@/stores/auth-store'
+import { api } from '@/api/base44Client'
 import { Plus, Heart, Shirt } from 'lucide-vue-next'
 
 const { theme } = useTheme()
-const currentUser = ref(null)
+const authStore = useAuthStore()
+
+// Use computed to get reactive user data from auth store
+const currentUser = computed(() => authStore.user || authStore.profile)
+
 const items = ref([])
 const loading = ref(true)
 const showUpload = ref(false)
@@ -318,15 +323,6 @@ const filteredItems = computed(() => {
 
   return filtered
 })
-
-const loadUser = async () => {
-  try {
-    const userData = await api.auth.me()
-    currentUser.value = userData
-  } catch (error) {
-    console.error('Error loading user:', error)
-  }
-}
 
 const loadItems = async () => {
   try {
@@ -399,7 +395,16 @@ const handleUpload = async () => {
 }
 
 onMounted(async () => {
-  await loadUser()
+  // Ensure auth store is initialized
+  if (!authStore.isAuthenticated) {
+    await authStore.initializeAuth()
+  }
+  
+  // If we have a user but no profile, fetch the profile
+  if (authStore.user && !authStore.profile) {
+    await authStore.fetchUserProfile()
+  }
+  
   await loadItems()
 })
 </script>

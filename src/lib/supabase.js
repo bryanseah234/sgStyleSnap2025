@@ -14,26 +14,26 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Validate required environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+// Check if Supabase is configured
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
+
+// Only create Supabase client if environment variables are available
+let supabase = null
+
+if (isSupabaseConfigured) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,    // Automatically refresh expired tokens
+      persistSession: true,      // Persist session in localStorage
+      detectSessionInUrl: true   // Detect session from URL parameters
+    }
+  })
+} else {
+  console.warn('⚠️ Supabase not configured. Running in mock mode.')
 }
 
-/**
- * Supabase Client Instance
- * 
- * Creates and configures the Supabase client with authentication settings
- * for automatic token refresh, session persistence, and URL session detection.
- * 
- * @type {SupabaseClient} Configured Supabase client instance
- */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,    // Automatically refresh expired tokens
-    persistSession: true,      // Persist session in localStorage
-    detectSessionInUrl: true   // Detect session from URL parameters
-  }
-})
+// Export Supabase client (null if not configured)
+export { supabase }
 
 /**
  * Handles Supabase errors with user-friendly messages
@@ -77,7 +77,7 @@ export function handleSupabaseError(error, operation = 'operation') {
  * Gets the current authenticated user
  * 
  * Fetches the current user from Supabase Auth. Returns null if no user
- * is authenticated.
+ * is authenticated or if Supabase is not configured.
  * 
  * @returns {Promise<Object|null>} Current user object or null
  * @throws {Error} If there's an error fetching the user
@@ -91,6 +91,11 @@ export function handleSupabaseError(error, operation = 'operation') {
  * }
  */
 export async function getCurrentUser() {
+  if (!supabase) {
+    console.warn('Supabase not configured, returning null user')
+    return null
+  }
+  
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error) throw error
   return user
@@ -100,7 +105,7 @@ export async function getCurrentUser() {
  * Gets the current user's profile from the database
  * 
  * Fetches the user's profile data from the users table. Requires
- * the user to be authenticated.
+ * the user to be authenticated and Supabase to be configured.
  * 
  * @returns {Promise<Object>} User profile object
  * @throws {Error} If user is not authenticated or profile fetch fails
@@ -110,6 +115,10 @@ export async function getCurrentUser() {
  * console.log('User profile:', profile.name, profile.email)
  */
 export async function getCurrentUserProfile() {
+  if (!supabase) {
+    throw new Error('Supabase not configured')
+  }
+  
   const user = await getCurrentUser()
   if (!user) throw new Error('Not authenticated')
   

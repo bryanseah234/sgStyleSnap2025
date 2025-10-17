@@ -176,36 +176,34 @@
 /**
  * Login Page Component Script
  * 
- * Handles user authentication through Google OAuth and provides
- * theme toggle functionality that works even when not logged in.
+ * Handles user authentication through Google OAuth using the auth store
+ * and provides theme toggle functionality that works even when not logged in.
  * The theme preference is persisted locally and will sync with
  * the user's account once they sign in.
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
-import { api } from '@/api/client'
+import { useAuthStore } from '@/stores/auth-store'
 import { Shirt, Palette, Users, AlertCircle } from 'lucide-vue-next'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter()
 const { theme, loadUser } = useTheme()
-const loading = ref(false)
-const error = ref('')
+const authStore = useAuthStore()
+
+// Use auth store state
+const loading = computed(() => authStore.loading)
+const error = computed(() => authStore.error)
 
 const handleGoogleSignIn = async () => {
-  loading.value = true
-  error.value = ''
-  
   try {
-    await api.auth.signInWithGoogle()
+    await authStore.login()
     // User will be redirected automatically by Supabase
   } catch (err) {
     console.error('Sign in error:', err)
-    error.value = 'Failed to sign in. Please try again.'
-  } finally {
-    loading.value = false
+    // Error is already handled by auth store
   }
 }
 
@@ -213,14 +211,21 @@ onMounted(async () => {
   // Initialize theme system (works without authentication)
   await loadUser()
   
-  // Check if user is already authenticated
-  try {
-    const user = await api.auth.me()
-    if (user) {
-      router.push('/')
+  // Check if user is already authenticated using auth store
+  if (authStore.isAuthenticated) {
+    console.log('🔒 Login: User already authenticated, redirecting to home')
+    router.push('/')
+  } else {
+    // Initialize auth to check for existing session
+    try {
+      await authStore.initializeAuth()
+      if (authStore.isAuthenticated) {
+        console.log('🔒 Login: Found existing session, redirecting to home')
+        router.push('/')
+      }
+    } catch (error) {
+      console.log('🔒 Login: No existing session found, staying on login page')
     }
-  } catch (error) {
-    // User not authenticated, stay on login page
   }
 })
 </script>

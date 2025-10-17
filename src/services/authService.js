@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { supabase, handleSupabaseError, isSupabaseConfigured } from '@/lib/supabase'
 
 /**
  * Authentication Service Class
@@ -26,6 +26,7 @@ export class AuthService {
   constructor() {
     this.currentUser = null
     this.currentProfile = null
+    this.isSupabaseConfigured = isSupabaseConfigured
     this.setupAuthListener()
   }
 
@@ -36,6 +37,11 @@ export class AuthService {
    * updates the current user and profile when users sign in/out.
    */
   setupAuthListener() {
+    if (!isSupabaseConfigured || !supabase) {
+      console.warn('⚠️ AuthService: Supabase not configured, skipping auth listener setup')
+      return
+    }
+
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         this.currentUser = session.user
@@ -58,6 +64,10 @@ export class AuthService {
    * @throws {Error} If OAuth flow fails
    */
   async signInWithGoogle() {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase not configured. Cannot sign in with Google.')
+    }
+
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -84,9 +94,11 @@ export class AuthService {
    */
   async signOut() {
     try {
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      // Sign out from Supabase if configured
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+      }
       
       // Clear local state
       this.currentUser = null
@@ -122,6 +134,11 @@ export class AuthService {
   async getCurrentUser() {
     if (this.currentUser) return this.currentUser
     
+    if (!isSupabaseConfigured || !supabase) {
+      console.warn('⚠️ AuthService: Supabase not configured, returning null user')
+      return null
+    }
+    
     const { data: { user }, error } = await supabase.auth.getUser()
     if (error) throw error
     
@@ -143,6 +160,11 @@ export class AuthService {
     
     const user = await this.getCurrentUser()
     if (!user) return null
+
+    if (!isSupabaseConfigured || !supabase) {
+      console.warn('⚠️ AuthService: Supabase not configured, returning null profile')
+      return null
+    }
 
     try {
       const { data, error } = await supabase
@@ -177,6 +199,11 @@ export class AuthService {
    * @throws {Error} If profile creation fails
    */
   async createUserProfile(authUser) {
+    if (!isSupabaseConfigured || !supabase) {
+      console.warn('⚠️ AuthService: Supabase not configured, cannot create user profile')
+      return null
+    }
+
     try {
       const profileData = {
         id: authUser.id,
@@ -216,6 +243,11 @@ export class AuthService {
     try {
       const user = await this.getCurrentUser()
       if (!user) throw new Error('Not authenticated')
+
+      if (!isSupabaseConfigured || !supabase) {
+        console.warn('⚠️ AuthService: Supabase not configured, cannot update profile')
+        return null
+      }
 
       const { data, error } = await supabase
         .from('users')

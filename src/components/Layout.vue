@@ -189,8 +189,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useAuthStore } from '@/stores/auth-store'
 import { createPageUrl } from '@/utils'
-import { api } from '@/api/client'
 import { 
   Home, 
   Shirt, 
@@ -201,9 +201,10 @@ import {
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 
-// Router and theme composables
+// Router, theme, and auth composables
 const router = useRouter()
 const { theme, loadUser, refreshTheme } = useTheme()
+const authStore = useAuthStore()
 
 // Loading state for initial app setup
 const loading = ref(true)
@@ -227,26 +228,21 @@ const navigationItems = [
 /**
  * Handles user logout functionality
  * 
- * Signs out the current user and redirects to the login page.
+ * Signs out the current user using the auth store and redirects to the login page.
  * Clears all authentication state and user data.
  */
 const handleLogout = async () => {
   try {
-    console.log('Starting logout process...')
-    await api.auth.logout()
-    console.log('Logout successful, redirecting to login...')
+    console.log('🚪 Layout: Starting logout process...')
+    await authStore.logout()
+    console.log('✅ Layout: Logout successful, redirecting to login...')
     
-    // Small delay to ensure logout completes
-    setTimeout(() => {
-      // Force redirect to login page
-      window.location.href = '/login'
-    }, 100)
+    // Redirect to login page
+    router.push('/login')
   } catch (error) {
-    console.error('Logout error:', error)
+    console.error('❌ Layout: Logout error:', error)
     // Force redirect to login even if logout fails
-    setTimeout(() => {
-      window.location.href = '/login'
-    }, 100)
+    router.push('/login')
   }
 }
 

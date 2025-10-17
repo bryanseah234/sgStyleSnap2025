@@ -65,22 +65,32 @@ const router = createRouter({
  * @param {Function} next - Navigation function
  */
 router.beforeEach(async (to, from, next) => {
-  const { api } = await import('@/api/client')
+  // Import auth store
+  const { useAuthStore } = await import('@/stores/auth-store')
+  const authStore = useAuthStore()
   
   try {
-    const user = await api.auth.me()
+    // If auth store is not initialized, initialize it
+    if (!authStore.isAuthenticated && !authStore.loading) {
+      console.log('🔒 Route guard: Initializing auth...')
+      await authStore.initializeAuth()
+    }
     
-    if (to.meta.requiresAuth && !user) {
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
       // Redirect to login if route requires auth and user is not authenticated
+      console.log('🔒 Route guard: Redirecting to login (not authenticated)')
       next('/login')
-    } else if (to.path === '/login' && user) {
+    } else if (to.path === '/login' && authStore.isAuthenticated) {
       // Redirect to home if user is already authenticated and trying to access login
+      console.log('🔒 Route guard: Redirecting to home (already authenticated)')
       next('/')
     } else {
       // Allow navigation
+      console.log('🔒 Route guard: Allowing navigation to', to.path)
       next()
     }
   } catch (error) {
+    console.error('🔒 Route guard error:', error)
     // If auth check fails, redirect to login for protected routes
     if (to.meta.requiresAuth) {
       next('/login')
@@ -106,8 +116,25 @@ const pinia = createPinia()
 app.use(pinia)  // State management
 app.use(router) // Client-side routing
 
-// Mount the application to the DOM
-app.mount('#app')
+// Initialize auth store after Pinia is set up
+app.config.globalProperties.$authStore = null
+app.provide('authStore', null)
+
+// Initialize auth store
+import { useAuthStore } from '@/stores/auth-store'
+const authStore = useAuthStore()
+app.config.globalProperties.$authStore = authStore
+app.provide('authStore', authStore)
+
+// Initialize auth state before mounting
+authStore.initializeAuth().then(() => {
+  console.log('✅ Auth store initialized successfully')
+}).catch(error => {
+  console.error('❌ Failed to initialize auth store:', error)
+}).finally(() => {
+  // Mount the application to the DOM after auth initialization
+  app.mount('#app')
+})
 
 // Load user theme preferences after app is mounted
 // This is called asynchronously to avoid blocking the app mount

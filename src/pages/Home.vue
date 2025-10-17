@@ -167,14 +167,18 @@
 
 import { ref, onMounted, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import { api } from '@/api/client'
+import { useAuthStore } from '@/stores/auth-store'
+import { api } from '@/api/base44Client'
 import { Shirt, Palette, Users, ArrowRight } from 'lucide-vue-next'
 
-// Theme composable for styling
+// Theme and auth composables
 const { theme } = useTheme()
+const authStore = useAuthStore()
 
-// Reactive data for user and content
-const user = ref(null)
+// Use computed to get reactive user data from auth store
+const user = computed(() => authStore.user || authStore.profile)
+
+// Reactive data for content
 const items = ref([])
 const outfits = ref([])
 const friends = ref([])
@@ -192,21 +196,6 @@ const stats = computed(() => [
   { label: 'Outfits', value: outfits.value.length, icon: Palette },
   { label: 'Friends', value: friends.value.length, icon: Users },
 ])
-
-/**
- * Loads current user data
- * 
- * Fetches the current user's profile information from the API
- * and stores it in the user reactive reference.
- */
-const loadUser = async () => {
-  try {
-    const userData = await api.auth.me()
-    user.value = userData
-  } catch (error) {
-    console.error('Error loading user:', error)
-  }
-}
 
 /**
  * Loads user's clothing items
@@ -269,7 +258,16 @@ const loadFriends = async () => {
  * - Friends list
  */
 onMounted(async () => {
-  await loadUser()
+  // Ensure auth store is initialized
+  if (!authStore.isAuthenticated) {
+    await authStore.initializeAuth()
+  }
+  
+  // If we have a user but no profile, fetch the profile
+  if (authStore.user && !authStore.profile) {
+    await authStore.fetchUserProfile()
+  }
+  
   await loadItems()
   await loadOutfits()
   await loadFriends()

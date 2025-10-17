@@ -27,9 +27,9 @@
                   theme.value === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'
                 }`">
                   <img
-                    v-if="user.avatar_url"
-                    :src="user.avatar_url"
-                    :alt="user.name"
+                    v-if="user?.avatar_url || user?.user_metadata?.avatar_url"
+                    :src="user.avatar_url || user.user_metadata?.avatar_url"
+                    :alt="user.name || user.user_metadata?.name || 'User'"
                     class="w-full h-full object-cover"
                     @error="handleImageError"
                   />
@@ -42,7 +42,7 @@
                     <span :class="`text-3xl font-bold ${
                       theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
                     }`">
-                      {{ (user.name || user.email || 'U').charAt(0).toUpperCase() }}
+                      {{ (user?.name || user?.user_metadata?.name || user?.email || 'U').charAt(0).toUpperCase() }}
                     </span>
                   </div>
                 </div>
@@ -66,7 +66,7 @@
                       ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
                       : 'bg-stone-100 border-stone-300 text-stone-600'
                   }`">
-                    {{ user.name || 'Not provided' }}
+                    {{ user?.name || user?.user_metadata?.name || 'Not provided' }}
                   </div>
                 </div>
                 
@@ -81,7 +81,7 @@
                       ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
                       : 'bg-stone-100 border-stone-300 text-stone-600'
                   }`">
-                    {{ user.email || 'Not provided' }}
+                    {{ user?.email || 'Not provided' }}
                   </div>
                 </div>
                 
@@ -96,7 +96,7 @@
                       ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
                       : 'bg-stone-100 border-stone-300 text-stone-600'
                   }`">
-                    @{{ user.username || 'Not provided' }}
+                    @{{ user?.username || 'Not provided' }}
                   </div>
                 </div>
               </div>
@@ -121,21 +121,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import { api } from '@/api/client'
+import { useAuthStore } from '@/stores/auth-store'
 
 const { theme } = useTheme()
-const user = ref(null)
+const authStore = useAuthStore()
 
-const loadUser = async () => {
-  try {
-    const userData = await api.auth.me()
-    user.value = userData
-  } catch (error) {
-    console.error('Error loading user:', error)
-  }
-}
+// Use computed to get reactive user data from auth store
+const user = computed(() => authStore.user || authStore.profile)
 
 const handleImageError = (event) => {
   console.log('Avatar image failed to load, showing fallback')
@@ -144,6 +138,14 @@ const handleImageError = (event) => {
 }
 
 onMounted(async () => {
-  await loadUser()
+  // Ensure auth store is initialized and user data is loaded
+  if (!authStore.isAuthenticated) {
+    await authStore.initializeAuth()
+  }
+  
+  // If we have a user but no profile, fetch the profile
+  if (authStore.user && !authStore.profile) {
+    await authStore.fetchUserProfile()
+  }
 })
 </script>
