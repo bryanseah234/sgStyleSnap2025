@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     profile: null,
     isAuthenticated: false,
-    loading: false,
+    loading: true,
     error: null
   }),
 

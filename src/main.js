@@ -39,7 +39,8 @@ const routes = [
   { path: '/friends', component: Friends, meta: { requiresAuth: true } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/friend-cabinet', component: FriendCabinet, meta: { requiresAuth: true } },
-  { path: '/login', component: Login, meta: { requiresAuth: false } }
+  { path: '/login', component: Login, meta: { requiresAuth: false } },
+  { path: '/auth/callback', component: Login, meta: { requiresAuth: false } }
 ]
 
 /**
@@ -65,62 +66,41 @@ const router = createRouter({
  * @param {Function} next - Navigation function
  */
 router.beforeEach(async (to, from, next) => {
-  // Import auth store
-  const { useAuthStore } = await import('@/stores/auth-store')
-  const authStore = useAuthStore()
-  
   try {
-    // Check for OAuth callback parameters in URL
-    const urlParams = new URLSearchParams(window.location.search)
-    const hasAuthCode = urlParams.has('code') || urlParams.has('access_token') || urlParams.has('error')
+    // Import auth store
+    const { useAuthStore } = await import('@/stores/auth-store')
+    const authStore = useAuthStore()
     
-    console.log('🔒 Route guard: Checking route', to.path, 'from', from.path)
-    console.log('🔒 Route guard: URL params:', Object.fromEntries(urlParams))
-    console.log('🔒 Route guard: Has auth code:', hasAuthCode)
-    
-    if (hasAuthCode) {
-      console.log('🔒 Route guard: OAuth callback detected, waiting for Supabase to process...')
-      // Wait longer for Supabase to process the OAuth callback
-      await new Promise(resolve => setTimeout(resolve, 3000)) // Wait 3 seconds
-      console.log('🔒 Route guard: OAuth callback processed, allowing navigation')
-      next()
-      return
+    // Wait for auth initialization if it's still loading
+    if (authStore.loading) {
+      console.log('⏳ Router: Waiting for auth initialization...')
+      // Wait for auth to finish loading
+      const maxWait = 50 // 50 iterations = 5 seconds max
+      let waited = 0
+      while (authStore.loading && waited < maxWait) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        waited++
+      }
+      console.log('✅ Router: Auth initialization complete')
     }
     
-    // If auth store is not initialized, initialize it
-    if (!authStore.isAuthenticated && !authStore.loading) {
-      console.log('🔒 Route guard: Initializing auth...')
-      await authStore.initializeAuth()
-    }
+    // More robust authentication check
+    const isAuthenticated = authStore.isAuthenticated && authStore.user && authStore.user.id
     
-    // Wait longer for OAuth callback processing when coming from login
-    if (to.path === '/' && from.path === '/login') {
-      console.log('🔒 Route guard: Potential OAuth redirect from login, waiting for auth state...')
-      await new Promise(resolve => setTimeout(resolve, 5000)) // Wait 5 seconds
-      await authStore.initializeAuth() // Re-initialize auth
-    }
-    
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      // Redirect to login if route requires auth and user is not authenticated
-      console.log('🔒 Route guard: Redirecting to login (not authenticated)')
+    // Check if route requires authentication
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      console.log('🔒 Router: Protected route, redirecting to login')
       next('/login')
-    } else if (to.path === '/login' && authStore.isAuthenticated) {
-      // Redirect to home if user is already authenticated and trying to access login
-      console.log('🔒 Route guard: Redirecting to home (already authenticated)')
+    } else if (to.path === '/login' && isAuthenticated) {
+      console.log('👤 Router: Already authenticated, redirecting to home')
       next('/')
     } else {
-      // Allow navigation
-      console.log('🔒 Route guard: Allowing navigation to', to.path)
+      console.log('✅ Router: Navigation allowed to:', to.path)
       next()
     }
   } catch (error) {
-    console.error('🔒 Route guard error:', error)
-    // If auth check fails, redirect to login for protected routes
-    if (to.meta.requiresAuth) {
-      next('/login')
-    } else {
-      next()
-    }
+    console.error('❌ Router: Navigation guard error:', error)
+    next('/login')
   }
 })
 
