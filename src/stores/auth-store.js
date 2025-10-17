@@ -119,9 +119,20 @@ export const useAuthStore = defineStore('auth', {
           return
         }
 
-        // Check if this is an OAuth callback by looking for URL parameters
+        // Check URL parameters for special cases
         const urlParams = new URLSearchParams(window.location.search)
         const hasAuthCode = urlParams.has('code') || urlParams.has('access_token')
+        const isLogoutRedirect = urlParams.has('logout')
+        
+        // If this is a logout redirect, clear everything and don't auto-login
+        if (isLogoutRedirect) {
+          console.log('🚪 AuthStore: Logout redirect detected, clearing all sessions')
+          clearActiveSession()
+          this.clearUser()
+          // Clean up URL parameters
+          window.history.replaceState({}, document.title, '/login')
+          return
+        }
         
         if (hasAuthCode) {
           console.log('🔄 AuthStore: OAuth callback detected, waiting for session...')

@@ -25,7 +25,30 @@ if (isSupabaseConfigured) {
     auth: {
       autoRefreshToken: true,    // Automatically refresh expired tokens
       persistSession: true,      // Persist session in localStorage
-      detectSessionInUrl: true   // Detect session from URL parameters
+      detectSessionInUrl: true,  // Detect session from URL parameters
+      storage: {
+        getItem: (key) => {
+          // Check if this is a logout redirect
+          const urlParams = new URLSearchParams(window.location.search)
+          if (urlParams.has('logout')) {
+            console.log('🚪 Supabase: Logout detected, clearing storage for:', key)
+            return null
+          }
+          return localStorage.getItem(key)
+        },
+        setItem: (key, value) => {
+          // Check if this is a logout redirect
+          const urlParams = new URLSearchParams(window.location.search)
+          if (urlParams.has('logout')) {
+            console.log('🚪 Supabase: Logout detected, preventing storage for:', key)
+            return
+          }
+          localStorage.setItem(key, value)
+        },
+        removeItem: (key) => {
+          localStorage.removeItem(key)
+        }
+      }
     }
   })
 } else {

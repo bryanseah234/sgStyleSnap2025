@@ -270,11 +270,12 @@ export class AuthService {
         }
       }
       
-      // Force a hard refresh to clear all browser state
-      console.log('🚪 AuthService: Forcing hard refresh to clear all browser state...')
+      // Force a hard refresh with cache-busting to clear all browser state
+      console.log('🚪 AuthService: Forcing hard refresh with cache-busting...')
       setTimeout(() => {
-        // Use location.replace to prevent back button issues
-        window.location.replace('/login')
+        // Add cache-busting parameter to force fresh page load
+        const cacheBuster = `?cb=${Date.now()}&logout=true`
+        window.location.replace(`/login${cacheBuster}`)
       }, 100)
       
       console.log('✅ AuthService: User signed out successfully')
@@ -288,7 +289,8 @@ export class AuthService {
       localStorage.clear()
       
       setTimeout(() => {
-        window.location.replace('/login')
+        const cacheBuster = `?cb=${Date.now()}&logout=true`
+        window.location.replace(`/login${cacheBuster}`)
       }, 100)
       
       handleSupabaseError(error, 'sign out')
