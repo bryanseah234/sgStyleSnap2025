@@ -155,7 +155,12 @@
         }`">
           <div class="flex items-center gap-2">
             <AlertCircle class="w-4 h-4" />
-            <span class="text-sm font-medium">{{ error }}</span>
+            <div>
+              <span class="text-sm font-medium">{{ error }}</span>
+              <div class="text-xs mt-1 opacity-75">
+                If this persists, please check your Supabase OAuth configuration.
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -182,7 +187,7 @@
  * the user's account once they sign in.
  */
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
@@ -200,12 +205,20 @@ const error = computed(() => authStore.error)
 const handleGoogleSignIn = async () => {
   try {
     await authStore.login()
-    // User will be redirected automatically by Supabase
+    // User will be redirected automatically by Supabase or watcher
   } catch (err) {
     console.error('Sign in error:', err)
     // Error is already handled by auth store
   }
 }
+
+// Watch for authentication changes and redirect when user becomes authenticated
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (isAuthenticated) {
+    console.log('🔒 Login: User became authenticated, redirecting to home')
+    router.push('/')
+  }
+}, { immediate: true })
 
 onMounted(async () => {
   // Initialize theme system (works without authentication)
@@ -229,3 +242,4 @@ onMounted(async () => {
   }
 })
 </script>
+

@@ -176,9 +176,8 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.error = null
       try {
-        // Check if we're in mock mode (no Supabase configured)
-        if (!authService.isSupabaseConfigured) {
-          console.log('🎭 AuthStore: Using mock login (Supabase not configured)')
+        // Check if we're in mock mode (no Supabase configured or forced mock mode)
+        if (!authService.isSupabaseConfigured || import.meta.env.VITE_FORCE_MOCK_MODE === 'true') {
           await this.mockLogin()
           return
         }
@@ -330,7 +329,6 @@ export const useAuthStore = defineStore('auth', {
      * Creates a fake user session for testing
      */
     async mockLogin() {
-      console.log('🚀 AuthStore: Starting mock login...')
       this.loading = true
       this.error = null
 
