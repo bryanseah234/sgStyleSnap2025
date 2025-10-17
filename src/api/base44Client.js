@@ -114,6 +114,7 @@ class EntityService {
           brand: 'Levi\'s',
           image_url: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=300&fit=crop',
           created_by: 'demo@stylesnap.com',
+          owner_id: 'user-demo',
           created_date: new Date().toISOString(),
           is_favorite: false
         },
@@ -124,6 +125,7 @@ class EntityService {
           brand: 'Uniqlo',
           image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop',
           created_by: 'demo@stylesnap.com',
+          owner_id: 'user-demo',
           created_date: new Date().toISOString(),
           is_favorite: true
         },
@@ -134,6 +136,7 @@ class EntityService {
           brand: 'Zara',
           image_url: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300&h=300&fit=crop',
           created_by: 'demo@stylesnap.com',
+          owner_id: 'user-demo',
           created_date: new Date().toISOString(),
           is_favorite: false
         }

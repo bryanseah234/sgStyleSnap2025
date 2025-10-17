@@ -310,7 +310,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import { api } from '@/api/client'
+import { useAuthStore } from '@/stores/auth-store'
+import { api } from '@/api/base44Client'
 import { 
   Undo, 
   Redo, 
@@ -323,6 +324,10 @@ import {
 } from 'lucide-vue-next'
 
 const { theme } = useTheme()
+const authStore = useAuthStore()
+
+// Use computed to get reactive user data from auth store
+const currentUser = computed(() => authStore.user || authStore.profile)
 
 // State
 const itemsSource = ref('my-cabinet')
@@ -344,11 +349,13 @@ const categories = ['all', 'tops', 'bottoms', 'shoes', 'accessories', 'outerwear
 // Computed
 const filteredItems = computed(() => {
   let filtered = wardrobeItems.value
+  console.log('Dashboard: Filtering items. Total items:', wardrobeItems.value.length, 'Category:', activeCategory.value)
   
   if (activeCategory.value !== 'all') {
     filtered = filtered.filter(item => item.category === activeCategory.value)
   }
   
+  console.log('Dashboard: Filtered items:', filtered.length)
   return filtered
 })
 
@@ -358,16 +365,24 @@ const canRedo = computed(() => historyIndex.value < history.value.length - 1)
 // Methods
 const loadWardrobeItems = async () => {
   try {
-    const user = await api.auth.me()
-    if (user?.id) {
-      const items = await api.entities.ClothingItem.filter(
-        { owner_id: user.id },
-        '-created_at'
-      )
-      wardrobeItems.value = items
-    }
+    console.log('Dashboard: Loading wardrobe items...')
+    
+    // First, try to load ALL items to see what we have
+    const allItems = await api.entities.ClothingItem.list('-created_at')
+    console.log('Dashboard: ALL items in storage:', allItems)
+    
+    // Get user data
+    const mockUser = await api.auth.me()
+    console.log('Dashboard: Current user:', mockUser)
+    
+    // For now, just show ALL items to debug
+    // This will help us see what's actually stored
+    wardrobeItems.value = allItems
+    console.log('Dashboard: Set wardrobeItems to all items:', allItems.length, 'items')
+    
   } catch (error) {
     console.error('Error loading wardrobe items:', error)
+    wardrobeItems.value = []
   }
 }
 
@@ -510,6 +525,16 @@ const redoAction = () => {
 
 // Lifecycle
 onMounted(async () => {
+  // Ensure auth store is initialized
+  if (!authStore.isAuthenticated) {
+    await authStore.initializeAuth()
+  }
+  
+  // If we have a user but no profile, fetch the profile
+  if (authStore.user && !authStore.profile) {
+    await authStore.fetchUserProfile()
+  }
+  
   await loadWardrobeItems()
   saveToHistory() // Initialize history
 })
