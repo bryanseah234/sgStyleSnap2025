@@ -1,12 +1,40 @@
+/**
+ * StyleSnap - Authentication Service
+ * 
+ * Handles user authentication, profile management, and session control
+ * using Supabase Auth with Google OAuth integration.
+ * 
+ * @author StyleSnap Team
+ * @version 1.0.0
+ */
+
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 
+/**
+ * Authentication Service Class
+ * 
+ * Manages user authentication state, profile data, and provides
+ * methods for signing in/out, profile management, and session control.
+ */
 export class AuthService {
+  /**
+   * Creates a new AuthService instance
+   * 
+   * Initializes the service with null user state and sets up
+   * authentication state change listeners.
+   */
   constructor() {
     this.currentUser = null
     this.currentProfile = null
     this.setupAuthListener()
   }
 
+  /**
+   * Sets up authentication state change listener
+   * 
+   * Listens for authentication state changes and automatically
+   * updates the current user and profile when users sign in/out.
+   */
   setupAuthListener() {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
@@ -19,6 +47,16 @@ export class AuthService {
     })
   }
 
+  /**
+   * Signs in the user with Google OAuth
+   * 
+   * Initiates Google OAuth flow and redirects user to Google's
+   * authentication page. After successful authentication, user
+   * is redirected back to the cabinet page.
+   * 
+   * @returns {Promise<Object>} OAuth data from Supabase
+   * @throws {Error} If OAuth flow fails
+   */
   async signInWithGoogle() {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -35,6 +73,15 @@ export class AuthService {
     }
   }
 
+  /**
+   * Signs out the current user
+   * 
+   * Ends the current user session and clears all stored
+   * authentication data.
+   * 
+   * @returns {Promise<boolean>} True if sign out was successful
+   * @throws {Error} If sign out fails
+   */
   async signOut() {
     try {
       const { error } = await supabase.auth.signOut()
@@ -48,6 +95,15 @@ export class AuthService {
     }
   }
 
+  /**
+   * Gets the current authenticated user
+   * 
+   * Returns the current user from memory or fetches it from
+   * Supabase if not already loaded.
+   * 
+   * @returns {Promise<Object|null>} Current user object or null if not authenticated
+   * @throws {Error} If user fetch fails
+   */
   async getCurrentUser() {
     if (this.currentUser) return this.currentUser
     
@@ -58,6 +114,15 @@ export class AuthService {
     return user
   }
 
+  /**
+   * Gets the current user's profile data
+   * 
+   * Returns the user's profile from the database. If no profile
+   * exists, automatically creates one from the authentication data.
+   * 
+   * @returns {Promise<Object|null>} User profile object or null if not authenticated
+   * @throws {Error} If profile fetch or creation fails
+   */
   async getCurrentProfile() {
     if (this.currentProfile) return this.currentProfile
     
@@ -86,6 +151,16 @@ export class AuthService {
     }
   }
 
+  /**
+   * Creates a new user profile from authentication data
+   * 
+   * Automatically creates a user profile in the database when
+   * a new user signs in for the first time.
+   * 
+   * @param {Object} authUser - User object from Supabase Auth
+   * @returns {Promise<Object>} Created user profile
+   * @throws {Error} If profile creation fails
+   */
   async createUserProfile(authUser) {
     try {
       const profileData = {
@@ -112,6 +187,16 @@ export class AuthService {
     }
   }
 
+  /**
+   * Updates the current user's profile
+   * 
+   * Updates the user's profile data in the database and
+   * refreshes the cached profile.
+   * 
+   * @param {Object} updates - Profile data to update
+   * @returns {Promise<Object>} Updated user profile
+   * @throws {Error} If update fails or user not authenticated
+   */
   async updateProfile(updates) {
     try {
       const user = await this.getCurrentUser()
@@ -133,35 +218,78 @@ export class AuthService {
     }
   }
 
+  /**
+   * Updates the user's avatar URL
+   * 
+   * Convenience method to update only the avatar URL.
+   * 
+   * @param {string} avatarUrl - New avatar URL
+   * @returns {Promise<Object>} Updated user profile
+   */
   async updateAvatar(avatarUrl) {
     return this.updateProfile({ avatar_url: avatarUrl })
   }
 
+  /**
+   * Updates the user's theme preference
+   * 
+   * Convenience method to update only the theme preference.
+   * 
+   * @param {string} theme - Theme preference ('light' or 'dark')
+   * @returns {Promise<Object>} Updated user profile
+   */
   async updateTheme(theme) {
     return this.updateProfile({ theme })
   }
 
+  /**
+   * Gets current user profile (alias for getCurrentProfile)
+   * 
+   * @returns {Promise<Object|null>} Current user profile
+   */
   async me() {
     return this.getCurrentProfile()
   }
 
+  /**
+   * Checks if user is currently authenticated
+   * 
+   * @returns {boolean} True if user is authenticated
+   */
   isAuthenticated() {
     return !!this.currentUser
   }
 
+  /**
+   * Checks authentication status by fetching user from Supabase
+   * 
+   * @returns {Promise<boolean>} True if user is authenticated
+   */
   async checkAuth() {
     const user = await this.getCurrentUser()
     return !!user
   }
 
-  // Alias methods for compatibility
+  // Alias methods for compatibility with different naming conventions
+  /**
+   * Updates current user profile (alias for updateProfile)
+   * 
+   * @param {Object} updates - Profile data to update
+   * @returns {Promise<Object>} Updated user profile
+   */
   async updateMe(updates) {
     return this.updateProfile(updates)
   }
 
+  /**
+   * Signs out user (alias for signOut)
+   * 
+   * @returns {Promise<boolean>} True if sign out was successful
+   */
   async logout() {
     return this.signOut()
   }
 }
 
+// Export singleton instance
 export const authService = new AuthService()

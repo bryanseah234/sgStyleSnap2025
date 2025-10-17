@@ -1,4 +1,22 @@
+<!--
+  StyleSnap - Main Layout Component
+  
+  Provides the main application layout with responsive navigation,
+  theme management, and user authentication controls.
+  
+  Features:
+  - Desktop sidebar navigation
+  - Mobile bottom navigation
+  - Theme toggle functionality
+  - User logout functionality
+  - Loading state management
+  - Responsive design
+  
+  @author StyleSnap Team
+  @version 1.0.0
+-->
 <template>
+  <!-- Loading state with animated spinner -->
   <div v-if="loading" :class="`min-h-screen flex items-center justify-center ${
     theme.value === 'dark' ? 'bg-black' : 'bg-stone-50'
   }`">
@@ -161,6 +179,13 @@
 </template>
 
 <script setup>
+/**
+ * Main Layout Component Script
+ * 
+ * Manages the application layout, navigation, theme state, and user authentication.
+ * Provides responsive navigation for both desktop and mobile devices.
+ */
+
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
@@ -176,10 +201,21 @@ import {
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 
+// Router and theme composables
 const router = useRouter()
 const { theme, loadUser } = useTheme()
+
+// Loading state for initial app setup
 const loading = ref(true)
 
+/**
+ * Navigation items configuration
+ * 
+ * Defines the main navigation items with their display names,
+ * route paths, and corresponding icons.
+ * 
+ * @type {Array<Object>} Array of navigation item objects
+ */
 const navigationItems = [
   { name: "Home", path: createPageUrl("Home"), icon: Home },
   { name: "Cabinet", path: createPageUrl("Cabinet"), icon: Shirt },
@@ -188,11 +224,23 @@ const navigationItems = [
   { name: "Profile", path: createPageUrl("Profile"), icon: UserIcon },
 ]
 
+/**
+ * Handles user logout functionality
+ * 
+ * Signs out the current user and redirects to the home page.
+ * Clears all authentication state and user data.
+ */
 const handleLogout = async () => {
   await api.auth.logout()
   router.push('/')
 }
 
+/**
+ * Component mounted lifecycle hook
+ * 
+ * Loads user data and theme preferences when the component is mounted.
+ * Sets loading state to false once initialization is complete.
+ */
 onMounted(async () => {
   await loadUser()
   loading.value = false

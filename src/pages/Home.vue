@@ -1,3 +1,20 @@
+<!--
+  StyleSnap - Home Page Component
+  
+  The main dashboard page that displays user statistics, recent items,
+  and quick access to key features. Provides an overview of the user's
+  wardrobe and activity.
+  
+  Features:
+  - Personalized welcome message
+  - Statistics cards (items, outfits, friends)
+  - Recent items preview
+  - Quick action cards
+  - Responsive design
+  
+  @author StyleSnap Team
+  @version 1.0.0
+-->
 <template>
   <div class="min-h-screen p-6 md:p-12">
     <!-- Loading Bar Animation -->
@@ -140,23 +157,48 @@
 </template>
 
 <script setup>
+/**
+ * Home Page Component Script
+ * 
+ * Manages the home dashboard with user statistics, recent items,
+ * and quick access to key features. Loads and displays user data
+ * including wardrobe items, outfits, and friends.
+ */
+
 import { ref, onMounted, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { api } from '@/api/client'
 import { Shirt, Palette, Users, ArrowRight } from 'lucide-vue-next'
 
+// Theme composable for styling
 const { theme } = useTheme()
+
+// Reactive data for user and content
 const user = ref(null)
 const items = ref([])
 const outfits = ref([])
 const friends = ref([])
 
+/**
+ * Computed statistics for the dashboard cards
+ * 
+ * Calculates and returns statistics for items, outfits, and friends
+ * to display in the dashboard cards.
+ * 
+ * @returns {Array<Object>} Array of stat objects with label, value, and icon
+ */
 const stats = computed(() => [
   { label: 'Items', value: items.value.length, icon: Shirt },
   { label: 'Outfits', value: outfits.value.length, icon: Palette },
   { label: 'Friends', value: friends.value.length, icon: Users },
 ])
 
+/**
+ * Loads current user data
+ * 
+ * Fetches the current user's profile information from the API
+ * and stores it in the user reactive reference.
+ */
 const loadUser = async () => {
   try {
     const userData = await api.auth.me()
@@ -166,6 +208,12 @@ const loadUser = async () => {
   }
 }
 
+/**
+ * Loads user's clothing items
+ * 
+ * Fetches the user's clothing items from the API, limited to
+ * the 6 most recent items for the dashboard preview.
+ */
 const loadItems = async () => {
   try {
     if (user.value?.id) {
@@ -181,6 +229,12 @@ const loadItems = async () => {
   }
 }
 
+/**
+ * Loads user's outfits
+ * 
+ * Fetches the user's outfits from the API, limited to
+ * the 3 most recent outfits for the dashboard preview.
+ */
 const loadOutfits = async () => {
   try {
     const outfitsData = await api.entities.Outfit.list('-created_date', 3)
@@ -190,6 +244,12 @@ const loadOutfits = async () => {
   }
 }
 
+/**
+ * Loads user's friends
+ * 
+ * Fetches the user's friends list from the API to display
+ * the friends count in the statistics.
+ */
 const loadFriends = async () => {
   try {
     const friendsData = await api.entities.Friend.list()
@@ -199,6 +259,15 @@ const loadFriends = async () => {
   }
 }
 
+/**
+ * Component mounted lifecycle hook
+ * 
+ * Loads all necessary data when the component is mounted:
+ * - User profile data
+ * - Recent clothing items
+ * - Recent outfits
+ * - Friends list
+ */
 onMounted(async () => {
   await loadUser()
   await loadItems()
