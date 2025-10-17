@@ -36,6 +36,7 @@
 
 import { defineStore } from 'pinia'
 import { authService } from '@/services/authService'
+import { supabase } from '@/lib/supabase'
 import { 
   storeUserSession, 
   getActiveSession, 
@@ -133,15 +134,29 @@ export const useAuthStore = defineStore('auth', {
         console.log('📦 AuthStore: User retrieved:', user ? 'Found' : 'Not found')
 
         if (user) {
-          console.log('✅ AuthStore: Setting user from session:', user.email)
-          this.setUser(user)
-          
-          // Also fetch the user profile
+          // Check if the user session is still valid by testing the token
           try {
-            const profile = await authService.getCurrentProfile()
-            this.profile = profile
-          } catch (profileError) {
-            console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
+            const { data, error } = await supabase.auth.getSession()
+            if (error || !data.session) {
+              console.log('⚠️ AuthStore: Session invalid, clearing user')
+              this.clearUser()
+              return
+            }
+            
+            console.log('✅ AuthStore: Setting user from valid session:', user.email)
+            this.setUser(user)
+            
+            // Also fetch the user profile
+            try {
+              const profile = await authService.getCurrentProfile()
+              this.profile = profile
+            } catch (profileError) {
+              console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
+            }
+          } catch (sessionError) {
+            console.log('⚠️ AuthStore: Session check failed, clearing user:', sessionError)
+            this.clearUser()
+            return
           }
         } else {
           console.log('❌ AuthStore: No user found, clearing any stored sessions')

@@ -111,10 +111,16 @@ export class AuthService {
    */
   async signOut() {
     try {
+      console.log('🚪 AuthService: Starting sign out process...')
+      
       // Sign out from Supabase if configured
       if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
+        console.log('🚪 AuthService: Signing out from Supabase...')
+        const { error } = await supabase.auth.signOut({ scope: 'global' })
+        if (error) {
+          console.warn('⚠️ AuthService: Supabase signOut error:', error)
+          // Continue with local cleanup even if Supabase signOut fails
+        }
       }
       
       // Clear local state
@@ -131,10 +137,56 @@ export class AuthService {
         localStorage.setItem('stylesnap-theme', themePreference)
       }
       
-      console.log('User signed out successfully')
+      // Clear any Supabase-related cookies manually
+      if (typeof document !== 'undefined') {
+        // Clear common Supabase cookie patterns
+        const cookiesToClear = [
+          'sb-access-token',
+          'sb-refresh-token',
+          'supabase.auth.token',
+          'supabase.auth.refresh_token'
+        ]
+        
+        cookiesToClear.forEach(cookieName => {
+          // Clear for current domain
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+          // Clear for current domain with secure flag
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;`
+          // Clear for parent domain
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+        })
+        
+        // Clear all cookies that might contain auth data
+        const allCookies = document.cookie.split(';')
+        allCookies.forEach(cookie => {
+          const cookieName = cookie.split('=')[0].trim()
+          if (cookieName.includes('supabase') || cookieName.includes('auth') || cookieName.includes('sb-')) {
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+          }
+        })
+      }
+      
+      // Force a page reload to clear any remaining session state
+      console.log('🚪 AuthService: Forcing page reload to clear session state...')
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 100)
+      
+      console.log('✅ AuthService: User signed out successfully')
       return true
     } catch (error) {
-      console.error('Sign out error:', error)
+      console.error('❌ AuthService: Sign out error:', error)
+      // Even if there's an error, try to clear local state and redirect
+      this.currentUser = null
+      this.currentProfile = null
+      sessionStorage.clear()
+      localStorage.clear()
+      
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 100)
+      
       handleSupabaseError(error, 'sign out')
     }
   }
