@@ -109,7 +109,7 @@ const handleOAuthCallback = async () => {
         
         // Redirect to home page
         setTimeout(() => {
-          router.replace('/')
+          router.push('/')
         }, 1000)
         return
       }

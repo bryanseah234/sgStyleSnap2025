@@ -128,7 +128,9 @@ router.beforeEach(async (to, from, next) => {
       next('/')
     } else {
       console.log('✅ Router: Navigation allowed to:', to.path)
+      console.log('🔍 Router: About to call next() for route:', to.path)
       next()
+      console.log('🔍 Router: next() called, navigation should proceed')
     }
   } catch (error) {
     console.error('❌ Router: Navigation guard error:', error)
@@ -162,7 +164,69 @@ const authStore = useAuthStore()
 app.config.globalProperties.$authStore = authStore
 app.provide('authStore', authStore)
 
-// Initialize auth state before mounting with timeout fallback
+// Debug: Track navigation events to identify browser extension error triggers
+let navigationCount = 0
+const originalPushState = history.pushState
+const originalReplaceState = history.replaceState
+
+history.pushState = function(...args) {
+  navigationCount++
+  console.log(`🧭 Navigation #${navigationCount}: pushState`, args[2])
+  return originalPushState.apply(this, args)
+}
+
+history.replaceState = function(...args) {
+  navigationCount++
+  console.log(`🧭 Navigation #${navigationCount}: replaceState`, args[2])
+  return originalReplaceState.apply(this, args)
+}
+
+// Track window location changes
+let lastLocation = window.location.href
+setInterval(() => {
+  if (window.location.href !== lastLocation) {
+    navigationCount++
+    console.log(`🧭 Navigation #${navigationCount}: location changed to`, window.location.href)
+    lastLocation = window.location.href
+  }
+}, 100)
+
+// Track browser extension errors to identify triggers
+let extensionErrorCount = 0
+const originalConsoleError = console.error
+console.error = function(...args) {
+  const message = args.join(' ')
+  if (message.includes('No tab with id') || message.includes('runtime.lastError')) {
+    extensionErrorCount++
+    console.log(`🚨 Browser Extension Error #${extensionErrorCount}:`, message)
+    console.log(`🚨 Current location:`, window.location.href)
+    console.log(`🚨 Navigation count:`, navigationCount)
+    console.log(`🚨 Timestamp:`, new Date().toISOString())
+  }
+  return originalConsoleError.apply(console, args)
+}
+
+// Track component mounting to debug blank page issue
+let componentMountCount = 0
+const originalMount = app.mount
+app.mount = function(selector) {
+  console.log('🔧 App: Attempting to mount to:', selector)
+  try {
+    const result = originalMount.call(this, selector)
+    console.log('✅ App: Successfully mounted to:', selector)
+    return result
+  } catch (error) {
+    console.error('❌ App: Failed to mount to:', selector, error)
+    throw error
+  }
+}
+
+// Track route changes after navigation
+router.afterEach((to, from) => {
+  console.log('🧭 Router: Navigation completed from', from.path, 'to', to.path)
+  console.log('🧭 Router: Current route:', router.currentRoute.value.path)
+  console.log('🧭 Router: Route component:', to.component?.name || 'Unknown')
+})
 const authInitPromise = authStore.initializeAuth().then(() => {
   console.log('✅ Auth store initialized successfully')
 }).catch(error => {

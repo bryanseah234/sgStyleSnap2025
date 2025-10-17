@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Debug Test</title>
+</head>
+<body>
+    <h1>Navigation Debug Test</h1>
+    <p>This page helps identify what triggers browser extension errors.</p>
+    
+    <button onclick="testWindowLocationHref()">Test window.location.href</button>
+    <button onclick="testWindowLocationReplace()">Test window.location.replace()</button>
+    <button onclick="testHistoryPushState()">Test history.pushState()</button>
+    <button onclick="testHistoryReplaceState()">Test history.replaceState()</button>
+    <button onclick="testMultipleNavigations()">Test Multiple Rapid Navigations</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        let navigationCount = 0
+        const output = document.getElementById('output')
+        
+        function log(message) {
+            const div = document.createElement('div')
+            div.textContent = `[${new Date().toISOString()}] ${message}`
+            output.appendChild(div)
+            console.log(message)
+        }
+        
+        function testWindowLocationHref() {
+            log('Testing window.location.href...')
+            setTimeout(() => {
+                window.location.href = window.location.href + '?test=href'
+            }, 100)
+        }
+        
+        function testWindowLocationReplace() {
+            log('Testing window.location.replace()...')
+            setTimeout(() => {
+                window.location.replace(window.location.href + '?test=replace')
+            }, 100)
+        }
+        
+        function testHistoryPushState() {
+            log('Testing history.pushState()...')
+            setTimeout(() => {
+                history.pushState({}, '', window.location.href + '?test=pushstate')
+            }, 100)
+        }
+        
+        function testHistoryReplaceState() {
+            log('Testing history.replaceState()...')
+            setTimeout(() => {
+                history.replaceState({}, '', window.location.href + '?test=replacestate')
+            }, 100)
+        }
+        
+        function testMultipleNavigations() {
+            log('Testing multiple rapid navigations...')
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    history.pushState({}, '', window.location.href + `&rapid=${i}`)
+                }, i * 50)
+            }
+        }
+        
+        // Track browser extension errors
+        let extensionErrorCount = 0
+        const originalConsoleError = console.error
+        console.error = function(...args) {
+            const message = args.join(' ')
+            if (message.includes('No tab with id') || message.includes('runtime.lastError')) {
+                extensionErrorCount++
+                log(`🚨 Browser Extension Error #${extensionErrorCount}: ${message}`)
+                log(`🚨 Current location: ${window.location.href}`)
+                log(`🚨 Navigation count: ${navigationCount}`)
+            }
+            return originalConsoleError.apply(console, args)
+        }
+        
+        // Track navigation events
+        const originalPushState = history.pushState
+        const originalReplaceState = history.replaceState
+        
+        history.pushState = function(...args) {
+            navigationCount++
+            log(`🧭 Navigation #${navigationCount}: pushState ${args[2]}`)
+            return originalPushState.apply(this, args)
+        }
+        
+        history.replaceState = function(...args) {
+            navigationCount++
+            log(`🧭 Navigation #${navigationCount}: replaceState ${args[2]}`)
+            return originalReplaceState.apply(this, args)
+        }
+        
+        log('Debug page loaded. Click buttons to test different navigation methods.')
+    </script>
+</body>
+</html>

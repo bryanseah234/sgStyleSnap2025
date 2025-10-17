@@ -17,6 +17,12 @@
 -->
 <template>
   <div class="min-h-screen p-6 md:p-12">
+    <!-- Debug info -->
+    <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
+      <p class="text-yellow-800">Debug: No user data available</p>
+      <p class="text-sm">Auth: {{ authStore.isAuthenticated }}, User: {{ !!authStore.user }}, Profile: {{ !!authStore.profile }}</p>
+    </div>
+    
     <!-- Loading Bar Animation -->
     <div :class="`h-1 w-full mb-12 rounded-full ${
       theme.value === 'dark' 
@@ -176,7 +182,15 @@ const { theme } = useTheme()
 const authStore = useAuthStore()
 
 // Use computed to get reactive user data from auth store
-const user = computed(() => authStore.user || authStore.profile)
+const user = computed(() => {
+  const userData = authStore.user || authStore.profile
+  console.log('🏠 Home: User computed property accessed:', {
+    authStoreUser: authStore.user,
+    authStoreProfile: authStore.profile,
+    computedUser: userData
+  })
+  return userData
+})
 
 // Reactive data for content
 const items = ref([])
@@ -258,18 +272,36 @@ const loadFriends = async () => {
  * - Friends list
  */
 onMounted(async () => {
-  // Ensure auth store is initialized
-  if (!authStore.isAuthenticated) {
-    await authStore.initializeAuth()
-  }
+  console.log('🏠 Home: Component mounted, starting data loading...')
+  console.log('🏠 Home: Auth state:', {
+    isAuthenticated: authStore.isAuthenticated,
+    hasUser: !!authStore.user,
+    hasProfile: !!authStore.profile,
+    loading: authStore.loading
+  })
   
-  // If we have a user but no profile, fetch the profile
-  if (authStore.user && !authStore.profile) {
-    await authStore.fetchUserProfile()
+  try {
+    // Ensure auth store is initialized
+    if (!authStore.isAuthenticated) {
+      console.log('🏠 Home: Auth not initialized, calling initializeAuth...')
+      await authStore.initializeAuth()
+    }
+    
+    // If we have a user but no profile, fetch the profile
+    if (authStore.user && !authStore.profile) {
+      console.log('🏠 Home: User found but no profile, fetching profile...')
+      await authStore.fetchUserProfile()
+    }
+    
+    console.log('🏠 Home: Loading items...')
+    await loadItems()
+    console.log('🏠 Home: Loading outfits...')
+    await loadOutfits()
+    console.log('🏠 Home: Loading friends...')
+    await loadFriends()
+    console.log('🏠 Home: All data loaded successfully')
+  } catch (error) {
+    console.error('❌ Home: Error loading data:', error)
   }
-  
-  await loadItems()
-  await loadOutfits()
-  await loadFriends()
 })
 </script>
