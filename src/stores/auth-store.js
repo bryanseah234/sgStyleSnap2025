@@ -111,6 +111,23 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.error = null
       try {
+        // Check if Supabase is configured first
+        if (!authService.isSupabaseConfigured) {
+          console.log('🎭 AuthStore: Supabase not configured, skipping auth initialization')
+          this.clearUser()
+          return
+        }
+
+        // Check if this is an OAuth callback by looking for URL parameters
+        const urlParams = new URLSearchParams(window.location.search)
+        const hasAuthCode = urlParams.has('code') || urlParams.has('access_token')
+        
+        if (hasAuthCode) {
+          console.log('🔄 AuthStore: OAuth callback detected, waiting for session...')
+          // Wait a bit longer for OAuth session to be established
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+
         // Use the existing AuthService to get current user
         const user = await authService.getCurrentUser()
         console.log('📦 AuthStore: User retrieved:', user ? 'Found' : 'Not found')
@@ -133,8 +150,16 @@ export const useAuthStore = defineStore('auth', {
         }
       } catch (error) {
         console.error('❌ AuthStore: Failed to initialize auth:', error)
-        this.error = error.message
-        this.clearUser()
+        
+        // Handle specific auth session errors gracefully
+        if (error.message?.includes('Auth session missing') || 
+            error.message?.includes('AuthSessionMissingError')) {
+          console.log('ℹ️ AuthStore: No valid session found, user not authenticated')
+          this.clearUser()
+        } else {
+          this.error = error.message
+          this.clearUser()
+        }
       } finally {
         this.loading = false
         console.log(

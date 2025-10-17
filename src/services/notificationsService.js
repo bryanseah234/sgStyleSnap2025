@@ -1,4 +1,4 @@
-import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { supabase, handleSupabaseError, isSupabaseConfigured } from '@/lib/supabase'
 
 export class NotificationsService {
   constructor() {
@@ -194,17 +194,34 @@ export class NotificationsService {
 
   async cleanupOldNotifications() {
     try {
+      // Skip cleanup if Supabase is not configured
+      if (!isSupabaseConfigured || !supabase) {
+        console.log('⚠️ NotificationsService: Supabase not configured, skipping cleanup')
+        return
+      }
+
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
+      // Try to delete old notifications instead of updating removed_at
       const { error } = await supabase
         .from('notifications')
-        .update({ removed_at: new Date().toISOString() })
+        .delete()
         .lt('created_at', sevenDaysAgo.toISOString())
-        .is('removed_at', null)
 
       if (error) {
         console.error('Error cleaning up old notifications:', error)
+        // If deletion fails, try the function approach
+        try {
+          const { error: functionError } = await supabase.rpc('cleanup_expired_notifications')
+          if (functionError) {
+            console.error('Error running cleanup function:', functionError)
+          }
+        } catch (functionErr) {
+          console.error('Cleanup function not available:', functionErr)
+        }
+      } else {
+        console.log('✅ Successfully cleaned up old notifications')
       }
     } catch (error) {
       console.error('Error in notification cleanup:', error)

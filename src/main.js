@@ -70,10 +70,24 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
   try {
+    // Skip auth check for OAuth callback routes
+    if (to.path.includes('/auth/callback') || to.query.code) {
+      console.log('🔒 Route guard: OAuth callback detected, allowing navigation')
+      next()
+      return
+    }
+    
     // If auth store is not initialized, initialize it
     if (!authStore.isAuthenticated && !authStore.loading) {
       console.log('🔒 Route guard: Initializing auth...')
       await authStore.initializeAuth()
+    }
+    
+    // Wait a bit for auth state to settle after OAuth redirect
+    if (to.path === '/cabinet' && from.path === '/login') {
+      console.log('🔒 Route guard: Potential OAuth redirect, waiting for auth state...')
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+      await authStore.initializeAuth() // Re-initialize auth
     }
     
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
