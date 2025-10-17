@@ -240,8 +240,17 @@ const loadItems = async () => {
  */
 const loadOutfits = async () => {
   try {
-    const outfitsData = await api.entities.Outfit.list('-created_at', 3)
-    outfits.value = outfitsData
+    if (user.value?.id) {
+      const outfitsData = await api.entities.Outfit.list('-created_at', 3)
+      console.log('🏠 Home: All outfits data:', outfitsData)
+      console.log('🏠 Home: Current user email:', user.value.email)
+      // Filter outfits by current user
+      const userOutfits = outfitsData.filter(outfit => outfit.created_by === user.value.email)
+      console.log('🏠 Home: User outfits after filtering:', userOutfits)
+      outfits.value = userOutfits
+    } else {
+      outfits.value = []
+    }
   } catch (error) {
     console.error('Error loading outfits:', error)
   }
@@ -255,8 +264,14 @@ const loadOutfits = async () => {
  */
 const loadFriends = async () => {
   try {
-    const friendsData = await api.entities.Friend.list()
-    friends.value = friendsData
+    if (user.value?.id) {
+      const friendsData = await api.entities.Friend.list()
+      // Filter friends by current user
+      const userFriends = friendsData.filter(friend => friend.created_by === user.value.email)
+      friends.value = userFriends
+    } else {
+      friends.value = []
+    }
   } catch (error) {
     console.error('Error loading friends:', error)
   }

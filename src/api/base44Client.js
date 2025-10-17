@@ -7,7 +7,8 @@ class StyleSnapAPI {
     this.entities = {
       ClothingItem: new EntityService('clothing-items'),
       Outfit: new EntityService('outfits'),
-      Friendship: new EntityService('friendships')
+      Friendship: new EntityService('friendships'),
+      Friend: new EntityService('friends') // Add Friend entity for compatibility
     };
     this.integrations = {
       Core: {
