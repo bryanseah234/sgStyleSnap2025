@@ -8,6 +8,74 @@
  * @version 1.0.0
  */
 
+// IMMEDIATE browser extension error suppression - must be first!
+const isBrowserExtensionError = (message) => {
+  if (!message) return false
+  
+  const extensionErrorPatterns = [
+    'No tab with id',
+    'runtime.lastError',
+    'chrome-extension',
+    'moz-extension',
+    'Unchecked runtime.lastError',
+    'Extension context invalidated',
+    'Receiving end does not exist',
+    'Could not establish connection',
+    'The message port closed',
+    'chrome.runtime',
+    'browser.runtime',
+    'tab with id',
+    'lastError',
+    'extension',
+    'chrome-extension://',
+    'moz-extension://'
+  ]
+  
+  const messageStr = message.toString().toLowerCase()
+  return extensionErrorPatterns.some(pattern => 
+    messageStr.includes(pattern.toLowerCase())
+  )
+}
+
+// Override console methods immediately to suppress extension errors
+const originalConsoleError = console.error
+const originalConsoleWarn = console.warn
+const originalConsoleLog = console.log
+
+console.error = function(...args) {
+  const message = args.join(' ')
+  if (isBrowserExtensionError(message)) {
+    return // Suppress browser extension console errors
+  }
+  originalConsoleError.apply(console, args)
+}
+
+console.warn = function(...args) {
+  const message = args.join(' ')
+  if (isBrowserExtensionError(message)) {
+    return // Suppress browser extension console warnings
+  }
+  originalConsoleWarn.apply(console, args)
+}
+
+console.log = function(...args) {
+  const message = args.join(' ')
+  if (isBrowserExtensionError(message)) {
+    return // Suppress browser extension console logs
+  }
+  originalConsoleLog.apply(console, args)
+}
+
+// Override window.onerror immediately
+window.onerror = function(message, source, lineno, colno, error) {
+  if (isBrowserExtensionError(message) || 
+      isBrowserExtensionError(source) ||
+      isBrowserExtensionError(error?.message)) {
+    return true // Suppress the error
+  }
+  return false
+}
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -75,17 +143,34 @@ router.beforeEach(async (to, from, next) => {
     // Wait for auth initialization if it's still loading
     if (authStore.loading) {
       console.log('⏳ Router: Waiting for auth initialization...')
-      // Wait for auth to finish loading
-      const maxWait = 50 // 50 iterations = 5 seconds max
+      // Wait for auth to finish loading with longer timeout
+      const maxWait = 100 // 100 iterations = 10 seconds max
       let waited = 0
       while (authStore.loading && waited < maxWait) {
         await new Promise(resolve => setTimeout(resolve, 100))
         waited++
       }
       
-      // If still loading after max wait, force continue to prevent blank page
+      // If still loading after max wait, check if user has existing session
       if (authStore.loading) {
-        console.warn('⚠️ Router: Auth initialization timeout, continuing navigation')
+        console.warn('⚠️ Router: Auth initialization timeout, checking for existing session...')
+        
+        // Try to get user from Supabase directly
+        try {
+          // Force check for existing session using the existing authStore instance
+          const user = await authStore.getCurrentUser()
+          if (user) {
+            console.log('✅ Router: Found existing session, setting user')
+            authStore.setUser(user)
+            authStore.loading = false
+          } else {
+            console.log('❌ Router: No existing session found')
+            authStore.loading = false
+          }
+        } catch (error) {
+          console.error('❌ Router: Error checking existing session:', error)
+          authStore.loading = false
+        }
       } else {
         console.log('✅ Router: Auth initialization complete')
       }
@@ -144,52 +229,7 @@ const authStore = useAuthStore()
 app.config.globalProperties.$authStore = authStore
 app.provide('authStore', authStore)
 
-// Global error handler for browser extension conflicts
-window.addEventListener('error', (event) => {
-  if (event.message && (
-    event.message.includes('No tab with id') ||
-    event.message.includes('runtime.lastError') ||
-    event.message.includes('chrome-extension') ||
-    event.message.includes('moz-extension')
-  )) {
-    // Suppress browser extension errors
-    event.preventDefault()
-    event.stopPropagation()
-    return false
-  }
-})
-
-// Global unhandled promise rejection handler
-window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason && (
-    (event.reason.message && (
-      event.reason.message.includes('No tab with id') ||
-      event.reason.message.includes('runtime.lastError') ||
-      event.reason.message.includes('chrome-extension') ||
-      event.reason.message.includes('moz-extension')
-    )) ||
-    (event.reason.toString && event.reason.toString().includes('No tab with id'))
-  )) {
-    // Suppress browser extension promise rejections
-    event.preventDefault()
-    event.stopPropagation()
-    return false
-  }
-})
-
-// Additional console error suppression for browser extensions
-const originalConsoleError = console.error
-console.error = function(...args) {
-  const message = args.join(' ')
-  if (message.includes('No tab with id') || 
-      message.includes('runtime.lastError') ||
-      message.includes('chrome-extension') ||
-      message.includes('moz-extension')) {
-    // Suppress browser extension console errors
-    return
-  }
-  originalConsoleError.apply(console, args)
-}
+// Error suppression is now handled at the top of the file
 
 // Initialize auth state before mounting with timeout fallback
 const authInitPromise = authStore.initializeAuth().then(() => {
@@ -213,12 +253,73 @@ Promise.race([
     setTimeout(() => {
       try {
         app.mount('#app')
+        console.log('✅ App mounted via fallback')
       } catch (e) {
         console.error('❌ Fallback mount failed:', e)
+        // Last resort: force reload if mounting fails
+        setTimeout(() => {
+          console.log('🔄 Forcing page reload due to mount failure')
+          window.location.reload()
+        }, 2000)
       }
     }, 1000)
   }
 })
+
+// Additional blank page prevention
+let blankPageCheckInterval = null
+let lastActivityTime = Date.now()
+
+// Monitor for blank pages and recover
+const startBlankPageMonitor = () => {
+  blankPageCheckInterval = setInterval(() => {
+    const now = Date.now()
+    const timeSinceLastActivity = now - lastActivityTime
+    
+    // If no activity for 10 seconds and page appears blank, try to recover
+    if (timeSinceLastActivity > 10000) {
+      const appElement = document.getElementById('app')
+      if (appElement && (!appElement.innerHTML || appElement.innerHTML.trim() === '')) {
+        console.log('🚨 Blank page detected, attempting recovery...')
+        
+        // Try to re-mount the app
+        try {
+          if (!app._instance) {
+            app.mount('#app')
+            console.log('✅ App re-mounted successfully')
+          }
+        } catch (error) {
+          console.error('❌ Re-mount failed:', error)
+          // Force reload as last resort
+          window.location.reload()
+        }
+      }
+    }
+  }, 5000) // Check every 5 seconds
+}
+
+// Track user activity
+document.addEventListener('click', () => { lastActivityTime = Date.now() })
+document.addEventListener('keydown', () => { lastActivityTime = Date.now() })
+document.addEventListener('scroll', () => { lastActivityTime = Date.now() })
+
+// Start monitoring after a delay
+setTimeout(startBlankPageMonitor, 5000)
+
+// Additional aggressive error suppression for runtime.lastError
+const originalOnError = window.onerror
+window.onerror = function(message, source, lineno, colno, error) {
+  if (isBrowserExtensionError(message) || 
+      isBrowserExtensionError(source) ||
+      isBrowserExtensionError(error?.message)) {
+    return true // Suppress the error
+  }
+  
+  if (originalOnError) {
+    return originalOnError.call(this, message, source, lineno, colno, error)
+  }
+  return false
+}
 
 // Load user theme preferences after app is mounted
 // This is called asynchronously to avoid blocking the app mount
