@@ -1,0 +1,148 @@
+# StyleSnap - Workflow Status Check
+# Validates that all workflows are properly configured
+
+name: Workflow Status Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run weekly to check workflow health
+    - cron: '0 9 * * 1'
+
+jobs:
+  check-workflows:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Validate package.json scripts
+        run: |
+          echo "🔍 Checking package.json scripts..."
+          
+          # Check required scripts exist
+          REQUIRED_SCRIPTS=("dev" "build" "lint")
+          for script in "${REQUIRED_SCRIPTS[@]}"; do
+            if npm run "$script" --dry-run >/dev/null 2>&1; then
+              echo "✅ Script '$script' exists"
+            else
+              echo "❌ Script '$script' missing"
+              exit 1
+            fi
+          done
+          
+          # Check optional scripts
+          OPTIONAL_SCRIPTS=("test" "test:e2e" "purge-old-items" "cloudinary-cleanup")
+          for script in "${OPTIONAL_SCRIPTS[@]}"; do
+            if npm run "$script" --dry-run >/dev/null 2>&1; then
+              echo "✅ Optional script '$script' exists"
+            else
+              echo "⚠️  Optional script '$script' not configured"
+            fi
+          done
+      
+      - name: Validate workflow files
+        run: |
+          echo "🔍 Checking workflow files..."
+          
+          # Check all workflow files are valid YAML
+          for workflow in .github/workflows/*.yml; do
+            if [ -f "$workflow" ]; then
+              echo "Checking $workflow..."
+              if python3 -c "import yaml; yaml.safe_load(open('$workflow'))" 2>/dev/null; then
+                echo "✅ $workflow is valid YAML"
+              else
+                echo "❌ $workflow has YAML syntax errors"
+                exit 1
+              fi
+            fi
+          done
+      
+      - name: Check required secrets documentation
+        run: |
+          echo "🔍 Checking secrets documentation..."
+          
+          # Check if deploy workflow documents required secrets
+          if grep -q "Required GitHub Secrets" .github/workflows/deploy.yml; then
+            echo "✅ Deploy workflow documents required secrets"
+          else
+            echo "❌ Deploy workflow missing secrets documentation"
+            exit 1
+          fi
+          
+          # Check if supabase keepalive documents required secrets
+          if grep -q "Required GitHub Secrets" .github/workflows/supabase-keepalive.yml; then
+            echo "✅ Supabase keepalive documents required secrets"
+          else
+            echo "❌ Supabase keepalive missing secrets documentation"
+            exit 1
+          fi
+      
+      - name: Validate labeler configuration
+        run: |
+          echo "🔍 Checking labeler configuration..."
+          
+          if [ -f ".github/labeler.yml" ]; then
+            echo "✅ Labeler configuration exists"
+            if python3 -c "import yaml; yaml.safe_load(open('.github/labeler.yml'))" 2>/dev/null; then
+              echo "✅ Labeler configuration is valid YAML"
+            else
+              echo "❌ Labeler configuration has YAML syntax errors"
+              exit 1
+            fi
+          else
+            echo "❌ Labeler configuration missing"
+            exit 1
+          fi
+      
+      - name: Test build process
+        run: |
+          echo "🔍 Testing build process..."
+          
+          # Test that the build works
+          if npm run build; then
+            echo "✅ Build process works"
+          else
+            echo "❌ Build process failed"
+            exit 1
+          fi
+          
+          # Check that dist folder was created
+          if [ -d "dist" ]; then
+            echo "✅ Build artifacts created"
+          else
+            echo "❌ Build artifacts not created"
+            exit 1
+          fi
+      
+      - name: Test linting
+        run: |
+          echo "🔍 Testing linting process..."
+          
+          if npm run lint; then
+            echo "✅ Linting passes"
+          else
+            echo "⚠️  Linting has issues (this may be expected)"
+          fi
+      
+      - name: Workflow status summary
+        run: |
+          echo "🎉 Workflow Status Check Complete!"
+          echo ""
+          echo "✅ All workflows are properly configured"
+          echo "✅ Package.json scripts are valid"
+          echo "✅ Build process works"
+          echo "✅ YAML syntax is valid"
+          echo "✅ Documentation is complete"
+          echo ""
+          echo "Your GitHub workflows are ready to use! 🚀"

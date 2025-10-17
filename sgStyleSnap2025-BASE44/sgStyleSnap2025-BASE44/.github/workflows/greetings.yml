@@ -1,0 +1,35 @@
+name: Greetings
+
+on: [pull_request_target, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-message: |
+          👋 Welcome to StyleSnap! Thanks for opening your first issue.
+          
+          Please make sure to:
+          - Check existing issues to avoid duplicates
+          - Provide detailed steps to reproduce (for bugs)
+          - Reference relevant documentation files (PROJECT_CONTEXT.md, REQUIREMENTS.md, TASKS.md)
+          - Follow the issue template if available
+          
+          A maintainer will review your issue soon!
+        pr-message: |
+          🎉 Thanks for your first pull request to StyleSnap!
+          
+          Please ensure:
+          - Your code follows docs/CODE_STANDARDS.md conventions
+          - All tests pass (`npm test`)
+          - Build succeeds (`npm run build`)
+          - You've updated relevant documentation
+          - You've referenced the related issue/task
+          
+          A maintainer will review your PR soon!
