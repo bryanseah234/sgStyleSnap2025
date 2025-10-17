@@ -205,7 +205,7 @@ export class CatalogService {
       // Get user's style preferences and wardrobe
       const { data: userItems, error: userError } = await supabase
         .from('clothes')
-        .select('category, brand, color_tags, style_tags')
+        .select('category, brand, style_tags')
         .eq('owner_id', userId)
         .eq('removed_at', null)
 
@@ -273,11 +273,12 @@ export class CatalogService {
       }
 
       // Colors
-      if (item.color_tags && Array.isArray(item.color_tags)) {
-        item.color_tags.forEach(color => {
-          colorCount[color] = (colorCount[color] || 0) + 1
-        })
-      }
+        // color_tags column doesn't exist in database schema
+        // if (item.color_tags && Array.isArray(item.color_tags)) {
+        //   item.color_tags.forEach(color => {
+        //     colorCount[color] = (colorCount[color] || 0) + 1
+        //   })
+        // }
 
       // Styles
       if (item.style_tags && Array.isArray(item.style_tags)) {

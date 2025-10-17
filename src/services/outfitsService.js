@@ -110,7 +110,7 @@ export class OutfitsService {
           position_x: item.x || 0,
           position_y: item.y || 0,
           z_index: item.z_index || index,
-          notes: item.notes || ''
+          // notes: item.notes || '' // notes column doesn't exist in outfit_items table
         }))
 
         const { error: itemsError } = await supabase
@@ -379,8 +379,9 @@ export class OutfitsService {
         if (suggestion.category === item.category) return false
         
         // Color compatibility (simplified)
-        const itemColors = item.color_tags || []
-        const suggestionColors = suggestion.color_tags || []
+        // color_tags column doesn't exist in database schema
+        // const itemColors = item.color_tags || []
+        // const suggestionColors = suggestion.color_tags || []
         
         // Style compatibility
         const itemStyles = item.style_tags || []

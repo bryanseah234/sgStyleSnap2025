@@ -101,8 +101,8 @@ export class FriendsService {
             location
           )
         `)
-        .eq('user_id', user.id)
-        .eq('friend_id', friendId)
+        .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .or(`requester_id.eq.${friendId},receiver_id.eq.${friendId}`)
         .eq('status', 'accepted')
         .single()
 
@@ -408,11 +408,11 @@ export class FriendsService {
       // Get friends list
       const { data: friends } = await supabase
         .from('friends')
-        .select('friend_id')
-        .eq('user_id', user.id)
+        .select('requester_id, receiver_id')
+        .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .eq('status', 'accepted')
 
-      const friendIds = friends?.map(f => f.friend_id) || []
+      const friendIds = friends?.map(f => f.requester_id === user.id ? f.receiver_id : f.requester_id) || []
 
       if (friendIds.length === 0) return []
 
@@ -447,19 +447,19 @@ export class FriendsService {
       // Get user's friends
       const { data: userFriends } = await supabase
         .from('friends')
-        .select('friend_id')
-        .eq('user_id', user.id)
+        .select('requester_id, receiver_id')
+        .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .eq('status', 'accepted')
 
       // Get target user's friends
       const { data: targetFriends } = await supabase
         .from('friends')
-        .select('friend_id')
-        .eq('user_id', userId)
+        .select('requester_id, receiver_id')
+        .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
         .eq('status', 'accepted')
 
-      const userFriendIds = userFriends?.map(f => f.friend_id) || []
-      const targetFriendIds = targetFriends?.map(f => f.friend_id) || []
+      const userFriendIds = userFriends?.map(f => f.requester_id === user.id ? f.receiver_id : f.requester_id) || []
+      const targetFriendIds = targetFriends?.map(f => f.requester_id === userId ? f.receiver_id : f.requester_id) || []
 
       // Find mutual friends
       const mutualFriendIds = userFriendIds.filter(id => 
@@ -489,11 +489,11 @@ export class FriendsService {
       // Get user's current friends
       const { data: currentFriends } = await supabase
         .from('friends')
-        .select('friend_id')
-        .eq('user_id', user.id)
+        .select('requester_id, receiver_id')
+        .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .eq('status', 'accepted')
 
-      const currentFriendIds = currentFriends?.map(f => f.friend_id) || []
+      const currentFriendIds = currentFriends?.map(f => f.requester_id === user.id ? f.receiver_id : f.requester_id) || []
 
       // Get users who are not already friends and not the current user
       const { data, error } = await supabase
