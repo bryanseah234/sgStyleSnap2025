@@ -1,3 +1,13 @@
+/**
+ * StyleSnap - Main Application Entry Point
+ * 
+ * This file initializes the Vue 3 application with all necessary plugins,
+ * routing configuration, and authentication guards.
+ * 
+ * @author StyleSnap Team
+ * @version 1.0.0
+ */
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -5,7 +15,7 @@ import App from './App.vue'
 import './index.css'
 import { useTheme } from './composables/useTheme'
 
-// Import pages
+// Import page components
 import Home from './pages/Home.vue'
 import Cabinet from './pages/Cabinet.vue'
 import Dashboard from './pages/Dashboard.vue'
@@ -14,7 +24,14 @@ import Profile from './pages/Profile.vue'
 import FriendCabinet from './pages/FriendCabinet.vue'
 import Login from './pages/Login.vue'
 
-// Router configuration
+/**
+ * Application Routes Configuration
+ * 
+ * Defines all available routes with their corresponding components
+ * and authentication requirements.
+ * 
+ * @type {Array<Object>} Array of route objects
+ */
 const routes = [
   { path: '/', component: Home, meta: { requiresAuth: true } },
   { path: '/cabinet', component: Cabinet, meta: { requiresAuth: true } },
@@ -25,12 +42,28 @@ const routes = [
   { path: '/login', component: Login, meta: { requiresAuth: false } }
 ]
 
+/**
+ * Vue Router Instance
+ * 
+ * Creates the router instance with HTML5 history mode
+ * and the defined routes.
+ */
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
 
-// Route protection
+/**
+ * Route Guard - Authentication Protection
+ * 
+ * Intercepts navigation to protected routes and redirects
+ * unauthenticated users to the login page. Also redirects
+ * authenticated users away from the login page.
+ * 
+ * @param {Object} to - Target route object
+ * @param {Object} from - Source route object  
+ * @param {Function} next - Navigation function
+ */
 router.beforeEach(async (to, from, next) => {
   const { api } = await import('@/api/client')
   
@@ -38,13 +71,17 @@ router.beforeEach(async (to, from, next) => {
     const user = await api.auth.me()
     
     if (to.meta.requiresAuth && !user) {
+      // Redirect to login if route requires auth and user is not authenticated
       next('/login')
     } else if (to.path === '/login' && user) {
+      // Redirect to home if user is already authenticated and trying to access login
       next('/')
     } else {
+      // Allow navigation
       next()
     }
   } catch (error) {
+    // If auth check fails, redirect to login for protected routes
     if (to.meta.requiresAuth) {
       next('/login')
     } else {
@@ -53,18 +90,24 @@ router.beforeEach(async (to, from, next) => {
   }
 })
 
-// Initialize theme before creating app
+// Initialize theme system before creating the app
 const { loadUser } = useTheme()
 
-// Create app
+/**
+ * Vue Application Instance
+ * 
+ * Creates the main Vue application instance and configures
+ * all necessary plugins and middleware.
+ */
 const app = createApp(App)
 const pinia = createPinia()
 
-app.use(pinia)
-app.use(router)
+// Register plugins
+app.use(pinia)  // State management
+app.use(router) // Client-side routing
 
-// Initialize theme and load user
+// Mount the application to the DOM
 app.mount('#app')
 
-// Load user theme after app is mounted
+// Load user theme preferences after app is mounted
 loadUser()

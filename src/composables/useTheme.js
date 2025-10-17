@@ -1,11 +1,25 @@
+/**
+ * StyleSnap - Theme Management Composable
+ * 
+ * Provides theme management functionality including light/dark mode switching,
+ * theme persistence, and user preference synchronization.
+ * 
+ * @author StyleSnap Team
+ * @version 1.0.0
+ */
+
 import { ref, watch, onMounted } from 'vue'
 import { api } from '@/api/client'
 
-// Global theme state
+// Global theme state - shared across all components
 const theme = ref('light')
 const user = ref(null)
 
-// Apply theme to DOM
+/**
+ * Applies the specified theme to the DOM by adding/removing CSS classes
+ * 
+ * @param {string} newTheme - The theme to apply ('light' or 'dark')
+ */
 const applyTheme = (newTheme) => {
   const root = document.documentElement
   if (newTheme === 'dark') {
@@ -15,9 +29,16 @@ const applyTheme = (newTheme) => {
   }
 }
 
-// Initialize theme from localStorage or system preference
+/**
+ * Initializes the theme from localStorage or system preference
+ * 
+ * Priority order:
+ * 1. Saved theme in localStorage
+ * 2. System preference (prefers-color-scheme)
+ * 3. Default to light theme
+ */
 const initializeTheme = () => {
-  // Check localStorage first
+  // Check localStorage first for saved preference
   const savedTheme = localStorage.getItem('stylesnap-theme')
   if (savedTheme) {
     theme.value = savedTheme
@@ -25,7 +46,7 @@ const initializeTheme = () => {
     return
   }
 
-  // Check system preference
+  // Check system preference if no saved theme
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     theme.value = 'dark'
     applyTheme('dark')
@@ -35,11 +56,33 @@ const initializeTheme = () => {
   }
 }
 
+/**
+ * useTheme Composable
+ * 
+ * Provides theme management functionality for Vue components.
+ * Handles theme switching, persistence, and user synchronization.
+ * 
+ * @returns {Object} Theme management functions and reactive state
+ * @returns {Ref<string>} theme - Current theme ('light' or 'dark')
+ * @returns {Function} toggleTheme - Toggle between light and dark themes
+ * @returns {Function} setTheme - Set a specific theme
+ * @returns {Ref<Object>} user - Current user data
+ * @returns {Function} loadUser - Load user data and theme preferences
+ */
 export function useTheme() {
+  /**
+   * Loads user data and applies their saved theme preference
+   * 
+   * Fetches user data from the API and applies their saved theme
+   * preference if available. Falls back to current theme if no
+   * user preference is found.
+   */
   const loadUser = async () => {
     try {
       const userData = await api.auth.me()
       user.value = userData
+      
+      // Apply user's saved theme preference if available
       if (userData.theme) {
         theme.value = userData.theme
         applyTheme(userData.theme)
@@ -50,12 +93,19 @@ export function useTheme() {
     }
   }
 
+  /**
+   * Toggles between light and dark themes
+   * 
+   * Switches the current theme and persists the change to both
+   * localStorage and the user's profile (if authenticated).
+   */
   const toggleTheme = async () => {
     const newTheme = theme.value === 'light' ? 'dark' : 'light'
     theme.value = newTheme
     applyTheme(newTheme)
     localStorage.setItem('stylesnap-theme', newTheme)
     
+    // Update user's theme preference in the database
     if (user.value) {
       try {
         await api.auth.updateMe({ theme: newTheme })
@@ -65,18 +115,23 @@ export function useTheme() {
     }
   }
 
+  /**
+   * Sets a specific theme
+   * 
+   * @param {string} newTheme - The theme to set ('light' or 'dark')
+   */
   const setTheme = (newTheme) => {
     theme.value = newTheme
     applyTheme(newTheme)
     localStorage.setItem('stylesnap-theme', newTheme)
   }
 
-  // Watch for theme changes and apply to DOM
+  // Watch for theme changes and apply to DOM automatically
   watch(theme, (newTheme) => {
     applyTheme(newTheme)
   })
 
-  // Initialize theme on mount
+  // Initialize theme when the composable is first used
   onMounted(() => {
     initializeTheme()
   })
