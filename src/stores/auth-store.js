@@ -177,7 +177,9 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       try {
         // Check if we're in mock mode (no Supabase configured or forced mock mode)
-        if (!authService.isSupabaseConfigured || import.meta.env.VITE_FORCE_MOCK_MODE === 'true') {
+        // Temporarily force mock mode for deployed version
+        if (!authService.isSupabaseConfigured || import.meta.env.VITE_FORCE_MOCK_MODE === 'true' || window.location.hostname !== 'localhost') {
+          console.log('🎭 AuthStore: Using mock login (forced for deployed version)')
           await this.mockLogin()
           return
         }
