@@ -29,7 +29,7 @@
       <h1 :class="`text-5xl md:text-7xl font-bold tracking-tight mb-4 ${
         theme.value === 'dark' ? 'text-white' : 'text-black'
       }`">
-        Welcome back{{ user?.name ? `, ${user.name.split(' ')[0]}` : '' }}
+        Welcome back{{ currentUser?.full_name ? `, ${currentUser.full_name.split(' ')[0]}` : '' }}
       </h1>
       <p :class="`text-xl md:text-2xl ${
         theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
@@ -175,8 +175,8 @@ import { Shirt, Palette, Users, ArrowRight } from 'lucide-vue-next'
 const { theme } = useTheme()
 const authStore = useAuthStore()
 
-// Use computed to get reactive user data from auth store
-const user = computed(() => authStore.user || authStore.profile)
+// User state for base44Client (same as Cabinet page)
+const currentUser = ref(null)
 
 // Reactive data for content
 const items = ref([])
@@ -205,10 +205,10 @@ const stats = computed(() => [
  */
 const loadItems = async () => {
   try {
-    if (user.value?.id) {
+    if (currentUser.value?.email) {
       const itemsData = await api.entities.ClothingItem.filter(
-        { owner_id: user.value.id },
-        '-created_at',
+        { created_by: currentUser.value.email },
+        '-created_date',
         6
       )
       items.value = itemsData
@@ -226,8 +226,14 @@ const loadItems = async () => {
  */
 const loadOutfits = async () => {
   try {
-    const outfitsData = await api.entities.Outfit.list('-created_at', 3)
-    outfits.value = outfitsData
+    if (currentUser.value?.email) {
+      const outfitsData = await api.entities.Outfit.filter(
+        { created_by: currentUser.value.email },
+        '-created_date',
+        3
+      )
+      outfits.value = outfitsData
+    }
   } catch (error) {
     console.error('Error loading outfits:', error)
   }
@@ -241,8 +247,13 @@ const loadOutfits = async () => {
  */
 const loadFriends = async () => {
   try {
-    const friendsData = await api.entities.Friend.list()
-    friends.value = friendsData
+    if (currentUser.value?.email) {
+      const friendsData = await api.entities.Friendship.filter(
+        { created_by: currentUser.value.email },
+        '-created_date'
+      )
+      friends.value = friendsData
+    }
   } catch (error) {
     console.error('Error loading friends:', error)
   }
@@ -258,18 +269,17 @@ const loadFriends = async () => {
  * - Friends list
  */
 onMounted(async () => {
-  // Ensure auth store is initialized
-  if (!authStore.isAuthenticated) {
-    await authStore.initializeAuth()
+  try {
+    // Load user using base44Client (same as Cabinet page)
+    const userData = await api.auth.me()
+    currentUser.value = userData
+    console.log('Home: Loaded user:', userData)
+    
+    await loadItems()
+    await loadOutfits()
+    await loadFriends()
+  } catch (error) {
+    console.error('Error loading user:', error)
   }
-  
-  // If we have a user but no profile, fetch the profile
-  if (authStore.user && !authStore.profile) {
-    await authStore.fetchUserProfile()
-  }
-  
-  await loadItems()
-  await loadOutfits()
-  await loadFriends()
 })
 </script>
