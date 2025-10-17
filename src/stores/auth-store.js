@@ -135,35 +135,12 @@ export const useAuthStore = defineStore('auth', {
           return
         }
         
-        // If this is an OAuth callback route, handle it specially
+        // If this is an OAuth callback route, skip auth initialization
+        // Let the OAuthCallback component handle the authentication
         if (isCallbackRoute) {
-          console.log('🔄 AuthStore: OAuth callback route detected')
-          if (hasAuthCode) {
-            console.log('🔄 AuthStore: OAuth callback with auth code, processing...')
-            // Wait for OAuth session to be established
-            await new Promise(resolve => setTimeout(resolve, 3000))
-            
-            // Check if session was established
-            const user = await authService.getCurrentUser()
-            if (user) {
-              console.log('✅ AuthStore: OAuth callback successful, user authenticated:', user.email)
-              this.setUser(user)
-              
-              // Redirect to home page
-              window.location.replace('/')
-              return
-            } else {
-              console.log('❌ AuthStore: OAuth callback failed, no user found')
-              // Redirect to login with error
-              window.location.replace('/login?error=oauth_failed')
-              return
-            }
-          } else {
-            console.log('❌ AuthStore: OAuth callback route without auth code, redirecting to login')
-            // No auth code, redirect to login
-            window.location.replace('/login')
-            return
-          }
+          console.log('🔄 AuthStore: OAuth callback route detected, skipping auth initialization')
+          console.log('🔄 AuthStore: OAuthCallback component will handle authentication')
+          return
         }
         
         if (hasAuthCode && !isCallbackRoute) {

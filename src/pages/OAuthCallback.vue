@@ -64,7 +64,6 @@ const handleOAuthCallback = async () => {
     
     // Check URL parameters
     const urlParams = new URLSearchParams(window.location.search)
-    const hasAuthCode = urlParams.has('code') || urlParams.has('access_token')
     const hasError = urlParams.has('error')
     
     if (hasError) {
@@ -85,60 +84,54 @@ const handleOAuthCallback = async () => {
       return
     }
     
-    if (!hasAuthCode) {
-      console.error('❌ OAuthCallback: No auth code found in URL')
-      
-      statusMessage.value = 'Invalid Request'
-      statusDescription.value = 'No authentication code was provided.'
-      error.value = 'Missing authentication code'
-      
-      // Redirect to login after 2 seconds
-      setTimeout(() => {
-        redirectToLogin()
-      }, 2000)
-      
-      return
-    }
-    
-    console.log('✅ OAuthCallback: Auth code found, waiting for session establishment...')
+    console.log('✅ OAuthCallback: Processing authentication...')
     
     statusMessage.value = 'Completing Sign-In...'
     statusDescription.value = 'Setting up your account...'
     
-    // Wait for auth store to process the callback
-    // The auth store will handle the actual authentication
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Wait for Supabase to automatically process the OAuth callback
+    // and for the auth store to detect the session change
+    let attempts = 0
+    const maxAttempts = 15 // 15 seconds max wait
     
-    // Check if authentication was successful
-    if (authStore.isAuthenticated && authStore.user) {
-      console.log('✅ OAuthCallback: Authentication successful, redirecting to home')
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      attempts++
       
-      statusMessage.value = 'Welcome!'
-      statusDescription.value = 'Redirecting to your dashboard...'
+      console.log(`🔄 OAuthCallback: Checking authentication status (attempt ${attempts}/${maxAttempts})`)
       
-      // Redirect to home page
-      setTimeout(() => {
-        router.replace('/')
-      }, 1000)
-    } else {
-      console.error('❌ OAuthCallback: Authentication failed after processing')
-      
-      statusMessage.value = 'Authentication Failed'
-      statusDescription.value = 'Unable to complete the sign-in process.'
-      error.value = 'Session establishment failed'
-      
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        redirectToLogin()
-      }, 3000)
+      if (authStore.isAuthenticated && authStore.user) {
+        console.log('✅ OAuthCallback: Authentication successful, redirecting to home')
+        
+        statusMessage.value = 'Welcome!'
+        statusDescription.value = 'Redirecting to your dashboard...'
+        
+        // Redirect to home page
+        setTimeout(() => {
+          router.replace('/')
+        }, 1000)
+        return
+      }
     }
     
-  } catch (error) {
-    console.error('❌ OAuthCallback: Error processing callback:', error)
+    // If we get here, authentication failed
+    console.error('❌ OAuthCallback: Authentication timeout after', maxAttempts, 'seconds')
+    
+    statusMessage.value = 'Authentication Timeout'
+    statusDescription.value = 'The authentication process took too long.'
+    error.value = 'Authentication timeout - please try again'
+    
+    // Redirect to login after 3 seconds
+    setTimeout(() => {
+      redirectToLogin()
+    }, 3000)
+    
+  } catch (err) {
+    console.error('❌ OAuthCallback: Error processing callback:', err)
     
     statusMessage.value = 'Something Went Wrong'
     statusDescription.value = 'An unexpected error occurred.'
-    error.value = error.message || 'Unknown error occurred'
+    error.value = err.message || 'Unknown error occurred'
     
     // Redirect to login after 3 seconds
     setTimeout(() => {
