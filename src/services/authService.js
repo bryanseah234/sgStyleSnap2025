@@ -101,6 +101,21 @@ export class AuthService {
   }
 
   /**
+   * Completely reset Supabase client to clear all cached data
+   */
+  resetSupabaseClient() {
+    if (typeof window !== 'undefined' && window.supabase) {
+      try {
+        // Clear any global Supabase references
+        delete window.supabase
+        delete window.__supabase
+      } catch (error) {
+        console.log('Error clearing global Supabase references:', error)
+      }
+    }
+  }
+
+  /**
    * Signs out the current user
    * 
    * Ends the current user session and clears all stored
@@ -137,40 +152,129 @@ export class AuthService {
         localStorage.setItem('stylesnap-theme', themePreference)
       }
       
-      // Clear any Supabase-related cookies manually
-      if (typeof document !== 'undefined') {
-        // Clear common Supabase cookie patterns
-        const cookiesToClear = [
-          'sb-access-token',
-          'sb-refresh-token',
-          'supabase.auth.token',
-          'supabase.auth.refresh_token'
-        ]
-        
-        cookiesToClear.forEach(cookieName => {
-          // Clear for current domain
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-          // Clear for current domain with secure flag
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;`
-          // Clear for parent domain
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
-        })
-        
-        // Clear all cookies that might contain auth data
-        const allCookies = document.cookie.split(';')
-        allCookies.forEach(cookie => {
-          const cookieName = cookie.split('=')[0].trim()
-          if (cookieName.includes('supabase') || cookieName.includes('auth') || cookieName.includes('sb-')) {
-            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+      // Reset Supabase client to clear any cached references
+      this.resetSupabaseClient()
+      
+      // Clear all browser storage mechanisms
+      if (typeof window !== 'undefined') {
+        // Clear IndexedDB (Supabase's primary storage)
+        try {
+          if ('indexedDB' in window) {
+            // Clear all IndexedDB databases that might contain Supabase data
+            const databases = [
+              'supabase-auth-token', 
+              'supabase', 
+              'auth-token',
+              'supabase-auth',
+              'sb-auth-token',
+              'supabase-session',
+              'auth-session'
+            ]
+            databases.forEach(dbName => {
+              try {
+                indexedDB.deleteDatabase(dbName)
+                console.log(`🗑️ Deleted IndexedDB database: ${dbName}`)
+              } catch (e) {
+                console.log(`Could not delete IndexedDB database ${dbName}:`, e)
+              }
+            })
+            
+            // Also try to clear any databases with dynamic names
+            try {
+              const request = indexedDB.databases()
+              if (request) {
+                request.then(databases => {
+                  databases.forEach(db => {
+                    if (db.name.includes('supabase') || db.name.includes('auth') || db.name.includes('sb-')) {
+                      try {
+                        indexedDB.deleteDatabase(db.name)
+                        console.log(`🗑️ Deleted dynamic IndexedDB database: ${db.name}`)
+                      } catch (e) {
+                        console.log(`Could not delete dynamic database ${db.name}:`, e)
+                      }
+                    }
+                  })
+                }).catch(error => {
+                  console.log('Error getting IndexedDB databases:', error)
+                })
+              }
+            } catch (error) {
+              console.log('IndexedDB.databases() not supported:', error)
+            }
           }
-        })
+        } catch (error) {
+          console.log('IndexedDB cleanup error:', error)
+        }
+
+        // Clear WebSQL (legacy storage)
+        try {
+          if ('openDatabase' in window) {
+            const db = openDatabase('supabase', '', '', 0)
+            if (db) {
+              db.transaction(tx => {
+                tx.executeSql('DROP TABLE IF EXISTS auth_tokens')
+                tx.executeSql('DROP TABLE IF EXISTS sessions')
+              })
+            }
+          }
+        } catch (error) {
+          console.log('WebSQL cleanup error:', error)
+        }
+
+        // Clear any Supabase-related cookies manually
+        if (typeof document !== 'undefined') {
+          // Clear common Supabase cookie patterns
+          const cookiesToClear = [
+            'sb-access-token',
+            'sb-refresh-token',
+            'supabase.auth.token',
+            'supabase.auth.refresh_token',
+            'supabase-auth-token',
+            'sb-auth-token'
+          ]
+          
+          cookiesToClear.forEach(cookieName => {
+            // Clear for current domain
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+            // Clear for current domain with secure flag
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;`
+            // Clear for parent domain
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+            // Clear for subdomain
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`
+          })
+          
+          // Clear all cookies that might contain auth data
+          const allCookies = document.cookie.split(';')
+          allCookies.forEach(cookie => {
+            const cookieName = cookie.split('=')[0].trim()
+            if (cookieName.includes('supabase') || cookieName.includes('auth') || cookieName.includes('sb-')) {
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`
+            }
+          })
+        }
+
+        // Clear Service Worker caches
+        if ('caches' in window) {
+          caches.keys().then(cacheNames => {
+            cacheNames.forEach(cacheName => {
+              if (cacheName.includes('supabase') || cacheName.includes('auth')) {
+                caches.delete(cacheName)
+              }
+            })
+          }).catch(error => {
+            console.log('Cache cleanup error:', error)
+          })
+        }
       }
       
-      // Force a page reload to clear any remaining session state
-      console.log('🚪 AuthService: Forcing page reload to clear session state...')
+      // Force a hard refresh to clear all browser state
+      console.log('🚪 AuthService: Forcing hard refresh to clear all browser state...')
       setTimeout(() => {
-        window.location.href = '/login'
+        // Use location.replace to prevent back button issues
+        window.location.replace('/login')
       }, 100)
       
       console.log('✅ AuthService: User signed out successfully')
@@ -184,7 +288,7 @@ export class AuthService {
       localStorage.clear()
       
       setTimeout(() => {
-        window.location.href = '/login'
+        window.location.replace('/login')
       }, 100)
       
       handleSupabaseError(error, 'sign out')
