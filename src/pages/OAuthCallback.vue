@@ -89,10 +89,10 @@ const handleOAuthCallback = async () => {
     statusMessage.value = 'Completing Sign-In...'
     statusDescription.value = 'Setting up your account...'
     
-    // Wait for Supabase to automatically process the OAuth callback
-    // and for the auth store to detect the session change
+    // Wait for auth store to complete OAuth callback processing
+    // The auth store will handle the OAuth callback and update the authentication state
     let attempts = 0
-    const maxAttempts = 15 // 15 seconds max wait
+    const maxAttempts = 10 // 10 seconds max wait
     
     while (attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -100,7 +100,8 @@ const handleOAuthCallback = async () => {
       
       console.log(`🔄 OAuthCallback: Checking authentication status (attempt ${attempts}/${maxAttempts})`)
       
-      if (authStore.isAuthenticated && authStore.user) {
+      // Check if auth store has completed processing and user is authenticated
+      if (authStore.isAuthenticated && authStore.user && !authStore.loading) {
         console.log('✅ OAuthCallback: Authentication successful, redirecting to home')
         
         statusMessage.value = 'Welcome!'

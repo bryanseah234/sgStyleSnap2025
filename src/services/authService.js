@@ -70,28 +70,40 @@ export class AuthService {
 
     try {
       console.log('🔑 AuthService: Initiating Google OAuth...')
-      console.log('🔑 AuthService: Redirect URL:', `${window.location.origin}/`)
+      console.log('🔑 AuthService: Current URL:', window.location.href)
+      console.log('🔑 AuthService: Origin:', window.location.origin)
+      console.log('🔑 AuthService: Redirect URL:', `${window.location.origin}/auth/callback`)
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         }
       })
       
       if (error) {
         console.error('🔑 AuthService: OAuth error:', error)
+        console.error('🔑 AuthService: Error details:', error.message, error.status)
         throw error
       }
       
-      console.log('🔑 AuthService: OAuth data:', data)
+      console.log('🔑 AuthService: OAuth data received:', data)
+      console.log('🔑 AuthService: OAuth URL:', data?.url)
       
       // Manually redirect to the OAuth URL
       if (data?.url) {
-        console.log('🔑 AuthService: Redirecting browser to:', data.url)
-        window.location.href = data.url
+        console.log('🔑 AuthService: Redirecting browser to Google OAuth:', data.url)
+        console.log('🔑 AuthService: This should take user to Google consent page')
+        
+        // Use window.location.replace to ensure proper redirect
+        window.location.replace(data.url)
         return data
       } else {
+        console.error('🔑 AuthService: No OAuth URL in response:', data)
         throw new Error('No OAuth URL received from Supabase')
       }
     } catch (error) {
