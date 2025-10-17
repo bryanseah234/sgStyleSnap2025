@@ -27,6 +27,7 @@ export class AuthService {
     this.currentUser = null
     this.currentProfile = null
     this.isSupabaseConfigured = isSupabaseConfigured
+    this.isLoggingOut = false // Flag to track explicit logout
     this.setupAuthListener()
   }
 
@@ -47,8 +48,11 @@ export class AuthService {
         this.currentUser = session.user
         await this.getCurrentProfile()
       } else if (event === 'SIGNED_OUT') {
-        this.currentUser = null
-        this.currentProfile = null
+        // Only clear user data if this is an explicit logout, not a page reload
+        if (this.isLoggingOut) {
+          this.currentUser = null
+          this.currentProfile = null
+        }
       }
     })
   }
@@ -70,9 +74,6 @@ export class AuthService {
 
     try {
       console.log('🔑 AuthService: Initiating Google OAuth...')
-      console.log('🔑 AuthService: Current URL:', window.location.href)
-      console.log('🔑 AuthService: Origin:', window.location.origin)
-      console.log('🔑 AuthService: Redirect URL:', `${window.location.origin}/auth/callback`)
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -87,23 +88,15 @@ export class AuthService {
       
       if (error) {
         console.error('🔑 AuthService: OAuth error:', error)
-        console.error('🔑 AuthService: Error details:', error.message, error.status)
         throw error
       }
       
-      console.log('🔑 AuthService: OAuth data received:', data)
-      console.log('🔑 AuthService: OAuth URL:', data?.url)
-      
       // Manually redirect to the OAuth URL
       if (data?.url) {
-        console.log('🔑 AuthService: Redirecting browser to Google OAuth:', data.url)
-        console.log('🔑 AuthService: This should take user to Google consent page')
-        
-        // Use window.location.replace to ensure proper redirect
+        console.log('🔑 AuthService: Redirecting browser to:', data.url)
         window.location.replace(data.url)
         return data
       } else {
-        console.error('🔑 AuthService: No OAuth URL in response:', data)
         throw new Error('No OAuth URL received from Supabase')
       }
     } catch (error) {
@@ -139,6 +132,9 @@ export class AuthService {
   async signOut() {
     try {
       console.log('🚪 AuthService: Starting sign out process...')
+      
+      // Set flag to indicate explicit logout
+      this.isLoggingOut = true
       
       // Sign out from Supabase if configured
       if (isSupabaseConfigured && supabase) {
@@ -288,6 +284,8 @@ export class AuthService {
         // Add cache-busting parameter to force fresh page load
         const cacheBuster = `?cb=${Date.now()}&logout=true`
         window.location.replace(`/login${cacheBuster}`)
+        // Reset logout flag after redirect
+        this.isLoggingOut = false
       }, 100)
       
       console.log('✅ AuthService: User signed out successfully')
@@ -303,6 +301,8 @@ export class AuthService {
       setTimeout(() => {
         const cacheBuster = `?cb=${Date.now()}&logout=true`
         window.location.replace(`/login${cacheBuster}`)
+        // Reset logout flag after redirect
+        this.isLoggingOut = false
       }, 100)
       
       handleSupabaseError(error, 'sign out')

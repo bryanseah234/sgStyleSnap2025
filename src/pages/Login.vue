@@ -204,27 +204,13 @@ const error = computed(() => authStore.error)
 
 const handleGoogleSignIn = async () => {
   console.log('🔑 Login: Button clicked!')
-  console.log('🔑 Login: Current URL:', window.location.href)
-  console.log('🔑 Login: Auth store state:', {
-    loading: authStore.loading,
-    isAuthenticated: authStore.isAuthenticated,
-    error: authStore.error
-  })
-  
   try {
     console.log('🔑 Login: Starting Google sign-in...')
-    console.log('🔑 Login: Calling authStore.login()...')
-    
     await authStore.login()
-    
-    console.log('🔑 Login: authStore.login() completed')
-    console.log('🔑 Login: Should have been redirected to Google OAuth by now')
-    console.log('🔑 Login: If you see this message, the redirect might have failed')
-    
+    console.log('🔑 Login: Sign-in initiated successfully')
     // User will be redirected automatically by Supabase or watcher
   } catch (err) {
     console.error('🔑 Login: Sign in error:', err)
-    console.error('🔑 Login: Error details:', err.message, err.stack)
     // Error is already handled by auth store
   }
 }

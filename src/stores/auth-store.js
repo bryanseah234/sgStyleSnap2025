@@ -230,16 +230,10 @@ export const useAuthStore = defineStore('auth', {
      */
     async login() {
       console.log('🔑 AuthStore: login() method called!')
-      console.log('🔑 AuthStore: Current URL:', window.location.href)
       this.loading = true
       this.error = null
       try {
         console.log('🔑 AuthStore: Supabase configured:', authService.isSupabaseConfigured)
-        console.log('🔑 AuthStore: Environment check:', {
-          VITE_SUPABASE_URL: !!import.meta.env.VITE_SUPABASE_URL,
-          VITE_SUPABASE_ANON_KEY: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-          VITE_FORCE_MOCK_MODE: import.meta.env.VITE_FORCE_MOCK_MODE
-        })
         
         // Check if we're in mock mode (no Supabase configured or forced mock mode)
         if (!authService.isSupabaseConfigured || import.meta.env.VITE_FORCE_MOCK_MODE === 'true') {
@@ -249,19 +243,11 @@ export const useAuthStore = defineStore('auth', {
         }
         
         console.log('🔑 AuthStore: Using real Supabase OAuth...')
-        console.log('🔑 AuthStore: About to call authService.signInWithGoogle()...')
-        
-        const result = await authService.signInWithGoogle()
-        
-        console.log('🔑 AuthStore: authService.signInWithGoogle() completed')
-        console.log('🔑 AuthStore: Result:', result)
-        console.log('🔑 AuthStore: Should have been redirected to Google OAuth')
-        console.log('🔑 AuthStore: If you see this message, redirect might have failed')
-        
+        await authService.signInWithGoogle()
+        console.log('🔑 AuthStore: OAuth redirect initiated')
         // After redirect, initializeAuth will be called
       } catch (error) {
         console.error('🔑 AuthStore: Login failed:', error)
-        console.error('🔑 AuthStore: Error details:', error.message, error.stack)
         this.error = error.message
         throw error
       } finally {

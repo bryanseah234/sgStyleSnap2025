@@ -28,21 +28,9 @@ if (isSupabaseConfigured) {
       detectSessionInUrl: true,  // Detect session from URL parameters
       storage: {
         getItem: (key) => {
-          // Check if this is a logout redirect
-          const urlParams = new URLSearchParams(window.location.search)
-          if (urlParams.has('logout')) {
-            console.log('🚪 Supabase: Logout detected, clearing storage for:', key)
-            return null
-          }
           return localStorage.getItem(key)
         },
         setItem: (key, value) => {
-          // Check if this is a logout redirect
-          const urlParams = new URLSearchParams(window.location.search)
-          if (urlParams.has('logout')) {
-            console.log('🚪 Supabase: Logout detected, preventing storage for:', key)
-            return
-          }
           localStorage.setItem(key, value)
         },
         removeItem: (key) => {

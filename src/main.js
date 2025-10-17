@@ -82,7 +82,13 @@ router.beforeEach(async (to, from, next) => {
         await new Promise(resolve => setTimeout(resolve, 100))
         waited++
       }
-      console.log('✅ Router: Auth initialization complete')
+      
+      // If still loading after max wait, force continue to prevent blank page
+      if (authStore.loading) {
+        console.warn('⚠️ Router: Auth initialization timeout, continuing navigation')
+      } else {
+        console.log('✅ Router: Auth initialization complete')
+      }
     }
     
     // More robust authentication check
@@ -140,32 +146,78 @@ app.provide('authStore', authStore)
 
 // Global error handler for browser extension conflicts
 window.addEventListener('error', (event) => {
-  if (event.message && event.message.includes('No tab with id')) {
+  if (event.message && (
+    event.message.includes('No tab with id') ||
+    event.message.includes('runtime.lastError') ||
+    event.message.includes('chrome-extension') ||
+    event.message.includes('moz-extension')
+  )) {
     // Suppress browser extension errors
     event.preventDefault()
-    console.log('🔧 Suppressed browser extension error:', event.message)
+    event.stopPropagation()
     return false
   }
 })
 
 // Global unhandled promise rejection handler
 window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason && event.reason.message && event.reason.message.includes('No tab with id')) {
+  if (event.reason && (
+    (event.reason.message && (
+      event.reason.message.includes('No tab with id') ||
+      event.reason.message.includes('runtime.lastError') ||
+      event.reason.message.includes('chrome-extension') ||
+      event.reason.message.includes('moz-extension')
+    )) ||
+    (event.reason.toString && event.reason.toString().includes('No tab with id'))
+  )) {
     // Suppress browser extension promise rejections
     event.preventDefault()
-    console.log('🔧 Suppressed browser extension promise rejection:', event.reason.message)
+    event.stopPropagation()
     return false
   }
 })
 
-// Initialize auth state before mounting
-authStore.initializeAuth().then(() => {
+// Additional console error suppression for browser extensions
+const originalConsoleError = console.error
+console.error = function(...args) {
+  const message = args.join(' ')
+  if (message.includes('No tab with id') || 
+      message.includes('runtime.lastError') ||
+      message.includes('chrome-extension') ||
+      message.includes('moz-extension')) {
+    // Suppress browser extension console errors
+    return
+  }
+  originalConsoleError.apply(console, args)
+}
+
+// Initialize auth state before mounting with timeout fallback
+const authInitPromise = authStore.initializeAuth().then(() => {
   console.log('✅ Auth store initialized successfully')
 }).catch(error => {
   console.error('❌ Failed to initialize auth store:', error)
-}).finally(() => {
-  // Mount the application to the DOM after auth initialization
-  app.mount('#app')
+})
+
+// Mount the app with a timeout to prevent blank pages
+Promise.race([
+  authInitPromise,
+  new Promise(resolve => setTimeout(resolve, 3000)) // 3 second timeout
+]).finally(() => {
+  // Mount the application to the DOM
+  try {
+    app.mount('#app')
+    console.log('✅ App mounted successfully')
+  } catch (error) {
+    console.error('❌ Failed to mount app:', error)
+    // Fallback: try to mount anyway
+    setTimeout(() => {
+      try {
+        app.mount('#app')
+      } catch (e) {
+        console.error('❌ Fallback mount failed:', e)
+      }
+    }, 1000)
+  }
 })
 
 // Load user theme preferences after app is mounted
