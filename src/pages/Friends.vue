@@ -75,7 +75,9 @@
       <!-- Search Bar -->
       <div class="mb-8">
         <div class="relative">
-          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
+          }`" />
           <input
             v-model="searchTerm"
             type="text"
@@ -260,8 +262,8 @@
                 placeholder="Enter username or email..."
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white'
-                    : 'bg-white border-stone-300 text-black'
+                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
                 }`"
                 @keyup.enter="searchAndAddFriend"
               />

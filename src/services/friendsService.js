@@ -40,7 +40,10 @@ export class FriendsService {
         const [column, direction] = filters.orderBy.startsWith('-') 
           ? [filters.orderBy.slice(1), 'desc'] 
           : [filters.orderBy, 'asc']
-        query = query.order(column, { ascending: direction === 'asc' })
+        // For friends, we order by the friendship creation date, not user creation date
+        if (column === 'created_at') {
+          query = query.order('created_at', { ascending: direction === 'asc' })
+        }
       }
 
       const { data, error } = await query

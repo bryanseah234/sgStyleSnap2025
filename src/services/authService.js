@@ -39,7 +39,7 @@ export class AuthService {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         this.currentUser = session.user
-        await this.loadUserProfile()
+        await this.getCurrentProfile()
       } else if (event === 'SIGNED_OUT') {
         this.currentUser = null
         this.currentProfile = null
@@ -84,13 +84,28 @@ export class AuthService {
    */
   async signOut() {
     try {
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       
+      // Clear local state
       this.currentUser = null
       this.currentProfile = null
+      
+      // Clear all session storage
+      sessionStorage.clear()
+      
+      // Clear all localStorage (except theme preference)
+      const themePreference = localStorage.getItem('stylesnap-theme')
+      localStorage.clear()
+      if (themePreference) {
+        localStorage.setItem('stylesnap-theme', themePreference)
+      }
+      
+      console.log('User signed out successfully')
       return true
     } catch (error) {
+      console.error('Sign out error:', error)
       handleSupabaseError(error, 'sign out')
     }
   }

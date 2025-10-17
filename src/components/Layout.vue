@@ -203,7 +203,7 @@ import ThemeToggle from './ThemeToggle.vue'
 
 // Router and theme composables
 const router = useRouter()
-const { theme, loadUser } = useTheme()
+const { theme, loadUser, refreshTheme } = useTheme()
 
 // Loading state for initial app setup
 const loading = ref(true)
@@ -227,12 +227,27 @@ const navigationItems = [
 /**
  * Handles user logout functionality
  * 
- * Signs out the current user and redirects to the home page.
+ * Signs out the current user and redirects to the login page.
  * Clears all authentication state and user data.
  */
 const handleLogout = async () => {
-  await api.auth.logout()
-  router.push('/')
+  try {
+    console.log('Starting logout process...')
+    await api.auth.logout()
+    console.log('Logout successful, redirecting to login...')
+    
+    // Small delay to ensure logout completes
+    setTimeout(() => {
+      // Force redirect to login page
+      window.location.href = '/login'
+    }, 100)
+  } catch (error) {
+    console.error('Logout error:', error)
+    // Force redirect to login even if logout fails
+    setTimeout(() => {
+      window.location.href = '/login'
+    }, 100)
+  }
 }
 
 /**
@@ -243,6 +258,8 @@ const handleLogout = async () => {
  */
 onMounted(async () => {
   await loadUser()
+  // Force refresh theme to ensure it's properly applied
+  refreshTheme()
   loading.value = false
 })
 </script>

@@ -219,7 +219,7 @@ const loadItems = async () => {
     if (user.value?.id) {
       const itemsData = await api.entities.ClothingItem.filter(
         { owner_id: user.value.id },
-        '-created_date',
+        '-created_at',
         6
       )
       items.value = itemsData
@@ -237,7 +237,7 @@ const loadItems = async () => {
  */
 const loadOutfits = async () => {
   try {
-    const outfitsData = await api.entities.Outfit.list('-created_date', 3)
+    const outfitsData = await api.entities.Outfit.list('-created_at', 3)
     outfits.value = outfitsData
   } catch (error) {
     console.error('Error loading outfits:', error)

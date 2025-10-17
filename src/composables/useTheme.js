@@ -41,6 +41,7 @@ const initializeTheme = () => {
   // Check localStorage first for saved preference
   const savedTheme = localStorage.getItem('stylesnap-theme')
   if (savedTheme) {
+    console.log('Initializing theme from localStorage:', savedTheme)
     theme.value = savedTheme
     applyTheme(savedTheme)
     return
@@ -48,9 +49,11 @@ const initializeTheme = () => {
 
   // Check system preference if no saved theme
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    console.log('Initializing theme from system preference: dark')
     theme.value = 'dark'
     applyTheme('dark')
   } else {
+    console.log('Initializing theme from system preference: light')
     theme.value = 'light'
     applyTheme('light')
   }
@@ -83,13 +86,31 @@ export function useTheme() {
       user.value = userData
       
       // Apply user's saved theme preference if available
-      if (userData.theme) {
+      if (userData && userData.theme) {
+        console.log('Loading user theme preference:', userData.theme)
         theme.value = userData.theme
         applyTheme(userData.theme)
         localStorage.setItem('stylesnap-theme', userData.theme)
+      } else {
+        // If no user theme preference, use localStorage or initialize
+        const savedTheme = localStorage.getItem('stylesnap-theme')
+        if (savedTheme) {
+          console.log('Using saved theme from localStorage:', savedTheme)
+          theme.value = savedTheme
+          applyTheme(savedTheme)
+        } else {
+          console.log('Initializing theme from system preference')
+          initializeTheme()
+        }
       }
     } catch (error) {
       console.error('Error loading user:', error)
+      // Fallback to localStorage theme if user loading fails
+      const savedTheme = localStorage.getItem('stylesnap-theme')
+      if (savedTheme) {
+        theme.value = savedTheme
+        applyTheme(savedTheme)
+      }
     }
   }
 
@@ -101,6 +122,8 @@ export function useTheme() {
    */
   const toggleTheme = async () => {
     const newTheme = theme.value === 'light' ? 'dark' : 'light'
+    console.log('Toggling theme from', theme.value, 'to', newTheme)
+    
     theme.value = newTheme
     applyTheme(newTheme)
     localStorage.setItem('stylesnap-theme', newTheme)
@@ -108,10 +131,14 @@ export function useTheme() {
     // Update user's theme preference in the database
     if (user.value) {
       try {
+        console.log('Updating user theme preference in database:', newTheme)
         await api.auth.updateMe({ theme: newTheme })
+        console.log('Theme preference updated successfully')
       } catch (error) {
         console.error('Error updating theme:', error)
       }
+    } else {
+      console.log('No user logged in, theme saved to localStorage only')
     }
   }
 
@@ -127,20 +154,33 @@ export function useTheme() {
   }
 
   // Watch for theme changes and apply to DOM automatically
-  watch(theme, (newTheme) => {
+  watch(theme, (newTheme, oldTheme) => {
+    console.log('Theme changed from', oldTheme, 'to', newTheme)
     applyTheme(newTheme)
   })
 
   // Initialize theme when the composable is first used
   onMounted(() => {
+    console.log('useTheme composable mounted, initializing theme')
     initializeTheme()
   })
+
+  /**
+   * Forces a theme refresh by re-applying the current theme
+   * 
+   * Useful for debugging or when theme state gets out of sync
+   */
+  const refreshTheme = () => {
+    console.log('Refreshing theme:', theme.value)
+    applyTheme(theme.value)
+  }
 
   return {
     theme,
     toggleTheme,
     setTheme,
     user,
-    loadUser
+    loadUser,
+    refreshTheme
   }
 }

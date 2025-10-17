@@ -310,7 +310,7 @@ const loadFriendItems = async () => {
 
     const itemsData = await api.entities.ClothingItem.filter(
       { owner_id: friendId },
-      '-created_date'
+      '-created_at'
     )
     items.value = itemsData
   } catch (error) {

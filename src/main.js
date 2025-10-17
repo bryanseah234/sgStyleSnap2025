@@ -110,4 +110,7 @@ app.use(router) // Client-side routing
 app.mount('#app')
 
 // Load user theme preferences after app is mounted
-loadUser()
+// This is called asynchronously to avoid blocking the app mount
+loadUser().catch(error => {
+  console.error('Error loading user theme preferences:', error)
+})

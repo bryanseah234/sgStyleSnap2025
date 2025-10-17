@@ -181,8 +181,8 @@
                 required
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white'
-                    : 'bg-white border-stone-300 text-black'
+                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
                 }`"
                 placeholder="Enter item name"
               />
@@ -199,8 +199,8 @@
                 required
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white'
-                    : 'bg-white border-stone-300 text-black'
+                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
                 }`"
               >
                 <option value="">Select category</option>
@@ -223,8 +223,8 @@
                 type="text"
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white'
-                    : 'bg-white border-stone-300 text-black'
+                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
                 }`"
                 placeholder="Enter brand (optional)"
               />
@@ -243,8 +243,8 @@
                 @change="handleFileSelect"
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white'
-                    : 'bg-white border-stone-300 text-black'
+                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
                 }`"
               />
             </div>
@@ -333,7 +333,7 @@ const loadItems = async () => {
     if (currentUser.value?.id) {
       const itemsData = await api.entities.ClothingItem.filter(
         { owner_id: currentUser.value.id },
-        '-created_date'
+        '-created_at'
       )
       items.value = itemsData
     }

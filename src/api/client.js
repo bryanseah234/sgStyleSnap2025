@@ -96,11 +96,11 @@ export const api = {
     ClothingItem: {
       /**
        * List clothing items with pagination and sorting
-       * @param {string} orderBy - Sort order (default: '-created_date')
+       * @param {string} orderBy - Sort order (default: '-created_at')
        * @param {number} limit - Maximum items to return (default: 20)
        * @returns {Promise<Array>} Array of clothing items
        */
-      list: (orderBy = '-created_date', limit = 20) => clothesService.getClothes({ orderBy, limit }),
+      list: (orderBy = '-created_at', limit = 20) => clothesService.getClothes({ orderBy, limit }),
       
       /**
        * Get a specific clothing item by ID
@@ -134,11 +134,11 @@ export const api = {
       /**
        * Filter clothing items with custom criteria
        * @param {Object} filters - Filter criteria
-       * @param {string} orderBy - Sort order (default: '-created_date')
+       * @param {string} orderBy - Sort order (default: '-created_at')
        * @param {number} limit - Maximum items to return (default: 20)
        * @returns {Promise<Array>} Filtered clothing items
        */
-      filter: (filters, orderBy = '-created_date', limit = 20) => clothesService.getClothes({ ...filters, orderBy, limit }),
+      filter: (filters, orderBy = '-created_at', limit = 20) => clothesService.getClothes({ ...filters, orderBy, limit }),
       
       /**
        * Toggle favorite status of a clothing item
@@ -192,10 +192,10 @@ export const api = {
     Friend: {
       /**
        * List friends with sorting
-       * @param {string} orderBy - Sort order (default: '-created_date')
+       * @param {string} orderBy - Sort order (default: '-created_at')
        * @returns {Promise<Array>} Array of friends
        */
-      list: (orderBy = '-created_date') => friendsService.getFriends({ orderBy }),
+      list: (orderBy = '-created_at') => friendsService.getFriends({ orderBy }),
       
       /**
        * Get friend by ID
@@ -247,11 +247,11 @@ export const api = {
     Outfit: {
       /**
        * List outfits with pagination and sorting
-       * @param {string} orderBy - Sort order (default: '-created_date')
+       * @param {string} orderBy - Sort order (default: '-created_at')
        * @param {number} limit - Maximum items to return (default: 20)
        * @returns {Promise<Array>} Array of outfits
        */
-      list: (orderBy = '-created_date', limit = 20) => outfitsService.getOutfits({ orderBy, limit }),
+      list: (orderBy = '-created_at', limit = 20) => outfitsService.getOutfits({ orderBy, limit }),
       
       /**
        * Get outfit by ID

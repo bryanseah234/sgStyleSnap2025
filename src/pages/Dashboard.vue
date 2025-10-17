@@ -105,16 +105,23 @@
           <div :class="`rounded-xl p-4 mb-6 ${
             theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
           }`">
-            <div class="flex items-center gap-3">
-              <User class="w-5 h-5 text-gray-500" />
+            <!-- First Row: Label -->
+            <div class="flex items-center gap-3 mb-3">
+              <User :class="`w-5 h-5 ${
+                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
+              }`" />
               <span :class="`text-sm font-medium ${
                 theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
               }`">
                 Items from:
               </span>
+            </div>
+            
+            <!-- Second Row: Dropdown -->
+            <div>
               <select
                 v-model="itemsSource"
-                :class="`flex-1 px-3 py-2 rounded-lg border text-sm ${
+                :class="`w-full px-3 py-2 rounded-lg border text-sm ${
                   theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white'
                     : 'bg-white border-stone-300 text-black'
@@ -355,7 +362,7 @@ const loadWardrobeItems = async () => {
     if (user?.id) {
       const items = await api.entities.ClothingItem.filter(
         { owner_id: user.id },
-        '-created_date'
+        '-created_at'
       )
       wardrobeItems.value = items
     }
