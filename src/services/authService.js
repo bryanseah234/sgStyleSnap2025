@@ -85,8 +85,15 @@ export class AuthService {
       }
       
       console.log('🔑 AuthService: OAuth data:', data)
-      console.log('🔑 AuthService: OAuth URL:', data?.url)
-      return data
+      
+      // Manually redirect to the OAuth URL
+      if (data?.url) {
+        console.log('🔑 AuthService: Redirecting browser to:', data.url)
+        window.location.href = data.url
+        return data
+      } else {
+        throw new Error('No OAuth URL received from Supabase')
+      }
     } catch (error) {
       console.error('🔑 AuthService: Sign in error:', error)
       handleSupabaseError(error, 'Google sign in')

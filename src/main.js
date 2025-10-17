@@ -79,7 +79,10 @@ router.beforeEach(async (to, from, next) => {
     console.log('🔒 Route guard: Has auth code:', hasAuthCode)
     
     if (hasAuthCode) {
-      console.log('🔒 Route guard: OAuth callback detected, allowing navigation without auth check')
+      console.log('🔒 Route guard: OAuth callback detected, waiting for Supabase to process...')
+      // Wait longer for Supabase to process the OAuth callback
+      await new Promise(resolve => setTimeout(resolve, 3000)) // Wait 3 seconds
+      console.log('🔒 Route guard: OAuth callback processed, allowing navigation')
       next()
       return
     }
@@ -93,7 +96,7 @@ router.beforeEach(async (to, from, next) => {
     // Wait longer for OAuth callback processing when coming from login
     if (to.path === '/' && from.path === '/login') {
       console.log('🔒 Route guard: Potential OAuth redirect from login, waiting for auth state...')
-      await new Promise(resolve => setTimeout(resolve, 3000)) // Wait 3 seconds
+      await new Promise(resolve => setTimeout(resolve, 5000)) // Wait 5 seconds
       await authStore.initializeAuth() // Re-initialize auth
     }
     
