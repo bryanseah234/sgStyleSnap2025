@@ -66,10 +66,7 @@ export class ClothesService {
     try {
       let query = supabase
         .from('clothes')
-        .select(`
-          *,
-          likes_count
-        `)
+        .select('*')
         .eq('removed_at', null)
         .order('created_at', { ascending: false })
 
@@ -77,9 +74,10 @@ export class ClothesService {
       if (filters.category) {
         query = query.eq('category', filters.category)
       }
-      if (filters.clothing_type) {
-        query = query.eq('clothing_type', filters.clothing_type)
-      }
+      // clothing_type column doesn't exist in the database schema
+      // if (filters.clothing_type) {
+      //   query = query.eq('clothing_type', filters.clothing_type)
+      // }
       if (filters.privacy) {
         query = query.eq('privacy', filters.privacy)
       }
@@ -185,13 +183,13 @@ export class ClothesService {
         owner_id: user.id,
         name: clothesData.name,
         category: clothesData.category,
-        clothing_type: clothesData.clothing_type,
+        // clothing_type: clothesData.clothing_type, // Column doesn't exist in database
         brand: clothesData.brand,
         size: clothesData.size,
         privacy: clothesData.privacy || 'private',
         is_favorite: clothesData.is_favorite || false,
         style_tags: clothesData.style_tags || [],
-        notes: clothesData.notes
+        // notes: clothesData.notes // Column doesn't exist in database
       }
 
       if (imageData) {

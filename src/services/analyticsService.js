@@ -9,7 +9,7 @@ export class AnalyticsService {
       // Get basic wardrobe counts
       const { data: items, error: itemsError } = await supabase
         .from('clothes')
-        .select('category, brand, color_tags, style_tags, created_at, is_favorite')
+        .select('category, brand, style_tags, created_at, is_favorite')
         .eq('owner_id', user.id)
         .eq('removed_at', null)
 
@@ -37,11 +37,12 @@ export class AnalyticsService {
         if (item.is_favorite) {
           stats.favorites++
         }
-        if (item.color_tags && Array.isArray(item.color_tags)) {
-          item.color_tags.forEach(color => {
-            stats.colors[color] = (stats.colors[color] || 0) + 1
-          })
-        }
+        // color_tags column doesn't exist in database schema
+        // if (item.color_tags && Array.isArray(item.color_tags)) {
+        //   item.color_tags.forEach(color => {
+        //     stats.colors[color] = (stats.colors[color] || 0) + 1
+        //   })
+        // }
         if (item.style_tags && Array.isArray(item.style_tags)) {
           item.style_tags.forEach(style => {
             stats.styles[style] = (stats.styles[style] || 0) + 1
@@ -149,7 +150,7 @@ export class AnalyticsService {
       const [itemsResult, outfitsResult] = await Promise.all([
         supabase
           .from('clothes')
-          .select('category, color_tags, style_tags, created_at')
+          .select('category, style_tags, created_at')
           .eq('owner_id', user.id)
           .eq('removed_at', null),
         supabase
@@ -189,11 +190,12 @@ export class AnalyticsService {
       // Analyze color palette
       const colorCount = {}
       items.forEach(item => {
-        if (item.color_tags && Array.isArray(item.color_tags)) {
-          item.color_tags.forEach(color => {
-            colorCount[color] = (colorCount[color] || 0) + 1
-          })
-        }
+        // color_tags column doesn't exist in database schema
+        // if (item.color_tags && Array.isArray(item.color_tags)) {
+        //   item.color_tags.forEach(color => {
+        //     colorCount[color] = (colorCount[color] || 0) + 1
+        //   })
+        // }
       })
       insights.color_palette = Object.entries(colorCount)
         .sort(([,a], [,b]) => b - a)
@@ -335,7 +337,7 @@ export class AnalyticsService {
 
       const { data: items, error: itemsError } = await supabase
         .from('clothes')
-        .select('color_tags, category')
+        .select('category')
         .eq('owner_id', user.id)
         .eq('removed_at', null)
 
@@ -353,18 +355,19 @@ export class AnalyticsService {
       // Analyze colors
       const colorCount = {}
       items.forEach(item => {
-        if (item.color_tags && Array.isArray(item.color_tags)) {
-          item.color_tags.forEach(color => {
-            colorCount[color] = (colorCount[color] || 0) + 1
-            
-            // Track colors by category
-            if (!colorAnalysis.colors_by_category[item.category]) {
-              colorAnalysis.colors_by_category[item.category] = {}
-            }
-            colorAnalysis.colors_by_category[item.category][color] = 
-              (colorAnalysis.colors_by_category[item.category][color] || 0) + 1
-          })
-        }
+        // color_tags column doesn't exist in database schema
+        // if (item.color_tags && Array.isArray(item.color_tags)) {
+        //   item.color_tags.forEach(color => {
+        //     colorCount[color] = (colorCount[color] || 0) + 1
+        //     
+        //     // Track colors by category
+        //     if (!colorAnalysis.colors_by_category[item.category]) {
+        //       colorAnalysis.colors_by_category[item.category] = {}
+        //     }
+        //     colorAnalysis.colors_by_category[item.category][color] = 
+        //       (colorAnalysis.colors_by_category[item.category][color] || 0) + 1
+        //   })
+        // }
       })
 
       colorAnalysis.total_colors = Object.keys(colorCount).length
