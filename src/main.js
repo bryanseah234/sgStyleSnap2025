@@ -8,74 +8,6 @@
  * @version 1.0.0
  */
 
-// IMMEDIATE browser extension error suppression - must be first!
-const isBrowserExtensionError = (message) => {
-  if (!message) return false
-  
-  const extensionErrorPatterns = [
-    'No tab with id',
-    'runtime.lastError',
-    'chrome-extension',
-    'moz-extension',
-    'Unchecked runtime.lastError',
-    'Extension context invalidated',
-    'Receiving end does not exist',
-    'Could not establish connection',
-    'The message port closed',
-    'chrome.runtime',
-    'browser.runtime',
-    'tab with id',
-    'lastError',
-    'extension',
-    'chrome-extension://',
-    'moz-extension://'
-  ]
-  
-  const messageStr = message.toString().toLowerCase()
-  return extensionErrorPatterns.some(pattern => 
-    messageStr.includes(pattern.toLowerCase())
-  )
-}
-
-// Override console methods immediately to suppress extension errors
-const originalConsoleError = console.error
-const originalConsoleWarn = console.warn
-const originalConsoleLog = console.log
-
-console.error = function(...args) {
-  const message = args.join(' ')
-  if (isBrowserExtensionError(message)) {
-    return // Suppress browser extension console errors
-  }
-  originalConsoleError.apply(console, args)
-}
-
-console.warn = function(...args) {
-  const message = args.join(' ')
-  if (isBrowserExtensionError(message)) {
-    return // Suppress browser extension console warnings
-  }
-  originalConsoleWarn.apply(console, args)
-}
-
-console.log = function(...args) {
-  const message = args.join(' ')
-  if (isBrowserExtensionError(message)) {
-    return // Suppress browser extension console logs
-  }
-  originalConsoleLog.apply(console, args)
-}
-
-// Override window.onerror immediately
-window.onerror = function(message, source, lineno, colno, error) {
-  if (isBrowserExtensionError(message) || 
-      isBrowserExtensionError(source) ||
-      isBrowserExtensionError(error?.message)) {
-    return true // Suppress the error
-  }
-  return false
-}
-
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -144,7 +76,7 @@ router.beforeEach(async (to, from, next) => {
     if (authStore.loading) {
       console.log('⏳ Router: Waiting for auth initialization...')
       // Wait for auth to finish loading with longer timeout
-      const maxWait = 100 // 100 iterations = 10 seconds max
+        const maxWait = 50 // 50 iterations = 5 seconds max
       let waited = 0
       while (authStore.loading && waited < maxWait) {
         await new Promise(resolve => setTimeout(resolve, 100))
@@ -157,8 +89,9 @@ router.beforeEach(async (to, from, next) => {
         
         // Try to get user from Supabase directly
         try {
-          // Force check for existing session using the existing authStore instance
-          const user = await authStore.getCurrentUser()
+          // Import auth service to check for existing session
+          const { authService } = await import('@/services/authService')
+          const user = await authService.getCurrentUser()
           if (user) {
             console.log('✅ Router: Found existing session, setting user')
             authStore.setUser(user)
@@ -228,8 +161,6 @@ import { useAuthStore } from '@/stores/auth-store'
 const authStore = useAuthStore()
 app.config.globalProperties.$authStore = authStore
 app.provide('authStore', authStore)
-
-// Error suppression is now handled at the top of the file
 
 // Initialize auth state before mounting with timeout fallback
 const authInitPromise = authStore.initializeAuth().then(() => {

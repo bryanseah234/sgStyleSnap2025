@@ -140,7 +140,7 @@ export const useAuthStore = defineStore('auth', {
           console.log('🔄 AuthStore: OAuth callback route detected, processing OAuth callback')
           
           // Wait for Supabase to process the OAuth callback
-          await new Promise(resolve => setTimeout(resolve, 2000))
+          await new Promise(resolve => setTimeout(resolve, 1000))
           
           // Check if OAuth callback was successful
           const user = await authService.getCurrentUser()
@@ -167,7 +167,7 @@ export const useAuthStore = defineStore('auth', {
         if (hasAuthCode && !isCallbackRoute) {
           console.log('🔄 AuthStore: OAuth callback detected on non-callback route, waiting for session...')
           // Wait a bit longer for OAuth session to be established
-          await new Promise(resolve => setTimeout(resolve, 2000))
+          await new Promise(resolve => setTimeout(resolve, 1000))
         }
 
         // Use the existing AuthService to get current user
@@ -175,34 +175,18 @@ export const useAuthStore = defineStore('auth', {
         console.log('📦 AuthStore: User retrieved:', user ? 'Found' : 'Not found')
 
         if (user) {
-          // Check if the user session is still valid by testing the token
-          try {
-            const { data, error } = await supabase.auth.getSession()
-            if (error || !data.session) {
-              console.log('⚠️ AuthStore: Session invalid, clearing user')
-              this.clearUser()
-              return
-            }
-            
-            console.log('✅ AuthStore: Setting user from valid session:', user.email)
-            this.setUser(user)
-            
-            // Also fetch the user profile
-            try {
-              const profile = await authService.getCurrentProfile()
-              this.profile = profile
-            } catch (profileError) {
-              console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
-            }
-          } catch (sessionError) {
-            console.log('⚠️ AuthStore: Session check failed, clearing user:', sessionError)
-            this.clearUser()
-            return
-          }
+          console.log('✅ AuthStore: Setting user from session:', user.email)
+          this.setUser(user)
+          
+          // Fetch profile in background (don't block auth initialization)
+          authService.getCurrentProfile().then(profile => {
+            this.profile = profile
+          }).catch(profileError => {
+            console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
+          })
         } else {
-          console.log('❌ AuthStore: No user found, clearing any stored sessions')
-          // Clear any stored sessions if no valid Supabase session exists
-          clearActiveSession()
+          console.log('ℹ️ AuthStore: No valid session found, user not authenticated')
+          this.clearUser()
         }
       } catch (error) {
         console.error('❌ AuthStore: Failed to initialize auth:', error)

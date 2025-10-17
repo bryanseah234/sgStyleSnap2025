@@ -91,10 +91,11 @@ export class AuthService {
         throw error
       }
       
-      // Manually redirect to the OAuth URL
+      // Redirect to Google OAuth using proper navigation
       if (data?.url) {
         console.log('🔑 AuthService: Redirecting browser to:', data.url)
-        window.location.replace(data.url)
+        // Use window.location.href instead of replace to preserve tab context
+        window.location.href = data.url
         return data
       } else {
         throw new Error('No OAuth URL received from Supabase')
@@ -278,12 +279,11 @@ export class AuthService {
         }
       }
       
-      // Force a hard refresh with cache-busting to clear all browser state
-      console.log('🚪 AuthService: Forcing hard refresh with cache-busting...')
+      // Redirect to login page using proper navigation
+      console.log('🚪 AuthService: Redirecting to login page...')
       setTimeout(() => {
-        // Add cache-busting parameter to force fresh page load
-        const cacheBuster = `?cb=${Date.now()}&logout=true`
-        window.location.replace(`/login${cacheBuster}`)
+        // Use window.location.href instead of replace to preserve tab context
+        window.location.href = '/login'
         // Reset logout flag after redirect
         this.isLoggingOut = false
       }, 100)
@@ -299,8 +299,8 @@ export class AuthService {
       localStorage.clear()
       
       setTimeout(() => {
-        const cacheBuster = `?cb=${Date.now()}&logout=true`
-        window.location.replace(`/login${cacheBuster}`)
+        // Use window.location.href instead of replace to preserve tab context
+        window.location.href = '/login'
         // Reset logout flag after redirect
         this.isLoggingOut = false
       }, 100)
