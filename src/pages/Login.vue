@@ -1,6 +1,38 @@
+<!--
+  StyleSnap - Login Page Component
+  
+  Authentication page that allows users to sign in with Google OAuth.
+  Features theme toggle functionality that works even when not logged in,
+  with theme preferences persisting locally and syncing to user account
+  upon successful authentication.
+  
+  Features:
+  - Google OAuth authentication
+  - Theme toggle (works without login)
+  - Responsive design
+  - Feature preview
+  - Error handling
+  - Auto-redirect for authenticated users
+  
+  @author StyleSnap Team
+  @version 1.0.0
+-->
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4">
+  <!-- Main login container with theme toggle -->
+  <div class="min-h-screen flex items-center justify-center p-4 relative">
+    <!-- Theme Toggle (Top Right) - Works without authentication -->
+    <div class="absolute top-4 right-4 z-10">
+      <div :class="`p-2 rounded-lg backdrop-blur-sm ${
+        theme.value === 'dark' 
+          ? 'bg-zinc-900/80 border border-zinc-800' 
+          : 'bg-white/80 border border-stone-200'
+      }`">
+        <ThemeToggle />
+      </div>
+    </div>
+    
     <div class="w-full max-w-md">
+
       <!-- Logo and Title -->
       <div class="text-center mb-8">
         <div :class="`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
@@ -141,14 +173,24 @@
 </template>
 
 <script setup>
+/**
+ * Login Page Component Script
+ * 
+ * Handles user authentication through Google OAuth and provides
+ * theme toggle functionality that works even when not logged in.
+ * The theme preference is persisted locally and will sync with
+ * the user's account once they sign in.
+ */
+
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { api } from '@/api/client'
 import { Shirt, Palette, Users, AlertCircle } from 'lucide-vue-next'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter()
-const { theme } = useTheme()
+const { theme, loadUser } = useTheme()
 const loading = ref(false)
 const error = ref('')
 
@@ -168,6 +210,9 @@ const handleGoogleSignIn = async () => {
 }
 
 onMounted(async () => {
+  // Initialize theme system (works without authentication)
+  await loadUser()
+  
   // Check if user is already authenticated
   try {
     const user = await api.auth.me()

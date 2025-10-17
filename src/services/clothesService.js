@@ -1,7 +1,67 @@
+/**
+ * StyleSnap - Clothing Items Service
+ * 
+ * Handles all operations related to clothing items including CRUD operations,
+ * image uploads, favorites management, and search functionality.
+ * 
+ * Features:
+ * - Create, read, update, delete clothing items
+ * - Image upload and management
+ * - Favorites system
+ * - Search and filtering
+ * - Privacy controls
+ * - Category management
+ * 
+ * @author StyleSnap Team
+ * @version 1.0.0
+ */
+
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 import { cloudinary } from '@/lib/cloudinary'
 
+/**
+ * Clothing Items Service Class
+ * 
+ * Provides comprehensive functionality for managing clothing items
+ * in the user's wardrobe with full CRUD operations and advanced features.
+ */
 export class ClothesService {
+  /**
+   * Retrieves clothing items with filtering and pagination
+   * 
+   * Fetches clothing items from the database with support for various filters,
+   * search functionality, and pagination. Returns items that haven't been
+   * soft-deleted (removed_at is null).
+   * 
+   * @param {Object} filters - Filter and pagination options
+   * @param {string} filters.category - Filter by clothing category
+   * @param {string} filters.clothing_type - Filter by clothing type
+   * @param {string} filters.privacy - Filter by privacy setting
+   * @param {boolean} filters.favorites - Filter to show only favorites
+   * @param {string} filters.search - Search term for name and brand
+   * @param {number} filters.limit - Maximum number of items to return
+   * @param {number} filters.offset - Number of items to skip
+   * @param {string} filters.orderBy - Sort order (default: '-created_at')
+   * @returns {Promise<Object>} Object containing items data and pagination info
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * // Get all items
+   * const result = await clothesService.getClothes()
+   * 
+   * // Get items with filters
+   * const tops = await clothesService.getClothes({
+   *   category: 'tops',
+   *   limit: 10,
+   *   search: 'shirt'
+   * })
+   * 
+   * // Get favorite items
+   * const favorites = await clothesService.getClothes({
+   *   favorites: true,
+   *   limit: 20
+   * })
+   */
   async getClothes(filters = {}) {
     try {
       let query = supabase
@@ -73,6 +133,39 @@ export class ClothesService {
     }
   }
 
+  /**
+   * Adds a new clothing item to the wardrobe
+   * 
+   * Creates a new clothing item in the database with optional image upload.
+   * Handles image processing through Cloudinary and sets up proper metadata.
+   * 
+   * @param {Object} clothesData - Clothing item data
+   * @param {string} clothesData.name - Name of the clothing item
+   * @param {string} clothesData.category - Category (tops, bottoms, etc.)
+   * @param {string} clothesData.clothing_type - Specific type (shirt, pants, etc.)
+   * @param {string} clothesData.brand - Brand name
+   * @param {string} clothesData.size - Size information
+   * @param {string} clothesData.privacy - Privacy setting (private/public)
+   * @param {boolean} clothesData.is_favorite - Whether item is favorited
+   * @param {Array<string>} clothesData.style_tags - Style tags array
+   * @param {string} clothesData.notes - Additional notes
+   * @param {File} clothesData.image_file - Image file to upload
+   * @returns {Promise<Object>} Created clothing item data
+   * @throws {Error} If creation fails or user not authenticated
+   * 
+   * @example
+   * const newItem = await clothesService.addClothes({
+   *   name: 'Blue Denim Jacket',
+   *   category: 'outerwear',
+   *   clothing_type: 'jacket',
+   *   brand: 'Levi\'s',
+   *   size: 'M',
+   *   privacy: 'public',
+   *   style_tags: ['casual', 'denim'],
+   *   notes: 'Perfect for spring weather',
+   *   image_file: fileInput.files[0]
+   * })
+   */
   async addClothes(clothesData) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()

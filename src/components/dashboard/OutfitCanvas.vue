@@ -1,4 +1,24 @@
+<!--
+  StyleSnap - Outfit Canvas Component
+  
+  Interactive canvas component for creating and editing outfits by dragging
+  and dropping clothing items. Provides visual feedback, item manipulation,
+  and real-time updates.
+  
+  Features:
+  - Drag and drop clothing items
+  - Visual grid overlay
+  - Item selection and manipulation
+  - Z-index management (bring forward/backward)
+  - Resize and rotation controls
+  - Real-time position updates
+  - Theme-aware styling
+  
+  @author StyleSnap Team
+  @version 1.0.0
+-->
 <template>
+  <!-- Main canvas container with drag-and-drop support -->
   <div class="relative w-full h-96 border-2 border-dashed rounded-xl overflow-hidden" :class="theme.value === 'dark' ? 'border-zinc-700' : 'border-stone-300'">
     <!-- Canvas Background -->
     <div class="absolute inset-0 bg-gradient-to-br from-stone-50 to-stone-100 dark:from-zinc-800 dark:to-zinc-900">
@@ -101,12 +121,29 @@
 </template>
 
 <script setup>
+/**
+ * Outfit Canvas Component Script
+ * 
+ * Manages interactive outfit creation with drag-and-drop functionality,
+ * item selection, and manipulation controls. Handles mouse events for
+ * dragging, selection, and z-index management.
+ */
+
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { Trash2, ArrowUp, ArrowDown, Shirt, Palette } from 'lucide-vue-next'
 
+// Theme composable for styling
 const { theme } = useTheme()
 
+/**
+ * Component Props
+ * 
+ * @typedef {Object} Props
+ * @property {Array} items - Array of clothing items on the canvas
+ * @property {string|null} selectedItemId - ID of currently selected item
+ * @property {boolean} showGrid - Whether to show the grid overlay
+ */
 const props = defineProps({
   items: {
     type: Array,
@@ -122,16 +159,39 @@ const props = defineProps({
   }
 })
 
+/**
+ * Component Events
+ * 
+ * Emits events for parent component communication:
+ * - update:selectedItemId - When item selection changes
+ * - updateItem - When item properties are updated
+ * - removeItem - When an item should be removed
+ */
 const emit = defineEmits(['update:selectedItemId', 'updateItem', 'removeItem'])
 
+// Drag and drop state management
 const isDragging = ref(false)
 const dragStart = ref({ x: 0, y: 0, itemId: null })
 const dragOffset = ref({ x: 0, y: 0 })
 
+/**
+ * Sets the selected item ID and emits update event
+ * 
+ * @param {string} id - ID of the item to select
+ */
 const setSelectedItemId = (id) => {
   emit('update:selectedItemId', id)
 }
 
+/**
+ * Initiates drag operation for an item
+ * 
+ * Sets up drag state and event listeners for mouse movement and release.
+ * Prevents default behavior to avoid text selection during drag.
+ * 
+ * @param {string} itemId - ID of the item being dragged
+ * @param {MouseEvent} event - Mouse down event
+ */
 const startDrag = (itemId, event) => {
   event.preventDefault()
   isDragging.value = true
