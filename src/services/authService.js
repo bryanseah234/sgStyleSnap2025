@@ -69,6 +69,9 @@ export class AuthService {
     }
 
     try {
+      console.log('🔑 AuthService: Initiating Google OAuth...')
+      console.log('🔑 AuthService: Redirect URL:', `${window.location.origin}/`)
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -76,9 +79,16 @@ export class AuthService {
         }
       })
       
-      if (error) throw error
+      if (error) {
+        console.error('🔑 AuthService: OAuth error:', error)
+        throw error
+      }
+      
+      console.log('🔑 AuthService: OAuth data:', data)
+      console.log('🔑 AuthService: OAuth URL:', data?.url)
       return data
     } catch (error) {
+      console.error('🔑 AuthService: Sign in error:', error)
       handleSupabaseError(error, 'Google sign in')
     }
   }

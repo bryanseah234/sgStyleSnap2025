@@ -173,21 +173,25 @@ export const useAuthStore = defineStore('auth', {
      * Login with Google OAuth
      */
     async login() {
+      console.log('🔑 AuthStore: login() method called!')
       this.loading = true
       this.error = null
       try {
+        console.log('🔑 AuthStore: Supabase configured:', authService.isSupabaseConfigured)
+        
         // Check if we're in mock mode (no Supabase configured or forced mock mode)
-        // Temporarily force mock mode for deployed version
-        if (!authService.isSupabaseConfigured || import.meta.env.VITE_FORCE_MOCK_MODE === 'true' || window.location.hostname !== 'localhost') {
-          console.log('🎭 AuthStore: Using mock login (forced for deployed version)')
+        if (!authService.isSupabaseConfigured || import.meta.env.VITE_FORCE_MOCK_MODE === 'true') {
+          console.log('🎭 AuthStore: Using mock login')
           await this.mockLogin()
           return
         }
         
+        console.log('🔑 AuthStore: Using real Supabase OAuth...')
         await authService.signInWithGoogle()
+        console.log('🔑 AuthStore: OAuth redirect initiated')
         // After redirect, initializeAuth will be called
       } catch (error) {
-        console.error('Login failed:', error)
+        console.error('🔑 AuthStore: Login failed:', error)
         this.error = error.message
         throw error
       } finally {
