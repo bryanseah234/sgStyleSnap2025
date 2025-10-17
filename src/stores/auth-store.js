@@ -123,6 +123,7 @@ export const useAuthStore = defineStore('auth', {
         const urlParams = new URLSearchParams(window.location.search)
         const hasAuthCode = urlParams.has('code') || urlParams.has('access_token')
         const isLogoutRedirect = urlParams.has('logout')
+        const isCallbackRoute = window.location.pathname === '/auth/callback'
         
         // If this is a logout redirect, clear everything and don't auto-login
         if (isLogoutRedirect) {
@@ -134,8 +135,39 @@ export const useAuthStore = defineStore('auth', {
           return
         }
         
-        if (hasAuthCode) {
-          console.log('🔄 AuthStore: OAuth callback detected, waiting for session...')
+        // If this is an OAuth callback route, handle it specially
+        if (isCallbackRoute) {
+          console.log('🔄 AuthStore: OAuth callback route detected')
+          if (hasAuthCode) {
+            console.log('🔄 AuthStore: OAuth callback with auth code, processing...')
+            // Wait for OAuth session to be established
+            await new Promise(resolve => setTimeout(resolve, 3000))
+            
+            // Check if session was established
+            const user = await authService.getCurrentUser()
+            if (user) {
+              console.log('✅ AuthStore: OAuth callback successful, user authenticated:', user.email)
+              this.setUser(user)
+              
+              // Redirect to home page
+              window.location.replace('/')
+              return
+            } else {
+              console.log('❌ AuthStore: OAuth callback failed, no user found')
+              // Redirect to login with error
+              window.location.replace('/login?error=oauth_failed')
+              return
+            }
+          } else {
+            console.log('❌ AuthStore: OAuth callback route without auth code, redirecting to login')
+            // No auth code, redirect to login
+            window.location.replace('/login')
+            return
+          }
+        }
+        
+        if (hasAuthCode && !isCallbackRoute) {
+          console.log('🔄 AuthStore: OAuth callback detected on non-callback route, waiting for session...')
           // Wait a bit longer for OAuth session to be established
           await new Promise(resolve => setTimeout(resolve, 2000))
         }

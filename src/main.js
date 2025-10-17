@@ -23,6 +23,7 @@ import Friends from './pages/Friends.vue'
 import Profile from './pages/Profile.vue'
 import FriendCabinet from './pages/FriendCabinet.vue'
 import Login from './pages/Login.vue'
+import OAuthCallback from './pages/OAuthCallback.vue'
 
 /**
  * Application Routes Configuration
@@ -40,7 +41,7 @@ const routes = [
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/friend-cabinet', component: FriendCabinet, meta: { requiresAuth: true } },
   { path: '/login', component: Login, meta: { requiresAuth: false } },
-  { path: '/auth/callback', component: Login, meta: { requiresAuth: false } }
+  { path: '/auth/callback', component: OAuthCallback, meta: { requiresAuth: false } }
 ]
 
 /**
@@ -87,6 +88,13 @@ router.beforeEach(async (to, from, next) => {
     // More robust authentication check
     const isAuthenticated = authStore.isAuthenticated && authStore.user && authStore.user.id
     
+    // Special handling for OAuth callback route
+    if (to.path === '/auth/callback') {
+      console.log('🔄 Router: OAuth callback route, allowing navigation')
+      next()
+      return
+    }
+    
     // Check if route requires authentication
     if (to.meta.requiresAuth && !isAuthenticated) {
       console.log('🔒 Router: Protected route, redirecting to login')
@@ -129,6 +137,26 @@ import { useAuthStore } from '@/stores/auth-store'
 const authStore = useAuthStore()
 app.config.globalProperties.$authStore = authStore
 app.provide('authStore', authStore)
+
+// Global error handler for browser extension conflicts
+window.addEventListener('error', (event) => {
+  if (event.message && event.message.includes('No tab with id')) {
+    // Suppress browser extension errors
+    event.preventDefault()
+    console.log('🔧 Suppressed browser extension error:', event.message)
+    return false
+  }
+})
+
+// Global unhandled promise rejection handler
+window.addEventListener('unhandledrejection', (event) => {
+  if (event.reason && event.reason.message && event.reason.message.includes('No tab with id')) {
+    // Suppress browser extension promise rejections
+    event.preventDefault()
+    console.log('🔧 Suppressed browser extension promise rejection:', event.reason.message)
+    return false
+  }
+})
 
 // Initialize auth state before mounting
 authStore.initializeAuth().then(() => {

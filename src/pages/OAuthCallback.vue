@@ -1,0 +1,154 @@
+<!--
+  StyleSnap - OAuth Callback Component
+  
+  Handles OAuth callback from Google authentication.
+  This component processes the OAuth response and redirects
+  the user to the appropriate page.
+  
+  @author StyleSnap Team
+  @version 1.0.0
+-->
+<template>
+  <div class="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-black">
+    <div class="text-center">
+      <!-- Loading Spinner -->
+      <div class="w-16 h-16 mx-auto mb-6">
+        <div class="w-16 h-16 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+      </div>
+      
+      <!-- Status Message -->
+      <h1 class="text-2xl font-bold text-black dark:text-white mb-2">
+        {{ statusMessage }}
+      </h1>
+      <p class="text-stone-600 dark:text-zinc-400">
+        {{ statusDescription }}
+      </p>
+      
+      <!-- Error Message -->
+      <div v-if="error" class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg">
+        <p class="text-red-700 dark:text-red-300 text-sm">
+          {{ error }}
+        </p>
+        <button 
+          @click="redirectToLogin"
+          class="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        >
+          Return to Login
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth-store'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+// State
+const statusMessage = ref('Processing authentication...')
+const statusDescription = ref('Please wait while we complete your sign-in.')
+const error = ref(null)
+
+// Methods
+const redirectToLogin = () => {
+  router.push('/login')
+}
+
+const handleOAuthCallback = async () => {
+  try {
+    console.log('🔄 OAuthCallback: Processing OAuth callback...')
+    
+    // Check URL parameters
+    const urlParams = new URLSearchParams(window.location.search)
+    const hasAuthCode = urlParams.has('code') || urlParams.has('access_token')
+    const hasError = urlParams.has('error')
+    
+    if (hasError) {
+      const errorParam = urlParams.get('error')
+      const errorDescription = urlParams.get('error_description') || 'Authentication failed'
+      
+      console.error('❌ OAuthCallback: OAuth error:', errorParam, errorDescription)
+      
+      statusMessage.value = 'Authentication Failed'
+      statusDescription.value = 'There was an error during the authentication process.'
+      error.value = `${errorParam}: ${errorDescription}`
+      
+      // Redirect to login after 3 seconds
+      setTimeout(() => {
+        redirectToLogin()
+      }, 3000)
+      
+      return
+    }
+    
+    if (!hasAuthCode) {
+      console.error('❌ OAuthCallback: No auth code found in URL')
+      
+      statusMessage.value = 'Invalid Request'
+      statusDescription.value = 'No authentication code was provided.'
+      error.value = 'Missing authentication code'
+      
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        redirectToLogin()
+      }, 2000)
+      
+      return
+    }
+    
+    console.log('✅ OAuthCallback: Auth code found, waiting for session establishment...')
+    
+    statusMessage.value = 'Completing Sign-In...'
+    statusDescription.value = 'Setting up your account...'
+    
+    // Wait for auth store to process the callback
+    // The auth store will handle the actual authentication
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Check if authentication was successful
+    if (authStore.isAuthenticated && authStore.user) {
+      console.log('✅ OAuthCallback: Authentication successful, redirecting to home')
+      
+      statusMessage.value = 'Welcome!'
+      statusDescription.value = 'Redirecting to your dashboard...'
+      
+      // Redirect to home page
+      setTimeout(() => {
+        router.replace('/')
+      }, 1000)
+    } else {
+      console.error('❌ OAuthCallback: Authentication failed after processing')
+      
+      statusMessage.value = 'Authentication Failed'
+      statusDescription.value = 'Unable to complete the sign-in process.'
+      error.value = 'Session establishment failed'
+      
+      // Redirect to login after 3 seconds
+      setTimeout(() => {
+        redirectToLogin()
+      }, 3000)
+    }
+    
+  } catch (error) {
+    console.error('❌ OAuthCallback: Error processing callback:', error)
+    
+    statusMessage.value = 'Something Went Wrong'
+    statusDescription.value = 'An unexpected error occurred.'
+    error.value = error.message || 'Unknown error occurred'
+    
+    // Redirect to login after 3 seconds
+    setTimeout(() => {
+      redirectToLogin()
+    }, 3000)
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  handleOAuthCallback()
+})
+</script>
