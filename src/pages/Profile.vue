@@ -20,17 +20,18 @@
           theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
         }`">
             
-            <form @submit.prevent="saveProfile" class="space-y-6">
+            <div class="space-y-6">
               <!-- Profile Photo -->
               <div class="text-center">
-                <div :class="`w-24 h-24 mx-auto rounded-full overflow-hidden mb-4 ${
-                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+                <div :class="`w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 border-2 ${
+                  theme.value === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'
                 }`">
                   <img
                     v-if="user.avatar_url"
                     :src="user.avatar_url"
                     :alt="user.name"
                     class="w-full h-full object-cover"
+                    @error="handleImageError"
                   />
                   <div
                     v-else
@@ -38,13 +39,18 @@
                       theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
                     }`"
                   >
-                    <span :class="`text-2xl font-bold ${
+                    <span :class="`text-3xl font-bold ${
                       theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
                     }`">
                       {{ (user.name || user.email || 'U').charAt(0).toUpperCase() }}
                     </span>
                   </div>
                 </div>
+                <p :class="`text-sm ${
+                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                }`">
+                  Profile photo from Google account
+                </p>
               </div>
 
               <!-- Read-only User Info -->
@@ -95,63 +101,18 @@
                 </div>
               </div>
 
-              <!-- Editable Fields -->
-              <div>
-                <label :class="`block text-sm font-medium mb-2 ${
-                  theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+              <!-- Additional Info -->
+              <div class="text-center">
+                <p :class="`text-sm ${
+                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
                 }`">
-                  Gender
-                </label>
-                <select
-                  v-model="user.gender"
-                  :class="`w-full px-3 py-2 rounded-lg border ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 border-zinc-700 text-white'
-                      : 'bg-white border-stone-300 text-black'
-                  }`"
-                >
-                  <option value="">Select gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="non-binary">Non-binary</option>
-                  <option value="prefer-not-to-say">Prefer not to say</option>
-                </select>
+                  Profile information is managed through your Google account.
+                  <br>
+                  To update your name or email, please visit your Google account settings.
+                </p>
               </div>
 
-              <div>
-                <label :class="`block text-sm font-medium mb-2 ${
-                  theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-                }`">
-                  Bio
-                </label>
-                <textarea
-                  v-model="user.bio"
-                  :class="`w-full px-3 py-2 rounded-lg border ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 border-zinc-700 text-white'
-                      : 'bg-white border-stone-300 text-black'
-                  }`"
-                  rows="3"
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
-
-              <!-- Save Button -->
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  :disabled="saving"
-                  :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                    theme.value === 'dark'
-                      ? 'bg-white text-black hover:bg-zinc-200'
-                      : 'bg-black text-white hover:bg-zinc-800'
-                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`"
-                >
-                  <Save class="w-5 h-5" />
-                  {{ saving ? 'Saving...' : 'Save Changes' }}
-                </button>
-              </div>
-            </form>
+            </div>
         </div>
       </div>
 
@@ -163,11 +124,9 @@
 import { ref, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { api } from '@/api/client'
-import { Save } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const user = ref(null)
-const saving = ref(false)
 
 const loadUser = async () => {
   try {
@@ -178,21 +137,11 @@ const loadUser = async () => {
   }
 }
 
-
-const saveProfile = async () => {
-  saving.value = true
-  try {
-    await api.auth.updateMe({
-      bio: user.value.bio,
-      gender: user.value.gender
-    })
-  } catch (error) {
-    console.error('Error saving profile:', error)
-  } finally {
-    saving.value = false
-  }
+const handleImageError = (event) => {
+  console.log('Avatar image failed to load, showing fallback')
+  // Hide the broken image and show the fallback
+  event.target.style.display = 'none'
 }
-
 
 onMounted(async () => {
   await loadUser()

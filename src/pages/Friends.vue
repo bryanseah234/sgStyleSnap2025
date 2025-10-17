@@ -404,8 +404,11 @@ const handleSearch = () => {
 const searchAndAddFriend = async () => {
   if (!addFriendSearch.value.trim()) return
   
+  console.log('Searching for users with query:', addFriendSearch.value)
+  
   try {
     const result = await api.entities.User.search(addFriendSearch.value)
+    console.log('Search result from API:', result)
     addFriendResults.value = result || []
   } catch (error) {
     console.error('Error searching users:', error)
@@ -459,13 +462,31 @@ const isFriend = (userId) => {
 }
 
 // Lifecycle
-onMounted(loadFriendsData)
+onMounted(() => {
+  loadFriendsData()
+  
+  // Add test function to window for debugging
+  window.testFriendSearch = async (query) => {
+    console.log('Testing friend search with query:', query)
+    try {
+      const result = await api.entities.User.search(query)
+      console.log('Test search result:', result)
+      return result
+    } catch (error) {
+      console.error('Test search error:', error)
+      return null
+    }
+  }
+})
 
 // Watch for search changes
 watch(addFriendSearch, (newValue) => {
+  console.log('Search input changed:', newValue)
   if (newValue.length >= 2) {
+    console.log('Triggering search for:', newValue)
     searchAndAddFriend()
   } else {
+    console.log('Clearing search results')
     addFriendResults.value = []
   }
 })
