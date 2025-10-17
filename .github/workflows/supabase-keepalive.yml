@@ -31,25 +31,25 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       
       - name: Install dependencies
         run: npm install @supabase/supabase-js
       
       - name: Ping Supabase
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           node -e "
           const { createClient } = require('@supabase/supabase-js');
           const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-          supabase.from('closet_items').select('count').limit(1).then(({ data, error }) => {
+          supabase.from('clothes').select('count').limit(1).then(({ data, error }) => {
             if (error) {
               console.error('Keep-alive failed:', error);
               process.exit(1);
@@ -61,6 +61,6 @@ jobs:
       - name: Log result
         run: echo "Supabase keep-alive completed at $(date)"
 
-# TODO: Add GitHub secrets in repository settings:
-# - SUPABASE_URL
-# - SUPABASE_ANON_KEY
+# Required GitHub Secrets:
+# - VITE_SUPABASE_URL: Your Supabase project URL
+# - VITE_SUPABASE_ANON_KEY: Your Supabase anonymous key

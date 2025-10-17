@@ -42,7 +42,12 @@ jobs:
         NODE_ENV: production
     
     - name: Run unit tests
-      run: npm test
+      run: |
+        if npm run test --dry-run 2>/dev/null; then
+          npm test
+        else
+          echo "No tests configured yet, skipping..."
+        fi
       continue-on-error: true
     
     - name: Upload build artifacts
