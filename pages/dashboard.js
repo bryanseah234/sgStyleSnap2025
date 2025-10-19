@@ -187,7 +187,7 @@ export default function Dashboard() {
             <h1 className={`text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-2 ${
               theme === "dark" ? "text-white" : "text-black"
             }`}>
-              Outfit Studio
+              Outfits
             </h1>
             <p className={`text-base md:text-lg ${
               theme === "dark" ? "text-zinc-400" : "text-stone-600"

@@ -46,9 +46,10 @@
 
     <!-- Stats Cards -->
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-      <div
+      <router-link
         v-for="(stat, index) in stats"
         :key="stat.label"
+        :to="stat.route"
         :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer hover:-translate-y-2 hover:scale-105 ${
           theme.value === 'dark'
             ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
@@ -72,11 +73,11 @@
         }`">
           {{ stat.label }}
         </p>
-      </div>
+      </router-link>
     </div>
 
     <!-- Quick Actions -->
-    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Cabinet Preview -->
       <router-link to="/cabinet">
         <div :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer overflow-hidden relative h-64 hover:scale-105 ${
@@ -126,7 +127,7 @@
         </div>
       </router-link>
 
-      <!-- Outfit Studio Preview -->
+      <!-- Outfits Preview -->
       <router-link to="/dashboard">
         <div :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer overflow-hidden relative h-64 hover:scale-105 ${
           theme.value === 'dark'
@@ -144,7 +145,7 @@
               <h3 :class="`text-2xl font-bold ${
                 theme.value === 'dark' ? 'text-white' : 'text-black'
               }`">
-                Outfit Studio
+                Outfits
               </h3>
               <ArrowRight :class="`w-6 h-6 transform transition-transform duration-300 group-hover:translate-x-2 ${
                 theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
@@ -155,6 +156,63 @@
             }`">
               Mix and match your items on the canvas
             </p>
+          </div>
+        </div>
+      </router-link>
+
+      <!-- Friends Preview -->
+      <router-link to="/friends">
+        <div :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer overflow-hidden relative h-64 hover:scale-105 ${
+          theme.value === 'dark'
+            ? 'bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700'
+            : 'bg-gradient-to-br from-white to-stone-50 border border-stone-200'
+        }`">
+          <div :class="`absolute inset-0 bg-gradient-to-br transition-opacity duration-500 ${
+            theme.value === 'dark' 
+              ? 'from-green-500/10 to-blue-500/10' 
+              : 'from-green-500/5 to-blue-500/5'
+          } opacity-0 group-hover:opacity-100`" />
+          
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-6">
+              <h3 :class="`text-2xl font-bold ${
+                theme.value === 'dark' ? 'text-white' : 'text-black'
+              }`">
+                Friends
+              </h3>
+              <ArrowRight :class="`w-6 h-6 transform transition-transform duration-300 group-hover:translate-x-2 ${
+                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+              }`" />
+            </div>
+            <p :class="`text-lg mb-6 ${
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+            }`">
+              Connect and share with friends
+            </p>
+            <div class="flex gap-2">
+              <div
+                v-for="(friend, i) in friends.slice(0, 3)"
+                :key="friend.id"
+                :class="`w-12 h-12 rounded-full overflow-hidden ${
+                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+                }`"
+              >
+                <img
+                  v-if="friend.avatar_url"
+                  :src="friend.avatar_url"
+                  :alt="friend.name"
+                  class="w-full h-full object-cover"
+                />
+                <div
+                  v-else
+                  :class="`w-full h-full flex items-center justify-center ${
+                    theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
+                  }`"
+                >
+                  <Users :class="`w-6 h-6 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </router-link>
@@ -203,12 +261,12 @@ const friends = ref([])
  * Calculates and returns statistics for items, outfits, and friends
  * to display in the dashboard cards.
  * 
- * @returns {Array<Object>} Array of stat objects with label, value, and icon
+ * @returns {Array<Object>} Array of stat objects with label, value, icon, and route
  */
 const stats = computed(() => [
-  { label: 'Items', value: items.value.length, icon: Shirt },
-  { label: 'Outfits', value: outfits.value.length, icon: Palette },
-  { label: 'Friends', value: friends.value.length, icon: Users },
+  { label: 'Items', value: items.value.length, icon: Shirt, route: '/cabinet' },
+  { label: 'Outfits', value: outfits.value.length, icon: Palette, route: '/dashboard' },
+  { label: 'Friends', value: friends.value.length, icon: Users, route: '/friends' },
 ])
 
 /**

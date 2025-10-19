@@ -108,7 +108,7 @@ src/
 ├── components/          # Reusable Vue components
 │   ├── ui/             # Base UI components
 │   ├── cabinet/        # Wardrobe-specific components
-│   └── dashboard/      # Outfit studio components
+│   └── dashboard/      # Outfits components
 ├── composables/        # Vue composables (useTheme, etc.)
 ├── lib/                # Utility libraries
 ├── pages/              # Page components
@@ -164,7 +164,7 @@ StyleSnap uses Google OAuth exclusively for authentication:
 - Mark favorites and add notes
 - Search and filter items
 
-### Outfit Studio
+### Outfits
 - Drag-and-drop outfit creation
 - AI-powered outfit suggestions
 - Weather-based recommendations
@@ -187,7 +187,7 @@ StyleSnap uses Google OAuth exclusively for authentication:
 ### Pages
 - **Home** - Dashboard with stats and quick actions
 - **Cabinet** - Wardrobe management
-- **Dashboard** - Outfit studio with AI generation
+- **Dashboard** - Outfits with AI generation
 - **Friends** - Social features and friend management
 - **Profile** - User settings and preferences
 - **Login** - Google OAuth authentication

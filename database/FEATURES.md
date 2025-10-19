@@ -17,7 +17,7 @@
 - **Notes & Details** - Add custom notes and metadata
 - **Privacy Controls** - Public/private item visibility
 
-### 🎨 **Outfit Studio & AI Generation**
+### 🎨 **Outfits & AI Generation**
 - **Drag & Drop Canvas** - Interactive outfit creation interface
 - **AI-Powered Suggestions** - Weather and occasion-based outfit generation
 - **Outfit Management** - Save, edit, and organize outfits
@@ -89,7 +89,7 @@
 1. **Login Page** - Google OAuth authentication
 2. **Home Dashboard** - Overview with stats and quick actions
 3. **Cabinet** - Wardrobe management interface
-4. **Outfit Studio** - AI-powered outfit creation
+4. **Outfits** - AI-powered outfit creation
 5. **Friends** - Social features and friend management
 6. **Profile** - User settings and preferences
 7. **Friend Cabinet** - Browse friends' wardrobes

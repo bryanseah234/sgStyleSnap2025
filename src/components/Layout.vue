@@ -73,29 +73,40 @@
 
       <!-- Theme Toggle & Logout -->
       <div class="space-y-2">
-        <div :class="`flex items-center justify-between px-4 py-3 rounded-xl ${
-          theme.value === 'dark'
-            ? 'bg-zinc-800'
-            : 'bg-stone-100'
-        }`">
+        <button
+          @click="toggleTheme"
+          :class="`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+            theme.value === 'dark'
+              ? 'bg-zinc-800 hover:bg-zinc-700'
+              : 'bg-stone-100 hover:bg-stone-200'
+          }`"
+          :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        >
           <span :class="`font-medium ${
             theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
           }`">
             {{ theme.value === 'dark' ? 'Dark Mode' : 'Light Mode' }}
           </span>
-          <ThemeToggle />
-        </div>
+          <!-- Sun icon for dark mode (clicking will switch to light) -->
+          <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
+          <!-- Moon icon for light mode (clicking will switch to dark) -->
+          <Moon v-else class="w-5 h-5" />
+        </button>
 
         <button
           @click="handleLogout"
+          :disabled="loading"
           :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-150 hover:scale-105 ${
-            theme.value === 'dark'
+            loading
+              ? 'opacity-50 cursor-not-allowed'
+              : theme.value === 'dark'
               ? 'hover:bg-red-950 text-zinc-300 hover:text-red-400'
               : 'hover:bg-red-50 text-stone-700 hover:text-red-600'
           }`"
         >
-          <LogOut class="w-5 h-5" />
-          <span class="font-medium">Logout</span>
+          <LogOut v-if="!loading" class="w-5 h-5" />
+          <div v-else class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <span class="font-medium">{{ loading ? 'Logging out...' : 'Logout' }}</span>
         </button>
       </div>
     </aside>
@@ -146,7 +157,7 @@
                 ? 'text-zinc-500 opacity-60 scale-90'
                 : 'text-stone-500 opacity-60 scale-90'
             }`">
-              {{ item.name === 'Outfit Studio' ? 'Studio' : item.name }}
+              {{ item.name }}
             </span>
 
             <!-- Active indicator -->
@@ -161,7 +172,20 @@
         
         <!-- Theme Toggle for Mobile -->
         <div class="flex-1 flex justify-center">
-          <ThemeToggle />
+          <button
+            @click="toggleTheme"
+            :class="`p-3 rounded-2xl transition-all duration-200 hover:scale-110 ${
+              theme.value === 'dark'
+                ? 'bg-zinc-800 hover:bg-zinc-700'
+                : 'bg-stone-100 hover:bg-stone-200'
+            }`"
+            :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          >
+            <!-- Sun icon for dark mode (clicking will switch to light) -->
+            <Sun v-if="theme.value === 'dark'" class="w-6 h-6" />
+            <!-- Moon icon for light mode (clicking will switch to dark) -->
+            <Moon v-else class="w-6 h-6" />
+          </button>
         </div>
       </div>
     </nav>
@@ -197,13 +221,15 @@ import {
   Users, 
   Palette, 
   User as UserIcon,
-  LogOut
+  LogOut,
+  Sun,
+  Moon
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 
 // Router, theme, and auth composables
 const router = useRouter()
-const { theme, loadUser, refreshTheme } = useTheme()
+const { theme, loadUser, refreshTheme, toggleTheme } = useTheme()
 const authStore = useAuthStore()
 
 // Loading state for initial app setup
@@ -220,7 +246,7 @@ const loading = ref(true)
 const navigationItems = [
   { name: "Home", path: createPageUrl("Home"), icon: Home },
   { name: "Cabinet", path: createPageUrl("Cabinet"), icon: Shirt },
-  { name: "Outfit Studio", path: createPageUrl("Dashboard"), icon: Palette },
+  { name: "Outfits", path: createPageUrl("Dashboard"), icon: Palette },
   { name: "Friends", path: createPageUrl("Friends"), icon: Users },
   { name: "Profile", path: createPageUrl("Profile"), icon: UserIcon },
 ]
@@ -232,17 +258,47 @@ const navigationItems = [
  * Clears all authentication state and user data.
  */
 const handleLogout = async () => {
+  // Show confirmation dialog
+  const confirmed = confirm('Are you sure you want to logout?')
+  if (!confirmed) {
+    return
+  }
+  
   try {
     console.log('🚪 Layout: Starting logout process...')
+    
+    // Show loading state
+    loading.value = true
+    
+    // Call logout from auth store
     await authStore.logout()
     console.log('✅ Layout: Logout successful, redirecting to login...')
     
+    // Force clear any remaining user data
+    authStore.clearUser()
+    
     // Redirect to login page
-    router.push('/login')
+    await router.push('/login')
+    
+    // Force reload to ensure clean state
+    window.location.href = '/login'
+    
   } catch (error) {
     console.error('❌ Layout: Logout error:', error)
+    
+    // Force clear user data even if logout fails
+    authStore.clearUser()
+    
     // Force redirect to login even if logout fails
-    router.push('/login')
+    try {
+      await router.push('/login')
+    } catch (routerError) {
+      console.error('❌ Layout: Router redirect failed:', routerError)
+      // Last resort: force page reload to login
+      window.location.href = '/login'
+    }
+  } finally {
+    loading.value = false
   }
 }
 

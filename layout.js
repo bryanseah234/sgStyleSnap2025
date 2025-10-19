@@ -28,7 +28,7 @@ function LayoutContent({ children }) {
   const navigationItems = [
     { name: "Home", path: createPageUrl("Home"), icon: Home },
     { name: "Cabinet", path: createPageUrl("Cabinet"), icon: Shirt },
-    { name: "Outfit Studio", path: createPageUrl("Dashboard"), icon: Palette },
+    { name: "Outfits", path: createPageUrl("Dashboard"), icon: Palette },
     { name: "Friends", path: createPageUrl("Friends"), icon: Users },
     { name: "Profile", path: createPageUrl("Profile"), icon: UserIcon },
   ];
@@ -221,7 +221,7 @@ function LayoutContent({ children }) {
                     }`}
                     style={{ transition: 'color 0.2s ease-in-out' }}
                   >
-                    {item.name === "Outfit Studio" ? "Studio" : item.name}
+                    {item.name}
                   </motion.span>
 
                   {/* Active indicator - Properly positioned at top */}

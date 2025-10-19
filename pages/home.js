@@ -43,9 +43,9 @@ export default function Home() {
   });
 
   const stats = [
-    { label: "Items", value: items.length, icon: Shirt },
-    { label: "Outfits", value: outfits.length, icon: Palette },
-    { label: "Friends", value: 0, icon: Users },
+    { label: "Items", value: items.length, icon: Shirt, route: "/cabinet" },
+    { label: "Outfits", value: outfits.length, icon: Palette, route: "/dashboard" },
+    { label: "Friends", value: 0, icon: Users, route: "/friends" },
   ];
 
   return (
@@ -91,18 +91,18 @@ export default function Home() {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className={`p-8 rounded-3xl ${
-                theme === "dark"
-                  ? "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
-                  : "bg-white border border-stone-200 hover:border-stone-300"
-              } transition-all duration-300 group cursor-pointer`}
-            >
+            <Link key={stat.label} to={stat.route}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className={`p-8 rounded-3xl ${
+                  theme === "dark"
+                    ? "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
+                    : "bg-white border border-stone-200 hover:border-stone-300"
+                } transition-all duration-300 group cursor-pointer`}
+              >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 rounded-2xl ${
                   theme === "dark" ? "bg-zinc-800" : "bg-stone-100"
@@ -120,7 +120,8 @@ export default function Home() {
               }`}>
                 {stat.label}
               </p>
-            </motion.div>
+              </motion.div>
+            </Link>
           );
         })}
       </motion.div>
@@ -130,7 +131,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.6 }}
-        className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6"
+        className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         {/* Cabinet Preview */}
         <Link to={createPageUrl("Cabinet")}>
@@ -189,7 +190,7 @@ export default function Home() {
           </motion.div>
         </Link>
 
-        {/* Outfit Studio Preview */}
+        {/* Outfits Preview */}
         <Link to={createPageUrl("Dashboard")}>
           <motion.div
             whileHover={{ scale: 1.02 }}
@@ -210,7 +211,7 @@ export default function Home() {
                 <h3 className={`text-2xl font-bold ${
                   theme === "dark" ? "text-white" : "text-black"
                 }`}>
-                  Outfit Studio
+                  Outfits
                 </h3>
                 <ArrowRight className={`w-6 h-6 transform group-hover:translate-x-2 transition-transform duration-300 ${
                   theme === "dark" ? "text-zinc-400" : "text-stone-600"
@@ -220,6 +221,42 @@ export default function Home() {
                 theme === "dark" ? "text-zinc-400" : "text-stone-600"
               }`}>
                 Mix and match your items on the canvas
+              </p>
+            </div>
+          </motion.div>
+        </Link>
+
+        {/* Friends Preview */}
+        <Link to={createPageUrl("Friends")}>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className={`p-8 rounded-3xl ${
+              theme === "dark"
+                ? "bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700"
+                : "bg-gradient-to-br from-white to-stone-50 border border-stone-200"
+            } group cursor-pointer overflow-hidden relative h-64`}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${
+              theme === "dark" 
+                ? "from-green-500/10 to-blue-500/10" 
+                : "from-green-500/5 to-blue-500/5"
+            } opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className={`text-2xl font-bold ${
+                  theme === "dark" ? "text-white" : "text-black"
+                }`}>
+                  Friends
+                </h3>
+                <ArrowRight className={`w-6 h-6 transform group-hover:translate-x-2 transition-transform duration-300 ${
+                  theme === "dark" ? "text-zinc-400" : "text-stone-600"
+                }`} />
+              </div>
+              <p className={`text-lg ${
+                theme === "dark" ? "text-zinc-400" : "text-stone-600"
+              }`}>
+                Connect and share with friends
               </p>
             </div>
           </motion.div>

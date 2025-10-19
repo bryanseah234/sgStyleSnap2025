@@ -16,6 +16,18 @@
       </div>
       
       <div v-if="user" class="max-w-2xl mx-auto">
+        <!-- Loading state -->
+        <div v-if="authStore.loading" class="text-center py-8">
+          <div :class="`w-8 h-8 mx-auto mb-4 border-2 border-current border-t-transparent rounded-full animate-spin ${
+            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          }`" />
+          <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+            Loading profile...
+          </p>
+        </div>
+        
+        <!-- Profile content -->
+        <div v-else>
         <div :class="`rounded-xl p-6 ${
           theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
         }`">
@@ -96,7 +108,7 @@
                       ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
                       : 'bg-stone-100 border-stone-300 text-stone-600'
                   }`">
-                    @{{ user?.username || 'Not provided' }}
+                    @{{ getUsername() }}
                   </div>
                 </div>
               </div>
@@ -114,6 +126,7 @@
 
             </div>
         </div>
+        </div>
       </div>
 
     </div>
@@ -129,12 +142,31 @@ const { theme } = useTheme()
 const authStore = useAuthStore()
 
 // Use computed to get reactive user data from auth store
-const user = computed(() => authStore.user || authStore.profile)
+// Prefer profile data (from database) over user data (from auth) for username and other profile fields
+const user = computed(() => authStore.profile || authStore.user)
 
 const handleImageError = (event) => {
   console.log('Avatar image failed to load, showing fallback')
   // Hide the broken image and show the fallback
   event.target.style.display = 'none'
+}
+
+/**
+ * Gets the username from the user data
+ * Falls back to generating username from email if not available
+ */
+const getUsername = () => {
+  // First try to get username from profile (database)
+  if (user.value?.username) {
+    return user.value.username
+  }
+  
+  // Fallback: generate username from email
+  if (user.value?.email) {
+    return user.value.email.split('@')[0]
+  }
+  
+  return 'Not provided'
 }
 
 onMounted(async () => {
@@ -143,9 +175,12 @@ onMounted(async () => {
     await authStore.initializeAuth()
   }
   
-  // If we have a user but no profile, fetch the profile
-  if (authStore.user && !authStore.profile) {
+  // Always try to fetch the latest profile data to ensure we have username
+  try {
     await authStore.fetchUserProfile()
+    console.log('Profile data loaded:', authStore.profile)
+  } catch (error) {
+    console.error('Failed to load profile data:', error)
   }
 })
 </script>

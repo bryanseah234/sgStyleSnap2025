@@ -324,7 +324,7 @@ export default function Cabinet() {
                         : "bg-black text-white hover:bg-stone-900"
                     }`}
                   >
-                    Go to Outfit Studio
+                    Go to Outfits
                   </Button>
                 </Link>
               )}
