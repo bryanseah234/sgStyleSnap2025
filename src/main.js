@@ -14,6 +14,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import './index.css'
 import { useTheme } from './composables/useTheme'
+import { useThemeStore } from './stores/theme-store'
 
 // Import page components
 import Home from './pages/Home.vue'
@@ -110,7 +111,7 @@ router.beforeEach(async (to, from, next) => {
     }
     
     // More robust authentication check
-    const isAuthenticated = authStore.isAuthenticated && authStore.user && authStore.user.id
+    const isAuthenticated = authStore.isAuthenticated && authStore.user && authStore.user.id && !authStore.loading
     
     // Special handling for OAuth callback route
     if (to.path === '/auth/callback') {
@@ -138,8 +139,7 @@ router.beforeEach(async (to, from, next) => {
   }
 })
 
-// Initialize theme system before creating the app
-const { loadUser } = useTheme()
+// Theme system will be initialized after Pinia is set up
 
 /**
  * Vue Application Instance
@@ -154,7 +154,7 @@ const pinia = createPinia()
 app.use(pinia)  // State management
 app.use(router) // Client-side routing
 
-// Initialize auth store after Pinia is set up
+// Initialize stores after Pinia is set up
 app.config.globalProperties.$authStore = null
 app.provide('authStore', null)
 
@@ -163,6 +163,12 @@ import { useAuthStore } from '@/stores/auth-store'
 const authStore = useAuthStore()
 app.config.globalProperties.$authStore = authStore
 app.provide('authStore', authStore)
+
+// Initialize theme store after Pinia is set up
+const themeStore = useThemeStore()
+const { loadUser } = useTheme()
+app.config.globalProperties.$themeStore = themeStore
+app.provide('themeStore', themeStore)
 
 // Debug: Track navigation events to identify browser extension error triggers
 let navigationCount = 0
@@ -226,9 +232,31 @@ router.afterEach((to, from) => {
   console.log('🧭 Router: Navigation completed from', from.path, 'to', to.path)
   console.log('🧭 Router: Current route:', router.currentRoute.value.path)
   console.log('🧭 Router: Route component:', to.component?.name || 'Unknown')
+  
+  // Ensure theme is applied on route changes
+  themeStore.refreshTheme()
 })
+// Initialize theme store first and apply theme immediately
+themeStore.initializeTheme()
+
+// Add global theme persistence for immediate application
+document.addEventListener('DOMContentLoaded', () => {
+  themeStore.refreshTheme()
+})
+
+// Also apply theme immediately if DOM is already loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    themeStore.refreshTheme()
+  })
+} else {
+  themeStore.refreshTheme()
+}
+
 const authInitPromise = authStore.initializeAuth().then(() => {
   console.log('✅ Auth store initialized successfully')
+  // Load user theme preferences after auth is ready
+  return themeStore.loadUser()
 }).catch(error => {
   console.error('❌ Failed to initialize auth store:', error)
 })

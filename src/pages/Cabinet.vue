@@ -86,6 +86,15 @@
         }`">
           Start building your wardrobe by adding your first item!
         </p>
+        <div v-if="!currentUser?.id" :class="`mt-4 p-4 rounded-lg ${
+          theme.value === 'dark' 
+            ? 'bg-yellow-900/20 border border-yellow-800 text-yellow-300' 
+            : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
+        }`">
+          <p class="text-sm">
+            Make sure you're logged in to see your items. If you have items in Supabase but they're not showing, check the browser console for debugging information.
+          </p>
+        </div>
       </div>
 
       <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -284,11 +293,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
-import { api } from '@/api/base44Client'
+import { ClothesService } from '@/services/clothesService'
 import { Plus, Heart, Shirt } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
+
+// Initialize clothes service
+const clothesService = new ClothesService()
 
 // Use computed to get reactive user data from auth store
 const currentUser = computed(() => authStore.user || authStore.profile)
@@ -326,15 +338,29 @@ const filteredItems = computed(() => {
 
 const loadItems = async () => {
   try {
+    console.log('Cabinet: Loading items for user:', currentUser.value?.id)
+    
     if (currentUser.value?.id) {
-      const itemsData = await api.entities.ClothingItem.filter(
-        { owner_id: currentUser.value.id },
-        '-created_at'
-      )
-      items.value = itemsData
+      // Use the real Supabase service to fetch user's clothing items
+      const result = await clothesService.getClothes({
+        owner_id: currentUser.value.id,
+        limit: 100 // Load up to 100 items
+      })
+      
+      if (result.success) {
+        items.value = result.data || []
+        console.log('Cabinet: Loaded items from Supabase:', items.value.length, 'items')
+      } else {
+        console.error('Cabinet: Failed to load items:', result.error)
+        items.value = []
+      }
+    } else {
+      console.log('Cabinet: No user ID found, cannot load items')
+      items.value = []
     }
   } catch (error) {
-    console.error('Error loading items:', error)
+    console.error('Cabinet: Error loading items:', error)
+    items.value = []
   } finally {
     loading.value = false
   }
@@ -342,10 +368,17 @@ const loadItems = async () => {
 
 const toggleFavorite = async (item) => {
   try {
-    await api.entities.ClothingItem.toggleFavorite(item.id)
-    item.is_favorite = !item.is_favorite
+    // Toggle the favorite status using the real Supabase service
+    const result = await clothesService.toggleFavorite(item.id)
+    
+    if (result.success) {
+      item.is_favorite = result.data.is_favorite
+      console.log('Cabinet: Toggled favorite for item:', item.name, 'New status:', item.is_favorite)
+    } else {
+      console.error('Cabinet: Failed to toggle favorite:', result.error)
+    }
   } catch (error) {
-    console.error('Error toggling favorite:', error)
+    console.error('Cabinet: Error toggling favorite:', error)
   }
 }
 
@@ -365,13 +398,36 @@ const handleUpload = async () => {
 
   uploading.value = true
   try {
+    console.log('Cabinet: Creating new item:', newItem.value)
+    
+    // Prepare item data for Supabase
     const itemData = {
-      ...newItem.value,
-      owner_id: currentUser.value.id
+      name: newItem.value.name,
+      category: newItem.value.category,
+      brand: newItem.value.brand || null,
+      privacy: 'private', // Default to private
+      is_favorite: false,
+      style_tags: []
     }
     
-    const newItemData = await api.entities.ClothingItem.create(itemData)
-    items.value.unshift(newItemData)
+    // If there's an image file, add it to the data
+    if (fileInput.value?.files?.[0]) {
+      itemData.image_file = fileInput.value.files[0]
+    } else if (newItem.value.image_url) {
+      // If it's a base64 image from file reader, we need to handle it differently
+      // For now, we'll skip image upload if it's base64
+      console.warn('Cabinet: Base64 images not supported in this version, skipping image')
+    }
+    
+    // Create the item using the real Supabase service
+    const result = await clothesService.addClothes(itemData)
+    
+    if (result.success) {
+      items.value.unshift(result.data)
+      console.log('Cabinet: Successfully created item:', result.data.name)
+    } else {
+      console.error('Cabinet: Failed to create item:', result.error)
+    }
     
     // Reset form
     newItem.value = {
@@ -388,22 +444,33 @@ const handleUpload = async () => {
     
     showUpload.value = false
   } catch (error) {
-    console.error('Error uploading item:', error)
+    console.error('Cabinet: Error uploading item:', error)
   } finally {
     uploading.value = false
   }
 }
 
 onMounted(async () => {
+  console.log('Cabinet: Component mounted, initializing...')
+  
   // Ensure auth store is initialized
   if (!authStore.isAuthenticated) {
+    console.log('Cabinet: Auth not initialized, initializing...')
     await authStore.initializeAuth()
   }
   
   // If we have a user but no profile, fetch the profile
   if (authStore.user && !authStore.profile) {
+    console.log('Cabinet: Fetching user profile...')
     await authStore.fetchUserProfile()
   }
+  
+  console.log('Cabinet: Current user state:', {
+    isAuthenticated: authStore.isAuthenticated,
+    userId: authStore.user?.id,
+    userEmail: authStore.user?.email,
+    profile: authStore.profile
+  })
   
   await loadItems()
 })

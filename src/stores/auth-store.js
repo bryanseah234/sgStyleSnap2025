@@ -139,26 +139,43 @@ export const useAuthStore = defineStore('auth', {
         if (isCallbackRoute) {
           console.log('🔄 AuthStore: OAuth callback route detected, processing OAuth callback')
           
-          // Wait for Supabase to process the OAuth callback
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          // Wait longer for Supabase to process the OAuth callback
+          await new Promise(resolve => setTimeout(resolve, 2000))
           
-          // Check if OAuth callback was successful
-          const user = await authService.getCurrentUser()
-          if (user) {
-            console.log('✅ AuthStore: OAuth callback successful, user authenticated:', user.email)
-            this.setUser(user)
-            
-            // Also fetch the user profile
+          // Try multiple times to get the user as OAuth callback processing can be slow
+          let user = null
+          let attempts = 0
+          const maxAttempts = 5
+          
+          while (!user && attempts < maxAttempts) {
             try {
-              const profile = await authService.getCurrentProfile()
-              this.profile = profile
-            } catch (profileError) {
-              console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
+              user = await authService.getCurrentUser()
+              if (user) {
+                console.log('✅ AuthStore: OAuth callback successful, user authenticated:', user.email)
+                this.setUser(user)
+                
+                // Also fetch the user profile
+                try {
+                  const profile = await authService.getCurrentProfile()
+                  this.profile = profile
+                } catch (profileError) {
+                  console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
+                }
+                
+                return
+              }
+            } catch (error) {
+              console.log(`🔄 AuthStore: Attempt ${attempts + 1} failed, retrying...`, error.message)
             }
             
-            return
-          } else {
-            console.log('❌ AuthStore: OAuth callback failed, no user found')
+            attempts++
+            if (attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 1000))
+            }
+          }
+          
+          if (!user) {
+            console.log('❌ AuthStore: OAuth callback failed after all attempts, no user found')
             this.clearUser()
             return
           }

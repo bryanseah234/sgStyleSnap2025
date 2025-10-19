@@ -71,6 +71,9 @@ export class ClothesService {
         .order('created_at', { ascending: false })
 
       // Apply filters
+      if (filters.owner_id) {
+        query = query.eq('owner_id', filters.owner_id)
+      }
       if (filters.category) {
         query = query.eq('category', filters.category)
       }
