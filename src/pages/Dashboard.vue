@@ -7,7 +7,7 @@
           <h1 :class="`text-4xl font-bold mb-2 ${
             theme.value === 'dark' ? 'text-white' : 'text-black'
           }`">
-            Outfit Studio
+            Outfits
           </h1>
           <p :class="`text-lg ${
             theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
@@ -93,6 +93,18 @@
           >
             <Save class="w-5 h-5" />
             <span class="hidden sm:inline">Save Outfit</span>
+          </button>
+          
+          <button
+            @click="addOutfit"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`"
+          >
+            <Plus class="w-5 h-5" />
+            <span class="hidden sm:inline">Add Outfit</span>
           </button>
         </div>
       </div>
@@ -320,7 +332,8 @@ import {
   Save, 
   User, 
   Shirt, 
-  Sparkles 
+  Sparkles,
+  Plus
 } from 'lucide-vue-next'
 
 const { theme } = useTheme()
@@ -475,7 +488,7 @@ const saveOutfit = async () => {
   try {
     const outfitData = {
       name: `My Outfit ${new Date().toLocaleDateString()}`,
-      description: 'Created in Outfit Studio',
+      description: 'Created in Outfits',
       items: canvasItems.value.map(item => ({
         clothing_item_id: item.id.split('-')[0], // Get original item ID
         x: item.x,
@@ -494,6 +507,11 @@ const saveOutfit = async () => {
   } finally {
     savingOutfit.value = false
   }
+}
+
+const addOutfit = () => {
+  // Function will be implemented later
+  console.log('Add Outfit button clicked - function to be implemented')
 }
 
 const saveToHistory = () => {
