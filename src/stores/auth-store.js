@@ -188,6 +188,7 @@ export const useAuthStore = defineStore('auth', {
         }
 
         // Use the existing AuthService to get current user
+        // This method already handles "Auth session missing" gracefully
         const user = await authService.getCurrentUser()
         console.log('📦 AuthStore: User retrieved:', user ? 'Found' : 'Not found')
 
@@ -208,15 +209,9 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('❌ AuthStore: Failed to initialize auth:', error)
         
-        // Handle specific auth session errors gracefully
-        if (error.message?.includes('Auth session missing') || 
-            error.message?.includes('AuthSessionMissingError')) {
-          console.log('ℹ️ AuthStore: No valid session found, user not authenticated')
-          this.clearUser()
-        } else {
-          this.error = error.message
-          this.clearUser()
-        }
+        // Handle all auth-related errors gracefully
+        console.log('ℹ️ AuthStore: Auth initialization failed, user not authenticated')
+        this.clearUser()
       } finally {
         this.loading = false
         console.log(

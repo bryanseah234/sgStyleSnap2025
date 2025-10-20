@@ -167,13 +167,22 @@
         }`">
           Start building your wardrobe by adding your first item!
         </p>
-        <div v-if="!currentUser?.id" :class="`mt-4 p-4 rounded-lg ${
+        <div v-if="!authStore.isAuthenticated" :class="`mt-4 p-4 rounded-lg ${
           theme.value === 'dark' 
             ? 'bg-yellow-900/20 border border-yellow-800 text-yellow-300' 
             : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
         }`">
           <p class="text-sm">
-            Make sure you're logged in to see your items. If you have items in Supabase but they're not showing, check the browser console for debugging information.
+            You need to be logged in to see your items. Please <router-link to="/login" class="underline hover:no-underline">sign in</router-link> to access your closet.
+          </p>
+        </div>
+        <div v-else-if="!currentUser?.id" :class="`mt-4 p-4 rounded-lg ${
+          theme.value === 'dark' 
+            ? 'bg-yellow-900/20 border border-yellow-800 text-yellow-300' 
+            : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
+        }`">
+          <p class="text-sm">
+            User data is loading. If you have items in Supabase but they're not showing, check the browser console for debugging information.
           </p>
         </div>
       </div>
@@ -575,16 +584,22 @@ onMounted(async () => {
     profile: authStore.profile
   })
   
-  // Load items immediately - don't wait for profile fetch
-  await loadItems()
-  
-  // Fetch profile in background (non-blocking)
-  if (authStore.user && !authStore.profile) {
-    console.log('Cabinet: Fetching user profile in background...')
-    // Don't await this - let it run in background
-    authStore.fetchUserProfile().catch(error => {
-      console.warn('Cabinet: Background profile fetch failed:', error)
-    })
+  // Only load items if user is authenticated
+  if (authStore.isAuthenticated && authStore.user?.id) {
+    console.log('Cabinet: User is authenticated, loading items...')
+    await loadItems()
+    
+    // Fetch profile in background (non-blocking)
+    if (!authStore.profile) {
+      console.log('Cabinet: Fetching user profile in background...')
+      // Don't await this - let it run in background
+      authStore.fetchUserProfile().catch(error => {
+        console.warn('Cabinet: Background profile fetch failed:', error)
+      })
+    }
+  } else {
+    console.log('Cabinet: User not authenticated, skipping item loading')
+    loading.value = false
   }
 })
 </script>
