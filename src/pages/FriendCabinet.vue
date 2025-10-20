@@ -15,9 +15,7 @@
             <ArrowLeft class="w-5 h-5" />
           </button>
           <div>
-            <h1 :class="`text-4xl font-bold ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h1 class="text-4xl font-bold text-foreground">
               {{ friend?.name || 'Friend' }}'s Closet
             </h1>
             <p :class="`text-lg ${

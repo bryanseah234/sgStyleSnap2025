@@ -3,9 +3,7 @@
     <!-- Header -->
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex items-center justify-between mb-6">
-        <h1 :class="`text-4xl font-bold ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h1 class="text-4xl font-bold text-foreground">
           {{ subRouteTitle }}
         </h1>
         <button
@@ -28,8 +26,8 @@
             @click="$router.push('/closet')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentSubRoute === 'default' 
-                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
-                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-card text-card-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
             }`"
           >
             My Closet
@@ -38,8 +36,8 @@
             @click="$router.push('/closet/add/manual')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentSubRoute === 'manual' 
-                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
-                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-card text-card-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
             }`"
           >
             <Plus class="w-4 h-4 inline mr-2" />
@@ -49,8 +47,8 @@
             @click="$router.push('/closet/add/catalogue')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentSubRoute === 'catalogue' 
-                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
-                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-card text-card-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
             }`"
           >
             <Shirt class="w-4 h-4 inline mr-2" />

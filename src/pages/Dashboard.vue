@@ -4,9 +4,7 @@
       <!-- Header -->
       <div class="flex items-start justify-between mb-8">
         <div>
-          <h1 :class="`text-4xl font-bold mb-2 ${
-            theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`">
+          <h1 class="text-4xl font-bold mb-2 text-foreground">
             {{ subRouteTitle }}
           </h1>
           <p :class="`text-lg ${
@@ -119,8 +117,8 @@
             @click="$router.push('/outfits')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentSubRoute === 'default' 
-                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
-                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-card text-card-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
             }`"
           >
             All Outfits
@@ -129,8 +127,8 @@
             @click="$router.push('/outfits/add/suggested')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentSubRoute === 'suggested' 
-                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
-                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-card text-card-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
             }`"
           >
             <Sparkles class="w-4 h-4 inline mr-2" />
@@ -140,8 +138,8 @@
             @click="$router.push('/outfits/add/personal')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentSubRoute === 'personal' 
-                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
-                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-card text-card-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
             }`"
           >
             <User class="w-4 h-4 inline mr-2" />
@@ -219,21 +217,21 @@
                     : 'bg-white border-stone-300 text-black'
                 }`"
               >
-                <option value="my-cabinet">My Cabinet</option>
+                <option value="my-cabinet">My Closet</option>
                 <option value="friends">Friends' Items</option>
                 <option value="suggestions">AI Suggestions</option>
               </select>
             </div>
           </div>
 
-          <!-- Your Items Section -->
+          <!-- Items Section -->
           <div :class="`rounded-xl p-6 ${
             theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
           }`">
             <h3 :class="`text-lg font-bold mb-4 ${
               theme.value === 'dark' ? 'text-white' : 'text-black'
             }`">
-              Your Items
+              Items
             </h3>
             
             <!-- Category Filters -->
@@ -404,7 +402,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
-import { api } from '@/api/base44Client'
+import { ClothesService } from '@/services/clothesService'
 import { 
   Undo, 
   Redo, 
@@ -421,6 +419,9 @@ import {
 const { theme } = useTheme()
 const authStore = useAuthStore()
 const route = useRoute()
+
+// Initialize clothes service
+const clothesService = new ClothesService()
 
 // Use computed to get reactive user data from auth store
 const currentUser = computed(() => authStore.user || authStore.profile)
@@ -456,10 +457,25 @@ const categories = ['all', 'tops', 'bottoms', 'shoes', 'accessories', 'outerwear
 // Computed
 const filteredItems = computed(() => {
   let filtered = wardrobeItems.value
-  console.log('Dashboard: Filtering items. Total items:', wardrobeItems.value.length, 'Category:', activeCategory.value)
+  console.log('Dashboard: Filtering items. Total items:', wardrobeItems.value.length, 'Category:', activeCategory.value, 'Source:', itemsSource.value)
   
+  // Filter by category
   if (activeCategory.value !== 'all') {
     filtered = filtered.filter(item => item.category === activeCategory.value)
+  }
+  
+  // Filter by source (for now, only show user's items when "my-cabinet" is selected)
+  if (itemsSource.value === 'my-cabinet') {
+    // Items are already filtered by user in loadWardrobeItems, so no additional filtering needed
+    console.log('Dashboard: Showing user\'s closet items')
+  } else if (itemsSource.value === 'friends') {
+    // TODO: Implement friends' items loading
+    console.log('Dashboard: Friends items not implemented yet')
+    filtered = []
+  } else if (itemsSource.value === 'suggestions') {
+    // TODO: Implement AI suggestions
+    console.log('Dashboard: AI suggestions not implemented yet')
+    filtered = []
   }
   
   console.log('Dashboard: Filtered items:', filtered.length)
@@ -473,22 +489,30 @@ const canRedo = computed(() => historyIndex.value < history.value.length - 1)
 const loadWardrobeItems = async () => {
   try {
     console.log('Dashboard: Loading wardrobe items...')
+    console.log('Dashboard: Current user:', currentUser.value)
     
-    // First, try to load ALL items to see what we have
-    const allItems = await api.entities.ClothingItem.list('-created_at')
-    console.log('Dashboard: ALL items in storage:', allItems)
+    if (!currentUser.value?.id) {
+      console.log('Dashboard: No user ID, cannot load items')
+      wardrobeItems.value = []
+      return
+    }
     
-    // Get user data
-    const mockUser = await api.auth.me()
-    console.log('Dashboard: Current user:', mockUser)
+    // Load items from user's closet using ClothesService
+    const result = await clothesService.getClothes({
+      owner_id: currentUser.value.id,
+      limit: 100 // Load up to 100 items
+    })
     
-    // For now, just show ALL items to debug
-    // This will help us see what's actually stored
-    wardrobeItems.value = allItems
-    console.log('Dashboard: Set wardrobeItems to all items:', allItems.length, 'items')
+    if (result && result.success) {
+      wardrobeItems.value = result.data || []
+      console.log('Dashboard: Loaded items from user closet:', wardrobeItems.value.length, 'items')
+    } else {
+      console.error('Dashboard: Failed to load items:', result?.error || 'Unknown error')
+      wardrobeItems.value = []
+    }
     
   } catch (error) {
-    console.error('Error loading wardrobe items:', error)
+    console.error('Dashboard: Error loading wardrobe items:', error)
     wardrobeItems.value = []
   }
 }

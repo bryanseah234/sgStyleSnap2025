@@ -3,8 +3,21 @@ import { supabase, handleSupabaseError } from '@/lib/supabase'
 export class OutfitsService {
   async getOutfits(filters = {}) {
     try {
+      console.log('🔧 OutfitsService: getOutfits called with filters:', filters)
+      console.log('🔧 OutfitsService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ OutfitsService: Supabase not configured')
+        return []
+      }
+
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        console.log('❌ OutfitsService: User not authenticated')
+        throw new Error('Not authenticated')
+      }
+
+      console.log('🔧 OutfitsService: User authenticated:', user.email)
 
       let query = supabase
         .from('outfits')
@@ -20,8 +33,7 @@ export class OutfitsService {
               image_url,
               thumbnail_url
             )
-          ),
-          likes_count
+          )
         `)
         .eq('owner_id', user.id)
         .is('removed_at', null)
@@ -37,12 +49,21 @@ export class OutfitsService {
         query = query.limit(filters.limit)
       }
 
+      console.log('🔧 OutfitsService: Executing query...')
       const { data, error } = await query
+      console.log('🔧 OutfitsService: Query result:', { data, error })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ OutfitsService: Query error:', error)
+        throw error
+      }
+
+      console.log('✅ OutfitsService: Query successful, returning data:', data?.length || 0, 'outfits')
       return data || []
     } catch (error) {
-      handleSupabaseError(error, 'get outfits')
+      console.error('❌ OutfitsService: Error in getOutfits:', error)
+      // Return empty array instead of throwing error for better UX
+      return []
     }
   }
 

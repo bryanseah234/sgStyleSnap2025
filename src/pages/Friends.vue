@@ -4,9 +4,7 @@
       <!-- Header -->
       <div class="flex items-start justify-between mb-8">
         <div>
-          <h1 :class="`text-4xl font-bold mb-2 ${
-            theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`">
+          <h1 class="text-4xl font-bold mb-2 text-foreground">
             Friends
           </h1>
           <p :class="`text-lg ${
@@ -140,7 +138,7 @@
               <p :class="`text-sm ${
                 theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`">
-                {{ friend.email || 'friend@example.com' }}
+                @{{ friend.username || 'username' }}
               </p>
             </div>
           </div>
@@ -254,12 +252,12 @@
               <label :class="`block text-sm font-medium mb-2 ${
                 theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
               }`">
-                Search by username or email
+                Search by username
               </label>
               <input
                 v-model="addFriendSearch"
                 type="text"
-                placeholder="Enter username or email..."
+                placeholder="Enter username..."
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
@@ -356,11 +354,16 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
-import { api } from '@/api/client'
+import { FriendsService } from '@/services/friendsService'
+import { UserService } from '@/services/userService'
 import { Users, UserPlus, Bell, Search } from 'lucide-vue-next'
 
 const router = useRouter()
 const { theme } = useTheme()
+
+// Initialize services
+const friendsService = new FriendsService()
+const userService = new UserService()
 
 // State
 const activeTab = ref('friends')
@@ -379,7 +382,6 @@ const filteredFriends = computed(() => {
   const query = searchTerm.value.toLowerCase()
   return friends.value.filter(friend => 
     friend.name?.toLowerCase().includes(query) ||
-    friend.email?.toLowerCase().includes(query) ||
     friend.username?.toLowerCase().includes(query)
   )
 })
@@ -387,15 +389,22 @@ const filteredFriends = computed(() => {
 // Methods
 const loadFriendsData = async () => {
   try {
-    const [friendsData, requestsData] = await Promise.all([
-      api.entities.Friend.list(),
-      api.entities.Friend.getRequests()
-    ])
+    console.log('🔧 Friends: Loading friends data...')
+    
+    // Load friends using FriendsService
+    const friendsData = await friendsService.getFriends()
     friends.value = friendsData || []
-    friendRequests.value = requestsData || []
-    sentRequests.value = [] // This would need to be implemented in the service
+    
+    // TODO: Implement friend requests loading
+    friendRequests.value = []
+    sentRequests.value = []
+    
+    console.log('✅ Friends: Loaded friends:', friends.value.length)
   } catch (error) {
-    console.error('Error loading friends data:', error)
+    console.error('❌ Friends: Error loading friends data:', error)
+    friends.value = []
+    friendRequests.value = []
+    sentRequests.value = []
   }
 }
 
@@ -406,47 +415,50 @@ const handleSearch = () => {
 const searchAndAddFriend = async () => {
   if (!addFriendSearch.value.trim()) return
   
-  console.log('Searching for users with query:', addFriendSearch.value)
+  console.log('🔧 Friends: Searching for users with query:', addFriendSearch.value)
   
   try {
-    const result = await api.entities.User.search(addFriendSearch.value)
-    console.log('Search result from API:', result)
+    const result = await userService.searchUsers(addFriendSearch.value)
+    console.log('✅ Friends: Search result:', result)
     addFriendResults.value = result || []
   } catch (error) {
-    console.error('Error searching users:', error)
+    console.error('❌ Friends: Error searching users:', error)
     addFriendResults.value = []
   }
 }
 
 const sendFriendRequest = async (userId) => {
   try {
-    await api.entities.Friend.sendRequest(userId)
-    await loadFriendsData() // Reload to update sent requests status
-    alert('Friend request sent!')
+    console.log('🔧 Friends: Sending friend request to user:', userId)
+    // TODO: Implement sendFriendRequest in FriendsService
+    console.log('⚠️ Friends: sendFriendRequest not implemented yet')
+    alert('Friend request functionality not implemented yet')
   } catch (error) {
-    console.error('Error sending friend request:', error)
+    console.error('❌ Friends: Error sending friend request:', error)
     alert(error.message)
   }
 }
 
 const acceptFriendRequest = async (requestId) => {
   try {
-    await api.entities.Friend.acceptRequest(requestId)
-    await loadFriendsData() // Reload to update friends and requests
-    alert('Friend request accepted!')
+    console.log('🔧 Friends: Accepting friend request:', requestId)
+    // TODO: Implement acceptFriendRequest in FriendsService
+    console.log('⚠️ Friends: acceptFriendRequest not implemented yet')
+    alert('Friend request functionality not implemented yet')
   } catch (error) {
-    console.error('Error accepting friend request:', error)
+    console.error('❌ Friends: Error accepting friend request:', error)
     alert(error.message)
   }
 }
 
 const declineFriendRequest = async (requestId) => {
   try {
-    await api.entities.Friend.rejectRequest(requestId)
-    await loadFriendsData() // Reload to update requests
-    alert('Friend request declined.')
+    console.log('🔧 Friends: Declining friend request:', requestId)
+    // TODO: Implement declineFriendRequest in FriendsService
+    console.log('⚠️ Friends: declineFriendRequest not implemented yet')
+    alert('Friend request functionality not implemented yet')
   } catch (error) {
-    console.error('Error declining friend request:', error)
+    console.error('❌ Friends: Error declining friend request:', error)
     alert(error.message)
   }
 }
@@ -469,13 +481,13 @@ onMounted(() => {
   
   // Add test function to window for debugging
   window.testFriendSearch = async (query) => {
-    console.log('Testing friend search with query:', query)
+    console.log('🔧 Friends: Testing friend search with query:', query)
     try {
-      const result = await api.entities.User.search(query)
-      console.log('Test search result:', result)
+      const result = await userService.searchUsers(query)
+      console.log('✅ Friends: Test search result:', result)
       return result
     } catch (error) {
-      console.error('Test search error:', error)
+      console.error('❌ Friends: Test search error:', error)
       return null
     }
   }

@@ -40,9 +40,7 @@
         }`">
           <Shirt :class="`w-10 h-10 ${theme.value === 'dark' ? 'text-black' : 'text-white'}`" />
         </div>
-        <h1 :class="`text-4xl font-bold mb-2 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h1 class="text-4xl font-bold mb-2 text-foreground">
           StyleSnap
         </h1>
         <p :class="`text-lg ${

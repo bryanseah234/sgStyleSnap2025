@@ -62,9 +62,7 @@
           }`">
             <component :is="stat.icon" class="w-6 h-6" />
           </div>
-          <span :class="`text-4xl font-bold ${
-            theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`">
+          <span class="text-4xl font-bold text-foreground">
             {{ stat.value }}
           </span>
         </div>

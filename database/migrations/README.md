@@ -1,24 +1,42 @@
 # Database Migrations - StyleSnap
 
-This directory contains SQL migration files for the StyleSnap database schema.
+This directory contains SQL migration files for the StyleSnap database schema. All SQL files have been consolidated here for better organization.
 
 ## 📋 Migration Order
 
 Migrations must be executed in numerical order:
 
+### Core Schema (001-004)
 1. `001_initial_schema.sql` - Core tables (users, clothes, outfits, friends)
 2. `002_rls_policies.sql` - Row Level Security policies
 3. `003_indexes_functions.sql` - Performance indexes and utility functions
 4. `004_advanced_features.sql` - Collections, outfit history, analytics
-5. `005_catalog_system.sql` - **Catalog items table**
+
+### Feature Extensions (005-012)
+5. `005_catalog_system.sql` - Catalog items table
 6. `006_color_detection.sql` - Color fields for AI detection
 7. `007_outfit_generation.sql` - Outfit generation algorithms
 8. `008_likes_feature.sql` - Like system for items and outfits
-9. `009_clothing_types.sql` - **Granular clothing types (20 types)**
+9. `009_clothing_types.sql` - Granular clothing types (20 types)
 10. `009_enhanced_categories.sql` - Enhanced category constraints
 11. `009_notifications_system.sql` - Notification tables
 12. `010_push_notifications.sql` - Push notification subscriptions
-13. **`011_catalog_enhancements.sql`** - **NEW: Catalog seeding support**
+13. `011_catalog_enhancements.sql` - Catalog seeding support
+14. `012_auth_user_sync.sql` - User authentication sync
+
+### Bug Fixes (014-019)
+15. `014_fix_catalog_insert_policy.sql` - Fix catalog insert permissions
+16. `015_dev_user_setup.sql` - Development user setup
+17. `016_disable_auto_contribution.sql` - Disable auto-contribution
+18. `017_fix_catalog_privacy.sql` - Fix catalog privacy settings
+19. `018_notification_cleanup_system.sql` - Notification cleanup
+20. `019_fix_notification_function_types.sql` - Fix notification functions
+
+### New Features (020+)
+21. `020_add_outfits_table.sql` - Add outfits table and relationships
+22. `021_seed_data.sql` - Seed data for categories, colors, styles, brands
+23. `022_disable_auto_contribution.sql` - Disable auto-contribution (utility)
+24. `023_clear_catalog_data.sql` - Clear catalog data (utility)
 
 ## 🆕 Migration 011: Catalog Enhancements
 
@@ -50,6 +68,13 @@ This migration adds essential columns to `catalog_items` table:
 3. Copy/paste each migration file content in order
 4. Click **Run**
 
+### Via Migration Script (Recommended)
+
+```bash
+# Run all migrations automatically
+node scripts/run-migrations.js
+```
+
 ### Via psql (Command Line)
 
 ```bash
@@ -57,19 +82,30 @@ This migration adds essential columns to `catalog_items` table:
 export DATABASE_URL="postgresql://postgres:[password]@[host]:5432/postgres"
 
 # Run migrations in order
-psql $DATABASE_URL -f sql/001_initial_schema.sql
-psql $DATABASE_URL -f sql/002_rls_policies.sql
-psql $DATABASE_URL -f sql/003_indexes_functions.sql
-psql $DATABASE_URL -f sql/004_advanced_features.sql
-psql $DATABASE_URL -f sql/005_catalog_system.sql
-psql $DATABASE_URL -f sql/006_color_detection.sql
-psql $DATABASE_URL -f sql/007_outfit_generation.sql
-psql $DATABASE_URL -f sql/008_likes_feature.sql
-psql $DATABASE_URL -f sql/009_clothing_types.sql
-psql $DATABASE_URL -f sql/009_enhanced_categories.sql
-psql $DATABASE_URL -f sql/009_notifications_system.sql
-psql $DATABASE_URL -f sql/010_push_notifications.sql
-psql $DATABASE_URL -f sql/011_catalog_enhancements.sql
+psql $DATABASE_URL -f database/migrations/001_initial_schema.sql
+psql $DATABASE_URL -f database/migrations/002_rls_policies.sql
+psql $DATABASE_URL -f database/migrations/003_indexes_functions.sql
+psql $DATABASE_URL -f database/migrations/004_advanced_features.sql
+psql $DATABASE_URL -f database/migrations/005_catalog_system.sql
+psql $DATABASE_URL -f database/migrations/006_color_detection.sql
+psql $DATABASE_URL -f database/migrations/007_outfit_generation.sql
+psql $DATABASE_URL -f database/migrations/008_likes_feature.sql
+psql $DATABASE_URL -f database/migrations/009_clothing_types.sql
+psql $DATABASE_URL -f database/migrations/009_enhanced_categories.sql
+psql $DATABASE_URL -f database/migrations/009_notifications_system.sql
+psql $DATABASE_URL -f database/migrations/010_push_notifications.sql
+psql $DATABASE_URL -f database/migrations/011_catalog_enhancements.sql
+psql $DATABASE_URL -f database/migrations/012_auth_user_sync.sql
+psql $DATABASE_URL -f database/migrations/014_fix_catalog_insert_policy.sql
+psql $DATABASE_URL -f database/migrations/015_dev_user_setup.sql
+psql $DATABASE_URL -f database/migrations/016_disable_auto_contribution.sql
+psql $DATABASE_URL -f database/migrations/017_fix_catalog_privacy.sql
+psql $DATABASE_URL -f database/migrations/018_notification_cleanup_system.sql
+psql $DATABASE_URL -f database/migrations/019_fix_notification_function_types.sql
+psql $DATABASE_URL -f database/migrations/020_add_outfits_table.sql
+psql $DATABASE_URL -f database/migrations/021_seed_data.sql
+psql $DATABASE_URL -f database/migrations/022_disable_auto_contribution.sql
+psql $DATABASE_URL -f database/migrations/023_clear_catalog_data.sql
 ```
 
 ### Via Supabase CLI

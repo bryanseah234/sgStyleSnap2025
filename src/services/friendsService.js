@@ -3,13 +3,21 @@ import { supabase, handleSupabaseError } from '@/lib/supabase'
 export class FriendsService {
   async getFriends(filters = {}) {
     try {
+      console.log('🔧 FriendsService: getFriends called with filters:', filters)
+      console.log('🔧 FriendsService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ FriendsService: Supabase not configured')
+        return []
+      }
+
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
-        console.error('Authentication error:', userError)
+        console.log('❌ FriendsService: User not authenticated')
         throw new Error('Not authenticated')
       }
 
-      console.log('Getting friends for user:', user.id)
+      console.log('🔧 FriendsService: User authenticated:', user.email)
 
       // Get friendships where user is either requester or receiver
       let query = supabase
@@ -46,14 +54,16 @@ export class FriendsService {
         }
       }
 
+      console.log('🔧 FriendsService: Executing query...')
       const { data, error } = await query
+      console.log('🔧 FriendsService: Query result:', { data, error })
 
       if (error) {
-        console.error('Database error:', error)
+        console.error('❌ FriendsService: Query error:', error)
         throw error
       }
 
-      console.log('Raw friends data:', data)
+      console.log('🔧 FriendsService: Raw friends data:', data)
 
       // Map the data to extract friend information
       const friends = data.map(friendship => {
@@ -73,11 +83,12 @@ export class FriendsService {
         }
       })
 
-      console.log('Processed friends:', friends)
+      console.log('✅ FriendsService: Query successful, returning data:', friends.length, 'friends')
       return friends
     } catch (error) {
-      console.error('getFriends error:', error)
-      handleSupabaseError(error, 'get friends')
+      console.error('❌ FriendsService: Error in getFriends:', error)
+      // Return empty array instead of throwing error for better UX
+      return []
     }
   }
 

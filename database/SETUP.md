@@ -35,26 +35,30 @@ This guide will help you set up the StyleSnap database with all necessary tables
 1. Go to your Supabase project dashboard
 2. Navigate to the SQL Editor
 3. Run each migration file in order:
-   - `001_initial_schema.sql`
-   - `002_rls_policies.sql`
-   - `003_indexes_functions.sql`
-   - `004_advanced_features.sql`
-   - `005_catalog_system.sql`
-   - `006_color_detection.sql`
-   - `007_outfit_generation.sql`
-   - `008_likes_feature.sql`
-   - `009_clothing_types.sql`
-   - `009_enhanced_categories.sql`
-   - `009_notifications_system.sql`
-   - `010_push_notifications.sql`
-   - `011_catalog_enhancements.sql`
-   - `012_auth_user_sync.sql`
-   - `014_fix_catalog_insert_policy.sql`
-   - `015_dev_user_setup.sql`
-   - `016_disable_auto_contribution.sql`
-   - `017_fix_catalog_privacy.sql`
-   - `018_notification_cleanup_system.sql`
-   - `019_fix_notification_function_types.sql`
+   - `001_initial_schema.sql` - Core database schema
+   - `002_rls_policies.sql` - Row Level Security policies
+   - `003_indexes_functions.sql` - Database indexes and functions
+   - `004_advanced_features.sql` - Advanced features and triggers
+   - `005_catalog_system.sql` - Catalog system for browsing items
+   - `006_color_detection.sql` - Color detection and analysis
+   - `007_outfit_generation.sql` - AI outfit generation system
+   - `008_likes_feature.sql` - Likes and favorites system
+   - `009_clothing_types.sql` - Clothing type definitions
+   - `009_enhanced_categories.sql` - Enhanced category system
+   - `009_notifications_system.sql` - Notification system
+   - `010_push_notifications.sql` - Push notification support
+   - `011_catalog_enhancements.sql` - Catalog system improvements
+   - `012_auth_user_sync.sql` - User authentication sync
+   - `014_fix_catalog_insert_policy.sql` - Fix catalog insert permissions
+   - `015_dev_user_setup.sql` - Development user setup
+   - `016_disable_auto_contribution.sql` - Disable auto-contribution
+   - `017_fix_catalog_privacy.sql` - Fix catalog privacy settings
+   - `018_notification_cleanup_system.sql` - Notification cleanup
+   - `019_fix_notification_function_types.sql` - Fix notification functions
+   - `020_add_outfits_table.sql` - Add outfits table and relationships
+   - `021_seed_data.sql` - Seed data for categories, colors, styles, brands
+   - `022_disable_auto_contribution.sql` - Disable auto-contribution (utility)
+   - `023_clear_catalog_data.sql` - Clear catalog data (utility)
 
 ## What Gets Created
 

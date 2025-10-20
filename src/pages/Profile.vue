@@ -3,9 +3,7 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 :class="`text-4xl font-bold mb-2 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h1 class="text-4xl font-bold mb-2 text-foreground">
           Profile Settings
         </h1>
         <p :class="`text-lg ${
