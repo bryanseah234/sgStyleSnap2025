@@ -140,13 +140,13 @@ export const useAuthStore = defineStore('auth', {
           console.log('🔄 AuthStore: OAuth callback route detected, processing OAuth callback')
           
           // Wait longer for Supabase to process the OAuth callback
-          await new Promise(resolve => setTimeout(resolve, 2000))
+          await new Promise(resolve => setTimeout(resolve, 3000))
           
-          // Try to get the session directly from Supabase instead of through getCurrentUser
+          // Try to get the session directly from Supabase
           let session = null
           let user = null
           let attempts = 0
-          const maxAttempts = 5
+          const maxAttempts = 8
           
           while (!session && attempts < maxAttempts) {
             try {
@@ -173,6 +173,13 @@ export const useAuthStore = defineStore('auth', {
             if (attempts < maxAttempts) {
               await new Promise(resolve => setTimeout(resolve, 1000))
             }
+          }
+          
+          // If still no session, try to refresh the page to complete OAuth
+          if (!user && attempts >= maxAttempts) {
+            console.log('🔄 AuthStore: No session found, trying to refresh page to complete OAuth...')
+            window.location.reload()
+            return
           }
           
           if (user) {
