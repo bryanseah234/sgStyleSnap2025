@@ -128,7 +128,9 @@ const handleOAuthCallback = async () => {
       // If we're still loading after 6 attempts, try to force refresh the page
       if (attempts === 6 && authStore.loading) {
         console.log('🔄 OAuthCallback: Force refreshing page to complete OAuth...')
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
         return
       }
     }

@@ -96,7 +96,9 @@ export class AuthService {
       if (data?.url) {
         console.log('🔑 AuthService: Redirecting browser to:', data.url)
         // Use window.location.href instead of replace to preserve tab context
-        window.location.href = data.url
+        if (typeof window !== 'undefined') {
+          window.location.href = data.url
+        }
         return data
       } else {
         throw new Error('No OAuth URL received from Supabase')
@@ -264,16 +266,18 @@ export class AuthService {
             'sb-auth-token'
           ]
           
-          cookiesToClear.forEach(cookieName => {
-            // Clear for current domain
-            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-            // Clear for current domain with secure flag
-            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;`
-            // Clear for parent domain
-            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
-            // Clear for subdomain
-            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`
-          })
+          if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+            cookiesToClear.forEach(cookieName => {
+              // Clear for current domain
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+              // Clear for current domain with secure flag
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;`
+              // Clear for parent domain
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+              // Clear for subdomain
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`
+            })
+          }
           
           // Clear all cookies that might contain auth data
           const allCookies = document.cookie.split(';')

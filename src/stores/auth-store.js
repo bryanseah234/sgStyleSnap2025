@@ -175,10 +175,12 @@ export const useAuthStore = defineStore('auth', {
             }
           }
           
-          // If still no session, try to refresh the page to complete OAuth
+            // If still no session, try to refresh the page to complete OAuth
           if (!user && attempts >= maxAttempts) {
             console.log('🔄 AuthStore: No session found, trying to refresh page to complete OAuth...')
-            window.location.reload()
+            if (typeof window !== 'undefined') {
+              window.location.reload()
+            }
             return
           }
           
