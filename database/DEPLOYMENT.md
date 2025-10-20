@@ -21,9 +21,9 @@ This guide will walk you through deploying StyleSnap to Vercel with Supabase bac
    - Go to SQL Editor in your Supabase dashboard
    - Run the following files in order:
      ```
-     sql/001_initial_schema.sql
-     sql/002_rls_policies.sql
-     sql/003_seed_data.sql
+     database/migrations/001_initial_schema.sql
+     database/migrations/002_rls_policies.sql
+     database/migrations/021_seed_data.sql
      ```
 
 3. **Configure Google OAuth**

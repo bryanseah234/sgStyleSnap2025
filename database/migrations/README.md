@@ -214,7 +214,7 @@ Safe to run multiple times!
 
 Run Migration 011:
 ```bash
-psql $DATABASE_URL -f sql/011_catalog_enhancements.sql
+psql $DATABASE_URL -f database/migrations/011_catalog_enhancements.sql
 ```
 
 ### "column primary_color does not exist"

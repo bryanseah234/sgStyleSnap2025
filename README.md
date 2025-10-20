@@ -79,7 +79,8 @@ A modern, full-stack digital wardrobe application built with Vue 3, Supabase, an
 4. **Set up the database**
    ```bash
    # Run the SQL migrations in your Supabase dashboard
-   # Files: sql/001_initial_schema.sql, sql/002_rls_policies.sql, sql/003_seed_data.sql
+   # Files: database/migrations/001_initial_schema.sql, database/migrations/002_rls_policies.sql, etc.
+   # Or use the migration script: node scripts/run-migrations.js
    ```
 
 5. **Start the development server**
@@ -91,9 +92,11 @@ A modern, full-stack digital wardrobe application built with Vue 3, Supabase, an
 
 1. **Create a new Supabase project**
 2. **Run the SQL migrations in order:**
-   - `sql/001_initial_schema.sql` - Creates all tables and relationships
-   - `sql/002_rls_policies.sql` - Sets up Row Level Security
-   - `sql/003_seed_data.sql` - Inserts initial data (categories, colors, styles, brands)
+   - Use the migration script: `node scripts/run-migrations.js` (recommended)
+   - Or manually run files from `database/migrations/` folder:
+     - `001_initial_schema.sql` - Creates all tables and relationships
+     - `002_rls_policies.sql` - Sets up Row Level Security
+     - `021_seed_data.sql` - Inserts initial data (categories, colors, styles, brands)
 
 3. **Configure Google OAuth in Supabase:**
    - Go to Authentication > Providers
