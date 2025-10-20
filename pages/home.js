@@ -7,10 +7,21 @@ import { useTheme } from "../components/ThemeContext";
 import { motion } from "framer-motion";
 import { Shirt, Palette, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { ClothesService } from "@/services/clothesService";
+import { OutfitsService } from "@/services/outfitsService";
+import { FriendsService } from "@/services/friendsService";
 
 export default function Home() {
   const { theme } = useTheme();
   const [user, setUser] = useState(null);
+  const [items, setItems] = useState([]);
+  const [outfits, setOutfits] = useState([]);
+  const [friends, setFriends] = useState([]);
+
+  // Service instances
+  const clothesService = new ClothesService();
+  const outfitsService = new OutfitsService();
+  const friendsService = new FriendsService();
 
   useEffect(() => {
     const loadUser = async () => {
@@ -24,28 +35,41 @@ export default function Home() {
     loadUser();
   }, []);
 
-  const { data: items = [] } = useQuery({
-    queryKey: ["clothing-items-home", user?.email],
-    queryFn: () => {
-      if (!user?.email) return [];
-      return base44.entities.ClothingItem.filter(
-        { created_by: user.email },
-        "-created_date",
-        6
-      );
-    },
-    enabled: !!user?.email,
-  });
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user?.id) return;
 
-  const { data: outfits = [] } = useQuery({
-    queryKey: ["outfits"],
-    queryFn: () => base44.entities.Outfit.list("-created_date", 3),
-  });
+      try {
+        // Load items
+        const itemsResult = await clothesService.getClothes({
+          owner_id: user.id,
+          limit: 6
+        });
+        if (itemsResult.success) {
+          setItems(itemsResult.data || []);
+        }
+
+        // Load outfits
+        const outfitsData = await outfitsService.getOutfits({
+          limit: 3
+        });
+        setOutfits(outfitsData || []);
+
+        // Load friends
+        const friendsData = await friendsService.getFriends();
+        setFriends(friendsData || []);
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
+    };
+
+    loadData();
+  }, [user?.id]);
 
   const stats = [
     { label: "Items", value: items.length, icon: Shirt, route: "/closet" },
     { label: "Outfits", value: outfits.length, icon: Palette, route: "/outfits" },
-    { label: "Friends", value: 0, icon: Users, route: "/friends" },
+    { label: "Friends", value: friends.length, icon: Users, route: "/friends" },
   ];
 
   return (

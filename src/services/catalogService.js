@@ -207,7 +207,7 @@ export class CatalogService {
         .from('clothes')
         .select('category, brand, style_tags')
         .eq('owner_id', userId)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (userError) throw userError
 

@@ -23,14 +23,14 @@
     <div class="w-16 h-16 rounded-full border-4 border-black dark:border-white animate-pulse" />
   </div>
 
-  <div v-else class="min-h-screen bg-stone-50 text-black dark:bg-black dark:text-white transition-colors duration-150">
+  <div v-else class="min-h-screen bg-background text-foreground transition-colors duration-200">
     
     <!-- Desktop Sidebar Navigation -->
-    <aside class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-stone-200 dark:bg-zinc-950 dark:border-zinc-800 flex-col items-stretch py-8 px-4 z-50 transition-colors duration-150">
+    <aside class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-card border-r border-border flex-col items-stretch py-8 px-4 z-50 transition-colors duration-200">
       
       <!-- Logo -->
       <div class="mb-12 text-center md:text-left">
-        <h1 class="text-2xl font-bold tracking-tight text-black dark:text-white">
+        <h1 class="text-2xl font-bold tracking-tight text-foreground">
           StyleSnap
         </h1>
       </div>
@@ -43,10 +43,10 @@
           :to="item.path"
           class="block"
         >
-          <div :class="`flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative transition-all duration-150 hover:scale-105 hover:translate-x-1 ${
+          <div :class="`flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative transition-all duration-200 hover:scale-105 hover:translate-x-1 ${
             $route.path === item.path
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'text-stone-600 hover:bg-stone-100 hover:text-black dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
           }`">
             <component :is="item.icon" class="w-5 h-5" />
             <span class="font-medium">
@@ -60,10 +60,10 @@
       <div class="space-y-2">
         <button
           @click="handleThemeToggle"
-          class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 bg-secondary hover:bg-accent"
           :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
         >
-          <span class="font-medium text-stone-700 dark:text-zinc-300">
+          <span class="font-medium text-secondary-foreground">
             {{ theme.value === 'dark' ? 'Dark Mode' : 'Light Mode' }}
           </span>
           <!-- Sun icon for dark mode (clicking will switch to light) -->
@@ -75,10 +75,10 @@
         <button
           @click="handleLogout"
           :disabled="loading"
-          :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-150 hover:scale-105 ${
+          :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
             loading
-              ? 'opacity-50 cursor-not-allowed'
-              : 'text-stone-700 hover:bg-red-50 hover:text-red-600 dark:text-zinc-300 dark:hover:bg-red-950 dark:hover:text-red-400'
+              ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+              : 'text-muted-foreground hover:bg-destructive hover:text-destructive-foreground'
           }`"
         >
           <LogOut v-if="!loading" class="w-5 h-5" />
@@ -89,7 +89,7 @@
     </aside>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 border-t border-stone-200 dark:bg-zinc-950/95 dark:border-zinc-800 backdrop-blur-xl z-50 px-2 py-3 pb-safe transition-colors duration-150"
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 border-t border-border backdrop-blur-xl z-50 px-2 py-3 pb-safe transition-colors duration-200"
     style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))">
       
       <div class="flex items-center justify-around max-w-md mx-auto">
@@ -102,23 +102,23 @@
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               $route.path === item.path
-                ? 'bg-black scale-110 -translate-y-0.5 dark:bg-white'
+                ? 'bg-primary scale-110 -translate-y-0.5'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
                   $route.path === item.path
-                    ? 'text-white dark:text-black'
-                    : 'text-stone-600 dark:text-zinc-400'
+                    ? 'text-primary-foreground'
+                    : 'text-muted-foreground'
                 }`"
               />
             </div>
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
               $route.path === item.path
-                ? 'text-black dark:text-white opacity-100 scale-100'
-                : 'text-stone-500 dark:text-zinc-500 opacity-60 scale-90'
+                ? 'text-primary-foreground opacity-100 scale-100'
+                : 'text-muted-foreground opacity-60 scale-90'
             }`">
               {{ item.name }}
             </span>
@@ -126,7 +126,7 @@
             <!-- Active indicator -->
             <div
               v-if="$route.path === item.path"
-              class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-black dark:bg-white"
+              class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-primary"
             />
           </div>
         </router-link>
@@ -135,7 +135,7 @@
         <div class="flex-1 flex justify-center">
           <button
             @click="handleThemeToggle"
-            class="p-3 rounded-2xl transition-all duration-200 hover:scale-110 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+            class="p-3 rounded-2xl transition-all duration-200 hover:scale-110 bg-secondary hover:bg-accent"
             :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
           >
             <!-- Sun icon for dark mode (clicking will switch to light) -->

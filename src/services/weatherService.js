@@ -129,7 +129,7 @@ export class WeatherService {
         .from('clothes')
         .select('*')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (itemsError) throw itemsError
 

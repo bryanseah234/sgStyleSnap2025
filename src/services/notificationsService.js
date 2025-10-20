@@ -15,7 +15,7 @@ export class NotificationsService {
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
         .order('created_at', { ascending: false })
 
       if (filters.limit) {
@@ -107,7 +107,7 @@ export class NotificationsService {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('is_read', false)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (error) throw error
       return count || 0

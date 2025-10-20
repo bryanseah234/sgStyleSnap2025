@@ -198,7 +198,7 @@ export class FriendsService {
         .from('users')
         .select('*')
         .eq('id', userId)
-        .eq('removed_at', null)
+        .is('removed_at', null)
         .single()
 
       if (error) throw error
@@ -500,7 +500,7 @@ export class FriendsService {
         .from('users')
         .select('id, username, name, avatar_url, created_at')
         .not('id', 'in', `(${user.id},${currentFriendIds.join(',')})`)
-        .eq('removed_at', null)
+        .is('removed_at', null)
         .order('created_at', { ascending: false })
         .limit(10)
 

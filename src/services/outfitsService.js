@@ -24,7 +24,7 @@ export class OutfitsService {
           likes_count
         `)
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (filters.orderBy) {
         const [column, direction] = filters.orderBy.startsWith('-') 
@@ -70,7 +70,7 @@ export class OutfitsService {
         `)
         .eq('id', outfitId)
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
         .single()
 
       if (error) throw error
@@ -265,7 +265,7 @@ export class OutfitsService {
         .from('clothes')
         .select('*')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (itemsError) throw itemsError
 
@@ -368,7 +368,7 @@ export class OutfitsService {
         .from('clothes')
         .select('*')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
         .neq('id', itemId)
 
       if (suggestionsError) throw suggestionsError

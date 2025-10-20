@@ -67,7 +67,7 @@ export class ClothesService {
       let query = supabase
         .from('clothes')
         .select('*')
-        .eq('removed_at', null)
+        .is('removed_at', null)
         .order('created_at', { ascending: false })
 
       // Apply filters
@@ -124,7 +124,7 @@ export class ClothesService {
         .from('clothes')
         .select('*')
         .eq('id', id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
         .single()
 
       if (error) throw error
@@ -323,7 +323,7 @@ export class ClothesService {
         .from('clothes')
         .select('category, is_favorite, created_at')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (error) throw error
 

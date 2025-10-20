@@ -11,7 +11,7 @@ export class AnalyticsService {
         .from('clothes')
         .select('category, brand, style_tags, created_at, is_favorite')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (itemsError) throw itemsError
 
@@ -80,7 +80,7 @@ export class AnalyticsService {
         .from('outfits')
         .select('occasion, weather_condition, temperature, created_at, likes_count')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (outfitsError) throw outfitsError
 
@@ -152,12 +152,12 @@ export class AnalyticsService {
           .from('clothes')
           .select('category, style_tags, created_at')
           .eq('owner_id', user.id)
-          .eq('removed_at', null),
+          .is('removed_at', null),
         supabase
           .from('outfits')
           .select('occasion, style_tags, created_at')
           .eq('owner_id', user.id)
-          .eq('removed_at', null)
+          .is('removed_at', null)
       ])
 
       if (itemsResult.error) throw itemsResult.error
@@ -339,7 +339,7 @@ export class AnalyticsService {
         .from('clothes')
         .select('category')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (itemsError) throw itemsError
 
@@ -398,7 +398,7 @@ export class AnalyticsService {
         .from('clothes')
         .select('brand, category, created_at')
         .eq('owner_id', user.id)
-        .eq('removed_at', null)
+        .is('removed_at', null)
 
       if (itemsError) throw itemsError
 

@@ -92,11 +92,19 @@ import { ref, onMounted, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { api } from '@/api/base44Client'
+import { ClothesService } from '@/services/clothesService'
+import { OutfitsService } from '@/services/outfitsService'
+import { FriendsService } from '@/services/friendsService'
 import { Shirt, Palette, Users } from 'lucide-vue-next'
 
 // Theme and auth composables
 const { theme } = useTheme()
 const authStore = useAuthStore()
+
+// Service instances
+const clothesService = new ClothesService()
+const outfitsService = new OutfitsService()
+const friendsService = new FriendsService()
 
 // Use computed to get reactive user data from auth store
 const user = computed(() => {
@@ -136,16 +144,27 @@ const stats = computed(() => [
  */
 const loadItems = async () => {
   try {
+    console.log('🏠 Home: Loading items...')
     if (user.value?.id) {
-      const itemsData = await api.entities.ClothingItem.filter(
-        { owner_id: user.value.id },
-        '-created_at',
-        6
-      )
-      items.value = itemsData
+      const result = await clothesService.getClothes({
+        owner_id: user.value.id,
+        limit: 6
+      })
+      
+      if (result.success) {
+        items.value = result.data || []
+        console.log('🏠 Home: Items loaded successfully:', items.value.length, 'items')
+      } else {
+        console.error('🏠 Home: Failed to load items:', result.error)
+        items.value = []
+      }
+    } else {
+      console.log('🏠 Home: No user ID, setting items to empty array')
+      items.value = []
     }
   } catch (error) {
-    console.error('Error loading items:', error)
+    console.error('❌ Home: Error loading items:', error)
+    items.value = []
   }
 }
 
@@ -157,19 +176,21 @@ const loadItems = async () => {
  */
 const loadOutfits = async () => {
   try {
+    console.log('🏠 Home: Loading outfits...')
     if (user.value?.id) {
-      const outfitsData = await api.entities.Outfit.list('-created_at', 3)
-      console.log('🏠 Home: All outfits data:', outfitsData)
-      console.log('🏠 Home: Current user email:', user.value.email)
-      // Filter outfits by current user
-      const userOutfits = outfitsData.filter(outfit => outfit.created_by === user.value.email)
-      console.log('🏠 Home: User outfits after filtering:', userOutfits)
-      outfits.value = userOutfits
+      const outfitsData = await outfitsService.getOutfits({
+        limit: 3
+      })
+      
+      outfits.value = outfitsData || []
+      console.log('🏠 Home: Outfits loaded successfully:', outfits.value.length, 'outfits')
     } else {
+      console.log('🏠 Home: No user ID, setting outfits to empty array')
       outfits.value = []
     }
   } catch (error) {
-    console.error('Error loading outfits:', error)
+    console.error('❌ Home: Error loading outfits:', error)
+    outfits.value = []
   }
 }
 
@@ -181,16 +202,19 @@ const loadOutfits = async () => {
  */
 const loadFriends = async () => {
   try {
+    console.log('🏠 Home: Loading friends...')
     if (user.value?.id) {
-      const friendsData = await api.entities.Friend.list()
-      // Filter friends by current user
-      const userFriends = friendsData.filter(friend => friend.created_by === user.value.email)
-      friends.value = userFriends
+      const friendsData = await friendsService.getFriends()
+      
+      friends.value = friendsData || []
+      console.log('🏠 Home: Friends loaded successfully:', friends.value.length, 'friends')
     } else {
+      console.log('🏠 Home: No user ID, setting friends to empty array')
       friends.value = []
     }
   } catch (error) {
-    console.error('Error loading friends:', error)
+    console.error('❌ Home: Error loading friends:', error)
+    friends.value = []
   }
 }
 
