@@ -31,12 +31,19 @@ export const useThemeStore = defineStore('theme', {
      */
     applyTheme(newTheme) {
       const root = document.documentElement
+      console.log('🎨 ThemeStore: Applying theme to DOM:', newTheme)
+      console.log('🎨 ThemeStore: Root element before:', root.className)
+      
       if (newTheme === 'dark') {
         root.classList.add('dark')
+        console.log('🎨 ThemeStore: Added dark class')
       } else {
         root.classList.remove('dark')
+        console.log('🎨 ThemeStore: Removed dark class')
       }
-      console.log('Theme applied to DOM:', newTheme)
+      
+      console.log('🎨 ThemeStore: Root element after:', root.className)
+      console.log('🎨 ThemeStore: Has dark class:', root.classList.contains('dark'))
     },
 
     /**

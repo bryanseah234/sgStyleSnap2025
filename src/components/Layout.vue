@@ -23,25 +23,14 @@
     <div class="w-16 h-16 rounded-full border-4 border-black dark:border-white animate-pulse" />
   </div>
 
-  <div v-else :class="`min-h-screen ${
-    theme.value === 'dark' 
-      ? 'bg-black text-white' 
-      : 'bg-stone-50 text-black'
-  }`" style="transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out">
+  <div v-else class="min-h-screen bg-stone-50 text-black dark:bg-black dark:text-white transition-colors duration-150">
     
     <!-- Desktop Sidebar Navigation -->
-    <aside :class="`hidden md:flex fixed left-0 top-0 h-full w-64 ${
-      theme.value === 'dark' 
-        ? 'bg-zinc-950 border-r border-zinc-800' 
-        : 'bg-white border-r border-stone-200'
-    } flex-col items-stretch py-8 px-4 z-50`"
-    style="transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out">
+    <aside class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-stone-200 dark:bg-zinc-950 dark:border-zinc-800 flex-col items-stretch py-8 px-4 z-50 transition-colors duration-150">
       
       <!-- Logo -->
       <div class="mb-12 text-center md:text-left">
-        <h1 :class="`text-2xl font-bold tracking-tight ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h1 class="text-2xl font-bold tracking-tight text-black dark:text-white">
           StyleSnap
         </h1>
       </div>
@@ -56,12 +45,8 @@
         >
           <div :class="`flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative transition-all duration-150 hover:scale-105 hover:translate-x-1 ${
             $route.path === item.path
-              ? theme.value === 'dark'
-                ? 'bg-white text-black'
-                : 'bg-black text-white'
-              : theme.value === 'dark'
-              ? 'hover:bg-zinc-900 text-zinc-400 hover:text-white'
-              : 'hover:bg-stone-100 text-stone-600 hover:text-black'
+              ? 'bg-black text-white dark:bg-white dark:text-black'
+              : 'text-stone-600 hover:bg-stone-100 hover:text-black dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
           }`">
             <component :is="item.icon" class="w-5 h-5" />
             <span class="font-medium">
@@ -75,16 +60,10 @@
       <div class="space-y-2">
         <button
           @click="handleThemeToggle"
-          :class="`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-            theme.value === 'dark'
-              ? 'bg-zinc-800 hover:bg-zinc-700'
-              : 'bg-stone-100 hover:bg-stone-200'
-          }`"
+          class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
           :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
         >
-          <span :class="`font-medium ${
-            theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-          }`">
+          <span class="font-medium text-stone-700 dark:text-zinc-300">
             {{ theme.value === 'dark' ? 'Dark Mode' : 'Light Mode' }}
           </span>
           <!-- Sun icon for dark mode (clicking will switch to light) -->
@@ -99,9 +78,7 @@
           :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-150 hover:scale-105 ${
             loading
               ? 'opacity-50 cursor-not-allowed'
-              : theme.value === 'dark'
-              ? 'hover:bg-red-950 text-zinc-300 hover:text-red-400'
-              : 'hover:bg-red-50 text-stone-700 hover:text-red-600'
+              : 'text-stone-700 hover:bg-red-50 hover:text-red-600 dark:text-zinc-300 dark:hover:bg-red-950 dark:hover:text-red-400'
           }`"
         >
           <LogOut v-if="!loading" class="w-5 h-5" />
@@ -112,12 +89,8 @@
     </aside>
 
     <!-- Mobile Bottom Navigation -->
-    <nav :class="`md:hidden fixed bottom-0 left-0 right-0 ${
-      theme.value === 'dark'
-        ? 'bg-zinc-950/95 border-t border-zinc-800'
-        : 'bg-white/95 border-t border-stone-200'
-    } backdrop-blur-xl z-50 px-2 py-3 pb-safe`"
-    style="transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out; padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 border-t border-stone-200 dark:bg-zinc-950/95 dark:border-zinc-800 backdrop-blur-xl z-50 px-2 py-3 pb-safe transition-colors duration-150"
+    style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))">
       
       <div class="flex items-center justify-around max-w-md mx-auto">
         <router-link
@@ -129,33 +102,23 @@
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               $route.path === item.path
-                ? theme.value === 'dark'
-                  ? 'bg-white scale-110 -translate-y-0.5'
-                  : 'bg-black scale-110 -translate-y-0.5'
+                ? 'bg-black scale-110 -translate-y-0.5 dark:bg-white'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
                   $route.path === item.path
-                    ? theme.value === 'dark'
-                      ? 'text-black'
-                      : 'text-white'
-                    : theme.value === 'dark'
-                    ? 'text-zinc-400'
-                    : 'text-stone-600'
+                    ? 'text-white dark:text-black'
+                    : 'text-stone-600 dark:text-zinc-400'
                 }`"
               />
             </div>
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
               $route.path === item.path
-                ? theme.value === 'dark'
-                  ? 'text-white opacity-100 scale-100'
-                  : 'text-black opacity-100 scale-100'
-                : theme.value === 'dark'
-                ? 'text-zinc-500 opacity-60 scale-90'
-                : 'text-stone-500 opacity-60 scale-90'
+                ? 'text-black dark:text-white opacity-100 scale-100'
+                : 'text-stone-500 dark:text-zinc-500 opacity-60 scale-90'
             }`">
               {{ item.name }}
             </span>
@@ -163,9 +126,7 @@
             <!-- Active indicator -->
             <div
               v-if="$route.path === item.path"
-              :class="`absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full ${
-                theme.value === 'dark' ? 'bg-white' : 'bg-black'
-              }`"
+              class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-black dark:bg-white"
             />
           </div>
         </router-link>
@@ -174,11 +135,7 @@
         <div class="flex-1 flex justify-center">
           <button
             @click="handleThemeToggle"
-            :class="`p-3 rounded-2xl transition-all duration-200 hover:scale-110 ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 hover:bg-zinc-700'
-                : 'bg-stone-100 hover:bg-stone-200'
-            }`"
+            class="p-3 rounded-2xl transition-all duration-200 hover:scale-110 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
             :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
           >
             <!-- Sun icon for dark mode (clicking will switch to light) -->

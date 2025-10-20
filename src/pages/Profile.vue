@@ -39,11 +39,12 @@
                   theme.value === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'
                 }`">
                   <img
-                    v-if="user?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture"
-                    :src="user.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture"
+                    v-if="avatarUrl"
+                    :src="avatarUrl"
                     :alt="user.name || user.user_metadata?.name || 'User'"
                     class="w-full h-full object-cover"
                     @error="handleImageError"
+                    @load="handleImageLoad"
                   />
                   <div
                     v-else
@@ -145,12 +146,52 @@ const authStore = useAuthStore()
 // Prefer profile data (from database) over user data (from auth) for username and other profile fields
 const user = computed(() => authStore.profile || authStore.user)
 
+// Computed property for avatar URL with fallback logic
+const avatarUrl = computed(() => {
+  if (!user.value) return null
+  
+  // Try different sources in order of preference
+  const sources = [
+    user.value.avatar_url,
+    user.value.user_metadata?.avatar_url,
+    user.value.user_metadata?.picture,
+    user.value.picture
+  ]
+  
+  const validUrl = sources.find(url => url && url !== '/avatars/default-1.png')
+  console.log('🖼️ Profile: Avatar URL sources:', sources)
+  console.log('🖼️ Profile: Selected avatar URL:', validUrl)
+  
+  return validUrl
+})
+
 const handleImageError = (event) => {
-  console.log('Avatar image failed to load, showing fallback')
-  console.log('Failed image URL:', event.target.src)
-  console.log('User data:', user.value)
+  console.log('❌ Avatar image failed to load:', event.target.src)
+  console.log('❌ User data:', user.value)
+  
+  // Try to find an alternative avatar URL
+  const currentSrc = event.target.src
+  const sources = [
+    user.value?.avatar_url,
+    user.value?.user_metadata?.avatar_url,
+    user.value?.user_metadata?.picture,
+    user.value?.picture
+  ].filter(url => url && url !== currentSrc && url !== '/avatars/default-1.png')
+  
+  if (sources.length > 0) {
+    console.log('🔄 Profile: Trying alternative avatar URL:', sources[0])
+    event.target.src = sources[0]
+    return
+  }
+  
+  console.log('❌ Profile: No alternative avatar URLs found, showing fallback')
   // Hide the broken image and show the fallback
   event.target.style.display = 'none'
+}
+
+const handleImageLoad = (event) => {
+  console.log('✅ Avatar image loaded successfully')
+  console.log('✅ Image URL:', event.target.src)
 }
 
 /**
@@ -185,14 +226,22 @@ onMounted(async () => {
   
   // Always try to fetch the latest profile data to ensure we have username
   try {
-    await authStore.fetchUserProfile()
-    console.log('👤 Profile: Profile data loaded:', authStore.profile)
-    console.log('👤 Profile: Final user data:', user.value)
-    console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)
-    console.log('👤 Profile: User metadata avatar:', user.value?.user_metadata?.avatar_url)
-    console.log('👤 Profile: User metadata picture:', user.value?.user_metadata?.picture)
+    console.log('👤 Profile: Fetching user profile...')
+    // Add timeout to prevent hanging
+    const profilePromise = authStore.fetchUserProfile()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+    )
+    await Promise.race([profilePromise, timeoutPromise])
+    console.log('👤 Profile: Profile data loaded successfully:', authStore.profile)
   } catch (error) {
-    console.error('Failed to load profile data:', error)
+    console.error('👤 Profile: Profile fetch failed or timed out:', error)
+    // Continue without profile data - we still have user data from auth
   }
+  
+  console.log('👤 Profile: Final user data:', user.value)
+  console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)
+  console.log('👤 Profile: User metadata avatar:', user.value?.user_metadata?.avatar_url)
+  console.log('👤 Profile: User metadata picture:', user.value?.user_metadata?.picture)
 })
 </script>

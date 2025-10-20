@@ -102,8 +102,8 @@
             @click="addOutfit"
             :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
               theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-white text-black hover:bg-zinc-200'
+                : 'bg-black text-white hover:bg-zinc-800'
             }`"
           >
             <Plus class="w-5 h-5" />

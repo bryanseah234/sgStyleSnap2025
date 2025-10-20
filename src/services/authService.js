@@ -365,10 +365,18 @@ export class AuthService {
    * @throws {Error} If profile fetch or creation fails
    */
   async getCurrentProfile() {
-    if (this.currentProfile) return this.currentProfile
+    console.log('🔧 AuthService: getCurrentProfile called')
+    if (this.currentProfile) {
+      console.log('🔧 AuthService: Returning cached profile')
+      return this.currentProfile
+    }
     
+    console.log('🔧 AuthService: Getting current user...')
     const user = await this.getCurrentUser()
-    if (!user) return null
+    if (!user) {
+      console.log('🔧 AuthService: No user found, returning null')
+      return null
+    }
 
     if (!isSupabaseConfigured || !supabase) {
       console.warn('⚠️ AuthService: Supabase not configured, returning null profile')
@@ -376,6 +384,7 @@ export class AuthService {
     }
 
     try {
+      console.log('🔧 AuthService: Querying database for user profile...')
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -383,16 +392,22 @@ export class AuthService {
         .single()
 
       if (error) {
+        console.log('🔧 AuthService: Database query error:', error)
         // If user profile doesn't exist, create it
         if (error.code === 'PGRST116') {
+          console.log('🔧 AuthService: User profile not found, creating new profile')
           return await this.createUserProfile(user)
         }
         throw error
       }
 
+      console.log('🔧 AuthService: Profile fetched successfully:', data)
+      console.log('🔧 AuthService: Avatar URL from database:', data.avatar_url)
+      
       this.currentProfile = data
       return data
     } catch (error) {
+      console.error('❌ AuthService: Error in getCurrentProfile:', error)
       handleSupabaseError(error, 'get user profile')
     }
   }
@@ -434,6 +449,9 @@ export class AuthService {
 
       if (error) throw error
 
+      console.log('🔧 AuthService: Profile created successfully:', data)
+      console.log('🔧 AuthService: Avatar URL in database:', data.avatar_url)
+      
       this.currentProfile = data
       return data
     } catch (error) {

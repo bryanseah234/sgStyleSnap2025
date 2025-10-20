@@ -556,7 +556,18 @@ onMounted(async () => {
   // If we have a user but no profile, fetch the profile
   if (authStore.user && !authStore.profile) {
     console.log('Cabinet: Fetching user profile...')
-    await authStore.fetchUserProfile()
+    try {
+      // Add timeout to prevent hanging
+      const profilePromise = authStore.fetchUserProfile()
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      )
+      await Promise.race([profilePromise, timeoutPromise])
+      console.log('Cabinet: Profile fetched successfully')
+    } catch (error) {
+      console.error('Cabinet: Profile fetch failed or timed out:', error)
+      // Continue without profile data
+    }
   }
   
   console.log('Cabinet: Current user state:', {
