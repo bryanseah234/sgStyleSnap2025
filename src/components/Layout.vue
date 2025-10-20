@@ -74,7 +74,7 @@
       <!-- Theme Toggle & Logout -->
       <div class="space-y-2">
         <button
-          @click="toggleTheme"
+          @click="handleThemeToggle"
           :class="`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
             theme.value === 'dark'
               ? 'bg-zinc-800 hover:bg-zinc-700'
@@ -173,7 +173,7 @@
         <!-- Theme Toggle for Mobile -->
         <div class="flex-1 flex justify-center">
           <button
-            @click="toggleTheme"
+            @click="handleThemeToggle"
             :class="`p-3 rounded-2xl transition-all duration-200 hover:scale-110 ${
               theme.value === 'dark'
                 ? 'bg-zinc-800 hover:bg-zinc-700'
@@ -244,12 +244,28 @@ const loading = ref(true)
  * @type {Array<Object>} Array of navigation item objects
  */
 const navigationItems = [
-  { name: "Home", path: createPageUrl("Home"), icon: Home },
-  { name: "Cabinet", path: createPageUrl("Cabinet"), icon: Shirt },
-  { name: "Outfits", path: createPageUrl("Dashboard"), icon: Palette },
-  { name: "Friends", path: createPageUrl("Friends"), icon: Users },
-  { name: "Profile", path: createPageUrl("Profile"), icon: UserIcon },
+  { name: "Home", path: "/home", icon: Home },
+  { name: "Closet", path: "/closet", icon: Shirt },
+  { name: "Outfits", path: "/outfits", icon: Palette },
+  { name: "Friends", path: "/friends", icon: Users },
+  { name: "Profile", path: "/profile", icon: UserIcon },
 ]
+
+/**
+ * Handles theme toggle functionality
+ * 
+ * Properly handles the async theme toggle operation and provides
+ * user feedback during the process.
+ */
+const handleThemeToggle = async () => {
+  try {
+    console.log('🎨 Layout: Toggling theme...')
+    await toggleTheme()
+    console.log('✅ Layout: Theme toggled successfully')
+  } catch (error) {
+    console.error('❌ Layout: Theme toggle error:', error)
+  }
+}
 
 /**
  * Handles user logout functionality
@@ -270,18 +286,15 @@ const handleLogout = async () => {
     // Show loading state
     loading.value = true
     
+    // Clear auth store first to prevent auto sign-in
+    authStore.clearUser()
+    
     // Call logout from auth store
     await authStore.logout()
     console.log('✅ Layout: Logout successful, redirecting to login...')
     
-    // Force clear any remaining user data
-    authStore.clearUser()
-    
-    // Redirect to login page
-    await router.push('/login')
-    
-    // Force reload to ensure clean state
-    window.location.href = '/login'
+    // Force reload to ensure clean state and prevent auto sign-in
+    window.location.href = '/logout'
     
   } catch (error) {
     console.error('❌ Layout: Logout error:', error)
@@ -289,14 +302,8 @@ const handleLogout = async () => {
     // Force clear user data even if logout fails
     authStore.clearUser()
     
-    // Force redirect to login even if logout fails
-    try {
-      await router.push('/login')
-    } catch (routerError) {
-      console.error('❌ Layout: Router redirect failed:', routerError)
-      // Last resort: force page reload to login
-      window.location.href = '/login'
-    }
+    // Force page reload to login to prevent auto sign-in
+    window.location.href = '/logout'
   } finally {
     loading.value = false
   }
@@ -309,7 +316,14 @@ const handleLogout = async () => {
  * Sets loading state to false once initialization is complete.
  */
 onMounted(async () => {
-  await loadUser()
+  // Load user data and theme preferences
+  try {
+    await loadUser() // This calls the theme store's loadUser method
+    console.log('✅ Layout: User and theme loaded')
+  } catch (error) {
+    console.error('❌ Layout: Error loading user/theme:', error)
+  }
+  
   // Force refresh theme to ensure it's properly applied
   refreshTheme()
   loading.value = false

@@ -49,14 +49,14 @@ export const useThemeStore = defineStore('theme', {
      */
     initializeTheme() {
       if (this.isInitialized) {
-        console.log('Theme already initialized, skipping')
+        console.log('🎨 ThemeStore: Already initialized, skipping')
         return
       }
 
       // Check localStorage first for saved preference
       const savedTheme = localStorage.getItem('stylesnap-theme')
       if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-        console.log('Initializing theme from localStorage:', savedTheme)
+        console.log('🎨 ThemeStore: Initializing theme from localStorage:', savedTheme)
         this.theme = savedTheme
         this.applyTheme(savedTheme)
         this.isInitialized = true
@@ -65,11 +65,11 @@ export const useThemeStore = defineStore('theme', {
 
       // Check system preference if no saved theme
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        console.log('Initializing theme from system preference: dark')
+        console.log('🎨 ThemeStore: Initializing theme from system preference: dark')
         this.theme = 'dark'
         this.applyTheme('dark')
       } else {
-        console.log('Initializing theme from system preference: light')
+        console.log('🎨 ThemeStore: Initializing theme from system preference: light')
         this.theme = 'light'
         this.applyTheme('light')
       }
@@ -90,11 +90,12 @@ export const useThemeStore = defineStore('theme', {
         this.user = userData
         
         // Apply user's saved theme preference if available
-        if (userData && userData.theme) {
-          console.log('Loading user theme preference:', userData.theme)
-          this.theme = userData.theme
-          this.applyTheme(userData.theme)
-          localStorage.setItem('stylesnap-theme', userData.theme)
+        if (userData && (userData.theme || userData.theme_preference)) {
+          const userTheme = userData.theme || userData.theme_preference
+          console.log('Loading user theme preference:', userTheme)
+          this.theme = userTheme
+          this.applyTheme(userTheme)
+          localStorage.setItem('stylesnap-theme', userTheme)
         } else {
           // If no user theme preference, use localStorage or initialize
           const savedTheme = localStorage.getItem('stylesnap-theme')
@@ -128,7 +129,7 @@ export const useThemeStore = defineStore('theme', {
      */
     async toggleTheme() {
       const newTheme = this.theme === 'light' ? 'dark' : 'light'
-      console.log('Toggling theme from', this.theme, 'to', newTheme)
+      console.log('🎨 ThemeStore: Toggling theme from', this.theme, 'to', newTheme)
       
       this.theme = newTheme
       this.applyTheme(newTheme)
@@ -137,14 +138,14 @@ export const useThemeStore = defineStore('theme', {
       // Update user's theme preference in the database
       if (this.user) {
         try {
-          console.log('Updating user theme preference in database:', newTheme)
+          console.log('🎨 ThemeStore: Updating user theme preference in database:', newTheme)
           await api.auth.updateMe({ theme: newTheme })
-          console.log('Theme preference updated successfully')
+          console.log('✅ ThemeStore: Theme preference updated successfully')
         } catch (error) {
-          console.error('Error updating theme:', error)
+          console.error('❌ ThemeStore: Error updating theme:', error)
         }
       } else {
-        console.log('No user logged in, theme saved to localStorage only')
+        console.log('🎨 ThemeStore: No user logged in, theme saved to localStorage only')
       }
     },
 
