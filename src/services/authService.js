@@ -47,6 +47,8 @@ export class AuthService {
       if (event === 'SIGNED_IN' && session?.user) {
         this.currentUser = session.user
         await this.getCurrentProfile()
+        // Automatically sync profile with Google data after successful authentication
+        await this.autoSyncProfileOnAuth()
       } else if (event === 'SIGNED_OUT') {
         // Only clear user data if this is an explicit logout, not a page reload
         if (this.isLoggingOut) {
@@ -164,9 +166,9 @@ export class AuthService {
       // Reset Supabase client to clear any cached references
       this.resetSupabaseClient()
       
-      // Clear all browser storage mechanisms
+      // Clear all browser storage mechanisms (non-blocking)
       if (typeof window !== 'undefined') {
-        // Clear IndexedDB (Supabase's primary storage)
+        // Clear IndexedDB (Supabase's primary storage) - non-blocking
         try {
           if ('indexedDB' in window) {
             // Clear all IndexedDB databases that might contain Supabase data
@@ -188,7 +190,7 @@ export class AuthService {
               }
             })
             
-            // Also try to clear any databases with dynamic names
+            // Also try to clear any databases with dynamic names (non-blocking)
             try {
               const request = indexedDB.databases()
               if (request) {
@@ -265,7 +267,7 @@ export class AuthService {
           })
         }
 
-        // Clear Service Worker caches
+        // Clear Service Worker caches (non-blocking)
         if ('caches' in window) {
           caches.keys().then(cacheNames => {
             cacheNames.forEach(cacheName => {
@@ -279,31 +281,15 @@ export class AuthService {
         }
       }
       
-      // Redirect to login page using proper navigation
-      console.log('🚪 AuthService: Redirecting to login page...')
-      setTimeout(() => {
-        // Use window.location.href instead of replace to preserve tab context
-        window.location.href = '/login'
-        // Reset logout flag after redirect
-        this.isLoggingOut = false
-      }, 100)
-      
       console.log('✅ AuthService: User signed out successfully')
       return true
     } catch (error) {
       console.error('❌ AuthService: Sign out error:', error)
-      // Even if there's an error, try to clear local state and redirect
+      // Even if there's an error, try to clear local state
       this.currentUser = null
       this.currentProfile = null
       sessionStorage.clear()
       localStorage.clear()
-      
-      setTimeout(() => {
-        // Use window.location.href instead of replace to preserve tab context
-        window.location.href = '/login'
-        // Reset logout flag after redirect
-        this.isLoggingOut = false
-      }, 100)
       
       handleSupabaseError(error, 'sign out')
     }
@@ -565,6 +551,200 @@ export class AuthService {
    */
   async logout() {
     return this.signOut()
+  }
+
+  /**
+   * Synchronizes current user's profile with Google profile data
+   * 
+   * Checks if the user's avatar_url in the database matches their
+   * current Google profile photo and updates it if there's a mismatch.
+   * This ensures the profile photo is always up-to-date.
+   * 
+   * @returns {Promise<Object>} Sync result with updated profile data
+   * @throws {Error} If sync fails or user not authenticated
+   */
+  async syncProfileWithGoogle() {
+    try {
+      const user = await this.getCurrentUser()
+      if (!user) throw new Error('Not authenticated')
+
+      if (!isSupabaseConfigured || !supabase) {
+        console.warn('⚠️ AuthService: Supabase not configured, cannot sync profile')
+        return null
+      }
+
+      console.log('🔄 AuthService: Syncing profile with Google data for user:', user.id)
+
+      const { data, error } = await supabase.rpc('sync_user_profile_photo', {
+        user_id: user.id
+      })
+
+      if (error) {
+        console.error('❌ AuthService: Profile sync error:', error)
+        throw error
+      }
+
+      if (data.success && data.profile_updated) {
+        console.log('✅ AuthService: Profile synchronized successfully')
+        // Update cached profile
+        this.currentProfile = data.profile
+      } else if (data.success) {
+        console.log('ℹ️ AuthService: Profile already up-to-date')
+      }
+
+      return data
+    } catch (error) {
+      console.error('❌ AuthService: Error syncing profile with Google:', error)
+      handleSupabaseError(error, 'sync profile with Google')
+    }
+  }
+
+  /**
+   * Gets the current Google profile data
+   * 
+   * Fetches comprehensive Google profile data from the auth.users table
+   * including name, email, avatar, and other profile information.
+   * 
+   * @returns {Promise<Object|null>} Current Google profile data
+   * @throws {Error} If fetch fails or user not authenticated
+   */
+  async getCurrentGoogleProfileData() {
+    try {
+      const user = await this.getCurrentUser()
+      if (!user) throw new Error('Not authenticated')
+
+      if (!isSupabaseConfigured || !supabase) {
+        console.warn('⚠️ AuthService: Supabase not configured, cannot get Google profile data')
+        return null
+      }
+
+      const { data, error } = await supabase.rpc('get_current_google_profile_data', {
+        user_id: user.id
+      })
+
+      if (error) {
+        console.error('❌ AuthService: Error getting Google profile data:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('❌ AuthService: Error getting current Google profile data:', error)
+      handleSupabaseError(error, 'get current Google profile data')
+    }
+  }
+
+  /**
+   * Gets the current Google profile photo URL
+   * 
+   * Fetches the current Google profile photo URL from the auth.users table
+   * for comparison with the stored avatar_url in public.users.
+   * 
+   * @returns {Promise<string|null>} Current Google profile photo URL
+   * @throws {Error} If fetch fails or user not authenticated
+   */
+  async getCurrentGoogleProfilePhoto() {
+    try {
+      const user = await this.getCurrentUser()
+      if (!user) throw new Error('Not authenticated')
+
+      if (!isSupabaseConfigured || !supabase) {
+        console.warn('⚠️ AuthService: Supabase not configured, cannot get Google profile photo')
+        return null
+      }
+
+      const { data, error } = await supabase.rpc('get_current_google_profile_photo', {
+        user_id: user.id
+      })
+
+      if (error) {
+        console.error('❌ AuthService: Error getting Google profile photo:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('❌ AuthService: Error getting current Google profile photo:', error)
+      handleSupabaseError(error, 'get current Google profile photo')
+    }
+  }
+
+  /**
+   * Checks if profile needs synchronization with Google
+   * 
+   * Compares the stored profile data with the current Google profile data
+   * to determine if synchronization is needed for any field.
+   * 
+   * @returns {Promise<boolean>} True if profile needs sync
+   * @throws {Error} If check fails or user not authenticated
+   */
+  async needsProfileSync() {
+    try {
+      const user = await this.getCurrentUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const currentProfile = await this.getCurrentProfile()
+      if (!currentProfile) return false
+
+      const googleData = await this.getCurrentGoogleProfileData()
+      if (!googleData) return false
+
+      // Check if any field needs updating
+      const needsSync = (
+        currentProfile.email !== googleData.email ||
+        currentProfile.name !== googleData.name ||
+        currentProfile.avatar_url !== googleData.avatar_url ||
+        currentProfile.google_id !== googleData.google_id
+      )
+      
+      console.log('🔍 AuthService: Profile sync check:', {
+        stored: {
+          email: currentProfile.email,
+          name: currentProfile.name,
+          avatar_url: currentProfile.avatar_url,
+          google_id: currentProfile.google_id
+        },
+        google: {
+          email: googleData.email,
+          name: googleData.name,
+          avatar_url: googleData.avatar_url,
+          google_id: googleData.google_id
+        },
+        needsSync
+      })
+
+      return needsSync
+    } catch (error) {
+      console.error('❌ AuthService: Error checking profile sync status:', error)
+      handleSupabaseError(error, 'check profile sync status')
+      return false
+    }
+  }
+
+  /**
+   * Automatically syncs profile on authentication
+   * 
+   * This method should be called after successful authentication
+   * to ensure the profile is always up-to-date with Google data.
+   * 
+   * @returns {Promise<Object|null>} Sync result or null if not needed
+   */
+  async autoSyncProfileOnAuth() {
+    try {
+      const needsSync = await this.needsProfileSync()
+      
+      if (needsSync) {
+        console.log('🔄 AuthService: Auto-syncing profile after authentication')
+        return await this.syncProfileWithGoogle()
+      } else {
+        console.log('ℹ️ AuthService: Profile already synchronized')
+        return null
+      }
+    } catch (error) {
+      console.error('❌ AuthService: Error in auto-sync:', error)
+      // Don't throw error for auto-sync failures, just log them
+      return null
+    }
   }
 }
 

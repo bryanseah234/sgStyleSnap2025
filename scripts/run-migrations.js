@@ -58,7 +58,8 @@ const migrations = [
   '020_add_outfits_table.sql',
   '021_seed_data.sql',
   '022_disable_auto_contribution.sql',
-  '023_clear_catalog_data.sql'
+  '023_clear_catalog_data.sql',
+  '024_google_profile_sync.sql'
 ]
 
 async function runMigration(filename) {
