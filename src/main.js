@@ -23,6 +23,7 @@ import Dashboard from './pages/Dashboard.vue'
 import Friends from './pages/Friends.vue'
 import Profile from './pages/Profile.vue'
 import FriendCabinet from './pages/FriendCabinet.vue'
+import FriendProfile from './pages/FriendProfile.vue'
 import Login from './pages/Login.vue'
 import Logout from './pages/Logout.vue'
 import OAuthCallback from './pages/OAuthCallback.vue'
@@ -43,6 +44,7 @@ const routes = [
   { path: '/friends', component: Friends, meta: { requiresAuth: true } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/friend/:username/closet', component: FriendCabinet, meta: { requiresAuth: true } },
+  { path: '/friend/:friendId/profile', component: FriendProfile, meta: { requiresAuth: true } },
   { path: '/logout', component: Logout, meta: { requiresAuth: false } }, // Logout page handles logout logic
   { path: '/login', component: Login, meta: { requiresAuth: false } },
   { path: '/auth/callback', component: OAuthCallback, meta: { requiresAuth: false } },

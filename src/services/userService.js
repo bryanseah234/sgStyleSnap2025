@@ -54,6 +54,28 @@ export class UserService {
     }
   }
 
+  async searchUsersByUsername(query, limit = 10) {
+    try {
+      if (!supabase) return []
+      if (!query || query.trim().length < 3) return []
+
+      const searchQuery = query.trim().toLowerCase()
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, name, avatar_url, created_at')
+        .ilike('username', `%${searchQuery}%`)
+        .is('removed_at', null)
+        .order('username')
+        .limit(limit)
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      handleSupabaseError(error, 'search users by username')
+      return []
+    }
+  }
+
   /**
    * Get user by username
    * 

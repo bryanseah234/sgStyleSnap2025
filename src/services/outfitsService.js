@@ -67,6 +67,29 @@ export class OutfitsService {
     }
   }
 
+  async getPublicOutfits(ownerId, limit = 20) {
+    try {
+      if (!supabase) return []
+      if (!ownerId) return []
+
+      let query = supabase
+        .from('outfits')
+        .select('*')
+        .eq('owner_id', ownerId)
+        .eq('is_public', true)
+        .is('removed_at', null)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      const { data, error } = await query
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      handleSupabaseError(error, 'get public outfits')
+      return []
+    }
+  }
+
   async getOutfit(outfitId) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()

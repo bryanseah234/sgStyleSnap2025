@@ -68,6 +68,30 @@
             {{ friendRequests.length }}
           </span>
         </button>
+        <button
+          @click="activeTab = 'sent'"
+          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+            activeTab === 'sent'
+              ? theme.value === 'dark'
+                ? 'bg-white text-black'
+                : 'bg-black text-white'
+              : theme.value === 'dark'
+              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+          }`"
+        >
+          <UserPlus class="w-5 h-5" />
+          My Requests
+          <span v-if="sentRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
+            activeTab === 'sent'
+              ? 'bg-black text-white'
+              : theme.value === 'dark'
+              ? 'bg-zinc-600 text-zinc-200'
+              : 'bg-stone-300 text-stone-800'
+          }`">
+            {{ sentRequests.length }}
+          </span>
+        </button>
       </div>
 
       <!-- Search Bar -->
@@ -90,8 +114,16 @@
         </div>
       </div>
 
+      <!-- Loading state -->
+      <div v-if="isLoading" class="py-16 text-center">
+        <div class="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border-4 border-stone-300 border-t-black dark:border-zinc-600 dark:border-t-white"></div>
+        <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
+          Loading your friends...
+        </p>
+      </div>
+
       <!-- Content Area -->
-      <div v-if="activeTab === 'friends'">
+      <div v-else-if="activeTab === 'friends'">
         <!-- My Friends -->
         <div v-if="filteredFriends.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
@@ -102,9 +134,10 @@
             }`"
             @click="viewFriendProfile(friend.id)"
           >
-            <!-- Avatar -->
-            <div class="text-center mb-4">
-              <div :class="`w-16 h-16 mx-auto rounded-full overflow-hidden ${
+            <!-- Mobile row layout; stacked on md+ -->
+            <div class="flex items-center gap-4 md:block">
+              <!-- Avatar -->
+              <div :class="`w-12 h-12 md:w-16 md:h-16 md:mx-auto rounded-full overflow-hidden ${
                 theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
               }`">
                 <img
@@ -119,27 +152,27 @@
                     theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
                   }`"
                 >
-                  <span :class="`text-xl font-bold ${
+                  <span :class="`text-lg md:text-xl font-bold ${
                     theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
                   }`">
-                    {{ (friend.name || friend.email || 'F').charAt(0).toUpperCase() }}
+                    {{ (friend.name || friend.username || 'F').charAt(0).toUpperCase() }}
                   </span>
                 </div>
               </div>
-            </div>
-            
-            <!-- Friend Info -->
-            <div class="text-center">
-              <h3 :class="`font-bold text-lg mb-1 ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">
-                {{ friend.name || 'Friend User' }}
-              </h3>
-              <p :class="`text-sm ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">
-                @{{ friend.username || 'username' }}
-              </p>
+
+              <!-- Friend Info -->
+              <div class="text-left md:text-center md:mt-4">
+                <h3 :class="`font-bold text-lg mb-0 md:mb-1 ${
+                  theme.value === 'dark' ? 'text-white' : 'text-black'
+                }`">
+                  {{ friend.name || 'Friend User' }}
+                </h3>
+                <p :class="`text-sm ${
+                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                }`">
+                  @{{ friend.username || 'username' }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -168,7 +201,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <!-- Avatar -->
-                <div :class="`w-12 h-12 rounded-full overflow-hidden ${
+                <div :class="`w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden ${
                   theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
                 }`">
                   <img
@@ -192,7 +225,7 @@
                 </div>
                 
                 <!-- Request Info -->
-                <div>
+                <div class="text-left">
                   <h3 :class="`font-medium ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
                     {{ request.requester.name }}
                   </h3>
@@ -229,6 +262,77 @@
         </div>
       </div>
 
+      <!-- My Requests Tab -->
+      <div v-else-if="activeTab === 'sent'">
+        <div v-if="sentRequests.length > 0" class="space-y-4">
+          <div
+            v-for="request in sentRequests"
+            :key="request.id"
+            :class="`p-6 rounded-xl ${
+              theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
+            }`"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <!-- Avatar -->
+                <div :class="`w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden ${
+                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+                }`">
+                  <img
+                    v-if="request.receiver.avatar_url"
+                    :src="request.receiver.avatar_url"
+                    :alt="request.receiver.name"
+                    class="w-full h-full object-cover"
+                  />
+                  <div
+                    v-else
+                    :class="`w-full h-full flex items-center justify-center ${
+                      theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
+                    }`"
+                  >
+                    <span :class="`text-sm font-bold ${
+                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
+                    }`">
+                      {{ (request.receiver.name || 'U').charAt(0).toUpperCase() }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Request Info -->
+                <div class="text-left">
+                  <h3 :class="`font-medium ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
+                    {{ request.receiver.name }}
+                  </h3>
+                  <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+                    @{{ request.receiver.username }}
+                  </p>
+                  <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
+                    Sent {{ formatDate(request.created_at) }}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Action Button -->
+              <div class="flex gap-2">
+                <button
+                  @click="cancelFriendRequest(request.id)"
+                  class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div v-else class="text-center py-12">
+          <UserPlus :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+          <p :class="`text-lg ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+            No sent friend requests.
+          </p>
+        </div>
+      </div>
+
       <!-- Add Friend Modal -->
       <div
         v-if="showAddFriendModal"
@@ -257,13 +361,13 @@
               <input
                 v-model="addFriendSearch"
                 type="text"
-                placeholder="Enter username..."
+                placeholder="Enter at least 3 characters (username only)"
                 :class="`w-full px-3 py-2 rounded-lg border ${
                   theme.value === 'dark'
                     ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
                     : 'bg-white border-stone-300 text-black placeholder-stone-500'
                 }`"
-                @keyup.enter="searchAndAddFriend"
+                @keyup.enter="addFriendSearch.trim().length >= 3 && searchAndAddFriend()"
               />
             </div>
             
@@ -308,7 +412,7 @@
                   </div>
                 </div>
                 <button
-                  @click="sendFriendRequest(user.id)"
+                  @click="sendFriendRequest(user)"
                   :disabled="isRequestSent(user.id) || isFriend(user.id)"
                   :class="`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
                     isRequestSent(user.id) || isFriend(user.id)
@@ -335,10 +439,13 @@
             </button>
             <button
               @click="searchAndAddFriend"
+              :disabled="addFriendSearch.trim().length < 3"
               :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme.value === 'dark'
-                  ? 'bg-white text-black hover:bg-zinc-200'
-                  : 'bg-black text-white hover:bg-zinc-800'
+                addFriendSearch.trim().length < 3
+                  ? 'bg-zinc-600 text-zinc-300 cursor-not-allowed'
+                  : theme.value === 'dark'
+                    ? 'bg-white text-black hover:bg-zinc-200'
+                    : 'bg-black text-white hover:bg-zinc-800'
               }`"
             >
               Search
@@ -346,6 +453,27 @@
           </div>
         </div>
       </div>
+
+  <!-- Toasts -->
+  <div class="fixed top-4 right-4 z-[60] space-y-2">
+    <transition-group name="toast-fade" tag="div">
+      <div
+        v-for="t in toasts"
+        :key="t.id"
+        :class="`flex items-start gap-3 px-4 py-3 rounded-lg shadow-md text-sm ${
+          t.type === 'success'
+            ? (theme.value === 'dark' ? 'bg-green-600 text-white' : 'bg-green-500 text-white')
+            : (theme.value === 'dark' ? 'bg-red-600 text-white' : 'bg-red-500 text-white')
+        }`"
+      >
+        <component :is="t.type === 'success' ? CheckCircle : XCircle" class="w-5 h-5 mt-0.5" />
+        <div class="flex-1">{{ t.message }}</div>
+        <button class="opacity-80 hover:opacity-100" @click="dismissToast(t.id)">
+          <X class="w-4 h-4" />
+        </button>
+      </div>
+    </transition-group>
+  </div>
     </div>
   </div>
 </template>
@@ -356,7 +484,7 @@ import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { FriendsService } from '@/services/friendsService'
 import { UserService } from '@/services/userService'
-import { Users, UserPlus, Bell, Search } from 'lucide-vue-next'
+import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X } from 'lucide-vue-next'
 
 const router = useRouter()
 const { theme } = useTheme()
@@ -374,6 +502,7 @@ const sentRequests = ref([])
 const showAddFriendModal = ref(false)
 const addFriendSearch = ref('')
 const addFriendResults = ref([])
+const isLoading = ref(true)
 
 // Computed
 const filteredFriends = computed(() => {
@@ -388,6 +517,7 @@ const filteredFriends = computed(() => {
 
 // Methods
 const loadFriendsData = async () => {
+  isLoading.value = true
   try {
     console.log('🔧 Friends: Loading friends data...')
     
@@ -395,16 +525,24 @@ const loadFriendsData = async () => {
     const friendsData = await friendsService.getFriends()
     friends.value = friendsData || []
     
-    // TODO: Implement friend requests loading
-    friendRequests.value = []
-    sentRequests.value = []
+    // Load friend requests (incoming)
+    const requestsData = await friendsService.getFriendRequests()
+    friendRequests.value = requestsData || []
+    
+    // Load sent requests
+    const sentData = await friendsService.getSentRequests()
+    sentRequests.value = sentData || []
     
     console.log('✅ Friends: Loaded friends:', friends.value.length)
+    console.log('✅ Friends: Loaded requests:', friendRequests.value.length)
+    console.log('✅ Friends: Loaded sent requests:', sentRequests.value.length)
   } catch (error) {
     console.error('❌ Friends: Error loading friends data:', error)
     friends.value = []
     friendRequests.value = []
     sentRequests.value = []
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -413,12 +551,16 @@ const handleSearch = () => {
 }
 
 const searchAndAddFriend = async () => {
-  if (!addFriendSearch.value.trim()) return
-  
-  console.log('🔧 Friends: Searching for users with query:', addFriendSearch.value)
+  const raw = addFriendSearch.value.trim()
+  if (!raw || raw.length < 3) return
+
+  // Only allow username searches; strip leading '@' if present
+  const usernameQuery = raw.startsWith('@') ? raw.slice(1) : raw
+
+  console.log('🔧 Friends: Searching for users by username:', usernameQuery)
   
   try {
-    const result = await userService.searchUsers(addFriendSearch.value)
+    const result = await userService.searchUsersByUsername(usernameQuery)
     console.log('✅ Friends: Search result:', result)
     addFriendResults.value = result || []
   } catch (error) {
@@ -427,44 +569,93 @@ const searchAndAddFriend = async () => {
   }
 }
 
-const sendFriendRequest = async (userId) => {
+const toasts = ref([])
+
+const showToast = (message, type = 'success') => {
+  const id = `${Date.now()}-${Math.random()}`
+  // Keep only the last 2 so adding this makes max 3
+  if (toasts.value.length >= 3) {
+    toasts.value = toasts.value.slice(-2)
+  }
+  toasts.value.push({ id, message, type })
+  setTimeout(() => dismissToast(id), 4000)
+}
+
+const dismissToast = (id) => {
+  toasts.value = toasts.value.filter(t => t.id !== id)
+}
+
+const sendFriendRequest = async (user) => {
   try {
-    console.log('🔧 Friends: Sending friend request to user:', userId)
-    // TODO: Implement sendFriendRequest in FriendsService
-    console.log('⚠️ Friends: sendFriendRequest not implemented yet')
-    alert('Friend request functionality not implemented yet')
+    // Optimistic: add to sentRequests immediately
+    const tempId = `temp-${Date.now()}`
+    const optimistic = {
+      id: tempId,
+      receiver: {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        avatar_url: user.avatar_url
+      },
+      status: 'pending',
+      created_at: new Date().toISOString()
+    }
+    sentRequests.value = [optimistic, ...sentRequests.value]
+
+    const result = await friendsService.sendFriendRequest(user.id)
+    if (result && result.id) {
+      sentRequests.value = sentRequests.value.map(r => r.id === tempId ? { ...r, id: result.id } : r)
+    }
+    showToast('Friend request sent', 'success')
   } catch (error) {
-    console.error('❌ Friends: Error sending friend request:', error)
-    alert(error.message)
+    // Rollback
+    sentRequests.value = sentRequests.value.filter(r => !String(r.id).startsWith('temp-'))
+    showToast(error.message || 'Failed to send friend request', 'error')
   }
 }
 
 const acceptFriendRequest = async (requestId) => {
   try {
-    console.log('🔧 Friends: Accepting friend request:', requestId)
-    // TODO: Implement acceptFriendRequest in FriendsService
-    console.log('⚠️ Friends: acceptFriendRequest not implemented yet')
-    alert('Friend request functionality not implemented yet')
+    // Optimistic: remove from incoming list immediately
+    const prev = [...friendRequests.value]
+    friendRequests.value = friendRequests.value.filter(r => r.id !== requestId)
+    const res = await friendsService.acceptFriendRequest(requestId)
+    if (!res || !res.success) throw new Error('Failed to accept request')
+    showToast('Friend request accepted', 'success')
   } catch (error) {
-    console.error('❌ Friends: Error accepting friend request:', error)
-    alert(error.message)
+    // Reload data on failure
+    await loadFriendsData()
+    showToast(error.message || 'Failed to accept friend request', 'error')
   }
 }
 
-const declineFriendRequest = async (requestId) => {
+const cancelFriendRequest = async (requestId) => {
   try {
-    console.log('🔧 Friends: Declining friend request:', requestId)
-    // TODO: Implement declineFriendRequest in FriendsService
-    console.log('⚠️ Friends: declineFriendRequest not implemented yet')
-    alert('Friend request functionality not implemented yet')
+    // Optimistic: remove from sent list immediately
+    const prev = [...sentRequests.value]
+    sentRequests.value = sentRequests.value.filter(req => req.id !== requestId)
+    await friendsService.cancelFriendRequest(requestId)
+    showToast('Friend request cancelled', 'success')
   } catch (error) {
-    console.error('❌ Friends: Error declining friend request:', error)
-    alert(error.message)
+    await loadFriendsData()
+    showToast(error.message || 'Failed to cancel friend request', 'error')
   }
+}
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now - date)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 1) return 'yesterday'
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
+  return date.toLocaleDateString()
 }
 
 const viewFriendProfile = (friendId) => {
-  router.push(`/friend-cabinet/${friendId}`)
+  router.push(`/friend/${friendId}/profile`)
 }
 
 const isRequestSent = (userId) => {
@@ -483,7 +674,7 @@ onMounted(() => {
   window.testFriendSearch = async (query) => {
     console.log('🔧 Friends: Testing friend search with query:', query)
     try {
-      const result = await userService.searchUsers(query)
+      const result = await friendsService.searchUsers(query)
       console.log('✅ Friends: Test search result:', result)
       return result
     } catch (error) {
@@ -493,15 +684,5 @@ onMounted(() => {
   }
 })
 
-// Watch for search changes
-watch(addFriendSearch, (newValue) => {
-  console.log('Search input changed:', newValue)
-  if (newValue.length >= 2) {
-    console.log('Triggering search for:', newValue)
-    searchAndAddFriend()
-  } else {
-    console.log('Clearing search results')
-    addFriendResults.value = []
-  }
-})
+// Removed auto-search on keypress; search happens on explicit action only
 </script>

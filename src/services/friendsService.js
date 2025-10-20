@@ -172,15 +172,15 @@ export class FriendsService {
       }
       
       // Search by email
-      const { data: emailData, error: emailError } = await supabase
-        .from('users')
-        .select('id, username, name, avatar_url, email, created_at')
-        .ilike('email', `%${query}%`)
-        .limit(5)
+      // const { data: emailData, error: emailError } = await supabase
+      //   .from('users')
+      //   .select('id, username, name, avatar_url, email, created_at')
+      //   .ilike('email', `%${query}%`)
+      //   .limit(5)
       
-      if (!emailError && emailData) {
-        searchData = [...searchData, ...emailData]
-      }
+      // if (!emailError && emailData) {
+      //   searchData = [...searchData, ...emailData]
+      // }
       
       // Remove duplicates
       const uniqueData = searchData.filter((user, index, self) => 
@@ -385,6 +385,59 @@ export class FriendsService {
       return { success: true }
     } catch (error) {
       handleSupabaseError(error, 'reject friend request')
+    }
+  }
+
+  async getSentRequests() {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('friends')
+        .select(`
+          *,
+          receiver:receiver_id (
+            id,
+            username,
+            name,
+            avatar_url
+          )
+        `)
+        .eq('requester_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      return (data || []).map(req => ({
+        id: req.id,
+        receiver: req.receiver,
+        status: req.status,
+        created_at: req.created_at
+      }))
+    } catch (error) {
+      handleSupabaseError(error, 'get sent friend requests')
+    }
+  }
+
+  async cancelFriendRequest(requestId) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      // Only requester can cancel a pending request
+      const { error } = await supabase
+        .from('friends')
+        .delete()
+        .eq('id', requestId)
+        .eq('requester_id', user.id)
+        .eq('status', 'pending')
+
+      if (error) throw error
+      return { success: true }
+    } catch (error) {
+      handleSupabaseError(error, 'cancel friend request')
     }
   }
 
