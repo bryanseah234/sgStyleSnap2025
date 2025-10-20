@@ -53,8 +53,13 @@ const performLogout = async () => {
     // Clear auth store first to prevent auto sign-in
     authStore.clearUser()
     
-    // Perform logout through auth store
-    await authStore.logout()
+    // Perform logout through auth store with timeout
+    const logoutPromise = authStore.logout()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Logout timeout')), 10000)
+    )
+    
+    await Promise.race([logoutPromise, timeoutPromise])
     
     console.log('✅ Logout Page: Logout completed successfully')
     
@@ -75,6 +80,7 @@ const performLogout = async () => {
     loggingOut.value = false
     
     setTimeout(() => {
+      console.log('🚪 Logout Page: Redirecting to login after error...')
       router.push('/login')
     }, 1000)
   }
@@ -83,5 +89,14 @@ const performLogout = async () => {
 // Start logout process when component mounts
 onMounted(() => {
   performLogout()
+  
+  // Fallback: ensure we always redirect after 15 seconds
+  setTimeout(() => {
+    if (loggingOut.value) {
+      console.log('🚪 Logout Page: Fallback redirect triggered')
+      loggingOut.value = false
+      router.push('/login')
+    }
+  }, 15000)
 })
 </script>
