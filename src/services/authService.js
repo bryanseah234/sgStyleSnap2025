@@ -133,30 +133,51 @@ export class AuthService {
    * @throws {Error} If sign out fails
    */
   async signOut() {
+    // Add overall timeout to prevent hanging
+    const signOutTimeout = setTimeout(() => {
+      console.warn('⚠️ AuthService: SignOut method timeout, forcing completion')
+    }, 8000) // 8 second timeout
+    
     try {
       console.log('🚪 AuthService: Starting sign out process...')
       
       // Set flag to indicate explicit logout
       this.isLoggingOut = true
       
-      // Sign out from Supabase if configured
+      // Sign out from Supabase if configured (with timeout)
       if (isSupabaseConfigured && supabase) {
         console.log('🚪 AuthService: Signing out from Supabase...')
-        const { error } = await supabase.auth.signOut({ scope: 'global' })
-        if (error) {
-          console.warn('⚠️ AuthService: Supabase signOut error:', error)
+        try {
+          // Add timeout to Supabase signOut call
+          const signOutPromise = supabase.auth.signOut({ scope: 'global' })
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Supabase signOut timeout')), 5000)
+          )
+          
+          const { error } = await Promise.race([signOutPromise, timeoutPromise])
+          if (error) {
+            console.warn('⚠️ AuthService: Supabase signOut error:', error)
+            // Continue with local cleanup even if Supabase signOut fails
+          } else {
+            console.log('✅ AuthService: Supabase signOut successful')
+          }
+        } catch (error) {
+          console.warn('⚠️ AuthService: Supabase signOut timeout or error:', error)
           // Continue with local cleanup even if Supabase signOut fails
         }
       }
       
       // Clear local state
+      console.log('🚪 AuthService: Clearing local state...')
       this.currentUser = null
       this.currentProfile = null
       
       // Clear all session storage
+      console.log('🚪 AuthService: Clearing session storage...')
       sessionStorage.clear()
       
       // Clear all localStorage (except theme preference)
+      console.log('🚪 AuthService: Clearing localStorage...')
       const themePreference = localStorage.getItem('stylesnap-theme')
       localStorage.clear()
       if (themePreference) {
@@ -292,6 +313,9 @@ export class AuthService {
       localStorage.clear()
       
       handleSupabaseError(error, 'sign out')
+    } finally {
+      // Clear the timeout
+      clearTimeout(signOutTimeout)
     }
   }
 

@@ -56,7 +56,7 @@ const performLogout = async () => {
     // Perform logout through auth store with timeout
     const logoutPromise = authStore.logout()
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Logout timeout')), 10000)
+      setTimeout(() => reject(new Error('Logout timeout')), 8000)
     )
     
     await Promise.race([logoutPromise, timeoutPromise])

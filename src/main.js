@@ -55,7 +55,10 @@ const routes = [
   // Closet sub-routes (stay on closet page, content changes)
   { path: '/closet/add/manual', component: Cabinet, meta: { requiresAuth: true, subRoute: 'manual' } },
   { path: '/closet/add/catalogue', component: Cabinet, meta: { requiresAuth: true, subRoute: 'catalogue' } },
-  { path: '/closet/view/friend/:username', component: Cabinet, meta: { requiresAuth: true, subRoute: 'friend' } }
+  { path: '/closet/view/friend/:username', component: Cabinet, meta: { requiresAuth: true, subRoute: 'friend' } },
+  
+  // Catch-all route for undefined paths - redirect to home (which will redirect to login if not authenticated)
+  { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
 
 /**
@@ -82,6 +85,8 @@ const router = createRouter({
  */
 router.beforeEach(async (to, from, next) => {
   try {
+    console.log(`🧭 Router: Navigating from ${from.path} to ${to.path}`)
+    
     // Import auth store
     const { useAuthStore } = await import('@/stores/auth-store')
     const authStore = useAuthStore()
@@ -89,8 +94,7 @@ router.beforeEach(async (to, from, next) => {
     // Wait for auth initialization if it's still loading
     if (authStore.loading) {
       console.log('⏳ Router: Waiting for auth initialization...')
-      // Wait for auth to finish loading with longer timeout
-        const maxWait = 50 // 50 iterations = 5 seconds max
+      const maxWait = 50 // 50 iterations = 5 seconds max
       let waited = 0
       while (authStore.loading && waited < maxWait) {
         await new Promise(resolve => setTimeout(resolve, 100))
@@ -130,39 +134,67 @@ router.beforeEach(async (to, from, next) => {
       }
     }
     
-    // More robust authentication check
-    const isAuthenticated = authStore.isAuthenticated && authStore.user && authStore.user.id && !authStore.loading
+    // Comprehensive authentication check
+    const hasUser = authStore.user && authStore.user.id
+    const isAuthenticated = authStore.isAuthenticated && hasUser && !authStore.loading
     
-    // Check if we're navigating to login or logout page and user is not authenticated
-    // This prevents auto sign-in after logout
-    if ((to.path === '/login' || to.path === '/logout') && !isAuthenticated) {
-      console.log('🚪 Router: Navigating to login/logout page, user not authenticated')
-      next()
-      return
-    }
+    console.log('🔍 Router: Auth state check:', {
+      hasUser: !!hasUser,
+      isAuthenticated: authStore.isAuthenticated,
+      loading: authStore.loading,
+      finalAuth: isAuthenticated
+    })
     
-    // Special handling for OAuth callback route
+    // Special handling for OAuth callback route - always allow
     if (to.path === '/auth/callback') {
       console.log('🔄 Router: OAuth callback route, allowing navigation')
       next()
       return
     }
     
-    // Check if route requires authentication
-    if (to.meta.requiresAuth && !isAuthenticated) {
-      console.log('🔒 Router: Protected route, redirecting to login')
-      next('/login')
-    } else if (to.path === '/login' && isAuthenticated) {
-      console.log('👤 Router: Already authenticated, redirecting to home')
-      next('/')
-    } else {
-      console.log('✅ Router: Navigation allowed to:', to.path)
-      console.log('🔍 Router: About to call next() for route:', to.path)
+    // Handle logout page - always allow access
+    if (to.path === '/logout') {
+      console.log('🚪 Router: Logout page, allowing navigation')
       next()
-      console.log('🔍 Router: next() called, navigation should proceed')
+      return
     }
+    
+    // Handle login page - redirect authenticated users to home
+    if (to.path === '/login') {
+      if (isAuthenticated) {
+        console.log('👤 Router: Already authenticated, redirecting to home')
+        next('/home')
+        return
+      } else {
+        console.log('🚪 Router: Not authenticated, allowing access to login page')
+        next()
+        return
+      }
+    }
+    
+    // Check if route requires authentication
+    if (to.meta.requiresAuth) {
+      if (!isAuthenticated) {
+        console.log('🔒 Router: Protected route requires authentication, redirecting to login')
+        console.log('🔒 Router: Route details:', {
+          path: to.path,
+          name: to.name,
+          requiresAuth: to.meta.requiresAuth
+        })
+        next('/login')
+        return
+      } else {
+        console.log('✅ Router: Authenticated user accessing protected route:', to.path)
+      }
+    }
+    
+    // Allow navigation to all other routes (public routes)
+    console.log('✅ Router: Navigation allowed to:', to.path)
+    next()
   } catch (error) {
     console.error('❌ Router: Navigation guard error:', error)
+    // On any error, redirect to login for safety
+    console.log('🔄 Router: Error occurred, redirecting to login for safety')
     next('/login')
   }
 })

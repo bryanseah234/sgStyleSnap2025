@@ -217,7 +217,7 @@ const handleGoogleSignIn = async () => {
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {
   if (isAuthenticated) {
     console.log('🔒 Login: User became authenticated, redirecting to home')
-    router.push('/')
+    router.push('/home')
   }
 }, { immediate: true })
 
@@ -225,22 +225,9 @@ onMounted(async () => {
   // Initialize theme system (works without authentication)
   await loadUser()
   
-  // Check if user is already authenticated using auth store
-  if (authStore.isAuthenticated) {
-    console.log('🔒 Login: User already authenticated, redirecting to home')
-    router.push('/')
-  } else {
-    // Initialize auth to check for existing session
-    try {
-      await authStore.initializeAuth()
-      if (authStore.isAuthenticated) {
-        console.log('🔒 Login: Found existing session, redirecting to home')
-        router.push('/')
-      }
-    } catch (error) {
-      console.log('🔒 Login: No existing session found, staying on login page')
-    }
-  }
+  // The router guard will handle redirecting authenticated users
+  // No need to duplicate the logic here
+  console.log('🔒 Login: Page mounted, router guard will handle authentication check')
 })
 </script>
 
