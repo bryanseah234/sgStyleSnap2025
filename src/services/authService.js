@@ -46,9 +46,8 @@ export class AuthService {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         this.currentUser = session.user
-        await this.getCurrentProfile()
-        // Automatically sync profile with Google data after successful authentication
-        await this.autoSyncProfileOnAuth()
+        // Don't fetch profile during OAuth callback - it will be fetched later
+        console.log('✅ AuthService: User signed in, profile will be fetched later')
       } else if (event === 'SIGNED_OUT') {
         // Only clear user data if this is an explicit logout, not a page reload
         if (this.isLoggingOut) {

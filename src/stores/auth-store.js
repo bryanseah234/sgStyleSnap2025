@@ -186,13 +186,9 @@ export const useAuthStore = defineStore('auth', {
             console.log('✅ AuthStore: OAuth callback successful, setting user:', user.email)
             this.setUser(user)
             
-            // Also fetch the user profile
-            try {
-              const profile = await authService.getCurrentProfile()
-              this.profile = profile
-            } catch (profileError) {
-              console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
-            }
+            // Don't try to fetch profile during OAuth callback - do it later
+            // The profile will be fetched when the user navigates to other pages
+            console.log('✅ AuthStore: OAuth callback complete, user authenticated')
             
             return
           } else {
