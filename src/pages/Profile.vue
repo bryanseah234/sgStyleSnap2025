@@ -39,8 +39,8 @@
                   theme.value === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'
                 }`">
                   <img
-                    v-if="user?.avatar_url || user?.user_metadata?.avatar_url"
-                    :src="user.avatar_url || user.user_metadata?.avatar_url"
+                    v-if="user?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture"
+                    :src="user.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture"
                     :alt="user.name || user.user_metadata?.name || 'User'"
                     class="w-full h-full object-cover"
                     @error="handleImageError"
@@ -147,6 +147,8 @@ const user = computed(() => authStore.profile || authStore.user)
 
 const handleImageError = (event) => {
   console.log('Avatar image failed to load, showing fallback')
+  console.log('Failed image URL:', event.target.src)
+  console.log('User data:', user.value)
   // Hide the broken image and show the fallback
   event.target.style.display = 'none'
 }
@@ -170,15 +172,25 @@ const getUsername = () => {
 }
 
 onMounted(async () => {
+  console.log('👤 Profile: Component mounted')
+  console.log('👤 Profile: Auth store user:', authStore.user)
+  console.log('👤 Profile: Auth store profile:', authStore.profile)
+  console.log('👤 Profile: Computed user:', user.value)
+  
   // Ensure auth store is initialized and user data is loaded
   if (!authStore.isAuthenticated) {
+    console.log('👤 Profile: User not authenticated, initializing auth...')
     await authStore.initializeAuth()
   }
   
   // Always try to fetch the latest profile data to ensure we have username
   try {
     await authStore.fetchUserProfile()
-    console.log('Profile data loaded:', authStore.profile)
+    console.log('👤 Profile: Profile data loaded:', authStore.profile)
+    console.log('👤 Profile: Final user data:', user.value)
+    console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)
+    console.log('👤 Profile: User metadata avatar:', user.value?.user_metadata?.avatar_url)
+    console.log('👤 Profile: User metadata picture:', user.value?.user_metadata?.picture)
   } catch (error) {
     console.error('Failed to load profile data:', error)
   }

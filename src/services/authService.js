@@ -419,9 +419,12 @@ export class AuthService {
         email: authUser.email,
         username: authUser.email?.split('@')[0] || 'user',
         name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-        avatar_url: authUser.user_metadata?.avatar_url || '/avatars/default-1.png',
+        avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || '/avatars/default-1.png',
         google_id: authUser.user_metadata?.provider_id
       }
+      
+      console.log('🔧 AuthService: Creating user profile with data:', profileData)
+      console.log('🔧 AuthService: Auth user metadata:', authUser.user_metadata)
 
       const { data, error } = await supabase
         .from('users')

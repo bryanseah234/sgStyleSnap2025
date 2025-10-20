@@ -271,8 +271,11 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       try {
         console.log('🚪 AuthStore: Starting logout process...')
-        await authService.signOut()
+        
+        // Clear user data first to prevent auto sign-in
         this.clearUser()
+        
+        await authService.signOut()
         console.log('✅ AuthStore: Logout completed successfully')
       } catch (error) {
         console.error('❌ AuthStore: Logout failed:', error)

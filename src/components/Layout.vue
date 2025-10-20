@@ -273,40 +273,17 @@ const handleThemeToggle = async () => {
  * Signs out the current user using the auth store and redirects to the login page.
  * Clears all authentication state and user data.
  */
-const handleLogout = async () => {
+const handleLogout = () => {
   // Show confirmation dialog
   const confirmed = confirm('Are you sure you want to logout?')
   if (!confirmed) {
     return
   }
   
-  try {
-    console.log('🚪 Layout: Starting logout process...')
-    
-    // Show loading state
-    loading.value = true
-    
-    // Clear auth store first to prevent auto sign-in
-    authStore.clearUser()
-    
-    // Call logout from auth store
-    await authStore.logout()
-    console.log('✅ Layout: Logout successful, redirecting to login...')
-    
-    // Force reload to ensure clean state and prevent auto sign-in
-    window.location.href = '/logout'
-    
-  } catch (error) {
-    console.error('❌ Layout: Logout error:', error)
-    
-    // Force clear user data even if logout fails
-    authStore.clearUser()
-    
-    // Force page reload to login to prevent auto sign-in
-    window.location.href = '/logout'
-  } finally {
-    loading.value = false
-  }
+  console.log('🚪 Layout: Redirecting to logout page...')
+  
+  // Navigate to logout page which will handle the logout logic
+  router.push('/logout')
 }
 
 /**

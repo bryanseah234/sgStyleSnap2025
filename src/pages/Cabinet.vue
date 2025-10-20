@@ -6,7 +6,7 @@
         <h1 :class="`text-4xl font-bold ${
           theme.value === 'dark' ? 'text-white' : 'text-black'
         }`">
-          Your Cabinet
+          {{ subRouteTitle }}
         </h1>
         <button
           @click="showUpload = true"
@@ -19,6 +19,87 @@
           <Plus class="w-5 h-5" />
           Add Item
         </button>
+      </div>
+      
+      <!-- Sub-route Navigation -->
+      <div v-if="currentSubRoute !== 'default'" class="mb-8">
+        <div class="flex space-x-1 p-1 rounded-lg bg-stone-100 dark:bg-zinc-800">
+          <button
+            @click="$router.push('/closet')"
+            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentSubRoute === 'default' 
+                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
+                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+            }`"
+          >
+            My Closet
+          </button>
+          <button
+            @click="$router.push('/closet/add/manual')"
+            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentSubRoute === 'manual' 
+                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
+                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+            }`"
+          >
+            <Plus class="w-4 h-4 inline mr-2" />
+            Manual Add
+          </button>
+          <button
+            @click="$router.push('/closet/add/catalogue')"
+            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentSubRoute === 'catalogue' 
+                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
+                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+            }`"
+          >
+            <Shirt class="w-4 h-4 inline mr-2" />
+            Catalogue
+          </button>
+        </div>
+      </div>
+      
+      <!-- Sub-route Content -->
+      <div v-if="currentSubRoute === 'manual'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800">
+        <div class="flex items-center gap-3 mb-4">
+          <Plus class="w-6 h-6 text-green-600 dark:text-green-400" />
+          <h3 class="text-xl font-semibold text-green-900 dark:text-green-100">Add Item Manually</h3>
+        </div>
+        <p class="text-green-700 dark:text-green-300 mb-4">
+          Add your clothing items manually by filling out the form below. This gives you full control over the details.
+        </p>
+        <div class="text-center py-8">
+          <Plus class="w-16 h-16 text-green-400 dark:text-green-500 mx-auto mb-4" />
+          <p class="text-green-600 dark:text-green-400">Manual add form will be implemented here...</p>
+        </div>
+      </div>
+      
+      <div v-if="currentSubRoute === 'catalogue'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-800">
+        <div class="flex items-center gap-3 mb-4">
+          <Shirt class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <h3 class="text-xl font-semibold text-blue-900 dark:text-blue-100">Browse Catalogue</h3>
+        </div>
+        <p class="text-blue-700 dark:text-blue-300 mb-4">
+          Browse our curated catalogue of clothing items. Find pieces that match your style and add them to your closet.
+        </p>
+        <div class="text-center py-8">
+          <Shirt class="w-16 h-16 text-blue-400 dark:text-blue-500 mx-auto mb-4" />
+          <p class="text-blue-600 dark:text-blue-400">Catalogue browsing will be implemented here...</p>
+        </div>
+      </div>
+      
+      <div v-if="currentSubRoute === 'friend'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
+        <div class="flex items-center gap-3 mb-4">
+          <Heart class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">{{ route.params.username }}'s Closet</h3>
+        </div>
+        <p class="text-purple-700 dark:text-purple-300 mb-4">
+          Browse {{ route.params.username }}'s clothing collection. Get inspired by their style and see what they're wearing.
+        </p>
+        <div class="text-center py-8">
+          <Heart class="w-16 h-16 text-purple-400 dark:text-purple-500 mx-auto mb-4" />
+          <p class="text-purple-600 dark:text-purple-400">Loading {{ route.params.username }}'s closet...</p>
+        </div>
       </div>
 
       <!-- Filters -->
@@ -291,6 +372,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
@@ -298,6 +380,18 @@ import { Plus, Heart, Shirt } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
+const route = useRoute()
+
+// Sub-route detection
+const currentSubRoute = computed(() => route.meta.subRoute || 'default')
+const subRouteTitle = computed(() => {
+  switch (currentSubRoute.value) {
+    case 'manual': return 'Add Item Manually'
+    case 'catalogue': return 'Browse Catalogue'
+    case 'friend': return `${route.params.username}'s Closet`
+    default: return 'Your Cabinet'
+  }
+})
 
 // Initialize clothes service
 const clothesService = new ClothesService()

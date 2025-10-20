@@ -43,8 +43,8 @@ export default function Home() {
   });
 
   const stats = [
-    { label: "Items", value: items.length, icon: Shirt, route: "/cabinet" },
-    { label: "Outfits", value: outfits.length, icon: Palette, route: "/dashboard" },
+    { label: "Items", value: items.length, icon: Shirt, route: "/closet" },
+    { label: "Outfits", value: outfits.length, icon: Palette, route: "/outfits" },
     { label: "Friends", value: 0, icon: Users, route: "/friends" },
   ];
 
@@ -134,7 +134,7 @@ export default function Home() {
         className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         {/* Cabinet Preview */}
-        <Link to={createPageUrl("Cabinet")}>
+        <Link to="/closet">
           <motion.div
             whileHover={{ scale: 1.02 }}
             className={`p-8 rounded-3xl ${
@@ -191,7 +191,7 @@ export default function Home() {
         </Link>
 
         {/* Outfits Preview */}
-        <Link to={createPageUrl("Dashboard")}>
+        <Link to="/outfits">
           <motion.div
             whileHover={{ scale: 1.02 }}
             className={`p-8 rounded-3xl ${
@@ -227,7 +227,7 @@ export default function Home() {
         </Link>
 
         {/* Friends Preview */}
-        <Link to={createPageUrl("Friends")}>
+        <Link to="/friends">
           <motion.div
             whileHover={{ scale: 1.02 }}
             className={`p-8 rounded-3xl ${

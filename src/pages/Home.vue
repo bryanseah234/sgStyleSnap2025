@@ -264,8 +264,8 @@ const friends = ref([])
  * @returns {Array<Object>} Array of stat objects with label, value, icon, and route
  */
 const stats = computed(() => [
-  { label: 'Items', value: items.value.length, icon: Shirt, route: '/cabinet' },
-  { label: 'Outfits', value: outfits.value.length, icon: Palette, route: '/dashboard' },
+  { label: 'Items', value: items.value.length, icon: Shirt, route: '/closet' },
+  { label: 'Outfits', value: outfits.value.length, icon: Palette, route: '/outfits' },
   { label: 'Friends', value: friends.value.length, icon: Users, route: '/friends' },
 ])
 

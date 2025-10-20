@@ -49,12 +49,12 @@ const route = useRoute()
  * Determines whether to show the main layout
  * 
  * The layout should only be shown for authenticated pages.
- * The login page should render without the layout wrapper.
+ * The login and logout pages should render without the layout wrapper.
  * 
  * @returns {boolean} Whether to show the layout
  */
 const showLayout = computed(() => {
-  // Don't show layout for login page
-  return route.path !== '/login'
+  // Don't show layout for login and logout pages
+  return route.path !== '/login' && route.path !== '/logout'
 })
 </script>

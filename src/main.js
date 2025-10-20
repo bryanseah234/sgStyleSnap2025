@@ -24,6 +24,7 @@ import Friends from './pages/Friends.vue'
 import Profile from './pages/Profile.vue'
 import FriendCabinet from './pages/FriendCabinet.vue'
 import Login from './pages/Login.vue'
+import Logout from './pages/Logout.vue'
 import OAuthCallback from './pages/OAuthCallback.vue'
 
 /**
@@ -35,14 +36,26 @@ import OAuthCallback from './pages/OAuthCallback.vue'
  * @type {Array<Object>} Array of route objects
  */
 const routes = [
-  { path: '/', component: Home, meta: { requiresAuth: true } },
-  { path: '/cabinet', component: Cabinet, meta: { requiresAuth: true } },
-  { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/', redirect: '/home' },
+  { path: '/home', component: Home, meta: { requiresAuth: true } },
+  { path: '/closet', component: Cabinet, meta: { requiresAuth: true } },
+  { path: '/outfits', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/friends', component: Friends, meta: { requiresAuth: true } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
-  { path: '/friend-cabinet', component: FriendCabinet, meta: { requiresAuth: true } },
+  { path: '/friend/:username/closet', component: FriendCabinet, meta: { requiresAuth: true } },
+  { path: '/logout', component: Logout, meta: { requiresAuth: false } }, // Logout page handles logout logic
   { path: '/login', component: Login, meta: { requiresAuth: false } },
-  { path: '/auth/callback', component: OAuthCallback, meta: { requiresAuth: false } }
+  { path: '/auth/callback', component: OAuthCallback, meta: { requiresAuth: false } },
+  
+  // Outfit sub-routes (stay on outfits page, content changes)
+  { path: '/outfits/add/suggested', component: Dashboard, meta: { requiresAuth: true, subRoute: 'suggested' } },
+  { path: '/outfits/add/personal', component: Dashboard, meta: { requiresAuth: true, subRoute: 'personal' } },
+  { path: '/outfits/add/friend/:username', component: Dashboard, meta: { requiresAuth: true, subRoute: 'friend' } },
+  
+  // Closet sub-routes (stay on closet page, content changes)
+  { path: '/closet/add/manual', component: Cabinet, meta: { requiresAuth: true, subRoute: 'manual' } },
+  { path: '/closet/add/catalogue', component: Cabinet, meta: { requiresAuth: true, subRoute: 'catalogue' } },
+  { path: '/closet/view/friend/:username', component: Cabinet, meta: { requiresAuth: true, subRoute: 'friend' } }
 ]
 
 /**
@@ -88,6 +101,13 @@ router.beforeEach(async (to, from, next) => {
       if (authStore.loading) {
         console.warn('⚠️ Router: Auth initialization timeout, checking for existing session...')
         
+        // Check if we're navigating to login page (likely after logout)
+        if (to.path === '/login') {
+          console.log('🚪 Router: Navigating to login page, skipping auto sign-in')
+          authStore.loading = false
+          return
+        }
+        
         // Try to get user from Supabase directly
         try {
           // Import auth service to check for existing session
@@ -112,6 +132,14 @@ router.beforeEach(async (to, from, next) => {
     
     // More robust authentication check
     const isAuthenticated = authStore.isAuthenticated && authStore.user && authStore.user.id && !authStore.loading
+    
+    // Check if we're navigating to login or logout page and user is not authenticated
+    // This prevents auto sign-in after logout
+    if ((to.path === '/login' || to.path === '/logout') && !isAuthenticated) {
+      console.log('🚪 Router: Navigating to login/logout page, user not authenticated')
+      next()
+      return
+    }
     
     // Special handling for OAuth callback route
     if (to.path === '/auth/callback') {
@@ -167,6 +195,11 @@ app.provide('authStore', authStore)
 // Initialize theme store after Pinia is set up
 const themeStore = useThemeStore()
 const { loadUser } = useTheme()
+
+// Initialize theme immediately
+themeStore.initializeTheme()
+console.log('🎨 Main: Theme initialized:', themeStore.theme)
+
 app.config.globalProperties.$themeStore = themeStore
 app.provide('themeStore', themeStore)
 
@@ -348,4 +381,26 @@ window.onerror = function(message, source, lineno, colno, error) {
 // This is called asynchronously to avoid blocking the app mount
 loadUser().catch(error => {
   console.error('Error loading user theme preferences:', error)
+})
+
+// Ensure theme is applied after app is mounted
+setTimeout(() => {
+  console.log('🎨 Main: Ensuring theme is applied after mount')
+  themeStore.refreshTheme()
+}, 500)
+
+// Global error handler for browser extension errors
+window.addEventListener('unhandledrejection', (event) => {
+  // Check if it's a browser extension error
+  if (event.reason && event.reason.message && 
+      (event.reason.message.includes('message channel closed') ||
+       event.reason.message.includes('listener indicated an asynchronous response'))) {
+    console.warn('⚠️ Browser extension error detected, ignoring...')
+    event.preventDefault() // Prevent the error from showing in console
+    return
+  }
+  
+  // For other errors, log them but don't crash the app
+  console.error('❌ Unhandled promise rejection:', event.reason)
+  event.preventDefault()
 })

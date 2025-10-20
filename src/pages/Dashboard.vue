@@ -7,12 +7,15 @@
           <h1 :class="`text-4xl font-bold mb-2 ${
             theme.value === 'dark' ? 'text-white' : 'text-black'
           }`">
-            Outfits
+            {{ subRouteTitle }}
           </h1>
           <p :class="`text-lg ${
             theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
           }`">
-            Create and save your perfect looks
+            {{ currentSubRoute === 'suggested' ? 'AI-powered outfit suggestions based on your wardrobe' : 
+               currentSubRoute === 'personal' ? 'Create and save your personal looks' :
+               currentSubRoute === 'friend' ? `Browse ${route.params.username}'s outfit collection` :
+               'Create and save your perfect looks' }}
           </p>
         </div>
         
@@ -106,6 +109,83 @@
             <Plus class="w-5 h-5" />
             <span class="hidden sm:inline">Add Outfit</span>
           </button>
+        </div>
+      </div>
+      
+      <!-- Sub-route Navigation -->
+      <div v-if="currentSubRoute !== 'default'" class="mb-8">
+        <div class="flex space-x-1 p-1 rounded-lg bg-stone-100 dark:bg-zinc-800">
+          <button
+            @click="$router.push('/outfits')"
+            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentSubRoute === 'default' 
+                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
+                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+            }`"
+          >
+            All Outfits
+          </button>
+          <button
+            @click="$router.push('/outfits/add/suggested')"
+            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentSubRoute === 'suggested' 
+                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
+                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+            }`"
+          >
+            <Sparkles class="w-4 h-4 inline mr-2" />
+            Suggested
+          </button>
+          <button
+            @click="$router.push('/outfits/add/personal')"
+            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentSubRoute === 'personal' 
+                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm' 
+                : 'text-stone-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+            }`"
+          >
+            <User class="w-4 h-4 inline mr-2" />
+            Personal
+          </button>
+        </div>
+      </div>
+      
+      <!-- Sub-route Content -->
+      <div v-if="currentSubRoute === 'suggested'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
+        <div class="flex items-center gap-3 mb-4">
+          <Sparkles class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">AI Outfit Suggestions</h3>
+        </div>
+        <p class="text-purple-700 dark:text-purple-300 mb-4">
+          Our AI analyzes your wardrobe and suggests perfect outfit combinations based on your style preferences, weather, and occasion.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="p-4 rounded-lg bg-white dark:bg-zinc-800 border border-purple-200 dark:border-purple-700">
+            <h4 class="font-medium text-purple-900 dark:text-purple-100 mb-2">Casual Day Out</h4>
+            <p class="text-sm text-purple-600 dark:text-purple-400">Perfect for running errands or meeting friends</p>
+          </div>
+          <div class="p-4 rounded-lg bg-white dark:bg-zinc-800 border border-purple-200 dark:border-purple-700">
+            <h4 class="font-medium text-purple-900 dark:text-purple-100 mb-2">Work Professional</h4>
+            <p class="text-sm text-purple-600 dark:text-purple-400">Sharp and confident for the office</p>
+          </div>
+          <div class="p-4 rounded-lg bg-white dark:bg-zinc-800 border border-purple-200 dark:border-purple-700">
+            <h4 class="font-medium text-purple-900 dark:text-purple-100 mb-2">Evening Event</h4>
+            <p class="text-sm text-purple-600 dark:text-purple-400">Elegant and sophisticated for special occasions</p>
+          </div>
+        </div>
+      </div>
+      
+      <div v-if="currentSubRoute === 'friend'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
+        <div class="flex items-center gap-3 mb-4">
+          <Users class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <h3 class="text-xl font-semibold text-blue-900 dark:text-blue-100">{{ route.params.username }}'s Outfits</h3>
+        </div>
+        <p class="text-blue-700 dark:text-blue-300 mb-4">
+          Browse and get inspired by {{ route.params.username }}'s outfit collection. You can save their looks to your own collection.
+        </p>
+        <div class="text-center py-8">
+          <Users class="w-16 h-16 text-blue-400 dark:text-blue-500 mx-auto mb-4" />
+          <p class="text-blue-600 dark:text-blue-400">Loading {{ route.params.username }}'s outfits...</p>
         </div>
       </div>
 
@@ -321,6 +401,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { api } from '@/api/base44Client'
@@ -333,14 +414,27 @@ import {
   User, 
   Shirt, 
   Sparkles,
-  Plus
+  Plus,
+  Users
 } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
+const route = useRoute()
 
 // Use computed to get reactive user data from auth store
 const currentUser = computed(() => authStore.user || authStore.profile)
+
+// Sub-route detection
+const currentSubRoute = computed(() => route.meta.subRoute || 'default')
+const subRouteTitle = computed(() => {
+  switch (currentSubRoute.value) {
+    case 'suggested': return 'Suggested Outfits'
+    case 'personal': return 'Personal Outfits'
+    case 'friend': return `Friend's Outfits`
+    default: return 'Outfits'
+  }
+})
 
 // State
 const itemsSource = ref('my-cabinet')
