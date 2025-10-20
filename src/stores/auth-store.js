@@ -142,30 +142,31 @@ export const useAuthStore = defineStore('auth', {
           // Wait longer for Supabase to process the OAuth callback
           await new Promise(resolve => setTimeout(resolve, 2000))
           
-          // Try multiple times to get the user as OAuth callback processing can be slow
+          // Try to get the session directly from Supabase instead of through getCurrentUser
+          let session = null
           let user = null
           let attempts = 0
           const maxAttempts = 5
           
-          while (!user && attempts < maxAttempts) {
+          while (!session && attempts < maxAttempts) {
             try {
-              user = await authService.getCurrentUser()
-              if (user) {
-                console.log('✅ AuthStore: OAuth callback successful, user authenticated:', user.email)
-                this.setUser(user)
-                
-                // Also fetch the user profile
-                try {
-                  const profile = await authService.getCurrentProfile()
-                  this.profile = profile
-                } catch (profileError) {
-                  console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
-                }
-                
-                return
+              console.log(`🔄 AuthStore: Attempt ${attempts + 1} to get session...`)
+              
+              // Get session directly from Supabase
+              const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
+              
+              if (sessionError) {
+                console.log(`🔄 AuthStore: Session error on attempt ${attempts + 1}:`, sessionError.message)
+              } else if (currentSession?.user) {
+                session = currentSession
+                user = currentSession.user
+                console.log('✅ AuthStore: Session found, user authenticated:', user.email)
+                break
+              } else {
+                console.log(`🔄 AuthStore: No session found on attempt ${attempts + 1}`)
               }
             } catch (error) {
-              console.log(`🔄 AuthStore: Attempt ${attempts + 1} failed, retrying...`, error.message)
+              console.log(`🔄 AuthStore: Attempt ${attempts + 1} failed:`, error.message)
             }
             
             attempts++
@@ -174,8 +175,21 @@ export const useAuthStore = defineStore('auth', {
             }
           }
           
-          if (!user) {
-            console.log('❌ AuthStore: OAuth callback failed after all attempts, no user found')
+          if (user) {
+            console.log('✅ AuthStore: OAuth callback successful, setting user:', user.email)
+            this.setUser(user)
+            
+            // Also fetch the user profile
+            try {
+              const profile = await authService.getCurrentProfile()
+              this.profile = profile
+            } catch (profileError) {
+              console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError)
+            }
+            
+            return
+          } else {
+            console.log('❌ AuthStore: OAuth callback failed after all attempts, no session found')
             this.clearUser()
             return
           }

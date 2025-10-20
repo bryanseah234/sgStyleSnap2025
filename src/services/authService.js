@@ -339,14 +339,14 @@ export class AuthService {
     try {
       const { data: { user }, error } = await supabase.auth.getUser()
       if (error) {
-        console.error('❌ AuthService: Error getting user:', error)
-        // Don't throw error for auth session missing - just return null
+        // Don't log as error for auth session missing - just return null
         if (error.message?.includes('Auth session missing') || 
             error.message?.includes('AuthSessionMissingError') ||
             error.message?.includes('Invalid JWT')) {
           console.log('ℹ️ AuthService: No valid session found')
           return null
         }
+        console.error('❌ AuthService: Error getting user:', error)
         throw error
       }
       
@@ -354,13 +354,14 @@ export class AuthService {
       console.log('✅ AuthService: User retrieved successfully:', user ? user.email : 'null')
       return user
     } catch (error) {
-      console.error('❌ AuthService: Failed to get user:', error)
       // Return null instead of throwing for auth-related errors
       if (error.message?.includes('Auth session missing') || 
           error.message?.includes('AuthSessionMissingError') ||
           error.message?.includes('Invalid JWT')) {
+        console.log('ℹ️ AuthService: No valid session found')
         return null
       }
+      console.error('❌ AuthService: Failed to get user:', error)
       throw error
     }
   }

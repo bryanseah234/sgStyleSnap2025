@@ -92,7 +92,7 @@ const handleOAuthCallback = async () => {
     // Wait for auth store to complete OAuth callback processing
     // The auth store will handle the OAuth callback and update the authentication state
     let attempts = 0
-    const maxAttempts = 15 // 15 seconds max wait
+    const maxAttempts = 10 // 10 seconds max wait
     
     while (attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -115,14 +115,21 @@ const handleOAuthCallback = async () => {
         return
       }
       
-      // If we're still loading after 5 attempts, try to reinitialize auth
-      if (attempts === 5 && authStore.loading) {
+      // If we're still loading after 3 attempts, try to reinitialize auth
+      if (attempts === 3 && authStore.loading) {
         console.log('🔄 OAuthCallback: Reinitializing auth after timeout...')
         try {
           await authStore.initializeAuth()
         } catch (error) {
           console.warn('⚠️ OAuthCallback: Auth reinitialization failed:', error)
         }
+      }
+      
+      // If we're still loading after 6 attempts, try to force refresh the page
+      if (attempts === 6 && authStore.loading) {
+        console.log('🔄 OAuthCallback: Force refreshing page to complete OAuth...')
+        window.location.reload()
+        return
       }
     }
     
