@@ -433,27 +433,42 @@ const filteredItems = computed(() => {
 const loadItems = async () => {
   try {
     console.log('Cabinet: Loading items for user:', currentUser.value?.id)
+    console.log('Cabinet: Auth store state:', {
+      isAuthenticated: authStore.isAuthenticated,
+      user: authStore.user,
+      profile: authStore.profile
+    })
     
     if (currentUser.value?.id) {
+      console.log('Cabinet: Calling clothesService.getClothes with owner_id:', currentUser.value.id)
       // Use the real Supabase service to fetch user's clothing items
       const result = await clothesService.getClothes({
         owner_id: currentUser.value.id,
         limit: 100 // Load up to 100 items
       })
       
-      if (result.success) {
+      console.log('Cabinet: getClothes result:', result)
+      
+      if (result && result.success) {
         items.value = result.data || []
         console.log('Cabinet: Loaded items from Supabase:', items.value.length, 'items')
+        console.log('Cabinet: Items data:', items.value)
       } else {
-        console.error('Cabinet: Failed to load items:', result.error)
+        console.error('Cabinet: Failed to load items:', result?.error || 'Unknown error')
         items.value = []
       }
     } else {
       console.log('Cabinet: No user ID found, cannot load items')
+      console.log('Cabinet: currentUser.value:', currentUser.value)
       items.value = []
     }
   } catch (error) {
     console.error('Cabinet: Error loading items:', error)
+    console.error('Cabinet: Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
     items.value = []
   } finally {
     loading.value = false
@@ -553,23 +568,6 @@ onMounted(async () => {
     await authStore.initializeAuth()
   }
   
-  // If we have a user but no profile, fetch the profile
-  if (authStore.user && !authStore.profile) {
-    console.log('Cabinet: Fetching user profile...')
-    try {
-      // Add timeout to prevent hanging
-      const profilePromise = authStore.fetchUserProfile()
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
-      )
-      await Promise.race([profilePromise, timeoutPromise])
-      console.log('Cabinet: Profile fetched successfully')
-    } catch (error) {
-      console.error('Cabinet: Profile fetch failed or timed out:', error)
-      // Continue without profile data
-    }
-  }
-  
   console.log('Cabinet: Current user state:', {
     isAuthenticated: authStore.isAuthenticated,
     userId: authStore.user?.id,
@@ -577,6 +575,16 @@ onMounted(async () => {
     profile: authStore.profile
   })
   
+  // Load items immediately - don't wait for profile fetch
   await loadItems()
+  
+  // Fetch profile in background (non-blocking)
+  if (authStore.user && !authStore.profile) {
+    console.log('Cabinet: Fetching user profile in background...')
+    // Don't await this - let it run in background
+    authStore.fetchUserProfile().catch(error => {
+      console.warn('Cabinet: Background profile fetch failed:', error)
+    })
+  }
 })
 </script>

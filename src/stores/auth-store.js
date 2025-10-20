@@ -323,19 +323,23 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       try {
         console.log('🔧 AuthStore: Fetching user profile...')
-        // Add timeout to prevent hanging
+        // Shorter timeout to prevent hanging
         const profilePromise = authService.getCurrentProfile()
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Profile fetch timeout')), 8000)
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
         )
         const profile = await Promise.race([profilePromise, timeoutPromise])
         console.log('🔧 AuthStore: Profile fetched successfully:', profile)
         this.profile = profile
         return profile
       } catch (error) {
-        console.error('❌ AuthStore: Failed to fetch user profile:', error)
-        this.error = error.message
-        throw error
+        console.warn('⚠️ AuthStore: Profile fetch failed or timed out:', error.message)
+        // Don't set error for timeout - just log it
+        if (!error.message.includes('timeout')) {
+          this.error = error.message
+        }
+        // Don't throw error - just return null
+        return null
       } finally {
         this.loading = false
       }

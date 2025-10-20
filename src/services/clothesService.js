@@ -64,6 +64,14 @@ export class ClothesService {
    */
   async getClothes(filters = {}) {
     try {
+      console.log('🔧 ClothesService: getClothes called with filters:', filters)
+      console.log('🔧 ClothesService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ ClothesService: Supabase not configured')
+        return { success: false, error: 'Supabase not configured', data: [] }
+      }
+
       let query = supabase
         .from('clothes')
         .select('*')
@@ -72,6 +80,7 @@ export class ClothesService {
 
       // Apply filters
       if (filters.owner_id) {
+        console.log('🔧 ClothesService: Adding owner_id filter:', filters.owner_id)
         query = query.eq('owner_id', filters.owner_id)
       }
       if (filters.category) {
@@ -99,10 +108,16 @@ export class ClothesService {
         query = query.range(filters.offset, filters.offset + (filters.limit || 20) - 1)
       }
 
+      console.log('🔧 ClothesService: Executing query...')
       const { data, error } = await query
+      console.log('🔧 ClothesService: Query result:', { data, error })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ ClothesService: Query error:', error)
+        throw error
+      }
 
+      console.log('✅ ClothesService: Query successful, returning data:', data?.length || 0, 'items')
       return {
         success: true,
         data: data || [],
@@ -114,7 +129,8 @@ export class ClothesService {
         }
       }
     } catch (error) {
-      handleSupabaseError(error, 'get clothes')
+      console.error('❌ ClothesService: Error in getClothes:', error)
+      return handleSupabaseError(error, 'get clothes')
     }
   }
 
