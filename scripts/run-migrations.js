@@ -54,7 +54,8 @@ const migrations = [
   '016_disable_auto_contribution.sql',
   '017_fix_catalog_privacy.sql',
   '018_notification_cleanup_system.sql',
-  '019_fix_notification_function_types.sql'
+  '019_fix_notification_function_types.sql',
+  '020_add_outfits_table.sql'
 ]
 
 async function runMigration(filename) {
