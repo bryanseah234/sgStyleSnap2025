@@ -148,20 +148,34 @@ export class OutfitsService {
 
       // Add outfit items
       if (outfitData.items && outfitData.items.length > 0) {
+        console.log('OutfitsService: Adding outfit items:', outfitData.items)
+        
         const outfitItems = outfitData.items.map((item, index) => ({
           outfit_id: outfit.id,
-          clothing_item_id: item.id,
-          position_x: item.x || 0,
-          position_y: item.y || 0,
+          // Support both formats: direct id or clothing_item_id
+          clothing_item_id: item.clothing_item_id || item.id,
+          // Support both formats: position_x/y or x/y
+          x_position: item.position_x || item.x || 0,
+          y_position: item.position_y || item.y || 0,
           z_index: item.z_index || index,
-          // notes: item.notes || '' // notes column doesn't exist in outfit_items table
+          scale: item.scale || 1.0,
+          rotation: item.rotation || 0
         }))
+
+        console.log('OutfitsService: Mapped outfit items:', outfitItems)
 
         const { error: itemsError } = await supabase
           .from('outfit_items')
           .insert(outfitItems)
 
-        if (itemsError) throw itemsError
+        if (itemsError) {
+          console.error('OutfitsService: Error inserting outfit items:', itemsError)
+          throw itemsError
+        }
+        
+        console.log('OutfitsService: Outfit items inserted successfully')
+      } else {
+        console.warn('OutfitsService: No items to add to outfit')
       }
 
       return outfit
@@ -209,11 +223,11 @@ export class OutfitsService {
           const outfitItems = outfitData.items.map((item, index) => ({
             outfit_id: outfitId,
             clothing_item_id: item.clothing_item_id,
-            position_x: item.position_x || 0,
-            position_y: item.position_y || 0,
+            x_position: item.x_position || item.x || 0,
+            y_position: item.y_position || item.y || 0,
             z_index: item.z_index || index,
-            rotation: item.rotation || 0,
-            scale: item.scale || 1
+            scale: item.scale || 1.0,
+            rotation: item.rotation || 0
           }))
 
           const { error: itemsError } = await supabase

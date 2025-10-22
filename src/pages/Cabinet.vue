@@ -133,7 +133,7 @@
               : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
           }`"
         >
-          {{ category === 'all' ? 'All Items' : category }}
+          {{ getCategoryLabel(category) }}
         </button>
         
         <button
@@ -306,7 +306,7 @@ const subRouteTitle = computed(() => {
     case 'manual': return 'Add Item Manually'
     case 'catalogue': return 'Browse Catalogue'
     case 'friend': return `${route.params.username}'s Closet`
-    default: return 'Your Cabinet'
+    default: return 'Your Closet'
   }
 })
 
@@ -326,6 +326,19 @@ const activeCategory = ref('all')
 const showFavoritesOnly = ref(false)
 
 const categories = ['all', 'top', 'bottom', 'outerwear', 'shoes', 'hat']
+
+// Get proper case label for category
+const getCategoryLabel = (category) => {
+  const labels = {
+    'all': 'All Items',
+    'top': 'Tops',
+    'bottom': 'Bottoms',
+    'outerwear': 'Outerwear',
+    'shoes': 'Shoes',
+    'hat': 'Accessories'
+  }
+  return labels[category] || category.charAt(0).toUpperCase() + category.slice(1)
+}
 
 // Navigation methods
 const navigateToManual = () => {
