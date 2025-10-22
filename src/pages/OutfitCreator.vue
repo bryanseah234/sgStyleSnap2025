@@ -112,33 +112,12 @@
             <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
           </button>
           
-          <button
-            @click="addOutfit"
-            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-              theme.value === 'dark'
-                ? 'bg-white text-black hover:bg-zinc-200'
-                : 'bg-black text-white hover:bg-zinc-800'
-            }`"
-          >
-            <Plus class="w-5 h-5" />
-            <span class="hidden sm:inline">Add Outfit</span>
-          </button>
         </div>
       </div>
       
       <!-- Sub-route Navigation -->
       <div v-if="currentSubRoute !== 'default'" class="mb-8">
         <div class="flex space-x-1 p-1 rounded-lg bg-stone-100 dark:bg-zinc-800">
-          <button
-            @click="$router.push('/outfits')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'default' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            All Outfits
-          </button>
           <button
             @click="$router.push('/outfits/add/suggested')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -161,105 +140,102 @@
             <User class="w-4 h-4 inline mr-2" />
             Personal
           </button>
+          <button
+            @click="$router.push('/outfits/add/friend')"
+            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
+                ? 'bg-card text-card-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`"
+          >
+            <Users class="w-4 h-4 inline mr-2" />
+            Friends
+          </button>
         </div>
       </div>
       
-      <!-- Sub-route Content -->
-      <div v-if="currentSubRoute === 'suggested'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
-        <div class="flex items-center gap-3 mb-4">
-          <Sparkles class="w-6 h-6 text-purple-600 dark:text-purple-400" />
-          <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">AI Outfit Suggestions</h3>
-        </div>
-        <p class="text-purple-700 dark:text-purple-300 mb-4">
-          Our AI analyzes your wardrobe and suggests perfect outfit combinations based on your style preferences, weather, and occasion.
-        </p>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="p-4 rounded-lg bg-white dark:bg-zinc-800 border border-purple-200 dark:border-purple-700">
-            <h4 class="font-medium text-purple-900 dark:text-purple-100 mb-2">Casual Day Out</h4>
-            <p class="text-sm text-purple-600 dark:text-purple-400">Perfect for running errands or meeting friends</p>
+      <!-- Sub-route Content (removed for cleaner UI) -->
+
+      <!-- Friend Selection View (when no username is provided) -->
+      <div v-if="currentSubRoute === 'friendSelect'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-for="friend in friendsList"
+          :key="friend.id"
+          @click="selectFriend(friend)"
+          :class="`group p-6 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+            theme.value === 'dark'
+              ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
+              : 'bg-white border border-stone-200 hover:border-stone-300'
+          }`"
+        >
+          <div class="flex items-center gap-4">
+            <!-- Friend Avatar -->
+            <div :class="`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 ${
+              theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+            }`">
+              <img
+                v-if="friend.avatar_url"
+                :src="friend.avatar_url"
+                :alt="friend.username"
+                class="w-full h-full object-cover"
+              />
+              <div
+                v-else
+                :class="`w-full h-full flex items-center justify-center ${
+                  theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'
+                }`"
+              >
+                <User class="w-8 h-8" />
+              </div>
+            </div>
+            
+            <!-- Friend Info -->
+            <div class="flex-1 min-w-0">
+              <p :class="`text-lg font-semibold mb-1 ${
+                theme.value === 'dark' ? 'text-white' : 'text-black'
+              }`">
+                {{ friend.name || friend.username }}
+              </p>
+              <p :class="`text-sm ${
+                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+              }`">
+                @{{ friend.username }}
+              </p>
+            </div>
+            
+            <!-- Arrow Icon -->
+            <div :class="`opacity-0 group-hover:opacity-100 transition-opacity ${
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
+            }`">
+              →
+            </div>
           </div>
-          <div class="p-4 rounded-lg bg-white dark:bg-zinc-800 border border-purple-200 dark:border-purple-700">
-            <h4 class="font-medium text-purple-900 dark:text-purple-100 mb-2">Work Professional</h4>
-            <p class="text-sm text-purple-600 dark:text-purple-400">Sharp and confident for the office</p>
-          </div>
-          <div class="p-4 rounded-lg bg-white dark:bg-zinc-800 border border-purple-200 dark:border-purple-700">
-            <h4 class="font-medium text-purple-900 dark:text-purple-100 mb-2">Evening Event</h4>
-            <p class="text-sm text-purple-600 dark:text-purple-400">Elegant and sophisticated for special occasions</p>
-          </div>
         </div>
-      </div>
-      
-      <div v-if="currentSubRoute === 'friend'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
-        <div class="flex items-center gap-3 mb-4">
-          <Users class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <h3 class="text-xl font-semibold text-blue-900 dark:text-blue-100">{{ route.params.username }}'s Outfits</h3>
-        </div>
-        <p class="text-blue-700 dark:text-blue-300 mb-4">
-          Browse and get inspired by {{ route.params.username }}'s outfit collection. You can save their looks to your own collection.
-        </p>
-        <div class="text-center py-8">
-          <Users class="w-16 h-16 text-blue-400 dark:text-blue-500 mx-auto mb-4" />
-          <p class="text-blue-600 dark:text-blue-400">Loading {{ route.params.username }}'s outfits...</p>
+        
+        <!-- Empty State -->
+        <div v-if="friendsList.length === 0" class="col-span-full text-center py-12">
+          <div :class="`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
+            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+          }`">
+            <Users :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+          </div>
+          <p :class="`text-lg font-medium mb-2 ${
+            theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+          }`">
+            No friends yet
+          </p>
+          <p :class="`text-sm ${
+            theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
+          }`">
+            Add friends to create outfit suggestions for them
+          </p>
         </div>
       </div>
 
-      <!-- Main Content -->
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <!-- Main Content (Canvas View) -->
+      <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <!-- Left Sidebar - Item Selection -->
         <div class="lg:col-span-1">
-          <!-- Items Source Dropdown -->
-          <div :class="`rounded-xl p-4 mb-6 ${
-            theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-          }`">
-            <!-- First Row: Label -->
-            <div class="flex items-center gap-3 mb-3">
-              <User :class="`w-5 h-5 ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-              }`" />
-              <span :class="`text-sm font-medium ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
-                Items from:
-              </span>
-            </div>
-            
-            <!-- Second Row: Dropdown (or Info Badge for special modes) -->
-            <div v-if="currentSubRoute === 'suggested'">
-              <!-- AI Suggestions Badge (non-editable) -->
-              <div :class="`w-full px-3 py-2 rounded-lg border text-sm flex items-center gap-2 ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
-                  : 'bg-white border-stone-300 text-stone-700'
-              }`">
-                <Sparkles class="w-4 h-4" />
-                <span>AI Suggestions</span>
-              </div>
-            </div>
-            <div v-else-if="currentSubRoute === 'friend'">
-              <!-- Friend's Items Badge (non-editable) -->
-              <div :class="`w-full px-3 py-2 rounded-lg border text-sm flex items-center gap-2 ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
-                  : 'bg-white border-stone-300 text-stone-700'
-              }`">
-                <Users class="w-4 h-4" />
-                <span>{{ friendProfile ? `${friendProfile.username}'s Items` : "Friend's Items" }}</span>
-              </div>
-            </div>
-            <div v-else>
-              <!-- Dropdown for other modes -->
-              <select
-                v-model="itemsSource"
-                :class="`w-full px-3 py-2 rounded-lg border text-sm ${
-                  theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white'
-                    : 'bg-white border-stone-300 text-black'
-                }`"
-              >
-                <option value="my-cabinet">My Closet</option>
-              </select>
-            </div>
-          </div>
 
           <!-- Items Section -->
           <div :class="`rounded-xl p-6 ${
@@ -649,11 +625,19 @@ const notificationsService = new NotificationsService()
 const currentUser = computed(() => authStore.user || authStore.profile)
 
 // Sub-route detection
-const currentSubRoute = computed(() => route.meta.subRoute || 'default')
+const currentSubRoute = computed(() => {
+  // If on friend route without username parameter, show friend selection
+  if (route.meta.subRoute === 'friend' && !route.params.username) {
+    return 'friendSelect'
+  }
+  return route.meta.subRoute || 'default'
+})
+
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
     case 'suggested': return 'AI Suggested Outfits'
     case 'personal': return 'Create Your Outfit'
+    case 'friendSelect': return 'Select a Friend'
     case 'friend': return friendProfile.value ? `Create Outfit for ${friendProfile.value.username}` : `Create with Friend's Items`
     case 'edit': return 'Edit Outfit'
     default: return 'Create Outfit'
@@ -673,6 +657,7 @@ const canvasContainer = ref(null)
 // State for friend data
 const friendProfile = ref(null)
 const friendUsername = computed(() => route.params.username)
+const friendsList = ref([]) // List of friends for selection
 
 // State for edit mode
 const currentOutfitId = ref(null)
@@ -777,6 +762,37 @@ const loadFriendProfile = async (username) => {
     console.error('OutfitCreator: Error loading friend profile:', error)
     friendProfile.value = null
   }
+}
+
+const loadFriendsList = async () => {
+  try {
+    console.log('OutfitCreator: Loading friends list...')
+    
+    if (!currentUser.value?.id) {
+      console.log('OutfitCreator: No user ID, cannot load friends')
+      friendsList.value = []
+      return
+    }
+    
+    const friends = await friendsService.getFriends()
+    
+    if (friends) {
+      friendsList.value = friends
+      console.log('OutfitCreator: Loaded friends list:', friendsList.value.length, 'friends')
+    } else {
+      console.error('OutfitCreator: Failed to load friends')
+      friendsList.value = []
+    }
+  } catch (error) {
+    console.error('OutfitCreator: Error loading friends list:', error)
+    friendsList.value = []
+  }
+}
+
+const selectFriend = (friend) => {
+  console.log('OutfitCreator: Friend selected:', friend.username)
+  // Navigate to the friend's outfit creator page
+  router.push(`/outfits/add/friend/${friend.username}`)
 }
 
 const loadWardrobeItems = async () => {
@@ -1282,7 +1298,13 @@ onMounted(async () => {
   // Initialize items source based on route
   initializeItemsSource()
   
-  // If friend route, load friend profile first
+  // If friend selection route, load friends list
+  if (currentSubRoute.value === 'friendSelect') {
+    await loadFriendsList()
+    return // Don't load wardrobe items on friend selection page
+  }
+  
+  // If friend route with username, load friend profile first
   if (currentSubRoute.value === 'friend' && friendUsername.value) {
     await loadFriendProfile(friendUsername.value)
   }

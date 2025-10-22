@@ -6,22 +6,29 @@ Welcome to the StyleSnap documentation hub. This directory contains comprehensiv
 
 **StyleSnap** is a comprehensive digital closet application that combines personal wardrobe management with social features, AI-powered outfit suggestions, and advanced analytics. Built with Vue.js 3, Supabase, and modern web technologies.
 
-### 🌟 Key Features
+### 🌟 Key Features (Version 3.0.0)
 
 #### Core Functionality
-- **Digital Closet Management** - Upload, organize, and manage personal clothing items
-- **AI-Powered Outfit Generation** - Get intelligent outfit suggestions based on weather, occasion, and personal style
-- **Social Fashion Network** - Connect with friends, share outfits, and get suggestions
-- **Real-time Notifications** - Stay updated with friend activities and suggestions
-- **Advanced Analytics** - Track wardrobe usage, seasonal trends, and style preferences
+- **Digital Closet Management** - Upload, organize, and manage personal clothing items with category-based organization
+- **Interactive Outfit Canvas** - Drag-and-drop canvas for creating outfits with full editing controls (scale, rotate, layer)
+- **AI-Powered Outfit Suggestions** - Auto-generated outfit suggestions with smart item selection and positioning
+- **Friend Outfit Creation** - Create outfit suggestions for friends using items from their closet
+- **Outfit Gallery** - Visual gallery of saved outfits with preview images, filters, and quick actions
+- **Edit Outfits** - Full editing capability for existing outfits with preserved transformations
+- **Social Fashion Network** - Connect with friends, share outfits, and receive/send outfit suggestions
+- **Real-time Notifications** - Comprehensive notification system for friend requests, outfit suggestions, and social interactions
+- **Personalized Dashboard** - Welcome message, stats cards, and notifications overview on home page
 
 #### Technical Features
+- **Interactive Canvas System** - 600px canvas with 128x128px items, grid overlay, undo/redo (50 steps)
 - **7-Day Notification Retention** - Automatic cleanup system for optimal performance
-- **Multi-Theme Support** - 6 color themes and 6 font styles for personalization
-- **Session Management** - Secure user session handling with Google OAuth
+- **Multi-Theme Support** - Light/dark modes with custom color schemes and 6 font styles
+- **Google OAuth Authentication** - Secure authentication with profile synchronization
+- **Session Management** - Persistent login sessions with theme preferences
 - **Responsive Design** - Mobile-first design with desktop optimization
-- **PWA Support** - Progressive Web App capabilities
-- **Real-time Updates** - Live data synchronization across devices
+- **Row-Level Security** - Database-level access control and privacy
+- **Real-time Updates** - Live data synchronization across devices via Supabase
+- **Legal Compliance** - Terms of Service and Privacy Policy modals
 
 ## 📚 Documentation Structure
 
@@ -39,16 +46,23 @@ Welcome to the StyleSnap documentation hub. This directory contains comprehensiv
 ### 🎨 Features & Functionality
 
 #### Core Features
+- **[Feature Overview](./FEATURE_OVERVIEW.md)** - Complete feature overview (v3.0.0)
 - **[Closet Guide](./guides/CLOSET_GUIDE.md)** - Digital closet management
 - **[Catalog Guide](./guides/CATALOG_GUIDE.md)** - Clothing catalog system
 - **[Social Guide](./guides/SOCIAL_GUIDE.md)** - Friends and social features
 - **[Notifications Guide](./guides/NOTIFICATIONS_GUIDE.md)** - Notification system
 
+#### Outfit System (NEW v3.0.0)
+- **[AI Outfit Suggestions](./features/AI_OUTFIT_SUGGESTIONS.md)** - Auto-generated outfit suggestions with smart positioning
+- **[Friend Outfit Creation](./features/FRIEND_OUTFIT_CREATION.md)** - Create outfits for friends using their items
+- **[Edit Outfit](./features/EDIT_OUTFIT.md)** - Full editing mode for existing outfits
+- **[Friend Notifications](./features/FRIEND_NOTIFICATIONS.md)** - Comprehensive notification system
+
 #### Advanced Features
 - **[Outfit Generation](./guides/OUTFIT_GENERATION_GUIDE.md)** - AI-powered outfit suggestions
 - **[Color Detection](./guides/COLOR_DETECTION_GUIDE.md)** - Automatic color detection
 - **[Likes System](./guides/LIKES_GUIDE.md)** - Item and outfit likes
-- **[Analytics Guide](./guides/ANALYTICS_GUIDE.md)** - Wardrobe analytics
+- **[Google Profile Sync](./features/GOOGLE_PROFILE_SYNC.md)** - OAuth profile synchronization
 
 ### 🛠️ Development & Maintenance
 

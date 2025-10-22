@@ -37,7 +37,7 @@
       <h1 :class="`text-5xl md:text-7xl font-bold tracking-tight mb-4 ${
         theme.value === 'dark' ? 'text-white' : 'text-black'
       }`">
-        Welcome back{{ user?.name ? `, ${user.name.split(' ')[0]}` : '' }}
+        Welcome back{{ userName }}
       </h1>
       <p :class="`text-xl md:text-2xl ${
         theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
@@ -239,6 +239,38 @@ const user = computed(() => {
     computedUser: userData
   })
   return userData
+})
+
+// Get user's first name for welcome message
+const userName = computed(() => {
+  // Try to get name from various sources
+  // Priority:
+  // 1. Profile name (from database users table)
+  // 2. User metadata name (from Google OAuth)
+  // 3. Auth store userName getter
+  const fullName = authStore.profile?.name || 
+                   user.value?.name || 
+                   user.value?.user_metadata?.name || 
+                   user.value?.user_metadata?.full_name || 
+                   authStore.userName
+  
+  console.log('🏠 Home: userName computed:', {
+    'authStore.profile': authStore.profile,
+    'authStore.profile.name': authStore.profile?.name,
+    'user.value': user.value,
+    'user.value.name': user.value?.name,
+    'user_metadata.name': user.value?.user_metadata?.name,
+    'authStore.userName': authStore.userName,
+    'resolved fullName': fullName
+  })
+  
+  if (fullName && fullName !== 'User') {
+    // Extract first name
+    const firstName = fullName.split(' ')[0]
+    return `, ${firstName}`
+  }
+  
+  return '' // No name, just show "Welcome back"
 })
 
 // Reactive data for content

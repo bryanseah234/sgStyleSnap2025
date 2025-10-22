@@ -1,23 +1,32 @@
 # StyleSnap - Digital Closet & Social Fashion Platform
 
-A modern, full-stack digital wardrobe application built with Vue 3, Supabase, and Tailwind CSS. StyleSnap combines personal wardrobe management with social features, AI-powered outfit suggestions, and advanced analytics.
+**Version 3.0.0** - Complete Outfit Management System
+
+A modern, full-stack digital wardrobe application built with Vue 3, Supabase, and Tailwind CSS. StyleSnap combines personal wardrobe management with social features, AI-powered outfit suggestions, and an interactive canvas-based outfit creation system.
 
 ## 🌟 Features
 
-### Core Functionality
-- **Digital Closet Management** - Upload, organize, and manage personal clothing items
-- **AI-Powered Outfit Generation** - Get intelligent outfit suggestions based on weather, occasion, and personal style
-- **Social Fashion Network** - Connect with friends, share outfits, and get suggestions
-- **Real-time Notifications** - Stay updated with friend activities and suggestions
-- **Advanced Analytics** - Track wardrobe usage, seasonal trends, and style preferences
+### 🎨 Core Functionality
+- **Digital Closet Management** - Upload, organize, and manage personal clothing items with category-based organization
+- **Interactive Outfit Canvas** - Drag-and-drop 600px canvas for creating outfits with full editing controls (scale, rotate, layer)
+- **AI-Powered Outfit Suggestions** - Auto-generated outfit suggestions with smart category-based positioning
+- **Friend Outfit Creation** - Create outfit suggestions for friends using items from their closet
+- **Outfit Gallery** - Visual gallery of saved outfits with preview images, filters, and quick edit/delete actions
+- **Edit Outfits** - Full editing mode for existing outfits with preserved transformations
+- **Social Fashion Network** - Connect with friends, share outfits, receive/send outfit suggestions
+- **Real-time Notifications** - Comprehensive notification system for friend requests, outfit suggestions, likes, and social interactions
+- **Personalized Dashboard** - Welcome message with user's name, stats cards, and notifications overview
 
-### Technical Features
+### ⚡ Technical Features
+- **Interactive Canvas System** - 600px canvas with 128x128px items, grid overlay, undo/redo (50 steps)
 - **7-Day Notification Retention** - Automatic cleanup system for optimal performance
-- **Multi-Theme Support** - Light and dark themes with system preference detection
-- **Session Management** - Secure user session handling with Google OAuth
+- **Multi-Theme Support** - Light and dark modes with custom color schemes and 6 font styles
+- **Google OAuth Authentication** - Secure authentication with profile synchronization
+- **Session Management** - Persistent login sessions with theme preferences
+- **Terms of Service & Privacy Policy** - Comprehensive legal documents in dismissible modals
 - **Responsive Design** - Mobile-first design with desktop optimization
-- **PWA Support** - Progressive Web App capabilities
-- **Real-time Updates** - Live data synchronization across devices
+- **Row-Level Security** - Database-level access control and privacy
+- **Real-time Updates** - Live data synchronization across devices via Supabase
 
 ## 🚀 Tech Stack
 
@@ -110,13 +119,44 @@ src/
 ├── api/                 # API client and services
 ├── components/          # Reusable Vue components
 │   ├── ui/             # Base UI components
-│   ├── cabinet/        # Wardrobe-specific components
-│   └── dashboard/      # Outfits components
+│   ├── TermsOfServiceModal.vue  # TOS modal
+│   ├── PrivacyPolicyModal.vue   # Privacy policy modal
+│   └── ThemeToggle.vue          # Theme switcher
 ├── composables/        # Vue composables (useTheme, etc.)
 ├── lib/                # Utility libraries
 ├── pages/              # Page components
+│   ├── Home.vue        # Dashboard with notifications
+│   ├── Cabinet.vue     # Closet management
+│   ├── Outfits.vue     # Outfit gallery
+│   ├── OutfitCreator.vue  # Canvas for outfit creation
+│   ├── Friends.vue     # Friend management
+│   ├── Profile.vue     # User profile
+│   └── Login.vue       # Authentication
 ├── services/           # Backend service classes
+│   ├── AuthService.js  # Authentication
+│   ├── ClothesService.js  # Closet items
+│   ├── OutfitsService.js  # Outfits CRUD
+│   ├── FriendsService.js  # Friend management
+│   └── NotificationsService.js  # Notifications
 └── utils/              # Helper functions
+
+docs/
+├── features/           # Feature-specific documentation
+│   ├── AI_OUTFIT_SUGGESTIONS.md
+│   ├── FRIEND_OUTFIT_CREATION.md
+│   ├── EDIT_OUTFIT.md
+│   └── FRIEND_NOTIFICATIONS.md
+├── guides/             # How-to guides
+├── FEATURE_OVERVIEW.md # Complete feature list
+├── ROUTES.md           # All application routes
+├── CHANGELOG.md        # Version history
+└── README.md           # Documentation hub
+
+database/
+└── migrations/         # SQL migration files
+    ├── 020_add_outfits_table.sql
+    ├── 027_friend_notifications.sql
+    └── ...
 ```
 
 ## 🔧 Available Scripts
@@ -161,48 +201,85 @@ StyleSnap uses Google OAuth exclusively for authentication:
 
 ## 📱 Features Overview
 
-### Digital Closet
+### 👔 Digital Closet
 - Upload clothing items with images
-- Categorize by type, brand, color, style
+- Categorize by type (tops, bottoms, shoes, accessories, outerwear)
 - Mark favorites and add notes
 - Search and filter items
+- Category-based organization
+- View friend's closets
 
-### Outfits
-- Drag-and-drop outfit creation
-- AI-powered outfit suggestions
-- Weather-based recommendations
-- Save and share outfits
+### 👗 Outfit System (NEW v3.0)
+- **Interactive Canvas** - 600px drag-and-drop canvas with grid overlay
+- **Personal Creation** - Create outfits using your own items
+- **AI Suggestions** - Auto-generated outfits with smart positioning
+- **Friend Suggestions** - Create outfits for friends using their items
+- **Edit Mode** - Full editing of saved outfits
+- **Gallery View** - Visual grid of all saved outfits
+- **Canvas Controls**:
+  - Scale items (zoom in/out)
+  - Rotate items (15° increments)
+  - Layer items (z-index)
+  - Delete items
+  - Undo/Redo (50 steps)
+  - Grid toggle
+  - Clear canvas
 
-### Social Features
-- Add friends and view their wardrobes
+### 👥 Social Features
+- Add friends and manage connections
+- View friend's closets and profiles
+- Create outfit suggestions for friends
 - Share outfits with friends
-- Activity feed
-- Like and comment on outfits
+- Like items and outfits
+- Real-time notifications for:
+  - Friend requests (sent/received)
+  - Friend request accepted
+  - Outfit shared
+  - Friend outfit suggestions
+  - Outfit and item likes
 
-### Analytics
-- Wardrobe statistics
-- Style insights
-- Usage analytics
-- Color and brand analysis
+### 🔔 Notifications
+- Comprehensive notification system
+- Displayed on home page
+- Unread count badges
+- Mark as read functionality
+- 7-day auto-cleanup
+- Database triggers for automatic creation
+- Support for:
+  - Friend requests
+  - Outfit suggestions
+  - Outfit/item likes
+  - System updates
 
 ## 🎯 Key Components
 
 ### Pages
-- **Home** - Dashboard with stats and quick actions
-- **Cabinet** - Wardrobe management
-- **Dashboard** - Outfits with AI generation
-- **Friends** - Social features and friend management
-- **Profile** - User settings and preferences
-- **Login** - Google OAuth authentication
+- **Home** (`/home`) - Dashboard with stats, welcome message, and notifications
+- **Closet** (`/closet`) - Wardrobe management and item gallery
+- **Outfits** (`/outfits`) - Outfit gallery with filter options
+- **OutfitCreator** (`/outfits/add/*`) - Interactive canvas for outfit creation
+  - `/outfits/add/personal` - Personal outfit creation
+  - `/outfits/add/suggested` - AI outfit suggestions
+  - `/outfits/add/friend/:username` - Friend outfit creation
+  - `/outfits/edit/:outfitId` - Edit existing outfit
+- **Friends** (`/friends`) - Social features and friend management
+- **Profile** (`/profile`) - User settings and preferences
+- **Login** (`/login`) - Google OAuth authentication with legal modals
 
 ### Services
 - **AuthService** - Authentication and user management
-- **ClothesService** - Wardrobe item management
-- **OutfitsService** - Outfit creation and AI generation
-- **FriendsService** - Social features
-- **NotificationsService** - Real-time notifications
-- **AnalyticsService** - Data insights and statistics
-- **WeatherService** - Weather-based recommendations
+- **ClothesService** - Wardrobe item CRUD operations
+- **OutfitsService** - Outfit creation, update, delete, and retrieval
+- **FriendsService** - Friend connections and management
+- **NotificationsService** - Notification creation, retrieval, and management
+- **ThemeService** - Theme management and preferences
+
+### Components
+- **TermsOfServiceModal** - Terms of Service legal document
+- **PrivacyPolicyModal** - Privacy Policy legal document
+- **ThemeToggle** - Light/dark mode switcher
+- **Navbar** - Main navigation
+- **Various UI Components** - Buttons, cards, modals, etc.
 
 ## 🔒 Security
 
@@ -232,10 +309,57 @@ This project is licensed under the MIT License.
 4. Add tests if applicable
 5. Submit a pull request
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[Feature Overview](docs/FEATURE_OVERVIEW.md)** - Complete feature list (v3.0.0)
+- **[Routes Guide](docs/ROUTES.md)** - All application routes and navigation
+- **[Changelog](docs/CHANGELOG.md)** - Version history and updates
+- **[Project Structure](docs/PROJECT_STRUCTURE.md)** - Code organization
+
+### New Features Documentation (v3.0.0)
+- **[AI Outfit Suggestions](docs/features/AI_OUTFIT_SUGGESTIONS.md)** - Auto-generated outfits
+- **[Friend Outfit Creation](docs/features/FRIEND_OUTFIT_CREATION.md)** - Create outfits for friends
+- **[Edit Outfit](docs/features/EDIT_OUTFIT.md)** - Edit existing outfits
+- **[Friend Notifications](docs/features/FRIEND_NOTIFICATIONS.md)** - Notification system
+
+### Guides
+- **[Authentication Guide](docs/guides/AUTHENTICATION_GUIDE.md)** - OAuth setup
+- **[Database Guide](docs/guides/DATABASE_GUIDE.md)** - Database schema and management
+- **[User Flows](docs/guides/USER_FLOWS.md)** - User experience flows
+
+## 🎉 What's New in v3.0.0
+
+### Major Features
+- ✨ **Interactive Outfit Canvas** - Drag-and-drop canvas with full editing controls
+- 🤖 **AI Outfit Suggestions** - Auto-generated outfits with smart positioning
+- 👥 **Friend Outfit Creation** - Create outfit suggestions for friends
+- ✏️ **Edit Mode** - Full editing capability for existing outfits
+- 🖼️ **Outfit Gallery** - Visual grid display of saved outfits
+- 🔔 **Enhanced Notifications** - Comprehensive notification system
+- 📜 **Legal Compliance** - Terms of Service and Privacy Policy modals
+- 👋 **Personalized Dashboard** - Welcome message with user's name
+
+### Technical Improvements
+- Canvas system with transform controls
+- Undo/Redo history (50 steps)
+- Database triggers for notifications
+- Enhanced RLS policies
+- Custom scrollbar styling
+- Improved responsive design
+
+See [CHANGELOG.md](docs/CHANGELOG.md) for complete details.
+
 ## 📞 Support
 
-For support and questions, please open an issue in the repository.
+For support and questions:
+- **Documentation**: Check the `docs/` directory
+- **Issues**: Open an issue in the repository
+- **Guides**: Refer to specific guides in `docs/guides/`
 
 ---
 
-**Built with ❤️ using Vue 3, Supabase, and modern web technologies.**
+**Version 3.0.0** - Built with ❤️ using Vue 3, Supabase, and modern web technologies.
+
+**Last Updated**: October 22, 2025

@@ -53,7 +53,8 @@ const routes = [
   // Outfit creation/editing routes (canvas interface)
   { path: '/outfits/add/personal', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'personal' } },
   { path: '/outfits/add/suggested', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'suggested' } },
-  { path: '/outfits/add/friend/:username', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'friend' } },
+  { path: '/outfits/add/friend', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'friend' } }, // Friend selection (without username)
+  { path: '/outfits/add/friend/:username', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'friend' } }, // Friend's outfit creator
   { path: '/outfits/edit/:outfitId', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'edit' } },
   
   // Closet sub-routes (stay on closet page, content changes)
