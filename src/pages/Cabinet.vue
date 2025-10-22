@@ -249,133 +249,11 @@
     </div>
 
     <!-- Upload Modal -->
-    <div
-      v-if="showUpload"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      @click="showUpload = false"
-    >
-      <div
-        :class="`w-full max-w-md rounded-xl p-6 ${
-          theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
-        }`"
-        @click.stop
-      >
-        <h2 :class="`text-xl font-bold mb-4 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
-          Add New Item
-        </h2>
-        
-        <form @submit.prevent="handleUpload">
-          <div class="space-y-4">
-            <div>
-              <label :class="`block text-sm font-medium mb-2 ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
-                Item Name
-              </label>
-              <input
-                v-model="newItem.name"
-                type="text"
-                required
-                :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
-                }`"
-                placeholder="Enter item name"
-              />
-            </div>
-            
-            <div>
-              <label :class="`block text-sm font-medium mb-2 ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
-                Category
-              </label>
-              <select
-                v-model="newItem.category"
-                required
-                :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
-                }`"
-              >
-                <option value="">Select category</option>
-                <option value="tops">Tops</option>
-                <option value="bottoms">Bottoms</option>
-                <option value="outerwear">Outerwear</option>
-                <option value="shoes">Shoes</option>
-                <option value="accessories">Accessories</option>
-              </select>
-            </div>
-            
-            <div>
-              <label :class="`block text-sm font-medium mb-2 ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
-                Brand
-              </label>
-              <input
-                v-model="newItem.brand"
-                type="text"
-                :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
-                }`"
-                placeholder="Enter brand (optional)"
-              />
-            </div>
-            
-            <div>
-              <label :class="`block text-sm font-medium mb-2 ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
-                Image
-              </label>
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/*"
-                @change="handleFileSelect"
-                :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
-                }`"
-              />
-            </div>
-          </div>
-          
-          <div class="flex gap-3 mt-6">
-            <button
-              type="button"
-              @click="showUpload = false"
-              :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              :disabled="uploading"
-              :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme.value === 'dark'
-                  ? 'bg-white text-black hover:bg-zinc-200'
-                  : 'bg-black text-white hover:bg-zinc-800'
-              } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`"
-            >
-              {{ uploading ? 'Adding...' : 'Add Item' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <UploadItemModal
+      :is-open="showUpload"
+      @close="showUpload = false"
+      @item-added="handleItemAdded"
+    />
   </div>
 </template>
 
@@ -386,6 +264,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
 import { Plus, Heart, Shirt } from 'lucide-vue-next'
+import UploadItemModal from '@/components/cabinet/UploadItemModal.vue'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
@@ -413,15 +292,6 @@ const loading = ref(true)
 const showUpload = ref(false)
 const activeCategory = ref('all')
 const showFavoritesOnly = ref(false)
-const uploading = ref(false)
-const fileInput = ref(null)
-
-const newItem = ref({
-  name: '',
-  category: '',
-  brand: '',
-  image_url: ''
-})
 
 const categories = ['all', 'tops', 'bottoms', 'outerwear', 'shoes', 'accessories']
 
@@ -500,72 +370,12 @@ const toggleFavorite = async (item) => {
   }
 }
 
-const handleFileSelect = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      newItem.value.image_url = e.target.result
-    }
-    reader.readAsDataURL(file)
-  }
-}
 
-const handleUpload = async () => {
-  if (!newItem.value.name || !newItem.value.category) return
-
-  uploading.value = true
-  try {
-    console.log('Cabinet: Creating new item:', newItem.value)
-    
-    // Prepare item data for Supabase
-    const itemData = {
-      name: newItem.value.name,
-      category: newItem.value.category,
-      brand: newItem.value.brand || null,
-      privacy: 'private', // Default to private
-      is_favorite: false,
-      style_tags: []
-    }
-    
-    // If there's an image file, add it to the data
-    if (fileInput.value?.files?.[0]) {
-      itemData.image_file = fileInput.value.files[0]
-    } else if (newItem.value.image_url) {
-      // If it's a base64 image from file reader, we need to handle it differently
-      // For now, we'll skip image upload if it's base64
-      console.warn('Cabinet: Base64 images not supported in this version, skipping image')
-    }
-    
-    // Create the item using the real Supabase service
-    const result = await clothesService.addClothes(itemData)
-    
-    if (result.success) {
-      items.value.unshift(result.data)
-      console.log('Cabinet: Successfully created item:', result.data.name)
-    } else {
-      console.error('Cabinet: Failed to create item:', result.error)
-    }
-    
-    // Reset form
-    newItem.value = {
-      name: '',
-      category: '',
-      brand: '',
-      image_url: ''
-    }
-    
-    // Reset file input
-    if (fileInput.value) {
-      fileInput.value.value = ''
-    }
-    
-    showUpload.value = false
-  } catch (error) {
-    console.error('Cabinet: Error uploading item:', error)
-  } finally {
-    uploading.value = false
-  }
+// Handle item added from modal
+const handleItemAdded = async () => {
+  console.log('Cabinet: Item added, refreshing list...')
+  await loadItems()
+  showUpload.value = false
 }
 
 onMounted(async () => {
