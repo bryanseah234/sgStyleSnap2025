@@ -128,7 +128,7 @@
             <!-- Active indicator -->
             <div
               v-if="$route.path === item.path"
-              class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-primary"
+              class="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-primary"
             />
           </div>
         </router-link>

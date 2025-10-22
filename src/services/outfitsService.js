@@ -109,8 +109,7 @@ export class OutfitsService {
               image_url,
               thumbnail_url
             )
-          ),
-          likes_count
+          )
         `)
         .eq('id', outfitId)
         .eq('owner_id', user.id)

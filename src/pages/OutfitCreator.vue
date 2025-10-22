@@ -857,12 +857,13 @@ const loadExistingOutfit = async (outfitId) => {
     if (outfit.outfit_items && outfit.outfit_items.length > 0) {
       canvasItems.value = outfit.outfit_items.map(outfitItem => ({
         ...outfitItem.clothing_item,
+        originalId: outfitItem.clothing_item.id, // Store original ID
         id: `${outfitItem.clothing_item.id}-${Date.now()}-${Math.random()}`,
-        x: outfitItem.position_x || 100,
-        y: outfitItem.position_y || 100,
+        x: outfitItem.x_position || 100,
+        y: outfitItem.y_position || 100,
         scale: outfitItem.scale || 1,
         rotation: outfitItem.rotation || 0,
-        zIndex: outfitItem.z_index || 1
+        z_index: outfitItem.z_index || 0
       }))
       
       saveToHistory()
@@ -1229,9 +1230,9 @@ const saveOwnOutfit = async () => {
       weather_condition: null,
       items: canvasItems.value.map(item => ({
         clothing_item_id: item.originalId || item.id, // Use stored original ID
-        position_x: item.x,
-        position_y: item.y,
-        z_index: item.zIndex || 1,
+        x_position: item.x,
+        y_position: item.y,
+        z_index: item.z_index || 1,
         rotation: item.rotation || 0,
         scale: item.scale || 1
       }))
@@ -1286,9 +1287,9 @@ const shareOutfitWithFriend = async () => {
     // Extract original clothing item IDs from canvas items
     const outfitItemsData = canvasItems.value.map(item => ({
       clothing_item_id: item.originalId || item.id, // Use stored original ID
-      position_x: item.x,
-      position_y: item.y,
-      z_index: item.zIndex || 1,
+      x_position: item.x,
+      y_position: item.y,
+      z_index: item.z_index || 1,
       rotation: item.rotation || 0,
       scale: item.scale || 1
     }))
