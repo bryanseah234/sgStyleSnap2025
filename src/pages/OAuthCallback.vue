@@ -60,15 +60,31 @@ const redirectToLogin = () => {
 
 const handleOAuthCallback = async () => {
   try {
-    console.log('🔄 OAuthCallback: Processing OAuth callback...')
+    console.log('🔄 OAuthCallback: =============== START OAuth Callback ===============')
+    console.log('🔄 OAuthCallback: Current URL:', window.location.href)
+    console.log('🔄 OAuthCallback: URL hash:', window.location.hash)
+    console.log('🔄 OAuthCallback: URL search:', window.location.search)
     
     // Check URL parameters
     const urlParams = new URLSearchParams(window.location.search)
-    const hasError = urlParams.has('error')
+    const hashParams = new URLSearchParams(window.location.hash.substring(1))
+    
+    console.log('🔄 OAuthCallback: URL params:', Object.fromEntries(urlParams.entries()))
+    console.log('🔄 OAuthCallback: Hash params:', Object.fromEntries(hashParams.entries()))
+    
+    const hasError = urlParams.has('error') || hashParams.has('error')
+    const hasCode = urlParams.has('code')
+    const hasAccessToken = hashParams.has('access_token')
+    
+    console.log('🔄 OAuthCallback: Auth flags:', {
+      hasError,
+      hasCode,
+      hasAccessToken
+    })
     
     if (hasError) {
-      const errorParam = urlParams.get('error')
-      const errorDescription = urlParams.get('error_description') || 'Authentication failed'
+      const errorParam = urlParams.get('error') || hashParams.get('error')
+      const errorDescription = urlParams.get('error_description') || hashParams.get('error_description') || 'Authentication failed'
       
       console.error('❌ OAuthCallback: OAuth error:', errorParam, errorDescription)
       
@@ -85,6 +101,11 @@ const handleOAuthCallback = async () => {
     }
     
     console.log('✅ OAuthCallback: Processing authentication...')
+    console.log('✅ OAuthCallback: Initial auth state:', {
+      isAuthenticated: authStore.isAuthenticated,
+      user: authStore.user ? authStore.user.email : null,
+      loading: authStore.loading
+    })
     
     statusMessage.value = 'Completing Sign-In...'
     statusDescription.value = 'Setting up your account...'

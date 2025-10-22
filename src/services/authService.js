@@ -44,16 +44,41 @@ export class AuthService {
     }
 
     supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔔 AuthService: ========== Auth State Change ==========')
+      console.log('🔔 AuthService: Event:', event)
+      console.log('🔔 AuthService: Session:', session ? {
+        user_id: session.user?.id,
+        user_email: session.user?.email,
+        access_token: session.access_token ? 'present' : 'missing',
+        refresh_token: session.refresh_token ? 'present' : 'missing',
+        expires_at: session.expires_at
+      } : 'null')
+      console.log('🔔 AuthService: Session user metadata:', session?.user?.user_metadata)
+      console.log('🔔 AuthService: Session user app_metadata:', session?.user?.app_metadata)
+      
       if (event === 'SIGNED_IN' && session?.user) {
         this.currentUser = session.user
-        // Don't fetch profile during OAuth callback - it will be fetched later
-        console.log('✅ AuthService: User signed in, profile will be fetched later')
+        console.log('✅ AuthService: User signed in!')
+        console.log('✅ AuthService: User ID:', session.user.id)
+        console.log('✅ AuthService: User email:', session.user.email)
+        console.log('✅ AuthService: Profile will be fetched later')
       } else if (event === 'SIGNED_OUT') {
+        console.log('🚪 AuthService: Sign out event detected')
+        console.log('🚪 AuthService: isLoggingOut flag:', this.isLoggingOut)
         // Only clear user data if this is an explicit logout, not a page reload
         if (this.isLoggingOut) {
+          console.log('🚪 AuthService: Clearing user data due to explicit logout')
           this.currentUser = null
           this.currentProfile = null
+        } else {
+          console.log('🚪 AuthService: Keeping user data (page reload or session refresh)')
         }
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 AuthService: Token refreshed successfully')
+      } else if (event === 'USER_UPDATED') {
+        console.log('🔄 AuthService: User data updated')
+      } else {
+        console.log('🔔 AuthService: Unhandled auth event:', event)
       }
     })
   }
@@ -74,7 +99,9 @@ export class AuthService {
     }
 
     try {
-      console.log('🔑 AuthService: Initiating Google OAuth...')
+      console.log('🔑 AuthService: ========== Initiating Google OAuth ==========')
+      console.log('🔑 AuthService: Current URL:', window.location.href)
+      console.log('🔑 AuthService: Redirect URL:', `${window.location.origin}/auth/callback`)
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -87,24 +114,38 @@ export class AuthService {
         }
       })
       
+      console.log('🔑 AuthService: OAuth response:', {
+        hasData: !!data,
+        hasError: !!error,
+        hasUrl: !!data?.url
+      })
+      
       if (error) {
-        console.error('🔑 AuthService: OAuth error:', error)
+        console.error('❌ AuthService: OAuth error:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        })
         throw error
       }
       
       // Redirect to Google OAuth using proper navigation
       if (data?.url) {
-        console.log('🔑 AuthService: Redirecting browser to:', data.url)
+        console.log('✅ AuthService: OAuth URL received from Supabase')
+        console.log('✅ AuthService: Redirecting browser to Google OAuth')
+        console.log('✅ AuthService: OAuth URL (first 100 chars):', data.url.substring(0, 100) + '...')
+        
         // Use window.location.href instead of replace to preserve tab context
         if (typeof window !== 'undefined') {
           window.location.href = data.url
         }
         return data
       } else {
+        console.error('❌ AuthService: No OAuth URL received from Supabase')
         throw new Error('No OAuth URL received from Supabase')
       }
     } catch (error) {
-      console.error('🔑 AuthService: Sign in error:', error)
+      console.error('❌ AuthService: Sign in error:', error)
       handleSupabaseError(error, 'Google sign in')
     }
   }
@@ -443,17 +484,23 @@ export class AuthService {
     }
 
     try {
+      console.log('🔧 AuthService: ========== Creating User Profile ==========')
+      console.log('🔧 AuthService: Auth user ID:', authUser.id)
+      console.log('🔧 AuthService: Auth user email:', authUser.email)
+      console.log('🔧 AuthService: Auth user full metadata:', authUser)
+      console.log('🔧 AuthService: User metadata:', authUser.user_metadata)
+      console.log('🔧 AuthService: App metadata:', authUser.app_metadata)
+      
       const profileData = {
         id: authUser.id,
         email: authUser.email,
         username: authUser.email?.split('@')[0] || 'user',
-        name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+        name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
         avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || '/avatars/default-1.png',
-        google_id: authUser.user_metadata?.provider_id
+        google_id: authUser.user_metadata?.provider_id || authUser.user_metadata?.sub
       }
       
-      console.log('🔧 AuthService: Creating user profile with data:', profileData)
-      console.log('🔧 AuthService: Auth user metadata:', authUser.user_metadata)
+      console.log('🔧 AuthService: Profile data to insert:', profileData)
 
       const { data, error } = await supabase
         .from('users')
@@ -461,14 +508,24 @@ export class AuthService {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ AuthService: Error inserting user profile:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        throw error
+      }
 
-      console.log('🔧 AuthService: Profile created successfully:', data)
-      console.log('🔧 AuthService: Avatar URL in database:', data.avatar_url)
+      console.log('✅ AuthService: Profile created successfully!')
+      console.log('✅ AuthService: Created profile data:', data)
+      console.log('✅ AuthService: Avatar URL in database:', data.avatar_url)
       
       this.currentProfile = data
       return data
     } catch (error) {
+      console.error('❌ AuthService: Fatal error creating user profile:', error)
       handleSupabaseError(error, 'create user profile')
     }
   }
