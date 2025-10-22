@@ -139,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { Brain, AlertCircle, Upload, X, Plus } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
@@ -229,14 +229,23 @@ const processImageFile = async (file) => {
       const classification = await classifyClothingItem(file)
       
       if (classification.success) {
-        // Auto-fill form with AI results
+        // Auto-fill form with AI results - force reactivity
         formData.value.name = classification.topPrediction || formData.value.name
         formData.value.category = classification.styleSnapCategory || formData.value.category
+        
+        // Force Vue to update the form fields
+        await nextTick()
         
         aiRecognitionStatus.value = {
           type: 'success',
           message: `AI detected: ${classification.topPrediction} (${Math.round(classification.confidence * 100)}% confidence)`
         }
+        
+        console.log('AI Classification Result:', {
+          prediction: classification.topPrediction,
+          category: classification.styleSnapCategory,
+          confidence: classification.confidence
+        })
       } else {
         aiRecognitionStatus.value = {
           type: 'warning',
@@ -292,21 +301,34 @@ const handleSubmit = async () => {
       image_file: formData.value.image_file
     }
 
+    console.log('Submitting item data:', itemData)
+
     // Use the existing ClothesService
     const result = await clothesService.addClothes(itemData)
     
     if (result.success) {
+      console.log('Item added successfully:', result.data)
       emit('itemAdded')
       resetForm()
       emit('close')
     } else {
+      console.error('Failed to add item:', result.error)
       throw new Error(result.error || 'Failed to add item')
     }
   } catch (error) {
     console.error('Error creating item:', error)
-    aiRecognitionStatus.value = {
-      type: 'error',
-      message: 'Failed to add item. Please try again.'
+    
+    // Check if it's a Cloudinary upload error
+    if (error.message?.includes('Failed to upload image') || error.message?.includes('Cloudinary')) {
+      aiRecognitionStatus.value = {
+        type: 'error',
+        message: 'Image upload failed. Please try a different image or check your connection.'
+      }
+    } else {
+      aiRecognitionStatus.value = {
+        type: 'error',
+        message: 'Failed to add item. Please try again.'
+      }
     }
   } finally {
     uploading.value = false

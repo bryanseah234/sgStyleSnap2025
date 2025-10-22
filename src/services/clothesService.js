@@ -191,11 +191,16 @@ export class ClothesService {
       // Upload image if provided
       let imageData = null
       if (clothesData.image_file) {
-        imageData = await cloudinary.uploadImage(clothesData.image_file, {
-          folder: 'stylesnap/clothes',
-          quality: 80,
-          format: 'auto'
-        })
+        try {
+          imageData = await cloudinary.uploadImage(clothesData.image_file, {
+            folder: 'stylesnap/clothes',
+            quality: 80,
+            format: 'auto'
+          })
+        } catch (uploadError) {
+          console.warn('Cloudinary upload failed, saving item without image:', uploadError)
+          // Continue without image - don't fail the entire operation
+        }
       }
 
       const insertData = {
