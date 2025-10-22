@@ -71,20 +71,6 @@
         </select>
       </div>
 
-      <!-- TYPE Section -->
-      <div class="form-section">
-        <label class="form-label">TYPE</label>
-        <select v-model="formData.clothingType" class="form-select" required>
-          <option value="">Select type</option>
-          <option 
-            v-for="type in availableTypes" 
-            :key="type.value" 
-            :value="type.value"
-          >
-            {{ type.label }}
-          </option>
-        </select>
-      </div>
 
       <!-- BRAND Section -->
       <div class="form-section">
@@ -157,7 +143,7 @@ import { ref, computed, watch } from 'vue'
 import { Brain, AlertCircle, Upload, X, Plus } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
-import { PRIVACY_DETAILS, getClothingTypesByCategory } from '@/utils/clothing-constants'
+import { PRIVACY_DETAILS } from '@/utils/clothing-constants'
 
 // Props
 const props = defineProps({
@@ -181,7 +167,6 @@ const clothesService = new ClothesService()
 const formData = ref({
   name: '',
   category: '',
-  clothingType: '',
   brand: '',
   privacy: 'friends',
   privacyDetails: ['photo', 'name', 'category'],
@@ -192,14 +177,9 @@ const formData = ref({
 const canSubmit = computed(() => {
   return formData.value.name && 
          formData.value.category && 
-         formData.value.clothingType && 
          formData.value.image_file
 })
 
-const availableTypes = computed(() => {
-  if (!formData.value.category) return []
-  return getClothingTypesByCategory(formData.value.category)
-})
 
 // Methods
 const handleFileUpload = async (event) => {
@@ -244,23 +224,30 @@ const processImageFile = async (file) => {
     
     formData.value.image_file = file
 
-    // Classify with AI
-    const classification = await classifyClothingItem(file)
-    
-    if (classification.success) {
-      // Auto-fill form with AI results
-      formData.value.name = classification.topPrediction || formData.value.name
-      formData.value.category = classification.styleSnapCategory || formData.value.category
-      formData.value.clothingType = classification.clothingType || formData.value.clothingType
+    // Try AI classification (optional - don't let it break the form)
+    try {
+      const classification = await classifyClothingItem(file)
       
-      aiRecognitionStatus.value = {
-        type: 'success',
-        message: `AI detected: ${classification.topPrediction} (${Math.round(classification.confidence * 100)}% confidence)`
+      if (classification.success) {
+        // Auto-fill form with AI results
+        formData.value.name = classification.topPrediction || formData.value.name
+        formData.value.category = classification.styleSnapCategory || formData.value.category
+        
+        aiRecognitionStatus.value = {
+          type: 'success',
+          message: `AI detected: ${classification.topPrediction} (${Math.round(classification.confidence * 100)}% confidence)`
+        }
+      } else {
+        aiRecognitionStatus.value = {
+          type: 'warning',
+          message: 'AI recognition unavailable, please fill manually'
+        }
       }
-    } else {
+    } catch (aiError) {
+      console.warn('AI recognition failed:', aiError)
       aiRecognitionStatus.value = {
         type: 'warning',
-        message: classification.error || 'AI recognition failed, please fill manually'
+        message: 'AI service temporarily unavailable, please fill manually'
       }
     }
   } catch (error) {
@@ -298,7 +285,6 @@ const handleSubmit = async () => {
     const itemData = {
       name: formData.value.name,
       category: formData.value.category,
-      clothing_type: formData.value.clothingType,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
       is_favorite: false,
@@ -331,7 +317,6 @@ const resetForm = () => {
   formData.value = {
     name: '',
     category: '',
-    clothingType: '',
     brand: '',
     privacy: 'friends',
     privacyDetails: ['photo', 'name', 'category'],
@@ -341,12 +326,6 @@ const resetForm = () => {
   aiRecognitionStatus.value = null
 }
 
-// Watch for category changes to reset clothing type
-watch(() => formData.value.category, (newCategory) => {
-  if (newCategory && !getClothingTypesByCategory(newCategory).find(t => t.value === formData.value.clothingType)) {
-    formData.value.clothingType = ''
-  }
-})
 
 // Watch for dialog open/close to reset form
 watch(() => props.isOpen, (isOpen) => {
@@ -359,10 +338,11 @@ watch(() => props.isOpen, (isOpen) => {
 <style scoped>
 .add-item-form {
   max-width: 400px;
+  width: 400px;
   margin: 0 auto;
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   color: #333;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -395,7 +375,7 @@ watch(() => props.isOpen, (isOpen) => {
 .form-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .form-section {
@@ -453,7 +433,7 @@ watch(() => props.isOpen, (isOpen) => {
 
 .photo-upload-zone {
   width: 100%;
-  height: 120px;
+  height: 100px;
   border: 2px dashed #ddd;
   border-radius: 8px;
   display: flex;
