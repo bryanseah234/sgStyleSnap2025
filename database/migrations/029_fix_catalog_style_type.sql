@@ -1,22 +1,47 @@
--- Migration: Fix catalog_items style column type mismatch
--- Description: The style column needs to be TEXT[] to match function return types
--- Author: StyleSnap Team
--- Date: 2025-10-22
+-- Migration: Drop all search_catalog overloads and recreate canonical functions
+-- Warning: This will DROP all functions named search_catalog in the current database (public schema).
+-- Backup before running.
 
--- ============================================
--- FIX STYLE COLUMN TYPE
--- ============================================
+-- 1) Show existing search_catalog signatures for logging
+-- (This SELECT is harmless and helps confirm what existed before drops)
+SELECT oid::regprocedure AS signature
+FROM pg_proc
+WHERE proname = 'search_catalog'
+  AND pronamespace = 'public'::regnamespace
+ORDER BY signature;
 
--- Drop dependent functions first
-DROP FUNCTION IF EXISTS get_catalog_excluding_owned(UUID, VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER);
-DROP FUNCTION IF EXISTS search_catalog(TEXT, VARCHAR, VARCHAR, INTEGER, INTEGER);
+-- 2) Drop all search_catalog overloads (use the exact signatures)
+-- If the SELECT above returned signatures different from the examples below, replace accordingly.
+-- We'll programmatically generate and execute DROP FUNCTION for each signature found.
+DO $$
+DECLARE
+  r RECORD;
+  stmt TEXT;
+BEGIN
+  FOR r IN
+    SELECT oid::regprocedure::text AS sig
+    FROM pg_proc
+    WHERE proname = 'search_catalog'
+      AND pronamespace = 'public'::regnamespace
+  LOOP
+    -- Build DROP FUNCTION statement
+    stmt := format('DROP FUNCTION IF EXISTS %s CASCADE;', r.sig);
+    RAISE NOTICE 'Executing: %', stmt;
+    EXECUTE stmt;
+  END LOOP;
+END
+$$ LANGUAGE plpgsql;
 
--- Alter the column type to TEXT[]
-ALTER TABLE catalog_items 
+-- 3) Ensure get_catalog_excluding_owned is dropped if any conflicting overloads exist
+-- (Drop by signature if you know other overloads exist; this is safe-guard)
+DROP FUNCTION IF EXISTS public.get_catalog_excluding_owned(UUID, VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER) CASCADE;
+
+-- 4) Alter the column type to TEXT[] (safe cast using USING)
+ALTER TABLE IF EXISTS public.catalog_items
   ALTER COLUMN style TYPE TEXT[] USING style::TEXT[];
 
--- Recreate the get_catalog_excluding_owned function
-CREATE OR REPLACE FUNCTION get_catalog_excluding_owned(
+-- 5) Recreate get_catalog_excluding_owned
+CREATE OR REPLACE FUNCTION public.get_catalog_excluding_owned(
   user_id_param UUID,
   category_filter VARCHAR(50) DEFAULT NULL,
   color_filter VARCHAR(50) DEFAULT NULL,
@@ -52,19 +77,17 @@ BEGIN
     ci.color,
     ci.season,
     ci.style
-  FROM catalog_items ci
+  FROM public.catalog_items ci
   WHERE 
     ci.is_active = true
-    -- Apply filters
     AND (category_filter IS NULL OR ci.category = category_filter)
     AND (color_filter IS NULL OR ci.color = color_filter)
     AND (brand_filter IS NULL OR ci.brand ILIKE '%' || brand_filter || '%')
     AND (season_filter IS NULL OR ci.season = season_filter)
-    -- Exclude items user already owns (by catalog_item_id OR image_url)
     AND (
       user_id_param IS NULL
       OR NOT EXISTS (
-        SELECT 1 FROM clothes c
+        SELECT 1 FROM public.clothes c
         WHERE c.owner_id = user_id_param
           AND c.removed_at IS NULL
           AND (
@@ -79,10 +102,10 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION get_catalog_excluding_owned IS 'Get catalog items excluding items user already owns. Filters by catalog_item_id or image_url match.';
+COMMENT ON FUNCTION public.get_catalog_excluding_owned IS 'Get catalog items excluding items user already owns. Filters by catalog_item_id or image_url match.';
 
--- Recreate the search_catalog function
-CREATE OR REPLACE FUNCTION search_catalog(
+-- 6) Recreate the canonical search_catalog (single overload)
+CREATE OR REPLACE FUNCTION public.search_catalog(
   search_query TEXT,
   filter_category VARCHAR(50) DEFAULT NULL,
   filter_color VARCHAR(50) DEFAULT NULL,
@@ -117,14 +140,17 @@ BEGIN
     ci.color,
     ci.season,
     ci.style,
-    ts_rank(to_tsvector('english', 
-      ci.name || ' ' || 
-      ci.category || ' ' || 
-      COALESCE(ci.brand, '') || ' ' || 
-      COALESCE(ci.color, '') || ' ' ||
-      COALESCE(array_to_string(ci.tags, ' '), '')
-    ), plainto_tsquery('english', search_query)) AS rank
-  FROM catalog_items ci
+    ts_rank(
+      to_tsvector('english', 
+        ci.name || ' ' || 
+        ci.category || ' ' || 
+        COALESCE(ci.brand, '') || ' ' || 
+        COALESCE(ci.color, '') || ' ' ||
+        COALESCE(array_to_string(ci.tags, ' '), '')
+      ),
+      plainto_tsquery('english', search_query)
+    ) AS rank
+  FROM public.catalog_items ci
   WHERE 
     ci.is_active = true
     AND to_tsvector('english', 
@@ -142,7 +168,11 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION search_catalog IS 'Full-text search catalog items with optional category and color filters';
+COMMENT ON FUNCTION public.search_catalog IS 'Full-text search catalog items with optional category and color filters';
 
-RAISE NOTICE '✅ Fixed catalog_items style column type to TEXT[]';
-
+-- 7) Emit completion notice
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Dropped all search_catalog overloads (if any) and recreated canonical functions; catalog_items.style set to TEXT[]';
+END;
+$$ LANGUAGE plpgsql;
