@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen p-6 md:p-12">
+  <div :class="`min-h-screen p-6 md:p-12 ${
+    theme.value === 'dark' ? 'bg-black' : 'bg-white'
+  }`">
     <div class="max-w-5xl mx-auto">
       <!-- Loading -->
       <div v-if="isLoading" class="py-16 text-center">

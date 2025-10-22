@@ -23,7 +23,7 @@
     <div class="w-16 h-16 rounded-full border-4 border-black dark:border-white animate-pulse" />
   </div>
 
-  <div v-else class="min-h-screen bg-background text-foreground transition-colors duration-200">
+  <div v-else class="min-h-screen text-foreground transition-colors duration-200">
     
     <!-- Desktop Sidebar Navigation -->
     <aside class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-card border-r border-border flex-col items-stretch py-8 px-4 z-50 transition-colors duration-200">

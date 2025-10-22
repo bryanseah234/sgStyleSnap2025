@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-6">
+  <div :class="`min-h-screen flex items-center justify-center p-6 ${
+    theme.value === 'dark' ? 'bg-black' : 'bg-white'
+  }`">
     <div class="text-center">
       <!-- Loading Spinner -->
       <div v-if="loggingOut" class="mb-6">

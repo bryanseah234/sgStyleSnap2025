@@ -28,6 +28,7 @@ import FriendProfile from './pages/FriendProfile.vue'
 import Login from './pages/Login.vue'
 import Logout from './pages/Logout.vue'
 import OAuthCallback from './pages/OAuthCallback.vue'
+import NotFound from './pages/NotFound.vue'
 
 /**
  * Application Routes Configuration
@@ -62,8 +63,8 @@ const routes = [
   { path: '/closet/add/catalogue', component: Cabinet, meta: { requiresAuth: true, subRoute: 'catalogue' } },
   { path: '/closet/view/friend/:username', component: Cabinet, meta: { requiresAuth: true, subRoute: 'friend' } },
   
-  // Catch-all route for undefined paths - redirect to home (which will redirect to login if not authenticated)
-  { path: '/:pathMatch(.*)*', redirect: '/home' }
+  // Catch-all route for undefined paths - show 404 page
+  { path: '/:pathMatch(.*)*', component: NotFound, meta: { requiresAuth: false } }
 ]
 
 /**
