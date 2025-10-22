@@ -5,7 +5,9 @@
     <div class="max-w-5xl mx-auto">
       <!-- Loading -->
       <div v-if="isLoading" class="py-16 text-center">
-        <div class="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border-4 border-stone-300 border-t-black dark:border-zinc-600 dark:border-t-white"></div>
+        <div :class="`spinner-modern mx-auto mb-6 ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`"></div>
         <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">Loading profile...</p>
       </div>
 

@@ -5,7 +5,7 @@
     <div class="text-center">
       <!-- Loading Spinner -->
       <div v-if="loggingOut" class="mb-6">
-        <div class="w-16 h-16 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+        <div class="spinner-modern text-foreground mx-auto"></div>
       </div>
       
       <!-- Logout Complete -->

@@ -121,7 +121,7 @@
         <div
           v-for="i in 6"
           :key="i"
-          :class="`aspect-square rounded-xl animate-pulse ${
+          :class="`aspect-square rounded-xl skeleton-shimmer ${
             theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
           }`"
         />
@@ -155,37 +155,29 @@
         </button>
       </div>
 
-      <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-6">
+      <TransitionGroup 
+        v-else 
+        name="list" 
+        tag="div" 
+        class="grid grid-cols-2 md:grid-cols-3 gap-6"
+      >
         <div
-          v-for="outfit in filteredOutfits"
+          v-for="(outfit, index) in filteredOutfits"
           :key="outfit.id"
           :class="`group cursor-pointer transition-all duration-300 hover:scale-105 ${
             theme.value === 'dark'
               ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
               : 'bg-white border border-stone-200 hover:border-stone-300'
           } rounded-xl overflow-hidden`"
+          :style="{ transitionDelay: `${index * 50}ms` }"
           @click="viewOutfit(outfit)"
         >
           <div class="aspect-square relative overflow-hidden">
-            <!-- Outfit Preview (composite of items) -->
-            <div
-              v-if="outfit.preview_url"
-              class="w-full h-full"
-            >
-              <img
-                :src="outfit.preview_url"
-                :alt="outfit.name"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div
-              v-else
-              :class="`w-full h-full flex items-center justify-center ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`"
-            >
-              <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
-            </div>
+            <!-- Outfit Canvas Miniature (shows items in their positions) -->
+            <OutfitCanvasMiniature 
+              :items="outfit.outfit_items || []"
+              :scale-factor="0.4"
+            />
             
             <!-- Favorite button (top right) -->
             <button
@@ -242,7 +234,7 @@
             </p>
           </div>
         </div>
-      </div>
+      </TransitionGroup>
     </div>
 
     <!-- Click outside to close dropdown -->
@@ -448,6 +440,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { OutfitsService } from '@/services/outfitsService'
 import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart } from 'lucide-vue-next'
+import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
@@ -548,6 +541,16 @@ const closeOutfitDetail = () => {
 
 const toggleFavorite = async (outfit) => {
   try {
+    // Add pulse animation to heart
+    const event = window.event
+    if (event && event.target) {
+      const heartIcon = event.target.closest('button')?.querySelector('svg')
+      if (heartIcon) {
+        heartIcon.classList.add('heart-pulse')
+        setTimeout(() => heartIcon.classList.remove('heart-pulse'), 300)
+      }
+    }
+    
     // Toggle the favorite status using the outfits service
     const result = await outfitsService.toggleFavorite(outfit.id)
     

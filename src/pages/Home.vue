@@ -33,7 +33,7 @@
     }`" />
 
     <!-- Hero Section -->
-    <div class="max-w-6xl mx-auto mb-16">
+    <div class="max-w-6xl mx-auto mb-16" v-scroll-animate.up>
       <h1 :class="`text-5xl md:text-7xl font-bold tracking-tight mb-4 ${
         theme.value === 'dark' ? 'text-white' : 'text-black'
       }`">
@@ -52,11 +52,13 @@
         v-for="(stat, index) in stats"
         :key="stat.label"
         :to="stat.route"
+        v-scroll-animate.up
         :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer hover:-translate-y-2 hover:scale-105 ${
           theme.value === 'dark'
             ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
             : 'bg-white border border-stone-200 hover:border-stone-300'
         }`"
+        :style="{ transitionDelay: `${index * 100}ms` }"
       >
         <div class="flex items-center justify-between mb-4">
           <div :class="`p-3 rounded-2xl transition-transform duration-300 group-hover:scale-110 ${
@@ -78,7 +80,7 @@
 
     <!-- Notifications Section -->
     <div class="max-w-6xl mx-auto">
-      <div :class="`p-8 rounded-3xl transition-all duration-300 ${
+      <div :class="`scale-in p-8 rounded-3xl transition-all duration-300 ${
         theme.value === 'dark'
           ? 'bg-zinc-900 border border-zinc-800'
           : 'bg-white border border-stone-200'
@@ -121,10 +123,10 @@
         <!-- Notifications List -->
         <div v-if="notifications.length > 0" class="space-y-3">
           <div
-            v-for="notification in notifications"
+            v-for="(notification, index) in notifications"
             :key="notification.id"
             @click="markNotificationAsRead(notification)"
-            :class="`p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+            :class="`stagger-item p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
               notification.is_read
                 ? theme.value === 'dark'
                   ? 'bg-zinc-800/50 border border-zinc-800'
@@ -218,6 +220,7 @@ import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
+import { vScrollAnimate } from '@/composables/useScrollAnimation'
 import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check } from 'lucide-vue-next'
 
 // Theme and auth composables

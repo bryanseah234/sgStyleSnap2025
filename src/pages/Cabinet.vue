@@ -160,7 +160,7 @@
         <div
           v-for="i in 8"
           :key="i"
-          :class="`aspect-square rounded-xl animate-pulse ${
+          :class="`aspect-square rounded-xl skeleton-shimmer ${
             theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
           }`"
         />
@@ -202,9 +202,14 @@
         </div>
       </div>
 
-      <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <TransitionGroup 
+        v-else 
+        name="list" 
+        tag="div" 
+        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      >
         <div
-          v-for="item in filteredItems"
+          v-for="(item, index) in filteredItems"
           :key="item.id"
           @click="openItemDetails(item)"
           :class="`group cursor-pointer transition-all duration-300 hover:scale-105 ${
@@ -212,6 +217,7 @@
               ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
               : 'bg-white border border-stone-200 hover:border-stone-300'
           } rounded-xl overflow-hidden`"
+          :style="{ transitionDelay: `${index * 50}ms` }"
         >
           <div class="aspect-square relative overflow-hidden">
             <img
@@ -261,7 +267,7 @@
             </span>
           </div>
         </div>
-      </div>
+      </TransitionGroup>
     </div>
 
     <!-- Upload Modal -->
@@ -412,6 +418,16 @@ const loadItems = async () => {
 
 const toggleFavorite = async (item) => {
   try {
+    // Add pulse animation to heart
+    const event = window.event
+    if (event && event.target) {
+      const heartIcon = event.target.closest('button')?.querySelector('svg')
+      if (heartIcon) {
+        heartIcon.classList.add('heart-pulse')
+        setTimeout(() => heartIcon.classList.remove('heart-pulse'), 300)
+      }
+    }
+    
     // Toggle the favorite status using the real Supabase service
     const result = await clothesService.toggleFavorite(item.id)
     

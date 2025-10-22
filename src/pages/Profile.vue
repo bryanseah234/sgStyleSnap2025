@@ -18,8 +18,8 @@
       <div v-if="user" class="max-w-2xl mx-auto">
         <!-- Loading state -->
         <div v-if="authStore.loading" class="text-center py-8">
-          <div :class="`w-8 h-8 mx-auto mb-4 border-2 border-current border-t-transparent rounded-full animate-spin ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          <div :class="`spinner-modern mx-auto mb-4 ${
+            theme.value === 'dark' ? 'text-white' : 'text-black'
           }`" />
           <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
             Loading profile...

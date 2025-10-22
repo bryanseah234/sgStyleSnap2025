@@ -16,11 +16,13 @@
   @version 1.0.0
 -->
 <template>
-  <!-- Loading state with animated spinner -->
+  <!-- Loading state with modern animated spinner -->
   <div v-if="loading" :class="`min-h-screen flex items-center justify-center ${
     theme.value === 'dark' ? 'bg-black' : 'bg-stone-50'
   }`">
-    <div class="w-16 h-16 rounded-full border-4 border-black dark:border-white animate-pulse" />
+    <div :class="`spinner-modern ${
+      theme.value === 'dark' ? 'text-white' : 'text-black'
+    }`" />
   </div>
 
   <div v-else class="min-h-screen text-foreground transition-colors duration-200">

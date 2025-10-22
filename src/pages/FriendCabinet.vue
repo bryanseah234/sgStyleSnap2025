@@ -146,7 +146,7 @@
 
       <!-- Items Grid/List -->
       <div v-if="loading" class="text-center py-12">
-        <div :class="`w-12 h-12 mx-auto mb-4 border-2 border-current border-t-transparent rounded-full animate-spin ${
+        <div :class="`spinner-modern mx-auto mb-4 ${
           theme.value === 'dark' ? 'text-white' : 'text-black'
         }`" />
         <p :class="`text-lg ${

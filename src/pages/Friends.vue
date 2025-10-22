@@ -118,7 +118,9 @@
 
       <!-- Loading state -->
       <div v-if="isLoading" class="py-16 text-center">
-        <div class="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border-4 border-stone-300 border-t-black dark:border-zinc-600 dark:border-t-white"></div>
+        <div :class="`spinner-modern mx-auto mb-6 ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`"></div>
         <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
           Loading your friends...
         </p>
@@ -127,13 +129,19 @@
       <!-- Content Area -->
       <div v-else-if="activeTab === 'friends'">
         <!-- My Friends -->
-        <div v-if="filteredFriends.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <TransitionGroup 
+          v-if="filteredFriends.length > 0" 
+          name="list" 
+          tag="div" 
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           <div
-            v-for="friend in filteredFriends"
+            v-for="(friend, index) in filteredFriends"
             :key="friend.id"
             :class="`p-6 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer ${
               theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
             }`"
+            :style="{ transitionDelay: `${index * 50}ms` }"
             @click="viewFriendProfile(friend.username)"
           >
             <!-- Mobile row layout; stacked on md+ -->
@@ -192,13 +200,19 @@
 
       <!-- Friend Requests Tab -->
       <div v-else-if="activeTab === 'requests'">
-        <div v-if="friendRequests.length > 0" class="space-y-4">
+        <TransitionGroup 
+          v-if="friendRequests.length > 0" 
+          name="list" 
+          tag="div" 
+          class="space-y-4"
+        >
           <div
-            v-for="request in friendRequests"
+            v-for="(request, index) in friendRequests"
             :key="request.id"
             :class="`p-6 rounded-xl ${
               theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
             }`"
+            :style="{ transitionDelay: `${index * 50}ms` }"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
@@ -254,7 +268,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </TransitionGroup>
         
         <div v-else class="text-center py-12">
           <Bell :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
@@ -266,13 +280,19 @@
 
       <!-- My Requests Tab -->
       <div v-else-if="activeTab === 'sent'">
-        <div v-if="sentRequests.length > 0" class="space-y-4">
+        <TransitionGroup 
+          v-if="sentRequests.length > 0" 
+          name="list" 
+          tag="div" 
+          class="space-y-4"
+        >
           <div
-            v-for="request in sentRequests"
+            v-for="(request, index) in sentRequests"
             :key="request.id"
             :class="`p-6 rounded-xl ${
               theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
             }`"
+            :style="{ transitionDelay: `${index * 50}ms` }"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
@@ -325,7 +345,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </TransitionGroup>
         
         <div v-else class="text-center py-12">
           <UserPlus :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />

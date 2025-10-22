@@ -12,8 +12,10 @@
   <div class="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-black">
     <div class="text-center">
       <!-- Loading Spinner -->
-      <div class="w-16 h-16 mx-auto mb-6">
-        <div class="w-16 h-16 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+      <div class="mx-auto mb-6">
+        <div :class="`spinner-modern ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`"></div>
       </div>
       
       <!-- Status Message -->
@@ -44,9 +46,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth-store'
+import { useTheme } from '@/composables/useTheme'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { theme } = useTheme()
 
 // State
 const statusMessage = ref('Processing authentication...')

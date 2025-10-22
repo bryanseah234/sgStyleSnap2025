@@ -119,10 +119,9 @@
 
     <!-- Catalog Items Grid -->
     <div v-if="loading" class="flex justify-center items-center h-64">
-      <div class="w-12 h-12 border-4 rounded-full animate-spin" :class="{
-        'border-zinc-600 border-t-white': theme.value === 'dark',
-        'border-stone-300 border-t-black': theme.value !== 'dark'
-      }" />
+      <div :class="`spinner-modern ${
+        theme.value === 'dark' ? 'text-white' : 'text-black'
+      }`" />
     </div>
 
     <div v-else-if="catalogItems.length === 0" :class="`text-center py-16 rounded-2xl border ${
@@ -142,9 +141,9 @@
 
     <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       <div
-        v-for="item in catalogItems"
+        v-for="(item, index) in catalogItems"
         :key="item.id"
-        :class="`rounded-xl border overflow-hidden transition-all ${
+        :class="`stagger-item rounded-xl border overflow-hidden transition-all ${
           theme.value === 'dark'
             ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
             : 'bg-white border-stone-200 hover:border-stone-300'
