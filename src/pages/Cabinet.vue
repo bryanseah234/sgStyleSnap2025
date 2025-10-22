@@ -71,18 +71,8 @@
       </div>
       
       <!-- Sub-route Navigation -->
-      <div v-if="currentSubRoute !== 'default'" class="mb-8">
+      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="mb-8">
         <div class="flex space-x-1 p-1 rounded-lg bg-stone-100 dark:bg-zinc-800">
-          <button
-            @click="$router.push('/closet')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'default' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            My Closet
-          </button>
           <button
             @click="$router.push('/closet/add/manual')"
             :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -127,8 +117,8 @@
         </div>
       </div>
 
-      <!-- Filters -->
-      <div class="flex flex-wrap gap-4 mb-6">
+      <!-- Filters (only show for default closet view) -->
+      <div v-if="currentSubRoute === 'default'" class="flex flex-wrap gap-4 mb-6">
         <button
           v-for="category in categories"
           :key="category"
@@ -164,8 +154,8 @@
       </div>
     </div>
 
-    <!-- Items Grid -->
-    <div class="max-w-6xl mx-auto">
+    <!-- Items Grid (only show for default closet view) -->
+    <div v-if="currentSubRoute === 'default'" class="max-w-6xl mx-auto">
       <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <div
           v-for="i in 8"

@@ -43,11 +43,9 @@
             }`"
           >
             <option :value="null">All Categories</option>
-            <option value="top">Tops</option>
-            <option value="bottom">Bottoms</option>
-            <option value="shoes">Shoes</option>
-            <option value="accessory">Accessories</option>
-            <option value="outerwear">Outerwear</option>
+            <option v-for="category in categories" :key="category.value" :value="category.value">
+              {{ category.label }} ({{ category.count }})
+            </option>
           </select>
         </div>
 
@@ -111,11 +109,9 @@
             }`"
           >
             <option :value="null">All Seasons</option>
-            <option value="spring">Spring</option>
-            <option value="summer">Summer</option>
-            <option value="fall">Fall</option>
-            <option value="winter">Winter</option>
-            <option value="all-season">All Season</option>
+            <option v-for="season in seasons" :key="season" :value="season">
+              {{ season.charAt(0).toUpperCase() + season.slice(1).replace('-', ' ') }}
+            </option>
           </select>
         </div>
       </div>
@@ -231,8 +227,10 @@ const { theme } = useTheme()
 const emit = defineEmits(['item-added'])
 
 const catalogItems = ref([])
+const categories = ref([])
 const colors = ref([])
 const brands = ref([])
+const seasons = ref([])
 const loading = ref(true)
 const addedItems = ref(new Set())
 const addingItemId = ref(null)
@@ -270,12 +268,16 @@ const loadCatalogItems = async () => {
 
 const loadFilterOptions = async () => {
   try {
-    const [colorsData, brandsData] = await Promise.all([
+    const [categoriesData, colorsData, brandsData, seasonsData] = await Promise.all([
+      catalogService.getCategories(),
       catalogService.getColors(),
       catalogService.getBrands(),
+      catalogService.getSeasons(),
     ])
+    categories.value = categoriesData
     colors.value = colorsData
     brands.value = brandsData
+    seasons.value = seasonsData
   } catch (error) {
     console.error('CatalogueBrowser: Error loading filter options:', error)
   }

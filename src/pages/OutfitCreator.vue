@@ -434,6 +434,110 @@
                     <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
                   </div>
                 </div>
+
+                <!-- Toolkit (shown when selected) -->
+                <div
+                  v-if="selectedItemId === item.id"
+                  :class="`absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm ${
+                    theme.value === 'dark' ? 'bg-zinc-800/95 border border-zinc-700' : 'bg-white/95 border border-stone-200'
+                  }`"
+                  @mousedown.stop
+                  @click.stop
+                >
+                  <!-- Zoom Out -->
+                  <button
+                    @click.stop="scaleSelectedItem(-0.1)"
+                    :class="`rounded h-7 w-7 transition-colors ${
+                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
+                    }`"
+                    title="Zoom Out"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.35-4.35"></path>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                  </button>
+
+                  <!-- Zoom In -->
+                  <button
+                    @click.stop="scaleSelectedItem(0.1)"
+                    :class="`rounded h-7 w-7 transition-colors ${
+                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
+                    }`"
+                    title="Zoom In"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.35-4.35"></path>
+                      <line x1="11" y1="8" x2="11" y2="14"></line>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                  </button>
+
+                  <!-- Rotate Left -->
+                  <button
+                    @click.stop="rotateSelectedItem(-15)"
+                    :class="`rounded h-7 w-7 transition-colors ${
+                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
+                    }`"
+                    title="Rotate Left"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
+                      <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"></path>
+                    </svg>
+                  </button>
+
+                  <!-- Rotate Right -->
+                  <button
+                    @click.stop="rotateSelectedItem(15)"
+                    :class="`rounded h-7 w-7 transition-colors ${
+                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
+                    }`"
+                    title="Rotate Right"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
+                    </svg>
+                  </button>
+
+                  <!-- Move Forward -->
+                  <button
+                    @click.stop="moveSelectedItemForward"
+                    :class="`rounded h-7 w-7 transition-colors ${
+                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
+                    }`"
+                    title="Move Forward"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
+                      <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                  </button>
+
+                  <!-- Move Backward -->
+                  <button
+                    @click.stop="moveSelectedItemBackward"
+                    :class="`rounded h-7 w-7 transition-colors ${
+                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
+                    }`"
+                    title="Move Backward"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+
+                  <!-- Delete -->
+                  <button
+                    @click.stop="deleteSelectedItem"
+                    :class="`rounded h-7 w-7 transition-colors ${
+                      theme.value === 'dark' ? 'hover:bg-red-900/50 text-red-400' : 'hover:bg-red-200 text-red-600'
+                    }`"
+                    title="Delete"
+                  >
+                    <Trash2 class="w-3.5 h-3.5 mx-auto" />
+                  </button>
+                </div>
               </div>
               
               <!-- Empty State -->
@@ -455,134 +559,6 @@
               </div>
             </div>
 
-            <!-- Control Panel for Selected Item -->
-            <div
-              v-if="selectedItemId"
-              :class="`px-6 py-4 border-t flex items-center justify-between ${
-                theme.value === 'dark' ? 'border-zinc-800 bg-zinc-900' : 'border-stone-200 bg-white'
-              }`"
-            >
-              <div :class="`flex items-center gap-3 ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
-                <Shirt class="w-5 h-5" />
-                <span class="font-medium">{{ selectedItem?.name }}</span>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <!-- Zoom Out -->
-                <button
-                  @click="scaleSelectedItem(-0.1)"
-                  :class="`p-2 rounded-lg transition-all duration-200 ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                  }`"
-                  title="Zoom Out"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                    <line x1="8" y1="11" x2="14" y2="11"></line>
-                  </svg>
-                </button>
-
-                <!-- Zoom In -->
-                <button
-                  @click="scaleSelectedItem(0.1)"
-                  :class="`p-2 rounded-lg transition-all duration-200 ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                  }`"
-                  title="Zoom In"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                    <line x1="11" y1="8" x2="11" y2="14"></line>
-                    <line x1="8" y1="11" x2="14" y2="11"></line>
-                  </svg>
-                </button>
-
-                <!-- Rotate Left -->
-                <button
-                  @click="rotateSelectedItem(-15)"
-                  :class="`p-2 rounded-lg transition-all duration-200 ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                  }`"
-                  title="Rotate Left"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"></path>
-                  </svg>
-                </button>
-
-                <!-- Rotate Right -->
-                <button
-                  @click="rotateSelectedItem(15)"
-                  :class="`p-2 rounded-lg transition-all duration-200 ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                  }`"
-                  title="Rotate Right"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
-                  </svg>
-                </button>
-
-                <div :class="`w-px h-6 ${theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-300'}`"></div>
-
-                <!-- Move Forward -->
-                <button
-                  @click="moveSelectedItemForward"
-                  :class="`p-2 rounded-lg transition-all duration-200 ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                  }`"
-                  title="Move Forward"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                  </svg>
-                </button>
-
-                <!-- Move Backward -->
-                <button
-                  @click="moveSelectedItemBackward"
-                  :class="`p-2 rounded-lg transition-all duration-200 ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                  }`"
-                  title="Move Backward"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </button>
-
-                <div :class="`w-px h-6 ${theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-300'}`"></div>
-
-                <!-- Delete -->
-                <button
-                  @click="deleteSelectedItem"
-                  :class="`p-2 rounded-lg transition-all duration-200 ${
-                    theme.value === 'dark'
-                      ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
-                      : 'bg-red-100 text-red-600 hover:bg-red-200'
-                  }`"
-                  title="Delete"
-                >
-                  <Trash2 class="w-5 h-5" />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -1375,6 +1351,10 @@ const redoAction = () => {
 // Watch for route changes and update items source
 watch(currentSubRoute, async (newRoute, oldRoute) => {
   console.log('OutfitCreator: Route changed from', oldRoute, 'to', newRoute)
+  
+  // Clear canvas when switching tabs (blank slate for new tab)
+  canvasItems.value = []
+  selectedItemId.value = null
   
   // Clear friend profile when navigating away from friend routes
   if (newRoute !== 'friend' && newRoute !== 'friendSelect') {

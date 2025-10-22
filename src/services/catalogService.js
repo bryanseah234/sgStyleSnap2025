@@ -244,6 +244,37 @@ export class CatalogService {
       throw error
     }
   }
+
+  /**
+   * Get available seasons from catalog
+   * @returns {Promise<Array>} Array of unique seasons
+   */
+  async getSeasons() {
+    try {
+      const { data, error } = await supabase
+        .from('catalog_items')
+        .select('season')
+        .eq('is_active', true)
+        .not('season', 'is', null)
+
+      if (error) throw error
+
+      // Get unique seasons
+      const uniqueSeasons = [...new Set(data.map(item => item.season).filter(Boolean))]
+      
+      // Sort in logical order: spring, summer, fall, winter, all-season
+      const seasonOrder = ['spring', 'summer', 'fall', 'winter', 'all-season']
+      return uniqueSeasons.sort((a, b) => {
+        const aIndex = seasonOrder.indexOf(a)
+        const bIndex = seasonOrder.indexOf(b)
+        return aIndex - bIndex
+      })
+
+    } catch (error) {
+      console.error('CatalogService: Error getting seasons:', error)
+      throw error
+    }
+  }
 }
 
 // Export a singleton instance

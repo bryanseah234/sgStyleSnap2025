@@ -42,6 +42,8 @@
           :key="item.name"
           :to="item.path"
           class="block"
+          @mouseenter="item.name === 'Home' ? handleHomeHover : undefined"
+          @touchstart="item.name === 'Home' ? handleHomeHover : undefined"
         >
           <div :class="`flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative transition-all duration-200 hover:scale-105 hover:translate-x-1 ${
             $route.path === item.path
@@ -64,7 +66,7 @@
           :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
         >
           <span class="font-medium text-secondary-foreground">
-            {{ theme.value === 'dark' ? 'Dark Mode' : 'Light Mode' }}
+            {{ theme.value === 'dark' ? 'Light Mode' : 'Dark Mode' }}
           </span>
           <!-- Sun icon for dark mode (clicking will switch to light) -->
           <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
@@ -172,6 +174,10 @@ import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { createPageUrl } from '@/utils'
+import { ClothesService } from '@/services/clothesService'
+import { OutfitsService } from '@/services/outfitsService'
+import { FriendsService } from '@/services/friendsService'
+import { NotificationsService } from '@/services/notificationsService'
 import { 
   Home, 
   Shirt, 
@@ -189,8 +195,23 @@ const router = useRouter()
 const { theme, loadUser, refreshTheme, toggleTheme } = useTheme()
 const authStore = useAuthStore()
 
+// Service instances for data prefetching
+const clothesService = new ClothesService()
+const outfitsService = new OutfitsService()
+const friendsService = new FriendsService()
+const notificationsService = new NotificationsService()
+
 // Loading state for initial app setup
 const loading = ref(true)
+
+// Cache for prefetched data
+const homeDataCache = ref({
+  items: null,
+  outfits: null,
+  friends: null,
+  notifications: null,
+  timestamp: null
+})
 
 /**
  * Navigation items configuration
@@ -244,6 +265,80 @@ const handleLogout = () => {
 }
 
 /**
+ * Prefetches home page data for instant loading
+ * 
+ * Loads all data needed by the home page in parallel to ensure
+ * instant rendering when the user navigates to the home page.
+ */
+const prefetchHomeData = async () => {
+  try {
+    // Check if we already have recent data (within 2 minutes)
+    if (homeDataCache.value.timestamp && 
+        Date.now() - homeDataCache.value.timestamp < 2 * 60 * 1000) {
+      console.log('✅ Layout: Using cached home data')
+      return
+    }
+
+    console.log('🔄 Layout: Prefetching home data...')
+    
+    const user = authStore.user || authStore.profile
+    if (!user?.id) {
+      console.log('⚠️ Layout: No user ID available for prefetching')
+      return
+    }
+
+    // Fetch all data in parallel for maximum speed
+    const [itemsResult, outfitsData, friendsData, notificationsData] = await Promise.all([
+      clothesService.getClothes({ owner_id: user.id, limit: 6 }).catch(err => {
+        console.error('Layout: Error prefetching items:', err)
+        return { success: false, data: [] }
+      }),
+      outfitsService.getOutfits({ limit: 3 }).catch(err => {
+        console.error('Layout: Error prefetching outfits:', err)
+        return []
+      }),
+      friendsService.getFriends().catch(err => {
+        console.error('Layout: Error prefetching friends:', err)
+        return []
+      }),
+      notificationsService.getNotifications().catch(err => {
+        console.error('Layout: Error prefetching notifications:', err)
+        return []
+      })
+    ])
+
+    // Cache the results
+    homeDataCache.value = {
+      items: itemsResult.success ? itemsResult.data : [],
+      outfits: outfitsData,
+      friends: friendsData,
+      notifications: notificationsData,
+      timestamp: Date.now()
+    }
+
+    console.log('✅ Layout: Home data prefetched successfully', {
+      items: homeDataCache.value.items?.length || 0,
+      outfits: homeDataCache.value.outfits?.length || 0,
+      friends: homeDataCache.value.friends?.length || 0,
+      notifications: homeDataCache.value.notifications?.length || 0
+    })
+  } catch (error) {
+    console.error('❌ Layout: Error prefetching home data:', error)
+  }
+}
+
+/**
+ * Handles hover/touch on Home navigation link
+ * 
+ * Prefetches home data in the background for instant loading
+ * when the user clicks to navigate to the home page.
+ */
+const handleHomeHover = () => {
+  // Don't block the UI, prefetch in background
+  prefetchHomeData()
+}
+
+/**
  * Component mounted lifecycle hook
  * 
  * Loads user data and theme preferences when the component is mounted.
@@ -261,6 +356,9 @@ onMounted(async () => {
   // Force refresh theme to ensure it's properly applied
   refreshTheme()
   loading.value = false
+
+  // Prefetch home data immediately after loading user
+  prefetchHomeData()
 })
 </script>
 
