@@ -150,6 +150,47 @@
               }`"
             />
           </div>
+
+          <div>
+            <label :class="`text-base mb-2 block ${
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+            }`">
+              Type
+            </label>
+            <input
+              v-model="formData.type"
+              placeholder="e.g., T-Shirt, Jeans, Sneakers"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
+                theme.value === 'dark'
+                  ? 'bg-zinc-800 border-zinc-700 text-white border'
+                  : 'bg-stone-50 border-stone-200 text-black border'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
+              }`"
+            />
+          </div>
+
+          <div>
+            <label :class="`text-base mb-2 block ${
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+            }`">
+              Privacy *
+            </label>
+            <select
+              v-model="formData.privacy"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
+                theme.value === 'dark'
+                  ? 'bg-zinc-800 border-zinc-700 text-white border'
+                  : 'bg-stone-50 border-stone-200 text-black border'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
+              }`"
+            >
+              <option value="private">Private (Only Me)</option>
+              <option value="friends">Friends</option>
+              <option value="public">Public (Everyone)</option>
+            </select>
+          </div>
         </div>
 
         <!-- Action Buttons -->
@@ -203,13 +244,15 @@ const previewUrl = ref('')
 const formData = ref({
   name: '',
   category: '',
+  type: '',
   color: '',
   brand: '',
+  privacy: 'friends', // Default to friends
   image_url: '',
 })
 
 const canSubmit = computed(() => {
-  return formData.value.name && formData.value.category && formData.value.image_url
+  return formData.value.name && formData.value.category && formData.value.privacy && formData.value.image_url
 })
 
 const handleFileUpload = async (e) => {
@@ -255,9 +298,11 @@ const handleSubmit = async () => {
     const result = await clothesService.createClothingItem({
       name: formData.value.name,
       category: formData.value.category,
+      type: formData.value.type || null,
       image_url: formData.value.image_url,
       color: formData.value.color || null,
       brand: formData.value.brand || null,
+      privacy: formData.value.privacy,
     })
 
     if (result.success) {
