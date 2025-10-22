@@ -10,57 +10,25 @@
   <div class="add-item-form">
     <!-- Header -->
     <div class="form-header">
-      <div class="header-icon">
-        <Plus class="w-6 h-6" />
-      </div>
-      <h2 class="header-title">Add Item</h2>
+      <h2 class="header-title">Add New Item</h2>
     </div>
 
     <form @submit.prevent="handleSubmit" class="form-content">
-      <!-- PHOTO Section -->
+      <!-- Item Name -->
       <div class="form-section">
-        <label class="form-label">PHOTO</label>
-        <div class="photo-upload-area">
-          <div v-if="previewUrl" class="photo-preview">
-            <img :src="previewUrl" :alt="formData.name || 'Item preview'" class="preview-image" />
-            <button type="button" @click="removeImage" class="remove-image-btn">
-              <X class="w-4 h-4" />
-            </button>
-          </div>
-          <div v-else class="photo-upload-zone" :class="{ 'dragover': isDragOver }">
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              @change="handleFileUpload"
-              @dragover.prevent="isDragOver = true"
-              @dragleave.prevent="isDragOver = false"
-              @drop.prevent="handleDrop"
-              class="file-input"
-            />
-            <div class="upload-content">
-              <Upload class="upload-icon" />
-              <span class="upload-text">Choose Photo</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- NAME Section -->
-      <div class="form-section">
-        <label class="form-label">NAME</label>
+        <label class="form-label">Item Name</label>
         <input
           v-model="formData.name"
           type="text"
-          placeholder="Blue Denim Jacket"
+          placeholder="Enter item name"
           class="form-input"
           required
         />
       </div>
 
-      <!-- CATEGORY Section -->
+      <!-- Category -->
       <div class="form-section">
-        <label class="form-label">CATEGORY</label>
+        <label class="form-label">Category</label>
         <select v-model="formData.category" class="form-select" required>
           <option value="">Select category</option>
           <option value="tops">Tops</option>
@@ -71,41 +39,32 @@
         </select>
       </div>
 
-
-      <!-- BRAND Section -->
+      <!-- Brand -->
       <div class="form-section">
-        <label class="form-label">BRAND</label>
+        <label class="form-label">Brand</label>
         <input
           v-model="formData.brand"
           type="text"
-          placeholder="Nike, Zara, H&M"
+          placeholder="Enter brand (optional)"
           class="form-input"
         />
       </div>
 
-      <!-- PRIVACY Section -->
+      <!-- Image -->
       <div class="form-section">
-        <label class="form-label">PRIVACY</label>
-        <select v-model="formData.privacy" class="form-select">
-          <option value="friends">Visible to Friends</option>
-          <option value="private">Private</option>
-          <option value="public">Public</option>
-        </select>
-        
-        <!-- Privacy Details -->
-        <div class="privacy-details">
-          <div class="privacy-chips">
-            <div 
-              v-for="detail in PRIVACY_DETAILS" 
-              :key="detail.value"
-              class="privacy-chip"
-              :class="{ 'active': formData.privacyDetails.includes(detail.value) }"
-              @click="togglePrivacyDetail(detail.value)"
-            >
-              <div class="chip-dot"></div>
-              <span class="chip-text">{{ detail.label }}</span>
-            </div>
-          </div>
+        <label class="form-label">Image</label>
+        <div class="image-upload">
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
+            @change="handleFileUpload"
+            class="file-input"
+          />
+          <button type="button" @click="$refs.fileInput.click()" class="file-button">
+            Choose file
+          </button>
+          <span class="file-name">{{ selectedFileName || 'No file chosen' }}</span>
         </div>
       </div>
 
@@ -140,10 +99,9 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { Brain, AlertCircle, Upload, X, Plus } from 'lucide-vue-next'
+import { Brain, AlertCircle } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
-import { PRIVACY_DETAILS } from '@/utils/clothing-constants'
 
 // Props
 const props = defineProps({
@@ -158,8 +116,7 @@ const emit = defineEmits(['close', 'itemAdded'])
 
 // State
 const uploading = ref(false)
-const isDragOver = ref(false)
-const previewUrl = ref('')
+const selectedFileName = ref('')
 const aiRecognitionStatus = ref(null)
 const clothesService = new ClothesService()
 
@@ -168,8 +125,6 @@ const formData = ref({
   name: '',
   category: '',
   brand: '',
-  privacy: 'friends',
-  privacyDetails: ['photo', 'name', 'category'],
   image_file: null
 })
 
@@ -186,43 +141,25 @@ const handleFileUpload = async (event) => {
   const file = event.target.files?.[0]
   if (!file) return
   
-  await processImageFile(file)
-}
-
-const handleDrop = async (event) => {
-  isDragOver.value = false
-  const file = event.dataTransfer.files?.[0]
-  if (!file) return
+  selectedFileName.value = file.name
+  formData.value.image_file = file
   
-  await processImageFile(file)
-}
-
-const processImageFile = async (file) => {
-  // Validate file
-  const validation = validateImageForClassification(file)
-  if (!validation.isValid) {
-    aiRecognitionStatus.value = {
-      type: 'error',
-      message: validation.errors.join(', ')
-    }
-    return
-  }
-
-  uploading.value = true
+  // Show AI recognition status
   aiRecognitionStatus.value = {
     type: 'loading',
     message: 'Analyzing image with AI...'
   }
 
   try {
-    // Create preview URL
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      previewUrl.value = e.target.result
+    // Validate file
+    const validation = validateImageForClassification(file)
+    if (!validation.isValid) {
+      aiRecognitionStatus.value = {
+        type: 'error',
+        message: validation.errors.join(', ')
+      }
+      return
     }
-    reader.readAsDataURL(file)
-    
-    formData.value.image_file = file
 
     // Try AI classification (optional - don't let it break the form)
     try {
@@ -265,25 +202,9 @@ const processImageFile = async (file) => {
       type: 'error',
       message: 'Failed to process image. Please try again.'
     }
-  } finally {
-    uploading.value = false
   }
 }
 
-const removeImage = () => {
-  formData.value.image_file = null
-  previewUrl.value = ''
-  aiRecognitionStatus.value = null
-}
-
-const togglePrivacyDetail = (detail) => {
-  const index = formData.value.privacyDetails.indexOf(detail)
-  if (index > -1) {
-    formData.value.privacyDetails.splice(index, 1)
-  } else {
-    formData.value.privacyDetails.push(detail)
-  }
-}
 
 const handleSubmit = async () => {
   if (!canSubmit.value || uploading.value) return
@@ -295,7 +216,7 @@ const handleSubmit = async () => {
       name: formData.value.name,
       category: formData.value.category,
       brand: formData.value.brand || null,
-      privacy: formData.value.privacy,
+      privacy: 'private',
       is_favorite: false,
       style_tags: [],
       image_file: formData.value.image_file
@@ -340,11 +261,9 @@ const resetForm = () => {
     name: '',
     category: '',
     brand: '',
-    privacy: 'friends',
-    privacyDetails: ['photo', 'name', 'category'],
     image_file: null
   }
-  previewUrl.value = ''
+  selectedFileName.value = ''
   aiRecognitionStatus.value = null
 }
 
@@ -361,32 +280,16 @@ watch(() => props.isOpen, (isOpen) => {
 .add-item-form {
   max-width: 400px;
   width: 400px;
-  max-height: 80vh;
   margin: 0 auto;
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
   color: #333;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
 }
 
 .form-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   margin-bottom: 24px;
-}
-
-.header-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
 }
 
 .header-title {
@@ -399,13 +302,13 @@ watch(() => props.isOpen, (isOpen) => {
 .form-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .form-label {
@@ -415,96 +318,34 @@ watch(() => props.isOpen, (isOpen) => {
   margin-bottom: 4px;
 }
 
-.photo-upload-area {
-  position: relative;
-  height: 100px;
-  flex-shrink: 0;
-}
-
-.photo-preview {
-  position: relative;
-  width: 100%;
-  height: 100px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f9f9f9;
-}
-
-.preview-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  background: rgba(0, 0, 0, 0.7);
-  border: none;
-  border-radius: 50%;
-  color: white;
+.image-upload {
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.remove-image-btn:hover {
-  background: rgba(0, 0, 0, 0.9);
-}
-
-.photo-upload-zone {
-  width: 100%;
-  height: 100px;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  background: #f9f9f9;
-  flex-shrink: 0;
-}
-
-.photo-upload-zone:hover,
-.photo-upload-zone.dragover {
-  border-color: #667eea;
-  background: #f0f4ff;
+  gap: 12px;
 }
 
 .file-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
+  display: none;
 }
 
-.upload-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.upload-icon {
-  width: 32px;
-  height: 32px;
-  color: #999;
-}
-
-.upload-text {
+.file-button {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 500;
-  color: #999;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-button:hover {
+  background: #e9e9e9;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #666;
 }
 
 .form-input,
@@ -529,55 +370,6 @@ watch(() => props.isOpen, (isOpen) => {
   color: #999;
 }
 
-.privacy-details {
-  margin-top: 12px;
-}
-
-.privacy-chips {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.privacy-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #f5f5f5;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid #ddd;
-  color: #666;
-}
-
-.privacy-chip:hover {
-  background: #e9e9e9;
-}
-
-.privacy-chip.active {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
-}
-
-.chip-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #999;
-  transition: background 0.2s;
-}
-
-.privacy-chip.active .chip-dot {
-  background: white;
-}
-
-.chip-text {
-  font-size: 14px;
-  font-weight: 500;
-}
 
 .ai-status {
   margin-top: 12px;
@@ -667,3 +459,4 @@ watch(() => props.isOpen, (isOpen) => {
   }
 }
 </style>
+
