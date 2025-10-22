@@ -195,11 +195,11 @@ export default function UploadItemModal({ open, onClose }) {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tops">Tops</SelectItem>
-                  <SelectItem value="bottoms">Bottoms</SelectItem>
+                  <SelectItem value="top">Tops</SelectItem>
+                  <SelectItem value="bottom">Bottoms</SelectItem>
                   <SelectItem value="shoes">Shoes</SelectItem>
-                  <SelectItem value="accessories">Accessories</SelectItem>
                   <SelectItem value="outerwear">Outerwear</SelectItem>
+                  <SelectItem value="hat">Accessories</SelectItem>
                 </SelectContent>
               </Select>
             </div>

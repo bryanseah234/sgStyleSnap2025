@@ -322,7 +322,7 @@ const showAddMenu = ref(false)
 const activeCategory = ref('all')
 const showFavoritesOnly = ref(false)
 
-const categories = ['all', 'tops', 'bottoms', 'outerwear', 'shoes', 'accessories']
+const categories = ['all', 'top', 'bottom', 'outerwear', 'shoes', 'hat']
 
 // Navigation methods
 const navigateToManual = () => {

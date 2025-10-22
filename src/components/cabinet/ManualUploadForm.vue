@@ -105,11 +105,11 @@
               }`"
             >
               <option value="">Select category</option>
-              <option value="tops">Tops</option>
-              <option value="bottoms">Bottoms</option>
+              <option value="top">Tops</option>
+              <option value="bottom">Bottoms</option>
               <option value="shoes">Shoes</option>
-              <option value="accessories">Accessories</option>
               <option value="outerwear">Outerwear</option>
+              <option value="hat">Accessories</option>
             </select>
           </div>
 

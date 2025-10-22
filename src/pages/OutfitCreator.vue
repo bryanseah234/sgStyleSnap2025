@@ -913,23 +913,32 @@ const generateAISuggestion = async () => {
     // For now, use mock logic to select items from different categories
     
     const categories = {
-      tops: wardrobeItems.value.filter(item => item.category === 'tops'),
-      bottoms: wardrobeItems.value.filter(item => item.category === 'bottoms'),
-      shoes: wardrobeItems.value.filter(item => item.category === 'shoes'),
-      accessories: wardrobeItems.value.filter(item => item.category === 'accessories'),
-      outerwear: wardrobeItems.value.filter(item => item.category === 'outerwear')
+      top: wardrobeItems.value.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse' || cat === 'hoodie' || cat === 'longsleeve' || cat === 'polo' || cat === 'body' || cat === 'undershirt'
+      }),
+      bottom: wardrobeItems.value.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt'
+      }),
+      shoes: wardrobeItems.value.filter(item => item.category?.toLowerCase() === 'shoes'),
+      hat: wardrobeItems.value.filter(item => item.category?.toLowerCase() === 'hat'),
+      outerwear: wardrobeItems.value.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'outerwear' || cat === 'blazer'
+      })
     }
     
     const selectedItems = []
     
     // Try to pick one item from each category (smart outfit composition)
-    if (categories.tops.length > 0) {
-      const randomTop = categories.tops[Math.floor(Math.random() * categories.tops.length)]
+    if (categories.top.length > 0) {
+      const randomTop = categories.top[Math.floor(Math.random() * categories.top.length)]
       selectedItems.push({ item: randomTop, y: 100 })
     }
     
-    if (categories.bottoms.length > 0) {
-      const randomBottom = categories.bottoms[Math.floor(Math.random() * categories.bottoms.length)]
+    if (categories.bottom.length > 0) {
+      const randomBottom = categories.bottom[Math.floor(Math.random() * categories.bottom.length)]
       selectedItems.push({ item: randomBottom, y: 250 })
     }
     
@@ -939,14 +948,34 @@ const generateAISuggestion = async () => {
     }
     
     // Optionally add accessories or outerwear (50% chance)
-    if (categories.accessories.length > 0 && Math.random() > 0.5) {
-      const randomAccessory = categories.accessories[Math.floor(Math.random() * categories.accessories.length)]
+    if (categories.hat.length > 0 && Math.random() > 0.5) {
+      const randomAccessory = categories.hat[Math.floor(Math.random() * categories.hat.length)]
       selectedItems.push({ item: randomAccessory, y: 150 })
     }
     
     if (categories.outerwear.length > 0 && Math.random() > 0.5) {
       const randomOuterwear = categories.outerwear[Math.floor(Math.random() * categories.outerwear.length)]
       selectedItems.push({ item: randomOuterwear, y: 80 })
+    }
+    
+    // Validate: Ensure we have at least one top and one bottom
+    const hasTop = selectedItems.some(selected => {
+      const category = selected.item.category?.toLowerCase()
+      return category === 'top' || category === 't-shirt' || category === 'shirt' || 
+             category === 'blouse' || category === 'hoodie' || category === 'longsleeve' || 
+             category === 'polo' || category === 'body' || category === 'undershirt' ||
+             category === 'outerwear' || category === 'blazer'
+    })
+    
+    const hasBottom = selectedItems.some(selected => {
+      const category = selected.item.category?.toLowerCase()
+      return category === 'bottom' || category === 'pants' || category === 'shorts' || category === 'skirt'
+    })
+    
+    if (!hasTop || !hasBottom) {
+      console.log('OutfitCreator: Cannot generate valid outfit - missing required categories')
+      alert('Unable to generate outfit. You need at least one top and one bottom in your closet.')
+      return
     }
     
     // Place selected items on canvas
@@ -1145,12 +1174,15 @@ const validateOutfit = () => {
   // Validate: At least one top and one bottom
   const hasTop = canvasItems.value.some(item => {
     const category = item.category?.toLowerCase()
-    return category === 'tops' || category === 'top' || category === 'outerwear'
+    return category === 'top' || category === 't-shirt' || category === 'shirt' || 
+           category === 'blouse' || category === 'hoodie' || category === 'longsleeve' || 
+           category === 'polo' || category === 'body' || category === 'undershirt' ||
+           category === 'outerwear' || category === 'blazer'
   })
   
   const hasBottom = canvasItems.value.some(item => {
     const category = item.category?.toLowerCase()
-    return category === 'bottoms' || category === 'bottom'
+    return category === 'bottom' || category === 'pants' || category === 'shorts' || category === 'skirt'
   })
   
   if (!hasTop) {
