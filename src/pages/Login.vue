@@ -168,10 +168,31 @@
         <p :class="`text-sm ${
           theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
         }`">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you agree to our 
+          <button
+            @click="showTerms = true"
+            :class="`underline hover:no-underline transition-all ${
+              theme.value === 'dark' ? 'text-zinc-400 hover:text-white' : 'text-stone-600 hover:text-black'
+            }`"
+          >
+            Terms of Service
+          </button>
+          and 
+          <button
+            @click="showPrivacy = true"
+            :class="`underline hover:no-underline transition-all ${
+              theme.value === 'dark' ? 'text-zinc-400 hover:text-white' : 'text-stone-600 hover:text-black'
+            }`"
+          >
+            Privacy Policy
+          </button>
         </p>
       </div>
     </div>
+
+    <!-- Modals -->
+    <TermsOfServiceModal :isOpen="showTerms" @close="showTerms = false" />
+    <PrivacyPolicyModal :isOpen="showPrivacy" @close="showPrivacy = false" />
   </div>
 </template>
 
@@ -191,6 +212,8 @@ import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { Shirt, Palette, Users, AlertCircle } from 'lucide-vue-next'
 import ThemeToggle from '@/components/ThemeToggle.vue'
+import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
+import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 
 const router = useRouter()
 const { theme, loadUser } = useTheme()
@@ -199,6 +222,10 @@ const authStore = useAuthStore()
 // Use auth store state
 const loading = computed(() => authStore.loading)
 const error = computed(() => authStore.error)
+
+// Modal state
+const showTerms = ref(false)
+const showPrivacy = ref(false)
 
 const handleGoogleSignIn = async () => {
   console.log('🔑 Login: Button clicked!')

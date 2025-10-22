@@ -170,23 +170,64 @@ export class OutfitsService {
     }
   }
 
-  async updateOutfit(outfitId, updates) {
+  async updateOutfit(outfitId, outfitData) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
+      // Update outfit metadata
+      const { data: outfit, error: outfitError } = await supabase
         .from('outfits')
-        .update(updates)
+        .update({
+          outfit_name: outfitData.outfit_name,
+          description: outfitData.description,
+          occasion: outfitData.occasion,
+          weather_condition: outfitData.weather_condition,
+          temperature: outfitData.temperature,
+          is_public: outfitData.is_public,
+          style_tags: outfitData.style_tags
+        })
         .eq('id', outfitId)
         .eq('owner_id', user.id)
         .select()
         .single()
 
-      if (error) throw error
-      return data
+      if (outfitError) throw outfitError
+
+      // Update outfit items if provided
+      if (outfitData.items) {
+        // Delete existing items
+        const { error: deleteError } = await supabase
+          .from('outfit_items')
+          .delete()
+          .eq('outfit_id', outfitId)
+
+        if (deleteError) throw deleteError
+
+        // Insert new items
+        if (outfitData.items.length > 0) {
+          const outfitItems = outfitData.items.map((item, index) => ({
+            outfit_id: outfitId,
+            clothing_item_id: item.clothing_item_id,
+            position_x: item.position_x || 0,
+            position_y: item.position_y || 0,
+            z_index: item.z_index || index,
+            rotation: item.rotation || 0,
+            scale: item.scale || 1
+          }))
+
+          const { error: itemsError } = await supabase
+            .from('outfit_items')
+            .insert(outfitItems)
+
+          if (itemsError) throw itemsError
+        }
+      }
+
+      return outfit
     } catch (error) {
       handleSupabaseError(error, 'update outfit')
+      return null
     }
   }
 

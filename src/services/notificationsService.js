@@ -383,6 +383,45 @@ export class NotificationsService {
       return { success: false, error }
     }
   }
+
+  // Create friend outfit suggestion
+  async createFriendOutfitSuggestion(friendId, outfitItems, message = null) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      console.log('NotificationsService: Creating friend outfit suggestion')
+      console.log('Friend ID:', friendId)
+      console.log('Outfit items:', outfitItems)
+      console.log('Message:', message)
+
+      // Create the friend outfit suggestion record
+      // This will trigger a notification via database trigger
+      const { data, error } = await supabase
+        .from('friend_outfit_suggestions')
+        .insert({
+          owner_id: friendId, // The friend who owns the items
+          suggester_id: user.id, // Current user who is creating the suggestion
+          outfit_items: outfitItems, // Array of items with positions
+          message: message,
+          status: 'pending'
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('NotificationsService: Error creating friend outfit suggestion:', error)
+        throw error
+      }
+
+      console.log('NotificationsService: Friend outfit suggestion created:', data)
+      return { success: true, data }
+    } catch (error) {
+      console.error('NotificationsService: Error in createFriendOutfitSuggestion:', error)
+      handleSupabaseError(error, 'create friend outfit suggestion')
+      return { success: false, error }
+    }
+  }
 }
 
 export const notificationsService = new NotificationsService()

@@ -10,9 +10,9 @@
           <p :class="`text-lg ${
             theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
           }`">
-            {{ currentSubRoute === 'suggested' ? 'Get AI-powered outfit suggestions based on your wardrobe and style' : 
+            {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
                currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
-               currentSubRoute === 'friend' ? `Create outfits using items from ${route.params.username}'s closet` :
+               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
                currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
                'Create and save your perfect looks' }}
           </p>
@@ -82,6 +82,21 @@
             <span class="hidden sm:inline">Clear</span>
           </button>
           
+          <!-- Regenerate AI button (only in AI mode) -->
+          <button
+            v-if="currentSubRoute === 'suggested'"
+            @click="generateAISuggestion"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              theme.value === 'dark'
+                ? 'bg-purple-600 text-white hover:bg-purple-500'
+                : 'bg-purple-500 text-white hover:bg-purple-600'
+            }`"
+            title="Generate New AI Suggestion"
+          >
+            <Sparkles class="w-5 h-5" />
+            <span class="hidden sm:inline">Regenerate</span>
+          </button>
+          
           <button
             @click="saveOutfit"
             :disabled="canvasItems.length === 0 || savingOutfit"
@@ -94,7 +109,7 @@
             }`"
           >
             <Save class="w-5 h-5" />
-            <span class="hidden sm:inline">Save Outfit</span>
+            <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
           </button>
           
           <button
@@ -208,8 +223,31 @@
               </span>
             </div>
             
-            <!-- Second Row: Dropdown -->
-            <div>
+            <!-- Second Row: Dropdown (or Info Badge for special modes) -->
+            <div v-if="currentSubRoute === 'suggested'">
+              <!-- AI Suggestions Badge (non-editable) -->
+              <div :class="`w-full px-3 py-2 rounded-lg border text-sm flex items-center gap-2 ${
+                theme.value === 'dark'
+                  ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
+                  : 'bg-white border-stone-300 text-stone-700'
+              }`">
+                <Sparkles class="w-4 h-4" />
+                <span>AI Suggestions</span>
+              </div>
+            </div>
+            <div v-else-if="currentSubRoute === 'friend'">
+              <!-- Friend's Items Badge (non-editable) -->
+              <div :class="`w-full px-3 py-2 rounded-lg border text-sm flex items-center gap-2 ${
+                theme.value === 'dark'
+                  ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
+                  : 'bg-white border-stone-300 text-stone-700'
+              }`">
+                <Users class="w-4 h-4" />
+                <span>{{ friendProfile ? `${friendProfile.username}'s Items` : "Friend's Items" }}</span>
+              </div>
+            </div>
+            <div v-else>
+              <!-- Dropdown for other modes -->
               <select
                 v-model="itemsSource"
                 :class="`w-full px-3 py-2 rounded-lg border text-sm ${
@@ -219,8 +257,6 @@
                 }`"
               >
                 <option value="my-cabinet">My Closet</option>
-                <option value="friends">Friends' Items</option>
-                <option value="suggestions">AI Suggestions</option>
               </select>
             </div>
           </div>
@@ -233,13 +269,25 @@
               <h3 :class="`text-lg font-bold ${
                 theme.value === 'dark' ? 'text-white' : 'text-black'
               }`">
-                Your Items
+                {{ itemsSectionTitle }}
               </h3>
               <span :class="`text-sm px-2 py-1 rounded-full ${
                 theme.value === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-stone-100 text-stone-600'
               }`">
                 {{ filteredItems.length }}
               </span>
+            </div>
+            
+            <!-- AI Mode Info Banner -->
+            <div v-if="currentSubRoute === 'suggested'" :class="`mb-4 p-3 rounded-lg text-xs ${
+              theme.value === 'dark' 
+                ? 'bg-purple-900/30 border border-purple-800 text-purple-300' 
+                : 'bg-purple-50 border border-purple-200 text-purple-700'
+            }`">
+              <div class="flex items-start gap-2">
+                <Sparkles class="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>AI has placed items on the canvas. You can still add more items manually or regenerate the suggestion.</span>
+              </div>
             </div>
             
             <!-- Category Filters -->
@@ -324,13 +372,19 @@
               <div :class="`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
                 theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
               }`">
-                <Shirt :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+                <Shirt v-if="itemsSource === 'my-cabinet'" :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+                <Users v-else-if="itemsSource === 'friends'" :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+                <Sparkles v-else :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
               </div>
               <p :class="`text-sm font-medium mb-1 ${theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'}`">
-                No items found
+                {{ itemsSource === 'my-cabinet' ? 'No items in your closet' : 
+                   itemsSource === 'friends' ? "No friend's items available" :
+                   'No AI suggestions available' }}
               </p>
               <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
-                Try adjusting your filters
+                {{ itemsSource === 'my-cabinet' ? 'Add items to your closet to get started' : 
+                   itemsSource === 'friends' ? 'Connect with friends to access their items' :
+                   'AI suggestions are coming soon!' }}
               </p>
             </div>
           </div>
@@ -559,11 +613,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
+import { OutfitsService } from '@/services/outfitsService'
+import { FriendsService } from '@/services/friendsService'
+import { NotificationsService } from '@/services/notificationsService'
 import { 
   Undo, 
   Redo, 
@@ -580,9 +637,13 @@ import {
 const { theme } = useTheme()
 const authStore = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 
-// Initialize clothes service
+// Initialize services
 const clothesService = new ClothesService()
+const outfitsService = new OutfitsService()
+const friendsService = new FriendsService()
+const notificationsService = new NotificationsService()
 
 // Use computed to get reactive user data from auth store
 const currentUser = computed(() => authStore.user || authStore.profile)
@@ -593,13 +654,13 @@ const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
     case 'suggested': return 'AI Suggested Outfits'
     case 'personal': return 'Create Your Outfit'
-    case 'friend': return `Create with Friend's Items`
+    case 'friend': return friendProfile.value ? `Create Outfit for ${friendProfile.value.username}` : `Create with Friend's Items`
     case 'edit': return 'Edit Outfit'
     default: return 'Create Outfit'
   }
 })
 
-// State
+// State - Initialize itemsSource based on route
 const itemsSource = ref('my-cabinet')
 const activeCategory = ref('all')
 const wardrobeItems = ref([])
@@ -608,6 +669,29 @@ const selectedItemId = ref(null)
 const showGrid = ref(false)
 const savingOutfit = ref(false)
 const canvasContainer = ref(null)
+
+// State for friend data
+const friendProfile = ref(null)
+const friendUsername = computed(() => route.params.username)
+
+// State for edit mode
+const currentOutfitId = ref(null)
+const currentOutfitName = ref(null)
+
+// Set itemsSource based on current sub-route
+const initializeItemsSource = () => {
+  if (currentSubRoute.value === 'personal' || currentSubRoute.value === 'edit') {
+    itemsSource.value = 'my-cabinet'
+  } else if (currentSubRoute.value === 'friend') {
+    itemsSource.value = 'friends'
+  } else if (currentSubRoute.value === 'suggested') {
+    // For AI suggestions, still show user's items so they can add more
+    itemsSource.value = 'my-cabinet'
+  } else {
+    itemsSource.value = 'my-cabinet' // Default
+  }
+  console.log('OutfitCreator: Initialized items source to:', itemsSource.value, 'for route:', currentSubRoute.value)
+}
 
 // History for undo/redo
 const history = ref([[]])
@@ -619,28 +703,23 @@ const categories = ['all', 'tops', 'bottoms', 'shoes', 'accessories', 'outerwear
 // Computed
 const filteredItems = computed(() => {
   let filtered = wardrobeItems.value
-  console.log('Dashboard: Filtering items. Total items:', wardrobeItems.value.length, 'Category:', activeCategory.value, 'Source:', itemsSource.value)
+  console.log('OutfitCreator: Filtering items. Total items:', wardrobeItems.value.length, 'Category:', activeCategory.value, 'Source:', itemsSource.value)
   
   // Filter by category
   if (activeCategory.value !== 'all') {
     filtered = filtered.filter(item => item.category === activeCategory.value)
   }
   
-  // Filter by source (for now, only show user's items when "my-cabinet" is selected)
+  // Filter by source (items are already loaded based on source in loadWardrobeItems)
   if (itemsSource.value === 'my-cabinet') {
-    // Items are already filtered by user in loadWardrobeItems, so no additional filtering needed
-    console.log('Dashboard: Showing user\'s closet items')
+    console.log('OutfitCreator: Showing user\'s closet items')
   } else if (itemsSource.value === 'friends') {
-    // TODO: Implement friends' items loading
-    console.log('Dashboard: Friends items not implemented yet')
-    filtered = []
+    console.log('OutfitCreator: Showing friend\'s items')
   } else if (itemsSource.value === 'suggestions') {
-    // TODO: Implement AI suggestions
-    console.log('Dashboard: AI suggestions not implemented yet')
-    filtered = []
+    console.log('OutfitCreator: Showing AI suggestions')
   }
   
-  console.log('Dashboard: Filtered items:', filtered.length)
+  console.log('OutfitCreator: Filtered items:', filtered.length)
   return filtered
 })
 
@@ -651,35 +730,223 @@ const selectedItem = computed(() => {
   return canvasItems.value.find(item => item.id === selectedItemId.value)
 })
 
+const itemsSectionTitle = computed(() => {
+  if (currentSubRoute.value === 'friend' && friendProfile.value) {
+    return `${friendProfile.value.username}'s Closet`
+  }
+  switch (itemsSource.value) {
+    case 'my-cabinet': return 'My Closet'
+    case 'friends': return "Friend's Items"
+    case 'suggestions': return 'AI Suggestions'
+    default: return 'Items'
+  }
+})
+
+const saveButtonLabel = computed(() => {
+  if (currentSubRoute.value === 'friend') {
+    return 'Share Outfit'
+  }
+  if (currentSubRoute.value === 'edit' && currentOutfitId.value) {
+    return 'Update Outfit'
+  }
+  return 'Save Outfit'
+})
+
+// Watch for changes in items source and reload items
+watch(itemsSource, async (newSource, oldSource) => {
+  if (newSource !== oldSource) {
+    console.log('OutfitCreator: Items source changed from', oldSource, 'to', newSource)
+    await loadWardrobeItems()
+  }
+})
+
 // Methods
+const loadFriendProfile = async (username) => {
+  try {
+    console.log('OutfitCreator: Loading friend profile:', username)
+    const friend = await friendsService.getFriendByUsername(username)
+    
+    if (friend) {
+      friendProfile.value = friend
+      console.log('OutfitCreator: Loaded friend profile:', friend)
+    } else {
+      console.error('OutfitCreator: Friend not found')
+      friendProfile.value = null
+    }
+  } catch (error) {
+    console.error('OutfitCreator: Error loading friend profile:', error)
+    friendProfile.value = null
+  }
+}
+
 const loadWardrobeItems = async () => {
   try {
-    console.log('Dashboard: Loading wardrobe items...')
-    console.log('Dashboard: Current user:', currentUser.value)
+    console.log('OutfitCreator: Loading wardrobe items...')
+    console.log('OutfitCreator: Current user:', currentUser.value)
+    console.log('OutfitCreator: Items source:', itemsSource.value)
+    console.log('OutfitCreator: Current route:', currentSubRoute.value)
     
     if (!currentUser.value?.id) {
-      console.log('Dashboard: No user ID, cannot load items')
+      console.log('OutfitCreator: No user ID, cannot load items')
       wardrobeItems.value = []
       return
     }
     
-    // Load items from user's closet using ClothesService
-    const result = await clothesService.getClothes({
-      owner_id: currentUser.value.id,
-      limit: 100 // Load up to 100 items
-    })
-    
-    if (result && result.success) {
-      wardrobeItems.value = result.data || []
-      console.log('Dashboard: Loaded items from user closet:', wardrobeItems.value.length, 'items')
-    } else {
-      console.error('Dashboard: Failed to load items:', result?.error || 'Unknown error')
+    // Load items based on source
+    if (itemsSource.value === 'my-cabinet') {
+      // Load items from user's closet using ClothesService
+      const result = await clothesService.getClothes({
+        owner_id: currentUser.value.id,
+        limit: 100 // Load up to 100 items
+      })
+      
+      if (result && result.success) {
+        wardrobeItems.value = result.data || []
+        console.log('OutfitCreator: Loaded items from user closet:', wardrobeItems.value.length, 'items')
+      } else {
+        console.error('OutfitCreator: Failed to load items:', result?.error || 'Unknown error')
+        wardrobeItems.value = []
+      }
+    } else if (itemsSource.value === 'friends') {
+      // Load items from friend's closet
+      if (!friendProfile.value?.id) {
+        console.log('OutfitCreator: No friend profile loaded, cannot load items')
+        wardrobeItems.value = []
+        return
+      }
+      
+      console.log('OutfitCreator: Loading friend items for:', friendProfile.value.username)
+      const result = await clothesService.getClothes({
+        owner_id: friendProfile.value.id,
+        limit: 100 // Load up to 100 items
+      })
+      
+      if (result && result.success) {
+        wardrobeItems.value = result.data || []
+        console.log('OutfitCreator: Loaded items from friend closet:', wardrobeItems.value.length, 'items')
+      } else {
+        console.error('OutfitCreator: Failed to load friend items:', result?.error || 'Unknown error')
+        wardrobeItems.value = []
+      }
+    } else if (itemsSource.value === 'suggestions') {
+      // AI suggestions - not implemented yet
+      console.log('OutfitCreator: AI suggestions not yet implemented')
       wardrobeItems.value = []
     }
     
   } catch (error) {
-    console.error('Dashboard: Error loading wardrobe items:', error)
+    console.error('OutfitCreator: Error loading wardrobe items:', error)
     wardrobeItems.value = []
+  }
+}
+
+const loadExistingOutfit = async (outfitId) => {
+  try {
+    console.log('OutfitCreator: Loading existing outfit:', outfitId)
+    
+    const outfit = await outfitsService.getOutfit(outfitId)
+    
+    if (!outfit) {
+      console.error('OutfitCreator: Outfit not found')
+      alert('Outfit not found.')
+      router.push('/outfits')
+      return
+    }
+    
+    console.log('OutfitCreator: Loaded outfit:', outfit)
+    
+    // Store outfit ID and name for editing
+    currentOutfitId.value = outfit.id
+    currentOutfitName.value = outfit.outfit_name || outfit.name || 'Untitled Outfit'
+    
+    // Load outfit items onto the canvas
+    if (outfit.outfit_items && outfit.outfit_items.length > 0) {
+      canvasItems.value = outfit.outfit_items.map(outfitItem => ({
+        ...outfitItem.clothing_item,
+        id: `${outfitItem.clothing_item.id}-${Date.now()}-${Math.random()}`,
+        x: outfitItem.position_x || 100,
+        y: outfitItem.position_y || 100,
+        scale: outfitItem.scale || 1,
+        rotation: outfitItem.rotation || 0,
+        zIndex: outfitItem.z_index || 1
+      }))
+      
+      saveToHistory()
+      console.log('OutfitCreator: Loaded', canvasItems.value.length, 'items onto canvas')
+    }
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error loading outfit:', error)
+    alert('Failed to load outfit. Please try again.')
+    router.push('/outfits')
+  }
+}
+
+const generateAISuggestion = async () => {
+  try {
+    console.log('OutfitCreator: Generating AI suggestion...')
+    
+    if (wardrobeItems.value.length === 0) {
+      console.log('OutfitCreator: No items available for AI suggestion')
+      return
+    }
+    
+    // TODO: Replace with actual AI backend call
+    // For now, use mock logic to select items from different categories
+    
+    const categories = {
+      tops: wardrobeItems.value.filter(item => item.category === 'tops'),
+      bottoms: wardrobeItems.value.filter(item => item.category === 'bottoms'),
+      shoes: wardrobeItems.value.filter(item => item.category === 'shoes'),
+      accessories: wardrobeItems.value.filter(item => item.category === 'accessories'),
+      outerwear: wardrobeItems.value.filter(item => item.category === 'outerwear')
+    }
+    
+    const selectedItems = []
+    
+    // Try to pick one item from each category (smart outfit composition)
+    if (categories.tops.length > 0) {
+      const randomTop = categories.tops[Math.floor(Math.random() * categories.tops.length)]
+      selectedItems.push({ item: randomTop, y: 100 })
+    }
+    
+    if (categories.bottoms.length > 0) {
+      const randomBottom = categories.bottoms[Math.floor(Math.random() * categories.bottoms.length)]
+      selectedItems.push({ item: randomBottom, y: 250 })
+    }
+    
+    if (categories.shoes.length > 0) {
+      const randomShoes = categories.shoes[Math.floor(Math.random() * categories.shoes.length)]
+      selectedItems.push({ item: randomShoes, y: 400 })
+    }
+    
+    // Optionally add accessories or outerwear (50% chance)
+    if (categories.accessories.length > 0 && Math.random() > 0.5) {
+      const randomAccessory = categories.accessories[Math.floor(Math.random() * categories.accessories.length)]
+      selectedItems.push({ item: randomAccessory, y: 150 })
+    }
+    
+    if (categories.outerwear.length > 0 && Math.random() > 0.5) {
+      const randomOuterwear = categories.outerwear[Math.floor(Math.random() * categories.outerwear.length)]
+      selectedItems.push({ item: randomOuterwear, y: 80 })
+    }
+    
+    // Place selected items on canvas
+    canvasItems.value = selectedItems.map((selected, index) => ({
+      ...selected.item,
+      id: `${selected.item.id}-${Date.now()}-${index}`,
+      x: 150 + (index * 20), // Slightly offset each item
+      y: selected.y,
+      scale: 1,
+      rotation: 0,
+      zIndex: index + 1
+    }))
+    
+    saveToHistory()
+    console.log('OutfitCreator: AI placed', canvasItems.value.length, 'items on canvas')
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error generating AI suggestion:', error)
   }
 }
 
@@ -842,26 +1109,129 @@ const saveOutfit = async () => {
   
   savingOutfit.value = true
   try {
+    if (currentSubRoute.value === 'friend') {
+      // Share outfit with friend (create suggestion)
+      await shareOutfitWithFriend()
+    } else {
+      // Save outfit to own collection
+      await saveOwnOutfit()
+    }
+  } catch (error) {
+    console.error('OutfitCreator: Error in saveOutfit:', error)
+    alert('Failed to save outfit. Please try again.')
+  } finally {
+    savingOutfit.value = false
+  }
+}
+
+const saveOwnOutfit = async () => {
+  try {
+    const isEditing = !!currentOutfitId.value
+    console.log('OutfitCreator: Saving own outfit (editing:', isEditing, ')')
+    
+    // Prompt for outfit name (pre-fill with current name if editing)
+    const defaultName = isEditing 
+      ? currentOutfitName.value 
+      : `Outfit ${new Date().toLocaleDateString()}`
+    
+    const outfitName = prompt('Enter a name for your outfit:', defaultName)
+    if (!outfitName) {
+      console.log('OutfitCreator: Save cancelled by user')
+      return
+    }
+    
     const outfitData = {
-      name: `My Outfit ${new Date().toLocaleDateString()}`,
-      description: 'Created in Outfits',
+      outfit_name: outfitName,
+      description: 'Created in Outfit Creator',
+      occasion: null,
+      weather_condition: null,
       items: canvasItems.value.map(item => ({
         clothing_item_id: item.id.split('-')[0], // Get original item ID
-        x: item.x,
-        y: item.y,
-        z_index: item.z_index,
-        rotation: item.rotation,
-        scale: item.scale
+        position_x: item.x,
+        position_y: item.y,
+        z_index: item.zIndex || 1,
+        rotation: item.rotation || 0,
+        scale: item.scale || 1
       }))
     }
     
-    await api.entities.Outfit.create(outfitData)
-    alert('Outfit saved successfully!')
+    let result
+    if (isEditing) {
+      // Update existing outfit
+      console.log('OutfitCreator: Updating outfit:', currentOutfitId.value, outfitData)
+      result = await outfitsService.updateOutfit(currentOutfitId.value, outfitData)
+      
+      if (result && result.id) {
+        console.log('OutfitCreator: Outfit updated successfully:', result.id)
+        alert('Outfit updated successfully!')
+        // Navigate back to outfits gallery
+        router.push('/outfits')
+      } else {
+        throw new Error('Failed to update outfit')
+      }
+    } else {
+      // Create new outfit
+      console.log('OutfitCreator: Creating outfit:', outfitData)
+      result = await outfitsService.createOutfit(outfitData)
+      
+      if (result && result.id) {
+        console.log('OutfitCreator: Outfit created successfully:', result.id)
+        alert('Outfit saved successfully!')
+        // Navigate back to outfits gallery
+        router.push('/outfits')
+      } else {
+        throw new Error('Failed to create outfit')
+      }
+    }
   } catch (error) {
-    console.error('Error saving outfit:', error)
-    alert('Failed to save outfit.')
-  } finally {
-    savingOutfit.value = false
+    console.error('OutfitCreator: Error saving own outfit:', error)
+    throw error
+  }
+}
+
+const shareOutfitWithFriend = async () => {
+  try {
+    if (!friendProfile.value) {
+      alert('Friend profile not loaded. Please try again.')
+      return
+    }
+    
+    console.log('OutfitCreator: Sharing outfit with friend:', friendProfile.value.username)
+    
+    // Prompt for a message
+    const message = prompt(`Add a message for ${friendProfile.value.username} (optional):`, `I created this outfit for you using items from your closet!`)
+    
+    // Extract original clothing item IDs from canvas items
+    const outfitItemsData = canvasItems.value.map(item => ({
+      clothing_item_id: item.id.split('-')[0], // Get original item ID
+      position_x: item.x,
+      position_y: item.y,
+      z_index: item.zIndex || 1,
+      rotation: item.rotation || 0,
+      scale: item.scale || 1
+    }))
+    
+    console.log('OutfitCreator: Creating friend outfit suggestion with items:', outfitItemsData)
+    
+    // Create friend outfit suggestion via NotificationsService
+    // This will create a notification for the friend
+    const result = await notificationsService.createFriendOutfitSuggestion(
+      friendProfile.value.id,
+      outfitItemsData,
+      message || undefined
+    )
+    
+    if (result && result.success) {
+      console.log('OutfitCreator: Friend outfit suggestion created successfully')
+      alert(`Outfit shared with ${friendProfile.value.username}! They will receive a notification.`)
+      // Navigate back to outfits gallery
+      router.push('/outfits')
+    } else {
+      throw new Error('Failed to create friend outfit suggestion')
+    }
+  } catch (error) {
+    console.error('OutfitCreator: Error sharing outfit with friend:', error)
+    throw error
   }
 }
 
@@ -909,7 +1279,27 @@ onMounted(async () => {
     await authStore.fetchUserProfile()
   }
   
+  // Initialize items source based on route
+  initializeItemsSource()
+  
+  // If friend route, load friend profile first
+  if (currentSubRoute.value === 'friend' && friendUsername.value) {
+    await loadFriendProfile(friendUsername.value)
+  }
+  
+  // Load wardrobe items (will load friend's items if in friend mode)
   await loadWardrobeItems()
-  saveToHistory() // Initialize history
+  
+  // Handle different sub-routes
+  if (currentSubRoute.value === 'edit' && route.params.outfitId) {
+    // Edit mode: Load existing outfit
+    await loadExistingOutfit(route.params.outfitId)
+  } else if (currentSubRoute.value === 'suggested') {
+    // AI Suggestions mode: Generate AI outfit
+    await generateAISuggestion()
+  } else {
+    // Personal/friend/other modes: Start with empty canvas
+    saveToHistory() // Initialize history
+  }
 })
 </script>

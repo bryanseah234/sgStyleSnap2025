@@ -235,6 +235,193 @@
       class="fixed inset-0 z-40"
       @click="showAddMenu = false"
     />
+
+    <!-- Outfit Detail Modal -->
+    <div
+      v-if="showOutfitDetail && selectedOutfit"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      @click="closeOutfitDetail"
+    >
+      <div
+        :class="`relative w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden ${
+          theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
+        }`"
+        @click.stop
+      >
+        <!-- Modal Header -->
+        <div :class="`p-6 border-b ${
+          theme.value === 'dark' ? 'border-zinc-800' : 'border-stone-200'
+        }`">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h2 :class="`text-2xl font-bold mb-2 ${
+                theme.value === 'dark' ? 'text-white' : 'text-black'
+              }`">
+                {{ selectedOutfit.outfit_name || selectedOutfit.name || 'Untitled Outfit' }}
+              </h2>
+              <div class="flex items-center gap-4 text-sm">
+                <span :class="`${
+                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                }`">
+                  {{ selectedOutfit.item_count || 0 }} items
+                </span>
+                <span :class="`${
+                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                }`">
+                  Created {{ formatDate(selectedOutfit.created_at) }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Close button -->
+            <button
+              @click="closeOutfitDetail"
+              :class="`p-2 rounded-lg transition-all ${
+                theme.value === 'dark'
+                  ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
+                  : 'hover:bg-stone-100 text-stone-500 hover:text-black'
+              }`"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 180px);">
+          <!-- Description -->
+          <div v-if="selectedOutfit.description" class="mb-6">
+            <h3 :class="`text-sm font-semibold mb-2 ${
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+            }`">
+              Description
+            </h3>
+            <p :class="`${
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+            }`">
+              {{ selectedOutfit.description }}
+            </p>
+          </div>
+
+          <!-- Outfit Items -->
+          <div v-if="selectedOutfit.outfit_items && selectedOutfit.outfit_items.length > 0">
+            <h3 :class="`text-sm font-semibold mb-4 ${
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+            }`">
+              Items in this Outfit
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div
+                v-for="outfitItem in selectedOutfit.outfit_items"
+                :key="outfitItem.id"
+                :class="`rounded-xl overflow-hidden ${
+                  theme.value === 'dark'
+                    ? 'bg-zinc-800 border border-zinc-700'
+                    : 'bg-stone-50 border border-stone-200'
+                }`"
+              >
+                <div class="aspect-square relative">
+                  <img
+                    v-if="outfitItem.clothing_item?.image_url"
+                    :src="outfitItem.clothing_item.image_url"
+                    :alt="outfitItem.clothing_item.name"
+                    class="w-full h-full object-cover"
+                  />
+                  <div
+                    v-else
+                    :class="`w-full h-full flex items-center justify-center ${
+                      theme.value === 'dark' ? 'bg-zinc-900' : 'bg-stone-100'
+                    }`"
+                  >
+                    <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+                  </div>
+                </div>
+                <div class="p-3">
+                  <p :class="`text-sm font-medium truncate ${
+                    theme.value === 'dark' ? 'text-white' : 'text-black'
+                  }`">
+                    {{ outfitItem.clothing_item?.name || 'Unknown Item' }}
+                  </p>
+                  <p :class="`text-xs truncate capitalize ${
+                    theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
+                  }`">
+                    {{ outfitItem.clothing_item?.category || 'No category' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state for items -->
+          <div v-else class="text-center py-12">
+            <Shirt :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+            <p :class="`${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+              No items in this outfit
+            </p>
+          </div>
+
+          <!-- Metadata -->
+          <div v-if="selectedOutfit.occasion || selectedOutfit.weather_condition" class="mt-6 pt-6 border-t" :class="theme.value === 'dark' ? 'border-zinc-800' : 'border-stone-200'">
+            <h3 :class="`text-sm font-semibold mb-3 ${
+              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+            }`">
+              Additional Details
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              <span
+                v-if="selectedOutfit.occasion"
+                :class="`px-3 py-1 rounded-full text-sm ${
+                  theme.value === 'dark'
+                    ? 'bg-zinc-800 text-zinc-300'
+                    : 'bg-stone-100 text-stone-700'
+                }`"
+              >
+                {{ selectedOutfit.occasion }}
+              </span>
+              <span
+                v-if="selectedOutfit.weather_condition"
+                :class="`px-3 py-1 rounded-full text-sm ${
+                  theme.value === 'dark'
+                    ? 'bg-zinc-800 text-zinc-300'
+                    : 'bg-stone-100 text-stone-700'
+                }`"
+              >
+                {{ selectedOutfit.weather_condition }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer with Actions -->
+        <div :class="`p-6 border-t flex items-center justify-end gap-3 ${
+          theme.value === 'dark' ? 'border-zinc-800' : 'border-stone-200'
+        }`">
+          <button
+            @click="closeOutfitDetail"
+            :class="`px-6 py-3 rounded-xl font-medium transition-all ${
+              theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`"
+          >
+            Close
+          </button>
+          <button
+            @click="editOutfit(selectedOutfit)"
+            :class="`px-6 py-3 rounded-xl font-medium transition-all ${
+              theme.value === 'dark'
+                ? 'bg-white text-black hover:bg-zinc-200'
+                : 'bg-black text-white hover:bg-zinc-800'
+            }`"
+          >
+            Edit Outfit
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -260,6 +447,8 @@ const outfits = ref([])
 const loading = ref(true)
 const showAddMenu = ref(false)
 const activeFilter = ref('all')
+const showOutfitDetail = ref(false)
+const selectedOutfit = ref(null)
 
 const filters = [
   { value: 'all', label: 'All Outfits' },
@@ -331,15 +520,20 @@ const navigateToCreate = (type) => {
 }
 
 const viewOutfit = (outfit) => {
-  // Navigate to outfit detail/view page
-  console.log('View outfit:', outfit)
-  // TODO: Implement outfit viewing
+  // Show outfit details in modal
+  selectedOutfit.value = outfit
+  showOutfitDetail.value = true
 }
 
 const editOutfit = (outfit) => {
   // Navigate to outfit editor with outfit ID
   console.log('Edit outfit:', outfit)
   router.push(`/outfits/edit/${outfit.id}`)
+}
+
+const closeOutfitDetail = () => {
+  showOutfitDetail.value = false
+  selectedOutfit.value = null
 }
 
 const deleteOutfit = async (outfit) => {
@@ -351,6 +545,12 @@ const deleteOutfit = async (outfit) => {
       
       // Remove from local array
       outfits.value = outfits.value.filter(o => o.id !== outfit.id)
+      
+      // Close detail modal if the deleted outfit was being viewed
+      if (selectedOutfit.value?.id === outfit.id) {
+        closeOutfitDetail()
+      }
+      
       console.log('Outfits: Successfully deleted outfit')
     } catch (error) {
       console.error('Outfits: Error deleting outfit:', error)
