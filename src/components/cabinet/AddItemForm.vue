@@ -39,7 +39,7 @@
               class="file-input"
             />
             <div class="upload-content">
-              <CloudUpload class="upload-icon" />
+              <Upload class="upload-icon" />
               <span class="upload-text">Choose Photo</span>
             </div>
           </div>
@@ -154,7 +154,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Brain, AlertCircle, CloudUpload, X, Plus } from 'lucide-vue-next'
+import { Brain, AlertCircle, Upload, X, Plus } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
 import { PRIVACY_DETAILS, getClothingTypesByCategory } from '@/utils/clothing-constants'
