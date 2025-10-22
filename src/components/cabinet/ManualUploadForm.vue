@@ -188,7 +188,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { ClothesService } from '@/services/clothesService'
-import { supabase } from '@/config/supabase'
+import { supabase } from '@/lib/supabase'
 import { Upload, X } from 'lucide-vue-next'
 
 const { theme } = useTheme()
