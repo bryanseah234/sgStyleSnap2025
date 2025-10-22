@@ -177,7 +177,7 @@
             <span :class="`text-xs ${
               theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
             }`">
-              {{ item.category?.charAt(0).toUpperCase() + item.category?.slice(1) }}
+              {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
             </span>
             <span v-if="item.brand" :class="`text-xs font-medium ${
               theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-600'
