@@ -206,6 +206,7 @@
         <div
           v-for="item in filteredItems"
           :key="item.id"
+          @click="openItemDetails(item)"
           :class="`group cursor-pointer transition-all duration-300 hover:scale-105 ${
             theme.value === 'dark'
               ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
@@ -229,7 +230,7 @@
             </div>
             
             <button
-              @click="toggleFavorite(item)"
+              @click.stop="toggleFavorite(item)"
               :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
                 item.is_favorite
                   ? 'bg-red-500 text-white'
@@ -269,6 +270,15 @@
       @close="showUpload = false"
       @item-added="handleItemAdded"
     />
+
+    <!-- Item Details Modal -->
+    <ItemDetailsModal
+      :is-open="showItemDetails"
+      :item="selectedItem"
+      @close="closeItemDetails"
+      @item-removed="handleItemRemoved"
+      @item-updated="handleItemUpdated"
+    />
   </div>
 </template>
 
@@ -282,6 +292,7 @@ import { Plus, Heart, Shirt } from 'lucide-vue-next'
 import UploadItemModal from '@/components/cabinet/UploadItemModal.vue'
 import ManualUploadForm from '@/components/cabinet/ManualUploadForm.vue'
 import CatalogueBrowser from '@/components/cabinet/CatalogueBrowser.vue'
+import ItemDetailsModal from '@/components/cabinet/ItemDetailsModal.vue'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
@@ -309,6 +320,8 @@ const items = ref([])
 const loading = ref(true)
 const showUpload = ref(false)
 const showAddMenu = ref(false)
+const showItemDetails = ref(false)
+const selectedItem = ref(null)
 const activeCategory = ref('all')
 const showFavoritesOnly = ref(false)
 
@@ -406,6 +419,27 @@ const handleItemAdded = async () => {
   console.log('Cabinet: Item added, refreshing list...')
   await loadItems()
   showUpload.value = false
+}
+
+// Item details modal functions
+const openItemDetails = (item) => {
+  selectedItem.value = item
+  showItemDetails.value = true
+}
+
+const closeItemDetails = () => {
+  showItemDetails.value = false
+  selectedItem.value = null
+}
+
+const handleItemRemoved = async (itemId) => {
+  console.log('Cabinet: Item removed, refreshing list...')
+  await loadItems()
+}
+
+const handleItemUpdated = async () => {
+  console.log('Cabinet: Item updated, refreshing list...')
+  await loadItems()
 }
 
 onMounted(async () => {
