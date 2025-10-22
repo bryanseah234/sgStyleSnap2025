@@ -169,14 +169,12 @@
         <div class="p-3">
           <h3 :class="`font-semibold text-sm mb-1 truncate ${
             theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`}>
+          }`">
             {{ item.name }}
           </h3>
           
           <div class="flex items-center justify-between mb-3">
-            <span :class="`text-xs ${
-              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-            }`">
+            <span :class="['text-xs', theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500']">
               {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
             </span>
             <span v-if="item.brand" :class="`text-xs font-medium ${
@@ -190,15 +188,13 @@
           <button
             @click="handleAddToCloset(item)"
             :disabled="addedItems.has(item.id) || addingItemId === item.id"
-            :class="`w-full h-9 text-sm rounded-lg font-medium transition-all flex items-center justify-center gap-1 ${
+            :class="[
+              'w-full', 'h-9', 'text-sm', 'rounded-lg', 'font-medium', 'transition-all', 'flex', 'items-center', 'justify-center', 'gap-1',
+              'disabled:opacity-50', 'disabled:cursor-not-allowed',
               addedItems.has(item.id)
-                ? theme.value === 'dark'
-                  ? 'bg-green-900 text-green-300'
-                  : 'bg-green-100 text-green-700'
-                : theme.value === 'dark'
-                  ? 'bg-white text-black hover:bg-zinc-100'
-                  : 'bg-black text-white hover:bg-stone-900'
-            } disabled:opacity-50 disabled:cursor-not-allowed`"
+                ? (theme.value === 'dark' ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700')
+                : (theme.value === 'dark' ? 'bg-white text-black hover:bg-zinc-100' : 'bg-black text-white hover:bg-stone-900')
+            ]"
           >
             <template v-if="addingItemId === item.id">
               <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
