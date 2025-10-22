@@ -167,9 +167,7 @@
 
         <!-- Item Info -->
         <div class="p-3">
-          <h3 :class="`font-semibold text-sm mb-1 truncate ${
-            theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`">
+          <h3 :class="['font-semibold', 'text-sm', 'mb-1', 'truncate', theme.value === 'dark' ? 'text-white' : 'text-black']">
             {{ item.name }}
           </h3>
           
