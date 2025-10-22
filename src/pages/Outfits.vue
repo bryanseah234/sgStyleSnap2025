@@ -187,6 +187,20 @@
               <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
             </div>
             
+            <!-- Favorite button (top right) -->
+            <button
+              @click.stop="toggleFavorite(outfit)"
+              :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
+                outfit.is_favorite
+                  ? 'bg-red-500 text-white'
+                  : theme.value === 'dark'
+                  ? 'bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700/80'
+                  : 'bg-white/80 text-stone-500 hover:bg-stone-100/80'
+              }`"
+            >
+              <Heart :class="`w-4 h-4 ${outfit.is_favorite ? 'fill-current' : ''}`" />
+            </button>
+            
             <!-- Action buttons overlay -->
             <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
               <button
@@ -433,7 +447,7 @@ import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { OutfitsService } from '@/services/outfitsService'
-import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2 } from 'lucide-vue-next'
+import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
@@ -454,19 +468,13 @@ const selectedOutfit = ref(null)
 
 const filters = [
   { value: 'all', label: 'All Outfits' },
-  { value: 'recent', label: 'Recent' },
   { value: 'favorites', label: 'Favorites' }
 ]
 
 const filteredOutfits = computed(() => {
   let filtered = outfits.value
 
-  if (activeFilter.value === 'recent') {
-    // Sort by created_at descending
-    filtered = [...filtered].sort((a, b) => 
-      new Date(b.created_at) - new Date(a.created_at)
-    )
-  } else if (activeFilter.value === 'favorites') {
+  if (activeFilter.value === 'favorites') {
     filtered = filtered.filter(outfit => outfit.is_favorite)
   }
 
@@ -536,6 +544,22 @@ const editOutfit = (outfit) => {
 const closeOutfitDetail = () => {
   showOutfitDetail.value = false
   selectedOutfit.value = null
+}
+
+const toggleFavorite = async (outfit) => {
+  try {
+    // Toggle the favorite status using the outfits service
+    const result = await outfitsService.toggleFavorite(outfit.id)
+    
+    if (result.success) {
+      outfit.is_favorite = result.data.is_favorite
+      console.log('Outfits: Toggled favorite for outfit:', outfit.outfit_name || outfit.name, 'New status:', outfit.is_favorite)
+    } else {
+      console.error('Outfits: Failed to toggle favorite:', result.error)
+    }
+  } catch (error) {
+    console.error('Outfits: Error toggling favorite:', error)
+  }
 }
 
 const deleteOutfit = async (outfit) => {

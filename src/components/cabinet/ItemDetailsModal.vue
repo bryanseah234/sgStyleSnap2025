@@ -193,7 +193,7 @@ const updatePrivacy = async () => {
   if (!props.item) return
 
   try {
-    await clothesService.updateClothingItem(props.item.id, {
+    await clothesService.updateClothes(props.item.id, {
       privacy: localPrivacy.value
     })
     
@@ -215,7 +215,7 @@ const removeItem = async () => {
 
   isRemoving.value = true
   try {
-    await clothesService.deleteClothingItem(props.item.id)
+    await clothesService.deleteClothes(props.item.id)
     
     console.log('✅ Item removed successfully')
     emit('item-removed', props.item.id)

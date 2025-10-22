@@ -266,6 +266,39 @@ export class OutfitsService {
     }
   }
 
+  async toggleFavorite(outfitId) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      // Get current state
+      const { data: outfit, error: fetchError } = await supabase
+        .from('outfits')
+        .select('is_favorite')
+        .eq('id', outfitId)
+        .eq('owner_id', user.id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // Toggle the favorite status
+      const { data, error } = await supabase
+        .from('outfits')
+        .update({ is_favorite: !outfit.is_favorite })
+        .eq('id', outfitId)
+        .eq('owner_id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return { success: true, data }
+    } catch (error) {
+      handleSupabaseError(error, 'toggle favorite outfit')
+      return { success: false, error }
+    }
+  }
+
   async likeOutfit(outfitId) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
