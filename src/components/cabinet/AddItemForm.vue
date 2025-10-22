@@ -364,6 +364,7 @@ watch(() => props.isOpen, (isOpen) => {
   border-radius: 12px;
   padding: 24px;
   color: white;
+  border: 1px solid #2a2a3e;
 }
 
 .form-header {
@@ -462,12 +463,13 @@ watch(() => props.isOpen, (isOpen) => {
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  background: #2a2a3e;
 }
 
 .photo-upload-zone:hover,
 .photo-upload-zone.dragover {
   border-color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(102, 126, 234, 0.2);
 }
 
 .file-input {
@@ -503,11 +505,11 @@ watch(() => props.isOpen, (isOpen) => {
 .form-select {
   width: 100%;
   padding: 12px 16px;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: #2a2a3e;
+  border: 1px solid #4a4a5e;
   border-radius: 8px;
   font-size: 16px;
-  color: #333;
+  color: white;
   transition: border-color 0.2s;
 }
 
@@ -518,7 +520,7 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .form-input::placeholder {
-  color: #999;
+  color: #a0a0a0;
 }
 
 .privacy-details {
@@ -536,15 +538,16 @@ watch(() => props.isOpen, (isOpen) => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: white;
+  background: #2a2a3e;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #4a4a5e;
+  color: white;
 }
 
 .privacy-chip:hover {
-  background: #f5f5f5;
+  background: #3a3a4e;
 }
 
 .privacy-chip.active {
@@ -626,13 +629,13 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .cancel-btn {
-  background: white;
-  color: #333;
-  border: 1px solid #e0e0e0;
+  background: #2a2a3e;
+  color: white;
+  border: 1px solid #4a4a5e;
 }
 
 .cancel-btn:hover {
-  background: #f5f5f5;
+  background: #3a3a4e;
 }
 
 .submit-btn {
