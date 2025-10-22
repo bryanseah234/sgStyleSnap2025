@@ -79,8 +79,8 @@
     </div>
 
     <!-- Notifications Section -->
-    <div class="max-w-6xl mx-auto">
-      <div :class="`scale-in p-8 rounded-3xl transition-all duration-300 ${
+    <div class="max-w-6xl mx-auto" v-scroll-animate.scale>
+      <div :class="`p-8 rounded-3xl transition-all duration-300 ${
         theme.value === 'dark'
           ? 'bg-zinc-900 border border-zinc-800'
           : 'bg-white border border-stone-200'

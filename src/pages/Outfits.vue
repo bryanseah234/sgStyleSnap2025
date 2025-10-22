@@ -245,17 +245,20 @@
     />
 
     <!-- Outfit Detail Modal -->
-    <div
-      v-if="showOutfitDetail && selectedOutfit"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-      @click="closeOutfitDetail"
-    >
+    <Transition name="modal-backdrop">
       <div
-        :class="`relative w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden ${
-          theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
-        }`"
-        @click.stop
+        v-if="showOutfitDetail && selectedOutfit"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        @click="closeOutfitDetail"
       >
+        <Transition name="modal" appear>
+          <div
+            v-if="showOutfitDetail && selectedOutfit"
+            :class="`relative w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden ${
+              theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
+            }`"
+            @click.stop
+          >
         <!-- Modal Header -->
         <div :class="`p-6 border-b ${
           theme.value === 'dark' ? 'border-zinc-800' : 'border-stone-200'
@@ -284,13 +287,13 @@
             <!-- Close button -->
             <button
               @click="closeOutfitDetail"
-              :class="`p-2 rounded-lg transition-all ${
+              :class="`icon-rotate-hover p-2 rounded-lg transition-all ${
                 theme.value === 'dark'
                   ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
                   : 'hover:bg-stone-100 text-stone-500 hover:text-black'
               }`"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-rotate-hover">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -428,8 +431,10 @@
             Edit Outfit
           </button>
         </div>
+          </div>
+        </Transition>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 

@@ -1,27 +1,30 @@
 <template>
   <!-- Modal Backdrop -->
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-    @click.self="closeModal"
-  >
-    <!-- Modal Card -->
+  <Transition name="modal-backdrop">
     <div
-      :class="`relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
-        theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-      }`"
-      @click.stop
+      v-if="isOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      @click.self="closeModal"
     >
-      <!-- Close Button -->
-      <button
-        @click="closeModal"
-        :class="`absolute top-4 right-4 z-10 p-2 rounded-lg transition-all duration-200 ${
-          theme.value === 'dark'
-            ? 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700'
-            : 'bg-white/80 text-stone-700 hover:bg-stone-100'
-        }`"
-      >
-        <X class="w-5 h-5" />
+      <!-- Modal Card -->
+      <Transition name="modal" appear>
+        <div
+          v-if="isOpen"
+          :class="`relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
+            theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
+          }`"
+          @click.stop
+        >
+          <!-- Close Button -->
+          <button
+            @click="closeModal"
+            :class="`icon-rotate-hover absolute top-4 right-4 z-10 p-2 rounded-lg transition-all duration-200 ${
+              theme.value === 'dark'
+                ? 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-white/80 text-stone-700 hover:bg-stone-100'
+            }`"
+          >
+            <X class="w-5 h-5" />
       </button>
 
       <div class="grid md:grid-cols-2">
@@ -149,8 +152,10 @@
           </div>
         </div>
       </div>
+        </div>
+      </Transition>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
