@@ -358,13 +358,13 @@ watch(() => props.isOpen, (isOpen) => {
 
 <style scoped>
 .add-item-form {
-  max-width: 500px;
+  max-width: 400px;
   margin: 0 auto;
-  background: #1a1a2e;
+  background: white;
   border-radius: 12px;
   padding: 24px;
-  color: white;
-  border: 1px solid #2a2a3e;
+  color: #333;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .form-header {
@@ -386,30 +386,29 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .header-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0;
-  color: white;
+  color: #333;
 }
 
 .form-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .form-label {
   font-size: 14px;
   font-weight: 500;
-  color: #a0a0a0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #666;
+  margin-bottom: 4px;
 }
 
 .photo-upload-area {
@@ -454,8 +453,8 @@ watch(() => props.isOpen, (isOpen) => {
 
 .photo-upload-zone {
   width: 100%;
-  height: 200px;
-  border: 2px dashed #4a4a5e;
+  height: 120px;
+  border: 2px dashed #ddd;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -463,13 +462,13 @@ watch(() => props.isOpen, (isOpen) => {
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
-  background: #2a2a3e;
+  background: #f9f9f9;
 }
 
 .photo-upload-zone:hover,
 .photo-upload-zone.dragover {
   border-color: #667eea;
-  background: rgba(102, 126, 234, 0.2);
+  background: #f0f4ff;
 }
 
 .file-input {
@@ -490,26 +489,26 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .upload-icon {
-  width: 48px;
-  height: 48px;
-  color: #667eea;
+  width: 32px;
+  height: 32px;
+  color: #999;
 }
 
 .upload-text {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-  color: #667eea;
+  color: #999;
 }
 
 .form-input,
 .form-select {
   width: 100%;
   padding: 12px 16px;
-  background: #2a2a3e;
-  border: 1px solid #4a4a5e;
+  background: white;
+  border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 16px;
-  color: white;
+  color: #333;
   transition: border-color 0.2s;
 }
 
@@ -520,7 +519,7 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .form-input::placeholder {
-  color: #a0a0a0;
+  color: #999;
 }
 
 .privacy-details {
@@ -538,16 +537,16 @@ watch(() => props.isOpen, (isOpen) => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: #2a2a3e;
+  background: #f5f5f5;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid #4a4a5e;
-  color: white;
+  border: 1px solid #ddd;
+  color: #666;
 }
 
 .privacy-chip:hover {
-  background: #3a3a4e;
+  background: #e9e9e9;
 }
 
 .privacy-chip.active {
@@ -629,13 +628,13 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .cancel-btn {
-  background: #2a2a3e;
-  color: white;
-  border: 1px solid #4a4a5e;
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
 }
 
 .cancel-btn:hover {
-  background: #3a3a4e;
+  background: #e9e9e9;
 }
 
 .submit-btn {
