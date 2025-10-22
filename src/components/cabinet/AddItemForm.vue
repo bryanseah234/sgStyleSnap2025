@@ -1,8 +1,8 @@
 <!--
   Add Item Form - StyleSnap
   
-  Form for adding new clothing items to the user's closet
-  Matches the design from the provided image with dark theme
+  Simple form with exactly 4 fields: Name, Category, Brand, Image
+  Matches the design from the provided image
   Integrates Hugging Face API for automatic item recognition
 -->
 
@@ -19,7 +19,7 @@
     <form @submit.prevent="handleSubmit" class="form-content">
       <!-- PHOTO Section -->
       <div class="form-section">
-        <label class="section-label">PHOTO</label>
+        <label class="form-label">PHOTO</label>
         <div class="photo-upload-area">
           <div v-if="previewUrl" class="photo-preview">
             <img :src="previewUrl" :alt="formData.name || 'Item preview'" class="preview-image" />
@@ -48,7 +48,7 @@
 
       <!-- NAME Section -->
       <div class="form-section">
-        <label class="section-label">NAME</label>
+        <label class="form-label">NAME</label>
         <input
           v-model="formData.name"
           type="text"
@@ -60,21 +60,20 @@
 
       <!-- CATEGORY Section -->
       <div class="form-section">
-        <label class="section-label">CATEGORY</label>
+        <label class="form-label">CATEGORY</label>
         <select v-model="formData.category" class="form-select" required>
           <option value="">Select category</option>
-          <option value="top">Top</option>
-          <option value="bottom">Bottom</option>
+          <option value="tops">Tops</option>
+          <option value="bottoms">Bottoms</option>
           <option value="outerwear">Outerwear</option>
           <option value="shoes">Shoes</option>
-          <option value="accessory">Accessory</option>
-          <option value="dress">Dress</option>
+          <option value="accessories">Accessories</option>
         </select>
       </div>
 
       <!-- TYPE Section -->
       <div class="form-section">
-        <label class="section-label">TYPE</label>
+        <label class="form-label">TYPE</label>
         <select v-model="formData.clothingType" class="form-select" required>
           <option value="">Select type</option>
           <option 
@@ -89,7 +88,7 @@
 
       <!-- BRAND Section -->
       <div class="form-section">
-        <label class="section-label">BRAND</label>
+        <label class="form-label">BRAND</label>
         <input
           v-model="formData.brand"
           type="text"
@@ -100,7 +99,7 @@
 
       <!-- PRIVACY Section -->
       <div class="form-section">
-        <label class="section-label">PRIVACY</label>
+        <label class="form-label">PRIVACY</label>
         <select v-model="formData.privacy" class="form-select">
           <option value="friends">Visible to Friends</option>
           <option value="private">Private</option>
@@ -154,11 +153,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { Plus, CloudUpload, X, Brain, AlertCircle } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
+import { Brain, AlertCircle, CloudUpload, X, Plus } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
-import { CLOTHING_TYPES, PRIVACY_DETAILS, getClothingTypesByCategory } from '@/utils/clothing-constants'
-import { api } from '@/api/base44Client'
+import { ClothesService } from '@/services/clothesService'
+import { PRIVACY_DETAILS, getClothingTypesByCategory } from '@/utils/clothing-constants'
 
 // Props
 const props = defineProps({
@@ -176,6 +175,7 @@ const uploading = ref(false)
 const isDragOver = ref(false)
 const previewUrl = ref('')
 const aiRecognitionStatus = ref(null)
+const clothesService = new ClothesService()
 
 // Form data
 const formData = ref({
@@ -185,7 +185,7 @@ const formData = ref({
   brand: '',
   privacy: 'friends',
   privacyDetails: ['photo', 'name', 'category'],
-  image_url: ''
+  image_file: null
 })
 
 // Computed
@@ -193,7 +193,7 @@ const canSubmit = computed(() => {
   return formData.value.name && 
          formData.value.category && 
          formData.value.clothingType && 
-         formData.value.image_url
+         formData.value.image_file
 })
 
 const availableTypes = computed(() => {
@@ -235,19 +235,23 @@ const processImageFile = async (file) => {
   }
 
   try {
-    // Upload file first
-    const { file_url } = await api.integrations.Core.UploadFile({ file })
-    formData.value.image_url = file_url
-    previewUrl.value = file_url
+    // Create preview URL
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      previewUrl.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+    
+    formData.value.image_file = file
 
-    // Then classify with AI
+    // Classify with AI
     const classification = await classifyClothingItem(file)
     
     if (classification.success) {
       // Auto-fill form with AI results
-      formData.value.name = formData.value.name || classification.topPrediction
-      formData.value.category = classification.styleSnapCategory
-      formData.value.clothingType = classification.clothingType
+      formData.value.name = classification.topPrediction || formData.value.name
+      formData.value.category = classification.styleSnapCategory || formData.value.category
+      formData.value.clothingType = classification.clothingType || formData.value.clothingType
       
       aiRecognitionStatus.value = {
         type: 'success',
@@ -271,7 +275,7 @@ const processImageFile = async (file) => {
 }
 
 const removeImage = () => {
-  formData.value.image_url = ''
+  formData.value.image_file = null
   previewUrl.value = ''
   aiRecognitionStatus.value = null
 }
@@ -290,21 +294,28 @@ const handleSubmit = async () => {
 
   uploading.value = true
   try {
-    // Prepare data for API
+    // Prepare data for Supabase
     const itemData = {
       name: formData.value.name,
       category: formData.value.category,
       clothing_type: formData.value.clothingType,
-      brand: formData.value.brand,
+      brand: formData.value.brand || null,
       privacy: formData.value.privacy,
-      image_url: formData.value.image_url,
-      privacy_details: formData.value.privacyDetails
+      is_favorite: false,
+      style_tags: [],
+      image_file: formData.value.image_file
     }
 
-    await api.entities.ClothingItem.create(itemData)
-    emit('itemAdded')
-    resetForm()
-    emit('close')
+    // Use the existing ClothesService
+    const result = await clothesService.addClothes(itemData)
+    
+    if (result.success) {
+      emit('itemAdded')
+      resetForm()
+      emit('close')
+    } else {
+      throw new Error(result.error || 'Failed to add item')
+    }
   } catch (error) {
     console.error('Error creating item:', error)
     aiRecognitionStatus.value = {
@@ -324,7 +335,7 @@ const resetForm = () => {
     brand: '',
     privacy: 'friends',
     privacyDetails: ['photo', 'name', 'category'],
-    image_url: ''
+    image_file: null
   }
   previewUrl.value = ''
   aiRecognitionStatus.value = null
@@ -392,7 +403,7 @@ watch(() => props.isOpen, (isOpen) => {
   gap: 8px;
 }
 
-.section-label {
+.form-label {
   font-size: 14px;
   font-weight: 500;
   color: #a0a0a0;
@@ -644,14 +655,6 @@ watch(() => props.isOpen, (isOpen) => {
     margin: 0;
     border-radius: 0;
     padding: 16px;
-  }
-  
-  .privacy-chips {
-    flex-direction: column;
-  }
-  
-  .privacy-chip {
-    justify-content: center;
   }
 }
 </style>
