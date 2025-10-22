@@ -31,11 +31,11 @@
         <label class="form-label">Category</label>
         <select v-model="formData.category" class="form-select" required>
           <option value="">Select category</option>
-          <option value="tops">Tops</option>
-          <option value="bottoms">Bottoms</option>
+          <option value="top">Tops</option>
+          <option value="bottom">Bottoms</option>
           <option value="outerwear">Outerwear</option>
           <option value="shoes">Shoes</option>
-          <option value="accessories">Accessories</option>
+          <option value="accessory">Accessories</option>
         </select>
       </div>
 
@@ -166,8 +166,7 @@ const handleFileUpload = async (event) => {
       const classification = await classifyClothingItem(file)
       
       if (classification.success) {
-        // Auto-fill form with AI results - force reactivity
-        formData.value.name = classification.topPrediction || formData.value.name
+        // Auto-fill only category from AI results
         formData.value.category = classification.styleSnapCategory || formData.value.category
         
         // Force Vue to update the form fields
@@ -175,7 +174,7 @@ const handleFileUpload = async (event) => {
         
         aiRecognitionStatus.value = {
           type: 'success',
-          message: `AI detected: ${classification.topPrediction} (${Math.round(classification.confidence * 100)}% confidence)`
+          message: `AI detected: ${classification.topPrediction} - Category set to ${classification.styleSnapCategory} (${Math.round(classification.confidence * 100)}% confidence)`
         }
         
         console.log('AI Classification Result:', {

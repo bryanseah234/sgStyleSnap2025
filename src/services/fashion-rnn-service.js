@@ -17,7 +17,7 @@ const CATEGORY_MAPPING = {
   Undershirt: 'top',
   Pants: 'bottom',
   Shorts: 'bottom',
-  Dress: 'dress',
+  Dress: 'bottom', // Dress maps to bottom in database
   Skirt: 'bottom',
   Shoes: 'shoes',
   Hat: 'accessory',
