@@ -982,7 +982,8 @@ const addItemToCanvas = (item) => {
   
   const newItem = {
     ...item,
-    id: `${item.id}-${Date.now()}`,
+    originalId: item.id, // Store original clothing item ID
+    id: `${item.id}-${Date.now()}`, // Unique canvas ID
     x: 50 + (canvasItems.value.length * 20),
     y: 50 + (canvasItems.value.length * 20),
     z_index: canvasItems.value.length,
@@ -1227,7 +1228,7 @@ const saveOwnOutfit = async () => {
       occasion: null,
       weather_condition: null,
       items: canvasItems.value.map(item => ({
-        clothing_item_id: item.id.split('-')[0], // Get original item ID
+        clothing_item_id: item.originalId || item.id, // Use stored original ID
         position_x: item.x,
         position_y: item.y,
         z_index: item.zIndex || 1,
@@ -1284,7 +1285,7 @@ const shareOutfitWithFriend = async () => {
     
     // Extract original clothing item IDs from canvas items
     const outfitItemsData = canvasItems.value.map(item => ({
-      clothing_item_id: item.id.split('-')[0], // Get original item ID
+      clothing_item_id: item.originalId || item.id, // Use stored original ID
       position_x: item.x,
       position_y: item.y,
       z_index: item.zIndex || 1,
