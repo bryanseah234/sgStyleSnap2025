@@ -10,9 +10,10 @@
           <p :class="`text-lg ${
             theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
           }`">
-            {{ currentSubRoute === 'suggested' ? 'AI-powered outfit suggestions based on your wardrobe' : 
-               currentSubRoute === 'personal' ? 'Create and save your personal looks' :
-               currentSubRoute === 'friend' ? `Browse ${route.params.username}'s outfit collection` :
+            {{ currentSubRoute === 'suggested' ? 'Get AI-powered outfit suggestions based on your wardrobe and style' : 
+               currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
+               currentSubRoute === 'friend' ? `Create outfits using items from ${route.params.username}'s closet` :
+               currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
                'Create and save your perfect looks' }}
           </p>
         </div>
@@ -228,45 +229,56 @@
           <div :class="`rounded-xl p-6 ${
             theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
           }`">
-            <h3 :class="`text-lg font-bold mb-4 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
-              Items
-            </h3>
+            <div class="flex items-center justify-between mb-4">
+              <h3 :class="`text-lg font-bold ${
+                theme.value === 'dark' ? 'text-white' : 'text-black'
+              }`">
+                Your Items
+              </h3>
+              <span :class="`text-sm px-2 py-1 rounded-full ${
+                theme.value === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-stone-100 text-stone-600'
+              }`">
+                {{ filteredItems.length }}
+              </span>
+            </div>
             
             <!-- Category Filters -->
-            <div class="flex flex-wrap gap-2 mb-6">
+            <div class="flex flex-wrap gap-2 mb-4">
               <button
                 v-for="category in categories"
                 :key="category"
                 @click="activeCategory = category"
-                :class="`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                :class="`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                   activeCategory === category
                     ? theme.value === 'dark'
                       ? 'bg-white text-black'
                       : 'bg-black text-white'
                     : theme.value === 'dark'
-                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-800'
                 }`"
               >
-                {{ category === 'all' ? 'all' : category }}
+                {{ category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1) }}
               </button>
             </div>
 
             <!-- Items List -->
-            <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+            <div class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
               <div
                 v-for="item in filteredItems"
                 :key="item.id"
                 @click="addItemToCanvas(item)"
-                :class="`p-3 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${
-                  theme.value === 'dark' ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-stone-100 hover:bg-stone-200'
+                :class="`group p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+                  theme.value === 'dark' 
+                    ? 'bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600' 
+                    : 'bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300'
                 }`"
               >
                 <div class="flex items-center gap-3">
                   <!-- Item Image -->
-                  <div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                  <div :class="`w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-sm ${
+                    theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
+                  }`">
                     <img
                       v-if="item.image_url"
                       :src="item.image_url"
@@ -276,35 +288,49 @@
                     <div
                       v-else
                       :class="`w-full h-full flex items-center justify-center ${
-                        theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
+                        theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
                       }`"
                     >
-                      <Shirt :class="`w-6 h-6 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+                      <Shirt :class="`w-6 h-6 ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'}`" />
                     </div>
                   </div>
                   
                   <!-- Item Info -->
                   <div class="flex-1 min-w-0">
-                    <p :class="`text-sm font-medium truncate ${
+                    <p :class="`text-sm font-medium truncate mb-1 ${
                       theme.value === 'dark' ? 'text-white' : 'text-black'
                     }`">
                       {{ item.name }}
                     </p>
-                    <p :class="`text-xs truncate ${
-                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                    <p :class="`text-xs truncate capitalize ${
+                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
                     }`">
                       {{ item.category }}
                     </p>
+                  </div>
+                  
+                  <!-- Add Icon -->
+                  <div :class="`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${
+                    theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
+                  }`">
+                    <Plus class="w-5 h-5" />
                   </div>
                 </div>
               </div>
             </div>
             
             <!-- Empty State -->
-            <div v-if="filteredItems.length === 0" class="text-center py-8">
-              <Shirt :class="`w-12 h-12 mx-auto mb-3 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-              <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+            <div v-if="filteredItems.length === 0" class="text-center py-12">
+              <div :class="`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
+                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+              }`">
+                <Shirt :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+              </div>
+              <p :class="`text-sm font-medium mb-1 ${theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'}`">
                 No items found
+              </p>
+              <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
+                Try adjusting your filters
               </p>
             </div>
           </div>
@@ -312,29 +338,31 @@
 
         <!-- Right Area - Outfit Canvas -->
         <div class="lg:col-span-3">
-          <div :class="`rounded-xl p-6 ${
+          <div :class="`rounded-xl overflow-hidden ${
             theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
           }`">
             <!-- Canvas Area -->
             <div
               ref="canvasContainer"
-              :class="`relative w-full h-96 rounded-lg overflow-hidden ${
+              :class="`relative w-full rounded-lg overflow-hidden ${
                 theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-50'
               }`"
+              style="height: 600px;"
               @drop="handleDrop"
               @dragover.prevent
               @dragenter.prevent
+              @click="deselectItem"
             >
               <!-- Grid Background -->
               <div
                 v-if="showGrid"
-                class="absolute inset-0 opacity-20"
+                class="absolute inset-0 opacity-20 pointer-events-none"
                 :style="{
                   backgroundImage: `
                     linear-gradient(${theme.value === 'dark' ? '#ffffff' : '#000000'} 1px, transparent 1px),
                     linear-gradient(90deg, ${theme.value === 'dark' ? '#ffffff' : '#000000'} 1px, transparent 1px)
                   `,
-                  backgroundSize: '20px 20px'
+                  backgroundSize: '40px 40px'
                 }"
               />
               
@@ -347,21 +375,22 @@
                   left: `${item.x}px`,
                   top: `${item.y}px`,
                   zIndex: item.z_index || 0,
-                  transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`
+                  transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
+                  transformOrigin: 'center center'
                 }"
-                class="cursor-move select-none"
-                @mousedown="startDrag(item, $event)"
-                @click="selectItem(item.id)"
+                class="cursor-move select-none transition-all duration-200"
+                @mousedown.stop="startDrag(item, $event)"
+                @click.stop="selectItem(item.id)"
                 :class="{
-                  'ring-2 ring-blue-500': selectedItemId === item.id
+                  'ring-4 ring-blue-500 ring-offset-2': selectedItemId === item.id
                 }"
               >
-                <div class="w-16 h-16 rounded-lg overflow-hidden shadow-lg">
+                <div class="w-32 h-32 rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-zinc-700 p-2">
                   <img
                     v-if="item.image_url"
                     :src="item.image_url"
                     :alt="item.name"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-contain"
                     draggable="false"
                   />
                   <div
@@ -370,7 +399,7 @@
                       theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
                     }`"
                   >
-                    <Shirt :class="`w-6 h-6 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+                    <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
                   </div>
                 </div>
               </div>
@@ -378,16 +407,148 @@
               <!-- Empty State -->
               <div
                 v-if="canvasItems.length === 0"
-                class="absolute inset-0 flex flex-col items-center justify-center"
+                class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
               >
-                <div :class="`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${
+                <div :class="`w-24 h-24 rounded-full flex items-center justify-center mb-6 ${
                   theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
                 }`">
-                  <Sparkles :class="`w-6 h-6 text-orange-500`" />
+                  <Sparkles :class="`w-12 h-12 text-orange-500`" />
                 </div>
-                <p :class="`text-lg ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
-                  Start adding items to create your outfit
+                <p :class="`text-xl font-medium mb-2 ${theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'}`">
+                  Start Creating Your Outfit
                 </p>
+                <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
+                  Click on items from the left to add them to your canvas
+                </p>
+              </div>
+            </div>
+
+            <!-- Control Panel for Selected Item -->
+            <div
+              v-if="selectedItemId"
+              :class="`px-6 py-4 border-t flex items-center justify-between ${
+                theme.value === 'dark' ? 'border-zinc-800 bg-zinc-900' : 'border-stone-200 bg-white'
+              }`"
+            >
+              <div :class="`flex items-center gap-3 ${
+                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
+              }`">
+                <Shirt class="w-5 h-5" />
+                <span class="font-medium">{{ selectedItem?.name }}</span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <!-- Zoom Out -->
+                <button
+                  @click="scaleSelectedItem(-0.1)"
+                  :class="`p-2 rounded-lg transition-all duration-200 ${
+                    theme.value === 'dark'
+                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`"
+                  title="Zoom Out"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                  </svg>
+                </button>
+
+                <!-- Zoom In -->
+                <button
+                  @click="scaleSelectedItem(0.1)"
+                  :class="`p-2 rounded-lg transition-all duration-200 ${
+                    theme.value === 'dark'
+                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`"
+                  title="Zoom In"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                  </svg>
+                </button>
+
+                <!-- Rotate Left -->
+                <button
+                  @click="rotateSelectedItem(-15)"
+                  :class="`p-2 rounded-lg transition-all duration-200 ${
+                    theme.value === 'dark'
+                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`"
+                  title="Rotate Left"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"></path>
+                  </svg>
+                </button>
+
+                <!-- Rotate Right -->
+                <button
+                  @click="rotateSelectedItem(15)"
+                  :class="`p-2 rounded-lg transition-all duration-200 ${
+                    theme.value === 'dark'
+                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`"
+                  title="Rotate Right"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
+                  </svg>
+                </button>
+
+                <div :class="`w-px h-6 ${theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-300'}`"></div>
+
+                <!-- Move Forward -->
+                <button
+                  @click="moveSelectedItemForward"
+                  :class="`p-2 rounded-lg transition-all duration-200 ${
+                    theme.value === 'dark'
+                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`"
+                  title="Move Forward"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                </button>
+
+                <!-- Move Backward -->
+                <button
+                  @click="moveSelectedItemBackward"
+                  :class="`p-2 rounded-lg transition-all duration-200 ${
+                    theme.value === 'dark'
+                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`"
+                  title="Move Backward"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+
+                <div :class="`w-px h-6 ${theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-300'}`"></div>
+
+                <!-- Delete -->
+                <button
+                  @click="deleteSelectedItem"
+                  :class="`p-2 rounded-lg transition-all duration-200 ${
+                    theme.value === 'dark'
+                      ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
+                      : 'bg-red-100 text-red-600 hover:bg-red-200'
+                  }`"
+                  title="Delete"
+                >
+                  <Trash2 class="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
@@ -430,10 +591,11 @@ const currentUser = computed(() => authStore.user || authStore.profile)
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
-    case 'suggested': return 'Suggested Outfits'
-    case 'personal': return 'Personal Outfits'
-    case 'friend': return `Friend's Outfits`
-    default: return 'Outfits'
+    case 'suggested': return 'AI Suggested Outfits'
+    case 'personal': return 'Create Your Outfit'
+    case 'friend': return `Create with Friend's Items`
+    case 'edit': return 'Edit Outfit'
+    default: return 'Create Outfit'
   }
 })
 
@@ -484,6 +646,10 @@ const filteredItems = computed(() => {
 
 const canUndo = computed(() => historyIndex.value > 0)
 const canRedo = computed(() => historyIndex.value < history.value.length - 1)
+
+const selectedItem = computed(() => {
+  return canvasItems.value.find(item => item.id === selectedItemId.value)
+})
 
 // Methods
 const loadWardrobeItems = async () => {
@@ -540,14 +706,15 @@ const handleDrop = (event) => {
   
   if (item) {
     const rect = canvasContainer.value.getBoundingClientRect()
-    const x = event.clientX - rect.left - 32 // Center the item
-    const y = event.clientY - rect.top - 32
+    const itemSize = 128
+    const x = event.clientX - rect.left - (itemSize / 2) // Center the item
+    const y = event.clientY - rect.top - (itemSize / 2)
     
     const newItem = {
       ...item,
       id: `${item.id}-${Date.now()}`,
-      x: Math.max(0, Math.min(x, rect.width - 64)),
-      y: Math.max(0, Math.min(y, rect.height - 64)),
+      x: Math.max(0, Math.min(x, rect.width - itemSize)),
+      y: Math.max(0, Math.min(y, rect.height - itemSize)),
       z_index: canvasItems.value.length,
       rotation: 0,
       scale: 1
@@ -567,12 +734,14 @@ const startDrag = (item, event) => {
   const startItemX = item.x
   const startItemY = item.y
   
+  const itemSize = 128 // Updated size for larger items
+  
   const handleMouseMove = (e) => {
     const deltaX = e.clientX - startX
     const deltaY = e.clientY - startY
     
-    item.x = Math.max(0, Math.min(startItemX + deltaX, canvasContainer.value.clientWidth - 64))
-    item.y = Math.max(0, Math.min(startItemY + deltaY, canvasContainer.value.clientHeight - 64))
+    item.x = Math.max(0, Math.min(startItemX + deltaX, canvasContainer.value.clientWidth - itemSize))
+    item.y = Math.max(0, Math.min(startItemY + deltaY, canvasContainer.value.clientHeight - itemSize))
   }
   
   const handleMouseUp = () => {
@@ -589,6 +758,10 @@ const selectItem = (itemId) => {
   selectedItemId.value = itemId
 }
 
+const deselectItem = () => {
+  selectedItemId.value = null
+}
+
 const clearCanvas = () => {
   canvasItems.value = []
   selectedItemId.value = null
@@ -597,6 +770,71 @@ const clearCanvas = () => {
 
 const toggleGrid = () => {
   showGrid.value = !showGrid.value
+}
+
+const scaleSelectedItem = (delta) => {
+  if (!selectedItemId.value) return
+  
+  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
+  if (item) {
+    const newScale = Math.max(0.3, Math.min(3, (item.scale || 1) + delta))
+    item.scale = newScale
+    saveToHistory()
+  }
+}
+
+const rotateSelectedItem = (degrees) => {
+  if (!selectedItemId.value) return
+  
+  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
+  if (item) {
+    item.rotation = (item.rotation || 0) + degrees
+    saveToHistory()
+  }
+}
+
+const moveSelectedItemForward = () => {
+  if (!selectedItemId.value) return
+  
+  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
+  if (item) {
+    const maxZIndex = Math.max(...canvasItems.value.map(i => i.z_index || 0))
+    if (item.z_index < maxZIndex) {
+      // Find item with next z-index and swap
+      const nextItem = canvasItems.value.find(i => i.z_index === (item.z_index || 0) + 1)
+      if (nextItem) {
+        nextItem.z_index = item.z_index
+      }
+      item.z_index = (item.z_index || 0) + 1
+      saveToHistory()
+    }
+  }
+}
+
+const moveSelectedItemBackward = () => {
+  if (!selectedItemId.value) return
+  
+  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
+  if (item) {
+    const minZIndex = Math.min(...canvasItems.value.map(i => i.z_index || 0))
+    if ((item.z_index || 0) > minZIndex) {
+      // Find item with previous z-index and swap
+      const prevItem = canvasItems.value.find(i => i.z_index === (item.z_index || 0) - 1)
+      if (prevItem) {
+        prevItem.z_index = item.z_index
+      }
+      item.z_index = (item.z_index || 0) - 1
+      saveToHistory()
+    }
+  }
+}
+
+const deleteSelectedItem = () => {
+  if (!selectedItemId.value) return
+  
+  canvasItems.value = canvasItems.value.filter(item => item.id !== selectedItemId.value)
+  selectedItemId.value = null
+  saveToHistory()
 }
 
 const saveOutfit = async () => {

@@ -16,7 +16,9 @@
   @version 1.0.0
 -->
 <template>
-  <div class="min-h-screen p-6 md:p-12">
+  <div :class="`min-h-screen p-6 md:p-12 ${
+    theme.value === 'dark' ? 'bg-black' : 'bg-white'
+  }`">
     <!-- Debug info -->
     <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
       <p class="text-yellow-800">Debug: No user data available</p>
@@ -74,6 +76,128 @@
       </router-link>
     </div>
 
+    <!-- Notifications Section -->
+    <div class="max-w-6xl mx-auto">
+      <div :class="`p-8 rounded-3xl transition-all duration-300 ${
+        theme.value === 'dark'
+          ? 'bg-zinc-900 border border-zinc-800'
+          : 'bg-white border border-stone-200'
+      }`">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div :class="`p-3 rounded-2xl ${
+              theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+            }`">
+              <Bell class="w-6 h-6" />
+            </div>
+            <div>
+              <h2 :class="`text-2xl font-bold ${
+                theme.value === 'dark' ? 'text-white' : 'text-black'
+              }`">
+                Notifications
+              </h2>
+              <p v-if="unreadCount > 0" :class="`text-sm ${
+                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+              }`">
+                {{ unreadCount }} unread
+              </p>
+            </div>
+          </div>
+          
+          <button
+            v-if="unreadCount > 0"
+            @click="markAllAsRead"
+            :class="`text-sm px-4 py-2 rounded-lg transition-all duration-200 ${
+              theme.value === 'dark'
+                ? 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                : 'text-stone-600 hover:text-black hover:bg-stone-100'
+            }`"
+          >
+            Mark all as read
+          </button>
+        </div>
+
+        <!-- Notifications List -->
+        <div v-if="notifications.length > 0" class="space-y-3">
+          <div
+            v-for="notification in notifications"
+            :key="notification.id"
+            @click="markNotificationAsRead(notification)"
+            :class="`p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+              notification.is_read
+                ? theme.value === 'dark'
+                  ? 'bg-zinc-800/50 border border-zinc-800'
+                  : 'bg-stone-50 border border-stone-200'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 border border-zinc-700'
+                : 'bg-stone-100 border border-stone-300'
+            }`"
+          >
+            <div class="flex items-start gap-4">
+              <!-- Icon -->
+              <div :class="`p-2 rounded-lg flex-shrink-0 ${
+                theme.value === 'dark' ? 'bg-zinc-700' : 'bg-white'
+              }`">
+                <component :is="getNotificationIcon(notification.type)" class="w-5 h-5" />
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex-1 min-w-0">
+                    <h3 :class="`font-semibold text-sm mb-1 ${
+                      theme.value === 'dark' ? 'text-white' : 'text-black'
+                    }`">
+                      {{ notification.title }}
+                    </h3>
+                    <p :class="`text-sm ${
+                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+                    }`">
+                      {{ notification.message }}
+                    </p>
+                  </div>
+                  
+                  <!-- Time and unread indicator -->
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <span :class="`text-xs ${
+                      theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
+                    }`">
+                      {{ formatTimeAgo(notification.created_at) }}
+                    </span>
+                    <div
+                      v-if="!notification.is_read"
+                      class="w-2 h-2 rounded-full bg-blue-500"
+                      title="Unread"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else class="text-center py-12">
+          <div :class="`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+          }`">
+            <Bell :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+          </div>
+          <p :class="`text-lg font-medium ${
+            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          }`">
+            No notifications yet
+          </p>
+          <p :class="`text-sm mt-1 ${
+            theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
+          }`">
+            We'll notify you when something happens
+          </p>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -93,7 +217,8 @@ import { api } from '@/api/base44Client'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
-import { Shirt, Palette, Users } from 'lucide-vue-next'
+import { NotificationsService } from '@/services/notificationsService'
+import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check } from 'lucide-vue-next'
 
 // Theme and auth composables
 const { theme } = useTheme()
@@ -103,6 +228,7 @@ const authStore = useAuthStore()
 const clothesService = new ClothesService()
 const outfitsService = new OutfitsService()
 const friendsService = new FriendsService()
+const notificationsService = new NotificationsService()
 
 // Use computed to get reactive user data from auth store
 const user = computed(() => {
@@ -119,6 +245,8 @@ const user = computed(() => {
 const items = ref([])
 const outfits = ref([])
 const friends = ref([])
+const notifications = ref([])
+const unreadCount = ref(0)
 
 /**
  * Computed statistics for the dashboard cards
@@ -217,6 +345,98 @@ const loadFriends = async () => {
 }
 
 /**
+ * Loads user's notifications
+ * 
+ * Fetches the user's recent notifications from Supabase
+ * and displays them in the notifications section.
+ */
+const loadNotifications = async () => {
+  try {
+    console.log('🏠 Home: Loading notifications...')
+    if (user.value?.id) {
+      const [notificationsData, count] = await Promise.all([
+        notificationsService.getNotifications({ limit: 5 }),
+        notificationsService.getUnreadCount()
+      ])
+      
+      notifications.value = notificationsData || []
+      unreadCount.value = count || 0
+      console.log('🏠 Home: Notifications loaded successfully:', notifications.value.length, 'notifications,', unreadCount.value, 'unread')
+    } else {
+      console.log('🏠 Home: No user ID, setting notifications to empty array')
+      notifications.value = []
+      unreadCount.value = 0
+    }
+  } catch (error) {
+    console.error('❌ Home: Error loading notifications:', error)
+    notifications.value = []
+    unreadCount.value = 0
+  }
+}
+
+/**
+ * Marks a notification as read
+ */
+const markNotificationAsRead = async (notification) => {
+  if (notification.is_read) return
+  
+  try {
+    await notificationsService.markAsRead(notification.id)
+    notification.is_read = true
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+  } catch (error) {
+    console.error('❌ Home: Error marking notification as read:', error)
+  }
+}
+
+/**
+ * Marks all notifications as read
+ */
+const markAllAsRead = async () => {
+  try {
+    await notificationsService.markAllAsRead()
+    notifications.value.forEach(notification => {
+      notification.is_read = true
+    })
+    unreadCount.value = 0
+  } catch (error) {
+    console.error('❌ Home: Error marking all notifications as read:', error)
+  }
+}
+
+/**
+ * Gets the appropriate icon for a notification type
+ */
+const getNotificationIcon = (type) => {
+  const icons = {
+    friend_request: UserPlus,
+    friend_request_accepted: Check,
+    outfit_shared: Share2,
+    friend_outfit_suggestion: Sparkles,
+    outfit_like: Heart,
+    item_like: Heart,
+    style_suggestion: Sparkles,
+    weather_alert: CloudRain
+  }
+  return icons[type] || Bell
+}
+
+/**
+ * Formats time ago for notifications
+ */
+const formatTimeAgo = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const seconds = Math.floor((now - date) / 1000)
+  
+  if (seconds < 60) return 'Just now'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+/**
  * Component mounted lifecycle hook
  * 
  * Loads all necessary data when the component is mounted:
@@ -253,6 +473,8 @@ onMounted(async () => {
     await loadOutfits()
     console.log('🏠 Home: Loading friends...')
     await loadFriends()
+    console.log('🏠 Home: Loading notifications...')
+    await loadNotifications()
     console.log('🏠 Home: All data loaded successfully')
   } catch (error) {
     console.error('❌ Home: Error loading data:', error)

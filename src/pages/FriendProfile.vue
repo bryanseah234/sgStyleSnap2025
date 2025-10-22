@@ -39,7 +39,7 @@
               <button
                 @click="goCreateOutfitForFriend"
                 :class="`px-4 py-2 rounded-lg font-medium ${theme.value === 'dark' ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-stone-900'}`">
-                Create Outfit for {{ friend?.name || 'Friend' }}
+                Create Outfit
               </button>
               <button
                 @click="showUnfriend = true"
@@ -60,7 +60,7 @@
           <button
             @click="activeTab = 'outfits'"
             :class="`px-4 py-2 rounded-lg font-medium ${activeTab === 'outfits' ? (theme.value === 'dark' ? 'bg-white text-black' : 'bg-black text-white') : (theme.value === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-stone-100 text-stone-700 hover:bg-stone-200')}`">
-            Saved Outfits
+            Outfits
           </button>
         </div>
 

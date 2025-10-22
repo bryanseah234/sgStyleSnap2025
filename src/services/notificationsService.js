@@ -233,38 +233,51 @@ export class NotificationsService {
     return {
       friend_request: {
         title: 'New Friend Request',
-        message: 'You have a new friend request from {requester_name}',
-        icon: 'user-plus'
+        message: '{requester_name} sent you a friend request',
+        icon: 'user-plus',
+        action: 'View request'
       },
       friend_request_accepted: {
         title: 'Friend Request Accepted',
         message: '{accepter_name} accepted your friend request',
-        icon: 'user-check'
+        icon: 'user-check',
+        action: 'View profile'
       },
       outfit_shared: {
         title: 'Outfit Shared',
         message: '{sharer_name} shared an outfit with you',
-        icon: 'share'
+        icon: 'share',
+        action: 'View outfit'
       },
-      outfit_liked: {
+      friend_outfit_suggestion: {
+        title: 'Outfit Suggestion',
+        message: '{suggester_name} created an outfit suggestion using your items',
+        icon: 'sparkles',
+        action: 'View suggestion'
+      },
+      outfit_like: {
         title: 'Outfit Liked',
         message: '{liker_name} liked your outfit',
-        icon: 'heart'
+        icon: 'heart',
+        action: 'View outfit'
       },
-      new_follower: {
-        title: 'New Follower',
-        message: '{follower_name} started following you',
-        icon: 'user-plus'
+      item_like: {
+        title: 'Item Liked',
+        message: '{liker_name} liked your closet item',
+        icon: 'heart',
+        action: 'View item'
       },
       style_suggestion: {
         title: 'Style Suggestion',
         message: 'Check out this outfit suggestion based on your wardrobe',
-        icon: 'sparkles'
+        icon: 'sparkles',
+        action: 'View suggestion'
       },
       weather_alert: {
         title: 'Weather Alert',
         message: 'Consider updating your outfit for today\'s weather',
-        icon: 'cloud-rain'
+        icon: 'cloud-rain',
+        action: 'View suggestions'
       }
     }
   }
@@ -290,6 +303,85 @@ export class NotificationsService {
       message,
       data
     })
+  }
+
+  // Friend request management
+  async acceptFriendRequest(friendshipId) {
+    try {
+      const { data, error } = await supabase.rpc('accept_friend_request', {
+        p_friendship_id: friendshipId
+      })
+
+      if (error) throw error
+      return { success: true, data }
+    } catch (error) {
+      handleSupabaseError(error, 'accept friend request')
+      return { success: false, error }
+    }
+  }
+
+  async rejectFriendRequest(friendshipId) {
+    try {
+      const { data, error } = await supabase.rpc('reject_friend_request', {
+        p_friendship_id: friendshipId
+      })
+
+      if (error) throw error
+      return { success: true, data }
+    } catch (error) {
+      handleSupabaseError(error, 'reject friend request')
+      return { success: false, error }
+    }
+  }
+
+  // Outfit sharing
+  async shareOutfitWithFriends(outfitId, recipientIds, message = null) {
+    try {
+      const { data, error } = await supabase.rpc('share_outfit_with_friends', {
+        p_outfit_id: outfitId,
+        p_recipient_ids: recipientIds,
+        p_message: message
+      })
+
+      if (error) throw error
+      return { success: true, data }
+    } catch (error) {
+      handleSupabaseError(error, 'share outfit')
+      return { success: false, error }
+    }
+  }
+
+  async getSharedOutfits(limit = 20, offset = 0) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase.rpc('get_shared_outfits', {
+        p_user_id: user.id,
+        p_limit: limit,
+        p_offset: offset
+      })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      handleSupabaseError(error, 'get shared outfits')
+      return []
+    }
+  }
+
+  async markOutfitShareViewed(shareId) {
+    try {
+      const { data, error } = await supabase.rpc('mark_outfit_share_viewed', {
+        p_share_id: shareId
+      })
+
+      if (error) throw error
+      return { success: true, data }
+    } catch (error) {
+      handleSupabaseError(error, 'mark outfit share viewed')
+      return { success: false, error }
+    }
   }
 }
 

@@ -1,12 +1,45 @@
 -- Migration 020: Add Main Outfits Table
 -- This migration adds the main outfits table that the OutfitsService expects
+-- This migration is IDEMPOTENT - safe to run multiple times
 
 -- ============================================
--- DROP EXISTING OBJECTS (if they exist)
+-- CLEAN UP EXISTING OBJECTS (Safe)
 -- ============================================
-DROP TRIGGER IF EXISTS update_outfits_updated_at ON outfits CASCADE;
-DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 
+-- Drop everything in a safe way using DO blocks
+-- This handles cases where tables don't exist yet
+
+DO $$ 
+BEGIN
+    -- Drop triggers if they exist (requires table to exist)
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'outfits') THEN
+        DROP TRIGGER IF EXISTS update_outfits_updated_at ON outfits CASCADE;
+    END IF;
+    
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'outfit_items') THEN
+        DROP TRIGGER IF EXISTS update_outfit_items_updated_at ON outfit_items CASCADE;
+    END IF;
+END $$;
+
+-- Drop indexes (these are safe - won't error if they don't exist)
+DROP INDEX IF EXISTS idx_outfits_owner_id;
+DROP INDEX IF EXISTS idx_outfits_created_at;
+DROP INDEX IF EXISTS idx_outfits_is_favorite;
+DROP INDEX IF EXISTS idx_outfits_is_public;
+DROP INDEX IF EXISTS idx_outfits_occasion;
+DROP INDEX IF EXISTS idx_outfits_weather;
+DROP INDEX IF EXISTS idx_outfits_removed_at;
+DROP INDEX IF EXISTS idx_outfits_tags;
+DROP INDEX IF EXISTS idx_outfit_items_outfit_id;
+DROP INDEX IF EXISTS idx_outfit_items_clothing_item_id;
+DROP INDEX IF EXISTS idx_outfit_items_outfit_clothing;
+DROP INDEX IF EXISTS idx_outfit_likes_outfit_id;
+DROP INDEX IF EXISTS idx_outfit_likes_user_id;
+DROP INDEX IF EXISTS idx_outfit_likes_created_at;
+
+-- Drop tables (CASCADE will automatically drop policies, constraints, etc.)
+-- This is the cleanest approach - no need to manually drop policies
+DROP TABLE IF EXISTS outfit_likes CASCADE;
 DROP TABLE IF EXISTS outfit_items CASCADE;
 DROP TABLE IF EXISTS outfits CASCADE;
 
@@ -16,7 +49,7 @@ DROP TABLE IF EXISTS outfits CASCADE;
 -- This is the main outfits table that the OutfitsService queries
 -- It stores user-created outfits (both manual and AI-generated)
 
-CREATE TABLE outfits (
+CREATE TABLE IF NOT EXISTS outfits (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     outfit_name VARCHAR(255) NOT NULL,
@@ -37,7 +70,7 @@ CREATE TABLE outfits (
 -- ============================================
 -- Links outfits to clothing items with positioning data
 
-CREATE TABLE outfit_items (
+CREATE TABLE IF NOT EXISTS outfit_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     outfit_id UUID NOT NULL REFERENCES outfits(id) ON DELETE CASCADE,
     clothing_item_id UUID NOT NULL REFERENCES clothes(id) ON DELETE CASCADE,
@@ -62,7 +95,7 @@ CREATE TABLE outfit_items (
 -- ============================================
 -- Likes on user-created outfits
 
-CREATE TABLE outfit_likes (
+CREATE TABLE IF NOT EXISTS outfit_likes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     outfit_id UUID NOT NULL REFERENCES outfits(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -77,30 +110,31 @@ CREATE TABLE outfit_likes (
 -- ============================================
 
 -- Outfits table indexes
-CREATE INDEX idx_outfits_owner_id ON outfits(owner_id);
-CREATE INDEX idx_outfits_created_at ON outfits(created_at DESC);
-CREATE INDEX idx_outfits_is_favorite ON outfits(is_favorite) WHERE is_favorite = true;
-CREATE INDEX idx_outfits_is_public ON outfits(is_public) WHERE is_public = true;
-CREATE INDEX idx_outfits_occasion ON outfits(occasion);
-CREATE INDEX idx_outfits_weather ON outfits(weather_condition);
-CREATE INDEX idx_outfits_removed_at ON outfits(removed_at) WHERE removed_at IS NULL;
-CREATE INDEX idx_outfits_tags ON outfits USING GIN(style_tags);
+CREATE INDEX IF NOT EXISTS idx_outfits_owner_id ON outfits(owner_id);
+CREATE INDEX IF NOT EXISTS idx_outfits_created_at ON outfits(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_outfits_is_favorite ON outfits(is_favorite) WHERE is_favorite = true;
+CREATE INDEX IF NOT EXISTS idx_outfits_is_public ON outfits(is_public) WHERE is_public = true;
+CREATE INDEX IF NOT EXISTS idx_outfits_occasion ON outfits(occasion);
+CREATE INDEX IF NOT EXISTS idx_outfits_weather ON outfits(weather_condition);
+CREATE INDEX IF NOT EXISTS idx_outfits_removed_at ON outfits(removed_at) WHERE removed_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_outfits_tags ON outfits USING GIN(style_tags);
 
 -- Outfit items indexes
-CREATE INDEX idx_outfit_items_outfit_id ON outfit_items(outfit_id);
-CREATE INDEX idx_outfit_items_clothing_item_id ON outfit_items(clothing_item_id);
-CREATE INDEX idx_outfit_items_outfit_clothing ON outfit_items(outfit_id, clothing_item_id);
+CREATE INDEX IF NOT EXISTS idx_outfit_items_outfit_id ON outfit_items(outfit_id);
+CREATE INDEX IF NOT EXISTS idx_outfit_items_clothing_item_id ON outfit_items(clothing_item_id);
+CREATE INDEX IF NOT EXISTS idx_outfit_items_outfit_clothing ON outfit_items(outfit_id, clothing_item_id);
 
 -- Outfit likes indexes
-CREATE INDEX idx_outfit_likes_outfit_id ON outfit_likes(outfit_id);
-CREATE INDEX idx_outfit_likes_user_id ON outfit_likes(user_id);
-CREATE INDEX idx_outfit_likes_created_at ON outfit_likes(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_outfit_likes_outfit_id ON outfit_likes(outfit_id);
+CREATE INDEX IF NOT EXISTS idx_outfit_likes_user_id ON outfit_likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_outfit_likes_created_at ON outfit_likes(created_at DESC);
 
 -- ============================================
 -- FUNCTIONS
 -- ============================================
 
 -- Function to update updated_at timestamp
+-- Using CREATE OR REPLACE to make it idempotent
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -126,12 +160,14 @@ $$ LANGUAGE plpgsql;
 -- ============================================
 
 -- Update updated_at on outfits table
+DROP TRIGGER IF EXISTS update_outfits_updated_at ON outfits;
 CREATE TRIGGER update_outfits_updated_at
     BEFORE UPDATE ON outfits
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Update updated_at on outfit_items table
+DROP TRIGGER IF EXISTS update_outfit_items_updated_at ON outfit_items;
 CREATE TRIGGER update_outfit_items_updated_at
     BEFORE UPDATE ON outfit_items
     FOR EACH ROW
@@ -230,8 +266,19 @@ GRANT ALL ON outfits TO authenticated;
 GRANT ALL ON outfit_items TO authenticated;
 GRANT ALL ON outfit_likes TO authenticated;
 
--- Grant usage on sequences
-GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+-- Grant usage on sequences (if any exist)
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'outfits_id_seq') THEN
+        GRANT USAGE ON SEQUENCE outfits_id_seq TO authenticated;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'outfit_items_id_seq') THEN
+        GRANT USAGE ON SEQUENCE outfit_items_id_seq TO authenticated;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'outfit_likes_id_seq') THEN
+        GRANT USAGE ON SEQUENCE outfit_likes_id_seq TO authenticated;
+    END IF;
+END $$;
 
 -- ============================================
 -- COMMENTS
@@ -261,3 +308,43 @@ COMMENT ON COLUMN outfit_items.z_index IS 'Z-index for layering items';
 
 COMMENT ON COLUMN outfit_likes.outfit_id IS 'Reference to the outfit being liked';
 COMMENT ON COLUMN outfit_likes.user_id IS 'User who liked the outfit';
+
+-- ============================================
+-- VERIFICATION
+-- ============================================
+
+-- Verify tables were created
+DO $$ 
+BEGIN
+    IF EXISTS (
+        SELECT FROM pg_tables 
+        WHERE schemaname = 'public' 
+        AND tablename = 'outfits'
+    ) THEN
+        RAISE NOTICE '✅ Table "outfits" created successfully';
+    ELSE
+        RAISE EXCEPTION '❌ Table "outfits" was not created';
+    END IF;
+
+    IF EXISTS (
+        SELECT FROM pg_tables 
+        WHERE schemaname = 'public' 
+        AND tablename = 'outfit_items'
+    ) THEN
+        RAISE NOTICE '✅ Table "outfit_items" created successfully';
+    ELSE
+        RAISE EXCEPTION '❌ Table "outfit_items" was not created';
+    END IF;
+
+    IF EXISTS (
+        SELECT FROM pg_tables 
+        WHERE schemaname = 'public' 
+        AND tablename = 'outfit_likes'
+    ) THEN
+        RAISE NOTICE '✅ Table "outfit_likes" created successfully';
+    ELSE
+        RAISE EXCEPTION '❌ Table "outfit_likes" was not created';
+    END IF;
+
+    RAISE NOTICE '🎉 Migration 020 completed successfully!';
+END $$;

@@ -1,0 +1,387 @@
+<template>
+  <div class="min-h-screen p-6 md:p-12">
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-4xl font-bold text-foreground mb-2">
+            Your Outfits
+          </h1>
+          <p :class="`text-lg ${
+            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          }`">
+            Browse and manage your saved outfit combinations
+          </p>
+        </div>
+        
+        <!-- Add Outfit Dropdown Button -->
+        <div class="relative">
+          <button
+            @click="showAddMenu = !showAddMenu"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+              theme.value === 'dark'
+                ? 'bg-white text-black hover:bg-zinc-200'
+                : 'bg-black text-white hover:bg-zinc-800'
+            }`"
+          >
+            <Plus class="w-5 h-5" />
+            Add Outfit
+            <ChevronDown :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" />
+          </button>
+          
+          <!-- Dropdown Menu -->
+          <div
+            v-if="showAddMenu"
+            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 ${
+              theme.value === 'dark'
+                ? 'bg-zinc-900 border-zinc-800'
+                : 'bg-white border-stone-200'
+            }`"
+          >
+            <button
+              @click="navigateToCreate('personal')"
+              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
+                theme.value === 'dark'
+                  ? 'hover:bg-zinc-800 text-white'
+                  : 'hover:bg-stone-50 text-black'
+              }`"
+            >
+              <User class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Manual Creation</div>
+                <div :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">
+                  Create your own outfit combinations
+                </div>
+              </div>
+            </button>
+            
+            <button
+              @click="navigateToCreate('friend')"
+              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
+                theme.value === 'dark'
+                  ? 'hover:bg-zinc-800 text-white'
+                  : 'hover:bg-stone-50 text-black'
+              }`"
+            >
+              <Users class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Friend Creation</div>
+                <div :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">
+                  Use items from friends' closets
+                </div>
+              </div>
+            </button>
+            
+            <button
+              @click="navigateToCreate('suggested')"
+              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
+                theme.value === 'dark'
+                  ? 'hover:bg-zinc-800 text-white'
+                  : 'hover:bg-stone-50 text-black'
+              }`"
+            >
+              <Sparkles class="w-5 h-5" />
+              <div>
+                <div class="font-medium">AI Suggestions</div>
+                <div :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">
+                  Get AI-powered outfit recommendations
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-4 mb-6">
+        <button
+          v-for="filter in filters"
+          :key="filter.value"
+          @click="activeFilter = filter.value"
+          :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            activeFilter === filter.value
+              ? theme.value === 'dark'
+                ? 'bg-white text-black'
+                : 'bg-black text-white'
+              : theme.value === 'dark'
+              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+          }`"
+        >
+          {{ filter.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Outfits Grid -->
+    <div class="max-w-6xl mx-auto">
+      <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div
+          v-for="i in 6"
+          :key="i"
+          :class="`aspect-square rounded-xl animate-pulse ${
+            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
+          }`"
+        />
+      </div>
+
+      <div v-else-if="filteredOutfits.length === 0" class="text-center py-12">
+        <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center ${
+          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+        }`">
+          <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+        </div>
+        <h3 :class="`text-xl font-semibold mb-2 ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`">
+          No outfits found
+        </h3>
+        <p :class="`text-lg mb-4 ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        }`">
+          Start creating your first outfit!
+        </p>
+        <button
+          @click="navigateToCreate('personal')"
+          :class="`px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+            theme.value === 'dark'
+              ? 'bg-white text-black hover:bg-zinc-200'
+              : 'bg-black text-white hover:bg-zinc-800'
+          }`"
+        >
+          Create Outfit
+        </button>
+      </div>
+
+      <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div
+          v-for="outfit in filteredOutfits"
+          :key="outfit.id"
+          :class="`group cursor-pointer transition-all duration-300 hover:scale-105 ${
+            theme.value === 'dark'
+              ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
+              : 'bg-white border border-stone-200 hover:border-stone-300'
+          } rounded-xl overflow-hidden`"
+          @click="viewOutfit(outfit)"
+        >
+          <div class="aspect-square relative overflow-hidden">
+            <!-- Outfit Preview (composite of items) -->
+            <div
+              v-if="outfit.preview_url"
+              class="w-full h-full"
+            >
+              <img
+                :src="outfit.preview_url"
+                :alt="outfit.name"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div
+              v-else
+              :class="`w-full h-full flex items-center justify-center ${
+                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+              }`"
+            >
+              <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+            </div>
+            
+            <!-- Action buttons overlay -->
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+              <button
+                @click.stop="editOutfit(outfit)"
+                :class="`p-3 rounded-xl transition-all duration-200 ${
+                  theme.value === 'dark'
+                    ? 'bg-white text-black hover:bg-zinc-200'
+                    : 'bg-black text-white hover:bg-zinc-800'
+                }`"
+                title="Edit"
+              >
+                <Pencil class="w-5 h-5" />
+              </button>
+              <button
+                @click.stop="deleteOutfit(outfit)"
+                class="p-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                title="Delete"
+              >
+                <Trash2 class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <h3 :class="`font-semibold mb-1 ${
+              theme.value === 'dark' ? 'text-white' : 'text-black'
+            }`">
+              {{ outfit.outfit_name || outfit.name || 'Untitled Outfit' }}
+            </h3>
+            <p :class="`text-sm ${
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+            }`">
+              {{ outfit.item_count || 0 }} items
+            </p>
+            <p :class="`text-xs mt-1 ${
+              theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
+            }`">
+              {{ formatDate(outfit.created_at) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Click outside to close dropdown -->
+    <div
+      v-if="showAddMenu"
+      class="fixed inset-0 z-40"
+      @click="showAddMenu = false"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useTheme } from '@/composables/useTheme'
+import { useAuthStore } from '@/stores/auth-store'
+import { OutfitsService } from '@/services/outfitsService'
+import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2 } from 'lucide-vue-next'
+
+const { theme } = useTheme()
+const authStore = useAuthStore()
+const router = useRouter()
+
+// Initialize outfits service
+const outfitsService = new OutfitsService()
+
+// Use computed to get reactive user data from auth store
+const currentUser = computed(() => authStore.user || authStore.profile)
+
+const outfits = ref([])
+const loading = ref(true)
+const showAddMenu = ref(false)
+const activeFilter = ref('all')
+
+const filters = [
+  { value: 'all', label: 'All Outfits' },
+  { value: 'recent', label: 'Recent' },
+  { value: 'favorites', label: 'Favorites' }
+]
+
+const filteredOutfits = computed(() => {
+  let filtered = outfits.value
+
+  if (activeFilter.value === 'recent') {
+    // Sort by created_at descending
+    filtered = [...filtered].sort((a, b) => 
+      new Date(b.created_at) - new Date(a.created_at)
+    )
+  } else if (activeFilter.value === 'favorites') {
+    filtered = filtered.filter(outfit => outfit.is_favorite)
+  }
+
+  return filtered
+})
+
+const loadOutfits = async () => {
+  try {
+    console.log('Outfits: Loading outfits for user:', currentUser.value?.id)
+    
+    if (!currentUser.value?.id) {
+      console.log('Outfits: No user ID, cannot load outfits')
+      outfits.value = []
+      return
+    }
+    
+    // Load outfits from Supabase using OutfitsService
+    console.log('Outfits: Fetching from Supabase...')
+    const data = await outfitsService.getOutfits({
+      orderBy: '-created_at', // Most recent first
+      limit: 50
+    })
+    
+    // Transform outfit data to include item_count and preview
+    outfits.value = (data || []).map(outfit => ({
+      ...outfit,
+      item_count: outfit.outfit_items?.length || 0,
+      // Use first item's image as preview if no preview_url
+      preview_url: outfit.preview_url || outfit.outfit_items?.[0]?.clothing_item?.image_url
+    }))
+    
+    console.log('Outfits: Loaded', outfits.value.length, 'outfits from Supabase')
+    
+  } catch (error) {
+    console.error('Outfits: Error loading outfits:', error)
+    outfits.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+const navigateToCreate = (type) => {
+  showAddMenu.value = false
+  
+  if (type === 'personal') {
+    router.push('/outfits/add/personal')
+  } else if (type === 'friend') {
+    // TODO: For now, navigate to a placeholder friend route
+    router.push('/outfits/add/friend/placeholder')
+  } else if (type === 'suggested') {
+    router.push('/outfits/add/suggested')
+  }
+}
+
+const viewOutfit = (outfit) => {
+  // Navigate to outfit detail/view page
+  console.log('View outfit:', outfit)
+  // TODO: Implement outfit viewing
+}
+
+const editOutfit = (outfit) => {
+  // Navigate to outfit editor with outfit ID
+  console.log('Edit outfit:', outfit)
+  router.push(`/outfits/edit/${outfit.id}`)
+}
+
+const deleteOutfit = async (outfit) => {
+  const outfitName = outfit.outfit_name || outfit.name || 'this outfit'
+  if (confirm(`Are you sure you want to delete "${outfitName}"?`)) {
+    try {
+      console.log('Outfits: Deleting outfit:', outfit.id)
+      await outfitsService.deleteOutfit(outfit.id)
+      
+      // Remove from local array
+      outfits.value = outfits.value.filter(o => o.id !== outfit.id)
+      console.log('Outfits: Successfully deleted outfit')
+    } catch (error) {
+      console.error('Outfits: Error deleting outfit:', error)
+      alert('Failed to delete outfit. Please try again.')
+    }
+  }
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+onMounted(async () => {
+  console.log('Outfits: Component mounted, initializing...')
+  
+  // Ensure auth store is initialized
+  if (!authStore.isAuthenticated) {
+    console.log('Outfits: Auth not initialized, initializing...')
+    await authStore.initializeAuth()
+  }
+  
+  // Only load outfits if user is authenticated
+  if (authStore.isAuthenticated && authStore.user?.id) {
+    console.log('Outfits: User is authenticated, loading outfits...')
+    await loadOutfits()
+  } else {
+    console.log('Outfits: User not authenticated, skipping outfit loading')
+    loading.value = false
+  }
+})
+</script>
+

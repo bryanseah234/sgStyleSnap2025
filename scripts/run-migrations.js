@@ -59,7 +59,9 @@ const migrations = [
   '021_seed_data.sql',
   '022_disable_auto_contribution.sql',
   '023_clear_catalog_data.sql',
-  '024_google_profile_sync.sql'
+  '024_google_profile_sync.sql',
+  '025_fix_auth_user_sync.sql',
+  '026_complete_auth_sync.sql'
 ]
 
 async function runMigration(filename) {

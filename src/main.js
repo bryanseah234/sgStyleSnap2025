@@ -19,7 +19,8 @@ import { useThemeStore } from './stores/theme-store'
 // Import page components
 import Home from './pages/Home.vue'
 import Cabinet from './pages/Cabinet.vue'
-import Dashboard from './pages/Dashboard.vue'
+import Outfits from './pages/Outfits.vue'
+import OutfitCreator from './pages/OutfitCreator.vue'
 import Friends from './pages/Friends.vue'
 import Profile from './pages/Profile.vue'
 import FriendCabinet from './pages/FriendCabinet.vue'
@@ -40,7 +41,7 @@ const routes = [
   { path: '/', redirect: '/home' },
   { path: '/home', component: Home, meta: { requiresAuth: true } },
   { path: '/closet', component: Cabinet, meta: { requiresAuth: true } },
-  { path: '/outfits', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/outfits', component: Outfits, meta: { requiresAuth: true } },
   { path: '/friends', component: Friends, meta: { requiresAuth: true } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/friend/:username/closet', component: FriendCabinet, meta: { requiresAuth: true } },
@@ -49,10 +50,11 @@ const routes = [
   { path: '/login', component: Login, meta: { requiresAuth: false } },
   { path: '/auth/callback', component: OAuthCallback, meta: { requiresAuth: false } },
   
-  // Outfit sub-routes (stay on outfits page, content changes)
-  { path: '/outfits/add/suggested', component: Dashboard, meta: { requiresAuth: true, subRoute: 'suggested' } },
-  { path: '/outfits/add/personal', component: Dashboard, meta: { requiresAuth: true, subRoute: 'personal' } },
-  { path: '/outfits/add/friend/:username', component: Dashboard, meta: { requiresAuth: true, subRoute: 'friend' } },
+  // Outfit creation/editing routes (canvas interface)
+  { path: '/outfits/add/personal', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'personal' } },
+  { path: '/outfits/add/suggested', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'suggested' } },
+  { path: '/outfits/add/friend/:username', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'friend' } },
+  { path: '/outfits/edit/:outfitId', component: OutfitCreator, meta: { requiresAuth: true, subRoute: 'edit' } },
   
   // Closet sub-routes (stay on closet page, content changes)
   { path: '/closet/add/manual', component: Cabinet, meta: { requiresAuth: true, subRoute: 'manual' } },
