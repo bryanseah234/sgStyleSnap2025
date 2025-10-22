@@ -1,394 +1,250 @@
-import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { supabase } from '@/config/supabase'
 
+/**
+ * Catalog Service
+ * 
+ * Handles catalog browsing and adding catalog items to user closet.
+ * Uses the catalog_items table and associated Postgres functions.
+ */
 export class CatalogService {
+  /**
+   * Get catalog items excluding items the user already owns
+   * Uses the get_catalog_excluding_owned Postgres function
+   * 
+   * @param {Object} options - Filter options
+   * @param {string} options.category - Filter by category (e.g., 'top', 'bottom', etc.)
+   * @param {string} options.color - Filter by color
+   * @param {string} options.brand - Filter by brand
+   * @param {string} options.season - Filter by season
+   * @param {number} options.limit - Number of items per page (default: 20)
+   * @param {number} options.offset - Pagination offset (default: 0)
+   * @returns {Promise<Array>} Array of catalog items
+   */
+  async getCatalogItems(options = {}) {
+    try {
+      const {
+        category = null,
+        color = null,
+        brand = null,
+        season = null,
+        limit = 20,
+        offset = 0
+      } = options
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      console.log('CatalogService: Fetching catalog items for user:', user.id)
+
+      // Call the Postgres function to get catalog items excluding owned
+      const { data, error } = await supabase
+        .rpc('get_catalog_excluding_owned', {
+          user_id_param: user.id,
+          category_filter: category,
+          color_filter: color,
+          brand_filter: brand,
+          season_filter: season,
+          page_limit: limit,
+          page_offset: offset
+        })
+
+      if (error) {
+        console.error('CatalogService: Error fetching catalog items:', error)
+        throw error
+      }
+
+      console.log('CatalogService: Fetched', data?.length || 0, 'catalog items')
+      return data || []
+
+    } catch (error) {
+      console.error('CatalogService: Error in getCatalogItems:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Search catalog items using full-text search
+   * Uses the search_catalog Postgres function
+   * 
+   * @param {string} query - Search query text
+   * @param {Object} filters - Optional filter options
+   * @param {string} filters.category - Filter by category
+   * @param {string} filters.color - Filter by color
+   * @param {string} filters.brand - Filter by brand
+   * @param {string} filters.season - Filter by season
+   * @param {number} filters.limit - Number of items per page (default: 20)
+   * @param {number} filters.offset - Pagination offset (default: 0)
+   * @returns {Promise<Array>} Array of catalog items with search rank
+   */
+  async searchCatalog(query, filters = {}) {
+    try {
+      const {
+        category = null,
+        color = null,
+        brand = null,
+        season = null,
+        limit = 20,
+        offset = 0
+      } = filters
+
+      console.log('CatalogService: Searching catalog with query:', query)
+
+      // Call the Postgres function for full-text search
+      const { data, error } = await supabase
+        .rpc('search_catalog', {
+          search_query: query,
+          filter_category: category,
+          filter_color: color,
+          filter_brand: brand,
+          filter_season: season,
+          page_limit: limit,
+          page_offset: offset
+        })
+
+      if (error) {
+        console.error('CatalogService: Error searching catalog:', error)
+        throw error
+      }
+
+      console.log('CatalogService: Found', data?.length || 0, 'catalog items')
+      return data || []
+
+    } catch (error) {
+      console.error('CatalogService: Error in searchCatalog:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Add a catalog item to user's closet
+   * Uses the add_catalog_item_to_closet Postgres function
+   * 
+   * @param {string} catalogItemId - UUID of the catalog item to add
+   * @param {string} privacy - Privacy setting ('public', 'friends', 'private') - default: 'friends'
+   * @returns {Promise<string>} UUID of the newly created clothing item
+   */
+  async addToCloset(catalogItemId, privacy = 'friends') {
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      console.log('CatalogService: Adding catalog item to closet:', catalogItemId)
+
+      // Call the Postgres function to add item to closet
+      const { data, error } = await supabase
+        .rpc('add_catalog_item_to_closet', {
+          user_id_param: user.id,
+          catalog_item_id_param: catalogItemId,
+          privacy_param: privacy
+        })
+
+      if (error) {
+        console.error('CatalogService: Error adding to closet:', error)
+        
+        // Handle specific errors
+        if (error.message?.includes('already in closet')) {
+          throw new Error('This item is already in your closet')
+        } else if (error.message?.includes('not found or inactive')) {
+          throw new Error('Catalog item not found or no longer available')
+        }
+        
+        throw error
+      }
+
+      console.log('CatalogService: Successfully added item to closet. New item ID:', data)
+      return data
+
+    } catch (error) {
+      console.error('CatalogService: Error in addToCloset:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get available categories from catalog
+   * @returns {Promise<Array>} Array of category objects with counts
+   */
   async getCategories() {
     try {
       const { data, error } = await supabase
-        .from('categories')
-        .select('*')
+        .from('catalog_items')
+        .select('category')
         .eq('is_active', true)
-        .order('name')
 
       if (error) throw error
-      return data || []
+
+      // Count items per category
+      const categoryCounts = {}
+      data.forEach(item => {
+        categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1
+      })
+
+      return Object.entries(categoryCounts).map(([category, count]) => ({
+        value: category,
+        label: category.charAt(0).toUpperCase() + category.slice(1),
+        count
+      }))
+
     } catch (error) {
-      handleSupabaseError(error, 'get categories')
+      console.error('CatalogService: Error getting categories:', error)
+      throw error
     }
   }
 
-  async getBrands() {
-    try {
-      const { data, error } = await supabase
-        .from('brands')
-        .select('*')
-        .eq('is_active', true)
-        .order('name')
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get brands')
-    }
-  }
-
+  /**
+   * Get available colors from catalog
+   * @returns {Promise<Array>} Array of unique colors
+   */
   async getColors() {
     try {
       const { data, error } = await supabase
-        .from('colors')
-        .select('*')
+        .from('catalog_items')
+        .select('color')
         .eq('is_active', true)
-        .order('name')
+        .not('color', 'is', null)
 
       if (error) throw error
-      return data || []
+
+      // Get unique colors
+      const uniqueColors = [...new Set(data.map(item => item.color).filter(Boolean))]
+      return uniqueColors.sort()
+
     } catch (error) {
-      handleSupabaseError(error, 'get colors')
+      console.error('CatalogService: Error getting colors:', error)
+      throw error
     }
   }
 
-  async getStyles() {
-    try {
-      const { data, error } = await supabase
-        .from('styles')
-        .select('*')
-        .eq('is_active', true)
-        .order('name')
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get styles')
-    }
-  }
-
-  async searchItems(query) {
+  /**
+   * Get available brands from catalog
+   * @returns {Promise<Array>} Array of unique brands
+   */
+  async getBrands() {
     try {
       const { data, error } = await supabase
         .from('catalog_items')
-        .select(`
-          *,
-          category:catalog_items_category_id_fkey (*),
-          brand:catalog_items_brand_id_fkey (*),
-          colors (*),
-          styles (*)
-        `)
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+        .select('brand')
         .eq('is_active', true)
-        .limit(20)
+        .not('brand', 'is', null)
 
       if (error) throw error
-      return data || []
+
+      // Get unique brands
+      const uniqueBrands = [...new Set(data.map(item => item.brand).filter(Boolean))]
+      return uniqueBrands.sort()
+
     } catch (error) {
-      handleSupabaseError(error, 'search catalog items')
-    }
-  }
-
-  async getTrendingItems() {
-    try {
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select(`
-          *,
-          category:catalog_items_category_id_fkey (*),
-          brand:catalog_items_brand_id_fkey (*),
-          colors (*),
-          styles (*)
-        `)
-        .eq('is_active', true)
-        .eq('is_trending', true)
-        .order('trending_score', { ascending: false })
-        .limit(10)
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get trending items')
-    }
-  }
-
-  async getItemsByCategory(categoryId) {
-    try {
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select(`
-          *,
-          category:catalog_items_category_id_fkey (*),
-          brand:catalog_items_brand_id_fkey (*),
-          colors (*),
-          styles (*)
-        `)
-        .eq('category_id', categoryId)
-        .eq('is_active', true)
-        .order('name')
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get items by category')
-    }
-  }
-
-  async getItemsByBrand(brandId) {
-    try {
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select(`
-          *,
-          category:catalog_items_category_id_fkey (*),
-          brand:catalog_items_brand_id_fkey (*),
-          colors (*),
-          styles (*)
-        `)
-        .eq('brand_id', brandId)
-        .eq('is_active', true)
-        .order('name')
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get items by brand')
-    }
-  }
-
-  async getItem(itemId) {
-    try {
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select(`
-          *,
-          category:catalog_items_category_id_fkey (*),
-          brand:catalog_items_brand_id_fkey (*),
-          colors (*),
-          styles (*)
-        `)
-        .eq('id', itemId)
-        .eq('is_active', true)
-        .single()
-
-      if (error) throw error
-      return data
-    } catch (error) {
-      handleSupabaseError(error, 'get catalog item')
-    }
-  }
-
-  async getSimilarItems(itemId) {
-    try {
-      // Get the item details first
-      const item = await this.getItem(itemId)
-      if (!item) return []
-
-      // Find similar items based on category, brand, and colors
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select(`
-          *,
-          category:catalog_items_category_id_fkey (*),
-          brand:catalog_items_brand_id_fkey (*),
-          colors (*),
-          styles (*)
-        `)
-        .eq('category_id', item.category_id)
-        .eq('is_active', true)
-        .neq('id', itemId)
-        .limit(6)
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get similar items')
-    }
-  }
-
-  async getRecommendedItems(userId) {
-    try {
-      // Get user's style preferences and wardrobe
-      const { data: userItems, error: userError } = await supabase
-        .from('clothes')
-        .select('category, brand, style_tags')
-        .eq('owner_id', userId)
-        .is('removed_at', null)
-
-      if (userError) throw userError
-
-      // Analyze user preferences
-      const preferences = this.analyzeUserPreferences(userItems || [])
-
-      // Get recommended items based on preferences
-      let query = supabase
-        .from('catalog_items')
-        .select(`
-          *,
-          category:catalog_items_category_id_fkey (*),
-          brand:catalog_items_brand_id_fkey (*),
-          colors (*),
-          styles (*)
-        `)
-        .eq('is_active', true)
-
-      // Filter by preferred categories
-      if (preferences.categories.length > 0) {
-        query = query.in('category_id', preferences.categories)
-      }
-
-      // Filter by preferred brands
-      if (preferences.brands.length > 0) {
-        query = query.in('brand_id', preferences.brands)
-      }
-
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .limit(12)
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get recommended items')
-    }
-  }
-
-  analyzeUserPreferences(userItems) {
-    const preferences = {
-      categories: [],
-      brands: [],
-      colors: [],
-      styles: []
-    }
-
-    // Count occurrences
-    const categoryCount = {}
-    const brandCount = {}
-    const colorCount = {}
-    const styleCount = {}
-
-    userItems.forEach(item => {
-      // Categories
-      if (item.category) {
-        categoryCount[item.category] = (categoryCount[item.category] || 0) + 1
-      }
-
-      // Brands
-      if (item.brand) {
-        brandCount[item.brand] = (brandCount[item.brand] || 0) + 1
-      }
-
-      // Colors
-        // color_tags column doesn't exist in database schema
-        // if (item.color_tags && Array.isArray(item.color_tags)) {
-        //   item.color_tags.forEach(color => {
-        //     colorCount[color] = (colorCount[color] || 0) + 1
-        //   })
-        // }
-
-      // Styles
-      if (item.style_tags && Array.isArray(item.style_tags)) {
-        item.style_tags.forEach(style => {
-          styleCount[style] = (styleCount[style] || 0) + 1
-        })
-      }
-    })
-
-    // Get top preferences (top 3-5)
-    preferences.categories = Object.entries(categoryCount)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .map(([category]) => category)
-
-    preferences.brands = Object.entries(brandCount)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .map(([brand]) => brand)
-
-    preferences.colors = Object.entries(colorCount)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .map(([color]) => color)
-
-    preferences.styles = Object.entries(styleCount)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .map(([style]) => style)
-
-    return preferences
-  }
-
-  async addToWishlist(itemId) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      // Check if already in wishlist
-      const { data: existing } = await supabase
-        .from('wishlist')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('catalog_item_id', itemId)
-        .single()
-
-      if (existing) {
-        throw new Error('Item already in wishlist')
-      }
-
-      const { data, error } = await supabase
-        .from('wishlist')
-        .insert({
-          user_id: user.id,
-          catalog_item_id: itemId
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
-    } catch (error) {
-      handleSupabaseError(error, 'add to wishlist')
-    }
-  }
-
-  async removeFromWishlist(itemId) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { error } = await supabase
-        .from('wishlist')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('catalog_item_id', itemId)
-
-      if (error) throw error
-      return { success: true }
-    } catch (error) {
-      handleSupabaseError(error, 'remove from wishlist')
-    }
-  }
-
-  async getWishlist() {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase
-        .from('wishlist')
-        .select(`
-          *,
-          catalog_item:catalog_items_catalog_item_id_fkey (
-            *,
-            category:catalog_items_category_id_fkey (*),
-            brand:catalog_items_brand_id_fkey (*),
-            colors (*),
-            styles (*)
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get wishlist')
+      console.error('CatalogService: Error getting brands:', error)
+      throw error
     }
   }
 }
 
+// Export a singleton instance
 export const catalogService = new CatalogService()

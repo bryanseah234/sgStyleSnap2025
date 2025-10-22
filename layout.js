@@ -4,6 +4,10 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useTheme, ThemeProvider } from "./components/ThemeContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { ClothesService } from "@/services/clothesService";
+import { OutfitsService } from "@/services/outfitsService";
+import { FriendsService } from "@/services/friendsService";
 import { 
   Home, 
   Shirt, 
@@ -20,10 +24,59 @@ function LayoutContent({ children }) {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
+  // Prefetch home page data on mount for instant loading
   useEffect(() => {
+    const prefetchHomeData = async () => {
+      try {
+        // Get user first
+        const user = await queryClient.fetchQuery({
+          queryKey: ["user"],
+          queryFn: () => base44.auth.me(),
+          staleTime: 5 * 60 * 1000,
+        });
+
+        if (user?.id) {
+          // Prefetch all home page data in parallel
+          const clothesService = new ClothesService();
+          const outfitsService = new OutfitsService();
+          const friendsService = new FriendsService();
+
+          await Promise.all([
+            queryClient.prefetchQuery({
+              queryKey: ["home-items", user.id],
+              queryFn: async () => {
+                const result = await clothesService.getClothes({
+                  owner_id: user.id,
+                  limit: 6
+                });
+                return result.success ? result.data || [] : [];
+              },
+              staleTime: 2 * 60 * 1000,
+            }),
+            queryClient.prefetchQuery({
+              queryKey: ["home-outfits", user.id],
+              queryFn: () => outfitsService.getOutfits({ limit: 3 }),
+              staleTime: 2 * 60 * 1000,
+            }),
+            queryClient.prefetchQuery({
+              queryKey: ["home-friends", user.id],
+              queryFn: () => friendsService.getFriends(),
+              staleTime: 2 * 60 * 1000,
+            })
+          ]);
+
+          console.log("✅ Home page data prefetched successfully");
+        }
+      } catch (error) {
+        console.error("Error prefetching home data:", error);
+      }
+    };
+
     setLoading(false);
-  }, []);
+    prefetchHomeData();
+  }, [queryClient]);
 
   const navigationItems = [
     { name: "Home", path: createPageUrl("Home"), icon: Home },
@@ -32,6 +85,40 @@ function LayoutContent({ children }) {
     { name: "Friends", path: createPageUrl("Friends"), icon: Users },
     { name: "Profile", path: createPageUrl("Profile"), icon: UserIcon },
   ];
+
+  // Prefetch home data on hover for instant navigation
+  const handleHomeHover = async () => {
+    try {
+      const user = queryClient.getQueryData(["user"]);
+      if (user?.id) {
+        const clothesService = new ClothesService();
+        const outfitsService = new OutfitsService();
+        const friendsService = new FriendsService();
+
+        // Prefetch in background
+        queryClient.prefetchQuery({
+          queryKey: ["home-items", user.id],
+          queryFn: async () => {
+            const result = await clothesService.getClothes({
+              owner_id: user.id,
+              limit: 6
+            });
+            return result.success ? result.data || [] : [];
+          },
+        });
+        queryClient.prefetchQuery({
+          queryKey: ["home-outfits", user.id],
+          queryFn: () => outfitsService.getOutfits({ limit: 3 }),
+        });
+        queryClient.prefetchQuery({
+          queryKey: ["home-friends", user.id],
+          queryFn: () => friendsService.getFriends(),
+        });
+      }
+    } catch (error) {
+      // Silent fail - prefetch is optional
+    }
+  };
 
   if (loading) {
     return (
@@ -82,7 +169,11 @@ function LayoutContent({ children }) {
             const isActive = location.pathname === item.path;
             
             return (
-              <Link key={item.name} to={item.path}>
+              <Link 
+                key={item.name} 
+                to={item.path}
+                onMouseEnter={item.name === "Home" ? handleHomeHover : undefined}
+              >
                 <motion.div
                   whileHover={{ x: 4, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -171,7 +262,12 @@ function LayoutContent({ children }) {
             const isActive = location.pathname === item.path;
             
             return (
-              <Link key={item.name} to={item.path} className="relative flex-1">
+              <Link 
+                key={item.name} 
+                to={item.path} 
+                className="relative flex-1"
+                onTouchStart={item.name === "Home" ? handleHomeHover : undefined}
+              >
                 <motion.div
                   whileTap={{ scale: 0.85 }}
                   className="flex flex-col items-center justify-center gap-1 py-2"

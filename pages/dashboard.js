@@ -179,7 +179,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-6 lg:p-12">
+    <div className={`min-h-screen p-4 md:p-6 lg:p-12 ${
+      theme === "dark" ? "bg-black" : "bg-stone-50"
+    }`}>
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">

@@ -256,13 +256,13 @@ This document provides a comprehensive overview of all routes in the StyleSnap a
 
 ---
 
-### `/friend/:friendId/profile`
+### `/friend/:username/profile`
 **Component**: `FriendProfile.vue`  
 **Purpose**: View friend's profile  
 **Authentication**: Required  
 
 **URL Parameters**:
-- `friendId` - Friend's user ID
+- `username` - Friend's username
 
 **Features**:
 - Friend's profile information
@@ -271,7 +271,7 @@ This document provides a comprehensive overview of all routes in the StyleSnap a
 - Mutual friends
 - Friendship status
 
-**Example**: `https://stylesnap.app/friend/123e4567-e89b-12d3-a456-426614174000/profile`
+**Example**: `https://stylesnap.app/friend/sarah_style/profile`
 
 ---
 

@@ -246,3 +246,6 @@ class EntityService {
 
 // Export the API client
 export const api = new StyleSnapAPI();
+
+// Export with base44 alias for compatibility
+export const base44 = api;

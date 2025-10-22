@@ -68,7 +68,9 @@ export default function FriendCabinet() {
   // Show access denied if not friends
   if (currentUser && !isLoading && !isFriend && friendships.length === 0) {
     return (
-      <div className="min-h-screen p-6 md:p-12">
+      <div className={`min-h-screen p-6 md:p-12 ${
+        theme === "dark" ? "bg-black" : "bg-stone-50"
+      }`}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
             <Link to={createPageUrl("Friends")}>
@@ -111,7 +113,9 @@ export default function FriendCabinet() {
   }
 
   return (
-    <div className="min-h-screen p-6 md:p-12">
+    <div className={`min-h-screen p-6 md:p-12 ${
+      theme === "dark" ? "bg-black" : "bg-stone-50"
+    }`}>
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">

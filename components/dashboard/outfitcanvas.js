@@ -120,85 +120,91 @@ const OutfitCanvas = forwardRef(({ items, selectedItemId, setSelectedItemId, upd
             className="w-full h-full object-contain pointer-events-none"
           />
 
-          {/* Controls */}
+          {/* Controls - Compact toolbar above selected item */}
           {selectedItemId === canvasItem.id && (
-            <div className={`absolute -bottom-16 left-1/2 -translate-x-1/2 flex gap-1 p-2 rounded-xl ${
-              theme === "dark" ? "bg-zinc-800" : "bg-white"
-            } shadow-lg flex-wrap justify-center max-w-xs`}>
+            <div className={`absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg ${
+              theme === "dark" ? "bg-zinc-800/95 border border-zinc-700" : "bg-white/95 border border-stone-200"
+            } shadow-lg backdrop-blur-sm`}>
               <Button
                 size="icon"
-                variant="outline"
-                className="rounded-lg h-8 w-8"
+                variant="ghost"
+                className="rounded h-7 w-7 hover:bg-zinc-700"
                 onClick={(e) => {
                   e.stopPropagation();
                   updateItem(canvasItem.id, {
                     scale: Math.max(0.5, canvasItem.scale - 0.1),
                   });
                 }}
+                title="Zoom Out"
               >
                 <ZoomOut className="w-3 h-3" />
               </Button>
               
               <Button
                 size="icon"
-                variant="outline"
-                className="rounded-lg h-8 w-8"
+                variant="ghost"
+                className="rounded h-7 w-7 hover:bg-zinc-700"
                 onClick={(e) => {
                   e.stopPropagation();
                   updateItem(canvasItem.id, {
                     scale: Math.min(2, canvasItem.scale + 0.1),
                   });
                 }}
+                title="Zoom In"
               >
                 <ZoomIn className="w-3 h-3" />
               </Button>
 
               <Button
                 size="icon"
-                variant="outline"
-                className="rounded-lg h-8 w-8"
+                variant="ghost"
+                className="rounded h-7 w-7 hover:bg-zinc-700"
                 onClick={(e) => {
                   e.stopPropagation();
                   updateItem(canvasItem.id, {
                     rotation: (canvasItem.rotation + 15) % 360,
                   });
                 }}
+                title="Rotate"
               >
                 <RotateCw className="w-3 h-3" />
               </Button>
 
               <Button
                 size="icon"
-                variant="outline"
-                className="rounded-lg h-8 w-8"
+                variant="ghost"
+                className="rounded h-7 w-7 hover:bg-zinc-700"
                 onClick={(e) => {
                   e.stopPropagation();
                   bringForward(canvasItem.id);
                 }}
+                title="Bring Forward"
               >
                 <ArrowUp className="w-3 h-3" />
               </Button>
 
               <Button
                 size="icon"
-                variant="outline"
-                className="rounded-lg h-8 w-8"
+                variant="ghost"
+                className="rounded h-7 w-7 hover:bg-zinc-700"
                 onClick={(e) => {
                   e.stopPropagation();
                   sendBackward(canvasItem.id);
                 }}
+                title="Send Backward"
               >
                 <ArrowDown className="w-3 h-3" />
               </Button>
 
               <Button
                 size="icon"
-                variant="outline"
-                className="rounded-lg h-8 w-8 hover:bg-red-500 hover:text-white hover:border-red-500"
+                variant="ghost"
+                className="rounded h-7 w-7 hover:bg-red-500 hover:text-white"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeItem(canvasItem.id);
                 }}
+                title="Delete"
               >
                 <Trash2 className="w-3 h-3" />
               </Button>

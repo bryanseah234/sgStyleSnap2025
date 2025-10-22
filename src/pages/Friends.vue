@@ -134,7 +134,7 @@
             :class="`p-6 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer ${
               theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
             }`"
-            @click="viewFriendProfile(friend.id)"
+            @click="viewFriendProfile(friend.username)"
           >
             <!-- Mobile row layout; stacked on md+ -->
             <div class="flex items-center gap-4 md:block">
@@ -656,8 +656,8 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString()
 }
 
-const viewFriendProfile = (friendId) => {
-  router.push(`/friend/${friendId}/profile`)
+const viewFriendProfile = (friendUsername) => {
+  router.push(`/friend/${friendUsername}/profile`)
 }
 
 const isRequestSent = (userId) => {

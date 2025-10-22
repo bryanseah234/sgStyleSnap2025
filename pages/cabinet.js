@@ -3,9 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "../components/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Heart, Filter } from "lucide-react";
+import { Plus, Heart, Filter, ChevronDown, Upload, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 import UploadItemModal from "../components/cabinet/uploaditemodal";
@@ -14,8 +14,10 @@ import CategoryFilter from "../components/cabinet/CategoryFilter";
 
 export default function Cabinet() {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showUpload, setShowUpload] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -98,7 +100,9 @@ export default function Cabinet() {
     : outfits;
 
   return (
-    <div className="min-h-screen p-6 md:p-12">
+    <div className={`min-h-screen p-6 md:p-12 ${
+      theme === "dark" ? "bg-black" : "bg-stone-50"
+    }`}>
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
@@ -106,7 +110,7 @@ export default function Cabinet() {
             <h1 className={`text-4xl md:text-5xl font-bold tracking-tight mb-2 ${
               theme === "dark" ? "text-white" : "text-black"
             }`}>
-              My Cabinet
+              My Closet
             </h1>
             <p className={`text-lg ${
               theme === "dark" ? "text-zinc-400" : "text-stone-600"
@@ -137,17 +141,71 @@ export default function Cabinet() {
             </Button>
 
             {activeTab === "items" && (
-              <Button
-                onClick={() => setShowUpload(true)}
-                className={`gap-2 ${
-                  theme === "dark"
-                    ? "bg-white text-black hover:bg-zinc-100"
-                    : "bg-black text-white hover:bg-stone-900"
-                }`}
-              >
-                <Plus className="w-5 h-5" />
-                Upload Item
-              </Button>
+              <div className="relative">
+                <Button
+                  onClick={() => setShowAddMenu(!showAddMenu)}
+                  className={`gap-2 ${
+                    theme === "dark"
+                      ? "bg-white text-black hover:bg-zinc-100"
+                      : "bg-black text-white hover:bg-stone-900"
+                  }`}
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Item
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showAddMenu ? "rotate-180" : ""}`} />
+                </Button>
+
+                {/* Dropdown Menu */}
+                {showAddMenu && (
+                  <div
+                    className={`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 ${
+                      theme === "dark"
+                        ? "bg-zinc-900 border-zinc-800"
+                        : "bg-white border-stone-200"
+                    }`}
+                  >
+                    <button
+                      onClick={() => {
+                        setShowAddMenu(false);
+                        navigate("/closet/add/manual");
+                      }}
+                      className={`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
+                        theme === "dark"
+                          ? "hover:bg-zinc-800 text-white"
+                          : "hover:bg-stone-50 text-black"
+                      }`}
+                    >
+                      <Upload className="w-5 h-5" />
+                      <div>
+                        <div className="font-medium">Manual Upload</div>
+                        <div className={`text-xs ${theme === "dark" ? "text-zinc-400" : "text-stone-500"}`}>
+                          Upload your own clothing items
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowAddMenu(false);
+                        navigate("/closet/add/catalogue");
+                      }}
+                      className={`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
+                        theme === "dark"
+                          ? "hover:bg-zinc-800 text-white"
+                          : "hover:bg-stone-50 text-black"
+                      }`}
+                    >
+                      <Shirt className="w-5 h-5" />
+                      <div>
+                        <div className="font-medium">Add from Catalogue</div>
+                        <div className={`text-xs ${theme === "dark" ? "text-zinc-400" : "text-stone-500"}`}>
+                          Browse pre-populated items
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

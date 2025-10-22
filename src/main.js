@@ -46,7 +46,7 @@ const routes = [
   { path: '/friends', component: Friends, meta: { requiresAuth: true } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/friend/:username/closet', component: FriendCabinet, meta: { requiresAuth: true } },
-  { path: '/friend/:friendId/profile', component: FriendProfile, meta: { requiresAuth: true } },
+  { path: '/friend/:username/profile', component: FriendProfile, meta: { requiresAuth: true } },
   { path: '/logout', component: Logout, meta: { requiresAuth: false } }, // Logout page handles logout logic
   { path: '/login', component: Login, meta: { requiresAuth: false } },
   { path: '/auth/callback', component: OAuthCallback, meta: { requiresAuth: false } },

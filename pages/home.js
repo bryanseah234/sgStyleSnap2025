@@ -13,58 +13,48 @@ import { FriendsService } from "@/services/friendsService";
 
 export default function Home() {
   const { theme } = useTheme();
-  const [user, setUser] = useState(null);
-  const [items, setItems] = useState([]);
-  const [outfits, setOutfits] = useState([]);
-  const [friends, setFriends] = useState([]);
 
   // Service instances
   const clothesService = new ClothesService();
   const outfitsService = new OutfitsService();
   const friendsService = new FriendsService();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userData = await base44.auth.me();
-        setUser(userData);
-      } catch (error) {
-        console.error("Error loading user:", error);
-      }
-    };
-    loadUser();
-  }, []);
+  // Get user data with React Query (cached)
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
-  useEffect(() => {
-    const loadData = async () => {
-      if (!user?.id) return;
+  // Load items with React Query (cached and parallel)
+  const { data: items = [] } = useQuery({
+    queryKey: ["home-items", user?.id],
+    queryFn: async () => {
+      const result = await clothesService.getClothes({
+        owner_id: user.id,
+        limit: 6
+      });
+      return result.success ? result.data || [] : [];
+    },
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+  });
 
-      try {
-        // Load items
-        const itemsResult = await clothesService.getClothes({
-          owner_id: user.id,
-          limit: 6
-        });
-        if (itemsResult.success) {
-          setItems(itemsResult.data || []);
-        }
+  // Load outfits with React Query (cached and parallel)
+  const { data: outfits = [] } = useQuery({
+    queryKey: ["home-outfits", user?.id],
+    queryFn: () => outfitsService.getOutfits({ limit: 3 }),
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+  });
 
-        // Load outfits
-        const outfitsData = await outfitsService.getOutfits({
-          limit: 3
-        });
-        setOutfits(outfitsData || []);
-
-        // Load friends
-        const friendsData = await friendsService.getFriends();
-        setFriends(friendsData || []);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      }
-    };
-
-    loadData();
-  }, [user?.id]);
+  // Load friends with React Query (cached and parallel)
+  const { data: friends = [] } = useQuery({
+    queryKey: ["home-friends", user?.id],
+    queryFn: () => friendsService.getFriends(),
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+  });
 
   const stats = [
     { label: "Items", value: items.length, icon: Shirt, route: "/closet" },
@@ -73,7 +63,9 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen p-6 md:p-12">
+    <div className={`min-h-screen p-6 md:p-12 ${
+      theme === "dark" ? "bg-black" : "bg-stone-50"
+    }`}>
       {/* Loading Bar Animation */}
       <motion.div
         initial={{ scaleX: 0 }}

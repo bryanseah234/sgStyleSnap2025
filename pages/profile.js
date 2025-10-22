@@ -112,7 +112,9 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${
+        theme === "dark" ? "bg-black" : "bg-stone-50"
+      }`}>
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
@@ -127,7 +129,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen p-6 md:p-12">
+    <div className={`min-h-screen p-6 md:p-12 ${
+      theme === "dark" ? "bg-black" : "bg-stone-50"
+    }`}>
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <motion.div

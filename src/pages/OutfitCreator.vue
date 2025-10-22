@@ -101,9 +101,9 @@
           
           <button
             @click="saveOutfit"
-            :disabled="canvasItems.length === 0 || savingOutfit"
+            :disabled="canvasItems.length < 2 || savingOutfit"
             :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-              canvasItems.length > 0 && !savingOutfit
+              canvasItems.length >= 2 && !savingOutfit
                 ? theme.value === 'dark'
                   ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
@@ -447,10 +447,10 @@
                   <Sparkles :class="`w-12 h-12 text-orange-500`" />
                 </div>
                 <p :class="`text-xl font-medium mb-2 ${theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'}`">
-                  Start Creating Your Outfit
+                  {{ currentSubRoute === 'friend' ? "Start Creating Friend's Outfit" : "Start Creating Your Outfit" }}
                 </p>
                 <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
-                  Click on items from the left to add them to your canvas
+                  Click on items from the left to add them to the canvas
                 </p>
               </div>
             </div>
@@ -723,7 +723,7 @@ const itemsSectionTitle = computed(() => {
   }
   switch (itemsSource.value) {
     case 'my-cabinet': return 'My Closet'
-    case 'friends': return "Friend's Items"
+    case 'friends': return "Friend's Closet"
     case 'suggestions': return 'AI Suggestions'
     default: return 'Items'
   }
@@ -969,6 +969,12 @@ const generateAISuggestion = async () => {
 }
 
 const addItemToCanvas = (item) => {
+  // Validate: Maximum 10 items on canvas
+  if (canvasItems.value.length >= 10) {
+    alert('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
+    return
+  }
+  
   const newItem = {
     ...item,
     id: `${item.id}-${Date.now()}`,
@@ -986,6 +992,13 @@ const addItemToCanvas = (item) => {
 
 const handleDrop = (event) => {
   event.preventDefault()
+  
+  // Validate: Maximum 10 items on canvas
+  if (canvasItems.value.length >= 10) {
+    alert('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
+    return
+  }
+  
   const itemId = event.dataTransfer.getData('text/plain')
   const item = wardrobeItems.value.find(i => i.id === itemId)
   
@@ -1122,8 +1135,50 @@ const deleteSelectedItem = () => {
   saveToHistory()
 }
 
+const validateOutfit = () => {
+  // Validate: Minimum 2 items
+  if (canvasItems.value.length < 2) {
+    alert('An outfit must have at least 2 items. Please add more items to your canvas.')
+    return false
+  }
+  
+  // Validate: At least one top and one bottom
+  const hasTop = canvasItems.value.some(item => {
+    const category = item.category?.toLowerCase()
+    return category === 'tops' || category === 'top' || category === 'outerwear'
+  })
+  
+  const hasBottom = canvasItems.value.some(item => {
+    const category = item.category?.toLowerCase()
+    return category === 'bottoms' || category === 'bottom'
+  })
+  
+  if (!hasTop) {
+    alert('An outfit must include at least one top or outerwear item.')
+    return false
+  }
+  
+  if (!hasBottom) {
+    alert('An outfit must include at least one bottom item.')
+    return false
+  }
+  
+  // Validate: Maximum 10 items
+  if (canvasItems.value.length > 10) {
+    alert('An outfit can have a maximum of 10 items. Please remove some items.')
+    return false
+  }
+  
+  return true
+}
+
 const saveOutfit = async () => {
   if (canvasItems.value.length === 0) return
+  
+  // Validate outfit before saving
+  if (!validateOutfit()) {
+    return
+  }
   
   savingOutfit.value = true
   try {
@@ -1159,7 +1214,7 @@ const saveOwnOutfit = async () => {
     }
     
     const outfitData = {
-      outfit_name: outfitName,
+      name: outfitName,
       description: 'Created in Outfit Creator',
       occasion: null,
       weather_condition: null,
@@ -1284,6 +1339,39 @@ const redoAction = () => {
     canvasItems.value = JSON.parse(JSON.stringify(history.value[historyIndex.value]))
   }
 }
+
+// Watch for route changes and update items source
+watch(currentSubRoute, async (newRoute, oldRoute) => {
+  console.log('OutfitCreator: Route changed from', oldRoute, 'to', newRoute)
+  
+  // Clear friend profile when navigating away from friend routes
+  if (newRoute !== 'friend' && newRoute !== 'friendSelect') {
+    friendProfile.value = null
+  }
+  
+  // Re-initialize items source
+  initializeItemsSource()
+  
+  // If friend selection route, load friends list
+  if (newRoute === 'friendSelect') {
+    await loadFriendsList()
+    return // Don't load wardrobe items on friend selection page
+  }
+  
+  // If friend route with username, load friend profile first
+  if (newRoute === 'friend' && friendUsername.value) {
+    await loadFriendProfile(friendUsername.value)
+  }
+  
+  // Reload wardrobe items for the new route
+  await loadWardrobeItems()
+  
+  // Handle different sub-routes
+  if (newRoute === 'suggested') {
+    // AI Suggestions mode: Generate AI outfit
+    await generateAISuggestion()
+  }
+})
 
 // Lifecycle
 onMounted(async () => {

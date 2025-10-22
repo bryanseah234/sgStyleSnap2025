@@ -8,17 +8,66 @@
         <h1 class="text-4xl font-bold text-foreground">
           {{ subRouteTitle }}
         </h1>
-        <button
-          @click="showUpload = true"
-          :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
-            theme.value === 'dark'
-              ? 'bg-white text-black hover:bg-zinc-200'
-              : 'bg-black text-white hover:bg-zinc-800'
-          }`"
-        >
-          <Plus class="w-5 h-5" />
-          Add Item
-        </button>
+        <div v-if="currentSubRoute === 'default'" class="relative">
+          <button
+            @click="showAddMenu = !showAddMenu"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+              theme.value === 'dark'
+                ? 'bg-white text-black hover:bg-zinc-200'
+                : 'bg-black text-white hover:bg-zinc-800'
+            }`"
+          >
+            <Plus class="w-5 h-5" />
+            Add Item
+            <svg :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div
+            v-if="showAddMenu"
+            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 ${
+              theme.value === 'dark'
+                ? 'bg-zinc-900 border-zinc-800'
+                : 'bg-white border-stone-200'
+            }`"
+          >
+            <button
+              @click="navigateToManual"
+              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
+                theme.value === 'dark'
+                  ? 'hover:bg-zinc-800 text-white'
+                  : 'hover:bg-stone-50 text-black'
+              }`"
+            >
+              <Plus class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Manual Upload</div>
+                <div :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">
+                  Upload your own clothing items
+                </div>
+              </div>
+            </button>
+
+            <button
+              @click="navigateToCatalogue"
+              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
+                theme.value === 'dark'
+                  ? 'hover:bg-zinc-800 text-white'
+                  : 'hover:bg-stone-50 text-black'
+              }`"
+            >
+              <Shirt class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Add from Catalogue</div>
+                <div :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">
+                  Browse pre-populated items
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
       
       <!-- Sub-route Navigation -->
@@ -60,33 +109,9 @@
       </div>
       
       <!-- Sub-route Content -->
-      <div v-if="currentSubRoute === 'manual'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800">
-        <div class="flex items-center gap-3 mb-4">
-          <Plus class="w-6 h-6 text-green-600 dark:text-green-400" />
-          <h3 class="text-xl font-semibold text-green-900 dark:text-green-100">Add Item Manually</h3>
-        </div>
-        <p class="text-green-700 dark:text-green-300 mb-4">
-          Add your clothing items manually by filling out the form below. This gives you full control over the details.
-        </p>
-        <div class="text-center py-8">
-          <Plus class="w-16 h-16 text-green-400 dark:text-green-500 mx-auto mb-4" />
-          <p class="text-green-600 dark:text-green-400">Manual add form will be implemented here...</p>
-        </div>
-      </div>
+      <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
       
-      <div v-if="currentSubRoute === 'catalogue'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-800">
-        <div class="flex items-center gap-3 mb-4">
-          <Shirt class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <h3 class="text-xl font-semibold text-blue-900 dark:text-blue-100">Browse Catalogue</h3>
-        </div>
-        <p class="text-blue-700 dark:text-blue-300 mb-4">
-          Browse our curated catalogue of clothing items. Find pieces that match your style and add them to your closet.
-        </p>
-        <div class="text-center py-8">
-          <Shirt class="w-16 h-16 text-blue-400 dark:text-blue-500 mx-auto mb-4" />
-          <p class="text-blue-600 dark:text-blue-400">Catalogue browsing will be implemented here...</p>
-        </div>
-      </div>
+      <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
       
       <div v-if="currentSubRoute === 'friend'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
         <div class="flex items-center gap-3 mb-4">
@@ -259,16 +284,19 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
 import { Plus, Heart, Shirt } from 'lucide-vue-next'
 import UploadItemModal from '@/components/cabinet/UploadItemModal.vue'
+import ManualUploadForm from '@/components/cabinet/ManualUploadForm.vue'
+import CatalogueBrowser from '@/components/cabinet/CatalogueBrowser.vue'
 
 const { theme } = useTheme()
 const authStore = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 
 // Sub-route detection
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
@@ -290,10 +318,22 @@ const currentUser = computed(() => authStore.user || authStore.profile)
 const items = ref([])
 const loading = ref(true)
 const showUpload = ref(false)
+const showAddMenu = ref(false)
 const activeCategory = ref('all')
 const showFavoritesOnly = ref(false)
 
 const categories = ['all', 'tops', 'bottoms', 'outerwear', 'shoes', 'accessories']
+
+// Navigation methods
+const navigateToManual = () => {
+  showAddMenu.value = false
+  router.push('/closet/add/manual')
+}
+
+const navigateToCatalogue = () => {
+  showAddMenu.value = false
+  router.push('/closet/add/catalogue')
+}
 
 const filteredItems = computed(() => {
   let filtered = items.value

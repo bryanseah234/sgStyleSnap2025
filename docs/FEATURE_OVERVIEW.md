@@ -382,7 +382,7 @@ This document provides a comprehensive overview of all features currently availa
 /friends                        → Friends list
 /profile                        → User profile
 /friend/:username/closet        → Friend's closet
-/friend/:friendId/profile       → Friend's profile
+/friend/:username/profile       → Friend's profile
 
 /login                          → Login page
 /logout                         → Logout

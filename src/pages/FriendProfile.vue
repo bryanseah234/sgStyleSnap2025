@@ -134,7 +134,7 @@ const clothesService = new ClothesService()
 const outfitsService = new OutfitsService()
 const friendsService = new FriendsService()
 
-const friendId = route.params.friendId
+const username = route.params.username
 
 const isLoading = ref(true)
 const errorMessage = ref('')
@@ -158,15 +158,20 @@ async function loadProfile() {
     isLoading.value = true
     errorMessage.value = ''
 
-    // Friend basic info
-    friend.value = await userService.getUserById(friendId)
+    // Friend basic info - get by username
+    friend.value = await userService.getUserByUsername(username)
+    
+    if (!friend.value) {
+      errorMessage.value = 'User not found'
+      return
+    }
 
     // Public clothes (privacy public)
-    const itemsRes = await clothesService.getClothes({ owner_id: friendId, privacy: 'public', limit: 40 })
+    const itemsRes = await clothesService.getClothes({ owner_id: friend.value.id, privacy: 'public', limit: 40 })
     publicItems.value = itemsRes?.data || []
 
     // Public outfits
-    publicOutfits.value = await outfitsService.getPublicOutfits(friendId)
+    publicOutfits.value = await outfitsService.getPublicOutfits(friend.value.id)
   } catch (e) {
     errorMessage.value = e?.message || 'Failed to load friend profile'
   } finally {
@@ -188,7 +193,11 @@ function goCreateOutfitForFriend() {
 async function confirmUnfriend() {
   try {
     // friendsService.removeFriend expects the friend's user id
-    await friendsService.removeFriend(friendId)
+    if (!friend.value?.id) {
+      errorMessage.value = 'Cannot unfriend: user data not loaded'
+      return
+    }
+    await friendsService.removeFriend(friend.value.id)
     showUnfriend.value = false
     router.push('/friends')
   } catch (e) {
