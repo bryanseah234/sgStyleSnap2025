@@ -198,8 +198,18 @@ export class ClothesService {
             format: 'auto'
           })
         } catch (uploadError) {
-          console.warn('Cloudinary upload failed, saving item without image:', uploadError)
-          // Continue without image - don't fail the entire operation
+          console.warn('Cloudinary upload failed, using fallback image:', uploadError)
+          // Use a fallback image URL to satisfy the not-null constraint
+          imageData = {
+            secure_url: '/public/avatars/default-1.png',
+            thumbnail_url: '/public/avatars/default-1.png'
+          }
+        }
+      } else {
+        // No image provided, use fallback
+        imageData = {
+          secure_url: '/public/avatars/default-1.png',
+          thumbnail_url: '/public/avatars/default-1.png'
         }
       }
 

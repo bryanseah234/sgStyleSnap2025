@@ -361,12 +361,14 @@ watch(() => props.isOpen, (isOpen) => {
 .add-item-form {
   max-width: 400px;
   width: 400px;
+  max-height: 80vh;
   margin: 0 auto;
   background: white;
   border-radius: 12px;
   padding: 20px;
   color: #333;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
 }
 
 .form-header {
@@ -415,15 +417,17 @@ watch(() => props.isOpen, (isOpen) => {
 
 .photo-upload-area {
   position: relative;
+  height: 100px;
+  flex-shrink: 0;
 }
 
 .photo-preview {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 100px;
   border-radius: 8px;
   overflow: hidden;
-  background: #2a2a3e;
+  background: #f9f9f9;
 }
 
 .preview-image {
@@ -465,6 +469,7 @@ watch(() => props.isOpen, (isOpen) => {
   transition: all 0.2s;
   position: relative;
   background: #f9f9f9;
+  flex-shrink: 0;
 }
 
 .photo-upload-zone:hover,
