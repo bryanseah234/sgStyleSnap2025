@@ -14,8 +14,7 @@ export class NotificationsService {
       let query = supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
-        .is('removed_at', null)
+        .eq('recipient_id', user.id)
         .order('created_at', { ascending: false })
 
       if (filters.limit) {
@@ -44,7 +43,7 @@ export class NotificationsService {
         .from('notifications')
         .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('id', notificationId)
-        .eq('user_id', user.id)
+        .eq('recipient_id', user.id)
         .select()
         .single()
 
@@ -66,7 +65,7 @@ export class NotificationsService {
           is_read: true, 
           read_at: new Date().toISOString() 
         })
-        .eq('user_id', user.id)
+        .eq('recipient_id', user.id)
         .eq('is_read', false)
         .select()
 
@@ -84,9 +83,9 @@ export class NotificationsService {
 
       const { data, error } = await supabase
         .from('notifications')
-        .update({ removed_at: new Date().toISOString() })
+        .delete()
         .eq('id', notificationId)
-        .eq('user_id', user.id)
+        .eq('recipient_id', user.id)
         .select()
         .single()
 
@@ -105,9 +104,8 @@ export class NotificationsService {
       const { count, error } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('recipient_id', user.id)
         .eq('is_read', false)
-        .is('removed_at', null)
 
       if (error) throw error
       return count || 0
@@ -121,11 +119,11 @@ export class NotificationsService {
       const { data, error } = await supabase
         .from('notifications')
         .insert({
-          user_id: notificationData.user_id,
+          recipient_id: notificationData.recipient_id,
+          actor_id: notificationData.actor_id,
           type: notificationData.type,
-          title: notificationData.title,
-          message: notificationData.message,
-          data: notificationData.data || {},
+          reference_id: notificationData.reference_id,
+          custom_message: notificationData.custom_message,
           is_read: false
         })
         .select()
@@ -151,7 +149,7 @@ export class NotificationsService {
             event: '*',
             schema: 'public',
             table: 'notifications',
-            filter: `user_id=eq.${user.id}`
+            filter: `recipient_id=eq.${user.id}`
           },
           (payload) => {
             callback(payload)

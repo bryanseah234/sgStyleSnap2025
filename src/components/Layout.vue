@@ -197,6 +197,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
 import { createPageUrl } from '@/utils'
 import { ClothesService } from '@/services/clothesService'
@@ -220,6 +221,7 @@ import GlobalPopup from './GlobalPopup.vue'
 // Router, theme, and auth composables
 const router = useRouter()
 const { theme, loadUser, refreshTheme, toggleTheme } = useTheme()
+const { showConfirm } = usePopup()
 const authStore = useAuthStore()
 
 // Liquid glass composables
@@ -286,16 +288,15 @@ const handleThemeToggle = async () => {
  * Clears all authentication state and user data.
  */
 const handleLogout = () => {
-  // Show confirmation dialog
-  const confirmed = confirm('Are you sure you want to logout?')
-  if (!confirmed) {
-    return
-  }
-  
-  console.log('🚪 Layout: Redirecting to logout page...')
-  
-  // Navigate to logout page which will handle the logout logic
-  router.push('/logout')
+  showConfirm(
+    'Are you sure you want to logout?',
+    'Logout',
+    () => {
+      console.log('🚪 Layout: Redirecting to logout page...')
+      // Navigate to logout page which will handle the logout logic
+      router.push('/logout')
+    }
+  )
 }
 
 /**

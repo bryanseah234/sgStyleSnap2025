@@ -71,6 +71,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { api } from '@/api/base44Client'
 
 // Props
@@ -86,6 +87,7 @@ const emit = defineEmits(['requestProcessed'])
 
 // Theme
 const { theme } = useTheme()
+const { showError } = usePopup()
 
 // State
 const processing = ref(false)
@@ -100,7 +102,7 @@ const acceptRequest = async () => {
     emit('requestProcessed')
   } catch (error) {
     console.error('Error accepting friend request:', error)
-    alert('Failed to accept friend request')
+    showError('Failed to accept friend request')
   } finally {
     processing.value = false
   }
@@ -116,7 +118,7 @@ const declineRequest = async () => {
     emit('requestProcessed')
   } catch (error) {
     console.error('Error declining friend request:', error)
-    alert('Failed to decline friend request')
+    showError('Failed to decline friend request')
   } finally {
     processing.value = false
   }
