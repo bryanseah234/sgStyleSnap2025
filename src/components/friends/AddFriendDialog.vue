@@ -132,6 +132,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { api } from '@/api/base44Client'
 
 // Props
@@ -147,6 +148,7 @@ const emit = defineEmits(['close', 'friendRequestSent'])
 
 // Theme
 const { theme } = useTheme()
+const { showError } = usePopup()
 
 // State
 const searchQuery = ref('')
@@ -186,7 +188,7 @@ const sendFriendRequest = async (userId) => {
     searchResults.value = []
   } catch (error) {
     console.error('Error sending friend request:', error)
-    alert('Failed to send friend request')
+    showError('Failed to send friend request')
   } finally {
     sendingRequest.value = null
   }

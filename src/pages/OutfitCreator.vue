@@ -953,7 +953,7 @@ const generateAISuggestion = async () => {
     
     if (!hasTop || !hasBottom) {
       console.log('OutfitCreator: Cannot generate valid outfit - missing required categories')
-      alert('Unable to generate outfit. You need at least one top and one bottom in your closet.')
+      showWarning('Unable to generate outfit. You need at least one top and one bottom in your closet.')
       return
     }
     
@@ -979,7 +979,7 @@ const generateAISuggestion = async () => {
 const addItemToCanvas = (item) => {
   // Validate: Maximum 10 items on canvas
   if (canvasItems.value.length >= 10) {
-    alert('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
+    showWarning('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
     return
   }
   
@@ -1004,7 +1004,7 @@ const handleDrop = (event) => {
   
   // Validate: Maximum 10 items on canvas
   if (canvasItems.value.length >= 10) {
-    alert('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
+    showWarning('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
     return
   }
   
@@ -1147,7 +1147,7 @@ const deleteSelectedItem = () => {
 const validateOutfit = () => {
   // Validate: Minimum 2 items
   if (canvasItems.value.length < 2) {
-    alert('An outfit must have at least 2 items. Please add more items to your canvas.')
+    showWarning('An outfit must have at least 2 items. Please add more items to your canvas.')
     return false
   }
   
@@ -1166,18 +1166,18 @@ const validateOutfit = () => {
   })
   
   if (!hasTop) {
-    alert('An outfit must include at least one top or outerwear item.')
+    showWarning('An outfit must include at least one top or outerwear item.')
     return false
   }
   
   if (!hasBottom) {
-    alert('An outfit must include at least one bottom item.')
+    showWarning('An outfit must include at least one bottom item.')
     return false
   }
   
   // Validate: Maximum 10 items
   if (canvasItems.value.length > 10) {
-    alert('An outfit can have a maximum of 10 items. Please remove some items.')
+    showWarning('An outfit can have a maximum of 10 items. Please remove some items.')
     return false
   }
   
@@ -1203,7 +1203,7 @@ const saveOutfit = async () => {
     }
   } catch (error) {
     console.error('OutfitCreator: Error in saveOutfit:', error)
-    alert('Failed to save outfit. Please try again.')
+    showError('Failed to save outfit. Please try again.')
   } finally {
     savingOutfit.value = false
   }
@@ -1248,7 +1248,7 @@ const saveOwnOutfit = async () => {
       
       if (result && result.id) {
         console.log('OutfitCreator: Outfit updated successfully:', result.id)
-        alert('Outfit updated successfully!')
+        showSuccess('Outfit updated successfully!')
         // Navigate back to outfits gallery
         router.push('/outfits')
       } else {
@@ -1261,7 +1261,7 @@ const saveOwnOutfit = async () => {
       
       if (result && result.id) {
         console.log('OutfitCreator: Outfit created successfully:', result.id)
-        alert('Outfit saved successfully!')
+        showSuccess('Outfit saved successfully!')
         // Navigate back to outfits gallery
         router.push('/outfits')
       } else {
@@ -1277,7 +1277,7 @@ const saveOwnOutfit = async () => {
 const shareOutfitWithFriend = async () => {
   try {
     if (!friendProfile.value) {
-      alert('Friend profile not loaded. Please try again.')
+      showError('Friend profile not loaded. Please try again.')
       return
     }
     
@@ -1308,7 +1308,7 @@ const shareOutfitWithFriend = async () => {
     
     if (result && result.success) {
       console.log('OutfitCreator: Friend outfit suggestion created successfully')
-      alert(`Outfit shared with ${friendProfile.value.username}! They will receive a notification.`)
+      showSuccess(`Outfit shared with ${friendProfile.value.username}! They will receive a notification.`)
       // Navigate back to outfits gallery
       router.push('/outfits')
     } else {
