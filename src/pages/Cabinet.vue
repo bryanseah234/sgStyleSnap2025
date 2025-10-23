@@ -212,7 +212,10 @@
           v-for="(item, index) in filteredItems"
           :key="item.id"
           @click="openItemDetails(item)"
-          :class="`group cursor-pointer transition-all duration-300 hover:scale-105 ${
+          @mouseenter="handleItemHover($event, index)"
+          @mouseleave="handleItemLeave($event, index)"
+          @mousemove="handleItemMouseMove($event, index)"
+          :class="`liquid-item-card group cursor-pointer ${
             theme.value === 'dark'
               ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
               : 'bg-white border border-stone-200 hover:border-stone-300'
@@ -224,7 +227,7 @@
               v-if="item.image_url"
               :src="item.image_url"
               :alt="item.name"
-              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              class="liquid-item-image w-full h-full object-cover"
             />
             <div
               v-else
@@ -237,7 +240,9 @@
             
             <button
               @click.stop="toggleFavorite(item)"
-              :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
+              @mousedown="handleFavoritePress($event, item)"
+              @mouseup="handleFavoriteRelease($event, item)"
+              :class="`liquid-favorite-btn absolute top-2 right-2 p-2 rounded-full ${
                 item.is_favorite
                   ? 'bg-red-500 text-white'
                   : theme.value === 'dark'
@@ -250,12 +255,12 @@
           </div>
           
           <div class="p-4">
-            <h3 :class="`font-semibold mb-1 ${
+            <h3 :class="`liquid-item-title font-semibold mb-1 ${
               theme.value === 'dark' ? 'text-white' : 'text-black'
             }`">
               {{ item.name }}
             </h3>
-            <p :class="`text-sm ${
+            <p :class="`liquid-item-category text-sm ${
               theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
             }`">
               {{ item.brand || 'No brand' }}
@@ -295,6 +300,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
 import { Plus, Heart, Shirt } from 'lucide-vue-next'
+import { useLiquidHover, useLiquidPress } from '@/composables/useLiquidGlass'
 import UploadItemModal from '@/components/cabinet/UploadItemModal.vue'
 import ManualUploadForm from '@/components/cabinet/ManualUploadForm.vue'
 import CatalogueBrowser from '@/components/cabinet/CatalogueBrowser.vue'
@@ -304,6 +310,10 @@ const { theme } = useTheme()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
+
+// Liquid glass composables
+const { elementRef: itemCardRefs, hoverIn: itemHoverIn, hoverOut: itemHoverOut } = useLiquidHover()
+const { elementRef: favoriteButtonRefs, pressIn: favoritePressIn, pressOut: favoritePressOut } = useLiquidPress()
 
 // Sub-route detection
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
@@ -505,4 +515,41 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+// Liquid glass event handlers
+const handleItemHover = (event, index) => {
+  itemHoverIn(event.target)
+}
+
+const handleItemLeave = (event, index) => {
+  itemHoverOut(event.target)
+}
+
+const handleItemMouseMove = (event, index) => {
+  // Apply subtle parallax to item cards
+  const card = event.target
+  const rect = card.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
+  
+  const rotateX = (y - centerY) / centerY * 1.5
+  const rotateY = (x - centerX) / centerX * 1.5
+  
+  card.style.transform = `translateY(-6px) translateZ(12px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
+}
+
+const handleFavoritePress = (event, item) => {
+  favoritePressIn(event.target)
+}
+
+const handleFavoriteRelease = (event, item) => {
+  favoritePressOut(event.target)
+  // Add heart pulse animation
+  event.target.classList.add('heart-pulse')
+  setTimeout(() => {
+    event.target.classList.remove('heart-pulse')
+  }, 300)
+}
 </script>
