@@ -224,17 +224,22 @@ export class FriendsService {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      // Ensure canonical ordering (requester_id < receiver_id)
-      const requesterId = user.id < userId ? user.id : userId
-      const receiverId = user.id < userId ? userId : user.id
-
-      // Check if friendship already exists
-      const { data: existingFriendship } = await supabase
+      // Check if friendship already exists (check both possible orderings)
+      const { data: existingFriendship1 } = await supabase
         .from('friends')
         .select('id, status')
-        .eq('requester_id', requesterId)
-        .eq('receiver_id', receiverId)
+        .eq('requester_id', user.id)
+        .eq('receiver_id', userId)
         .single()
+
+      const { data: existingFriendship2 } = await supabase
+        .from('friends')
+        .select('id, status')
+        .eq('requester_id', userId)
+        .eq('receiver_id', user.id)
+        .single()
+
+      const existingFriendship = existingFriendship1 || existingFriendship2
 
       if (existingFriendship) {
         if (existingFriendship.status === 'pending') {
@@ -244,12 +249,13 @@ export class FriendsService {
         }
       }
 
-      // Create friend request with canonical ordering
+      // Create friend request with current user as requester
+      // This satisfies the RLS policy requirement
       const { data, error } = await supabase
         .from('friends')
         .insert({
-          requester_id: requesterId,
-          receiver_id: receiverId,
+          requester_id: user.id,
+          receiver_id: userId,
           status: 'pending'
         })
         .select()
@@ -257,19 +263,9 @@ export class FriendsService {
 
       if (error) throw error
 
-      // Create notification for the friend (receiver)
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: receiverId,
-          type: 'friend_request',
-          title: 'New Friend Request',
-          message: `You have a new friend request`,
-          data: {
-            requester_id: requesterId,
-            request_id: data.id
-          }
-        })
+      // The notification will be created automatically by the database trigger
+      // defined in the 027_friend_notifications.sql migration
+      // No need to manually insert notification here
 
       return data
     } catch (error) {
@@ -351,18 +347,9 @@ export class FriendsService {
 
       if (updateError) throw updateError
 
-      // Create notification for the requester
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: request.requester_id,
-          type: 'friend_request_accepted',
-          title: 'Friend Request Accepted',
-          message: `Your friend request has been accepted`,
-          data: {
-            accepter_id: user.id
-          }
-        })
+      // The notification will be created automatically by the database trigger
+      // defined in the 027_friend_notifications.sql migration
+      // No need to manually insert notification here
 
       return { success: true }
     } catch (error) {
@@ -446,18 +433,20 @@ export class FriendsService {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
-      // Ensure canonical ordering for deletion
-      const requesterId = user.id < friendId ? user.id : friendId
-      const receiverId = user.id < friendId ? friendId : user.id
-
-      // Remove friendship record
-      const { error } = await supabase
+      // Remove friendship record (check both possible orderings)
+      const { error: error1 } = await supabase
         .from('friends')
         .delete()
-        .eq('requester_id', requesterId)
-        .eq('receiver_id', receiverId)
+        .eq('requester_id', user.id)
+        .eq('receiver_id', friendId)
 
-      if (error) throw error
+      const { error: error2 } = await supabase
+        .from('friends')
+        .delete()
+        .eq('requester_id', friendId)
+        .eq('receiver_id', user.id)
+
+      if (error1 && error2) throw error1 || error2
       return { success: true }
     } catch (error) {
       handleSupabaseError(error, 'remove friend')

@@ -442,12 +442,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
 import { OutfitsService } from '@/services/outfitsService'
 import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart } from 'lucide-vue-next'
 import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
 
 const { theme } = useTheme()
+const { showError, showSuccess, showConfirm } = usePopup()
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -572,25 +574,30 @@ const toggleFavorite = async (outfit) => {
 
 const deleteOutfit = async (outfit) => {
   const outfitName = outfit.outfit_name || outfit.name || 'this outfit'
-  if (confirm(`Are you sure you want to delete "${outfitName}"?`)) {
-    try {
-      console.log('Outfits: Deleting outfit:', outfit.id)
-      await outfitsService.deleteOutfit(outfit.id)
-      
-      // Remove from local array
-      outfits.value = outfits.value.filter(o => o.id !== outfit.id)
-      
-      // Close detail modal if the deleted outfit was being viewed
-      if (selectedOutfit.value?.id === outfit.id) {
-        closeOutfitDetail()
+  showConfirm(
+    `Are you sure you want to delete "${outfitName}"?`,
+    'Delete Outfit',
+    async () => {
+      try {
+        console.log('Outfits: Deleting outfit:', outfit.id)
+        await outfitsService.deleteOutfit(outfit.id)
+        
+        // Remove from local array
+        outfits.value = outfits.value.filter(o => o.id !== outfit.id)
+        
+        // Close detail modal if the deleted outfit was being viewed
+        if (selectedOutfit.value?.id === outfit.id) {
+          closeOutfitDetail()
+        }
+        
+        console.log('Outfits: Successfully deleted outfit')
+        showSuccess('Outfit deleted successfully!')
+      } catch (error) {
+        console.error('Outfits: Error deleting outfit:', error)
+        showError('Failed to delete outfit. Please try again.')
       }
-      
-      console.log('Outfits: Successfully deleted outfit')
-    } catch (error) {
-      console.error('Outfits: Error deleting outfit:', error)
-      alert('Failed to delete outfit. Please try again.')
     }
-  }
+  )
 }
 
 const formatDate = (dateString) => {

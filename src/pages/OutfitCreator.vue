@@ -570,6 +570,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
@@ -589,6 +590,7 @@ import {
 } from 'lucide-vue-next'
 
 const { theme } = useTheme()
+const { showError, showSuccess, showWarning, showInfo } = usePopup()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
@@ -842,7 +844,7 @@ const loadExistingOutfit = async (outfitId) => {
     
     if (!outfit) {
       console.error('OutfitCreator: Outfit not found')
-      alert('Outfit not found.')
+      showError('Outfit not found.')
       router.push('/outfits')
       return
     }
@@ -872,7 +874,7 @@ const loadExistingOutfit = async (outfitId) => {
     
   } catch (error) {
     console.error('OutfitCreator: Error loading outfit:', error)
-    alert('Failed to load outfit. Please try again.')
+    showError('Failed to load outfit. Please try again.')
     router.push('/outfits')
   }
 }

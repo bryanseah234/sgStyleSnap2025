@@ -227,12 +227,14 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { ClothesService } from '@/services/clothesService'
-import { supabase } from '@/lib/supabase'
+import { cloudinary } from '@/lib/cloudinary'
 import { Upload, X } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const router = useRouter()
+const { showError, showSuccess } = usePopup()
 const clothesService = new ClothesService()
 
 const emit = defineEmits(['item-added'])
@@ -260,25 +262,18 @@ const handleFileUpload = async (e) => {
 
   uploading.value = true
   try {
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `clothing/${fileName}`
+    // Upload to Cloudinary instead of Supabase storage
+    const imageData = await cloudinary.uploadImage(file, {
+      folder: 'stylesnap/clothes',
+      quality: 80,
+      format: 'auto'
+    })
 
-    const { error: uploadError, data } = await supabase.storage
-      .from('images')
-      .upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('images')
-      .getPublicUrl(filePath)
-
-    formData.value.image_url = publicUrl
-    previewUrl.value = publicUrl
+    formData.value.image_url = imageData.secure_url
+    previewUrl.value = imageData.secure_url
   } catch (error) {
     console.error('Error uploading file:', error)
-    alert('Failed to upload image. Please try again.')
+    showError('Failed to upload image. Please try again.')
   } finally {
     uploading.value = false
   }
@@ -306,15 +301,16 @@ const handleSubmit = async () => {
 
     if (result.success) {
       console.log('ManualUploadForm: Item created successfully')
+      showSuccess('Item added successfully!')
       emit('item-added')
       router.push('/closet')
     } else {
       console.error('ManualUploadForm: Failed to create item:', result.error)
-      alert('Failed to add item. Please try again.')
+      showError('Failed to add item. Please try again.')
     }
   } catch (error) {
     console.error('ManualUploadForm: Error creating item:', error)
-    alert('An error occurred. Please try again.')
+    showError('An error occurred. Please try again.')
   } finally {
     isSubmitting.value = false
   }

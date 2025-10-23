@@ -180,6 +180,9 @@
         <router-view />
       </transition>
     </main>
+
+    <!-- Global Popup -->
+    <GlobalPopup />
   </div>
 </template>
 
@@ -212,6 +215,7 @@ import {
   Moon
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
+import GlobalPopup from './GlobalPopup.vue'
 
 // Router, theme, and auth composables
 const router = useRouter()

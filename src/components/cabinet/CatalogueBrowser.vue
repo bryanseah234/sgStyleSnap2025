@@ -218,10 +218,12 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { catalogService } from '@/services/catalogService'
 import { Plus, Check, X, Shirt } from 'lucide-vue-next'
 
 const { theme } = useTheme()
+const { showError, showSuccess } = usePopup()
 
 const emit = defineEmits(['item-added'])
 
@@ -301,7 +303,7 @@ const handleAddToCloset = async (item) => {
     console.log('CatalogueBrowser: Successfully added item to closet. New item ID:', newItemId)
   } catch (error) {
     console.error('CatalogueBrowser: Error adding to closet:', error)
-    alert(error.message || 'Failed to add item to closet')
+    showError(error.message || 'Failed to add item to closet')
   } finally {
     addingItemId.value = null
   }

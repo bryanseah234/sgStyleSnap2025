@@ -164,11 +164,13 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { usePopup } from '@/composables/usePopup'
 import { useLiquidPress, useLiquidReveal } from '@/composables/useLiquidGlass'
 import { ClothesService } from '@/services/clothesService'
 import { X, Trash2, Shirt } from 'lucide-vue-next'
 
 const { theme } = useTheme()
+const { showError, showSuccess, showConfirm } = usePopup()
 const clothesService = new ClothesService()
 
 // Liquid glass composables
@@ -214,7 +216,7 @@ const updatePrivacy = async () => {
     emit('item-updated')
   } catch (error) {
     console.error('❌ Error updating privacy:', error)
-    alert('Failed to update privacy setting')
+    showError('Failed to update privacy setting')
     // Revert to original value
     localPrivacy.value = props.item.privacy
   }
@@ -223,22 +225,26 @@ const updatePrivacy = async () => {
 const removeItem = async () => {
   if (!props.item) return
 
-  const confirmed = confirm(`Are you sure you want to remove "${props.item.name}" from your closet?`)
-  if (!confirmed) return
-
-  isRemoving.value = true
-  try {
-    await clothesService.deleteClothes(props.item.id)
-    
-    console.log('✅ Item removed successfully')
-    emit('item-removed', props.item.id)
-    closeModal()
-  } catch (error) {
-    console.error('❌ Error removing item:', error)
-    alert('Failed to remove item')
-  } finally {
-    isRemoving.value = false
-  }
+  showConfirm(
+    `Are you sure you want to remove "${props.item.name}" from your closet?`,
+    'Remove Item',
+    async () => {
+      isRemoving.value = true
+      try {
+        await clothesService.deleteClothes(props.item.id)
+        
+        console.log('✅ Item removed successfully')
+        showSuccess('Item removed successfully!')
+        emit('item-removed', props.item.id)
+        closeModal()
+      } catch (error) {
+        console.error('❌ Error removing item:', error)
+        showError('Failed to remove item')
+      } finally {
+        isRemoving.value = false
+      }
+    }
+  )
 }
 
 const formatDate = (dateString) => {
