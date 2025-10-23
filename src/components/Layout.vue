@@ -27,11 +27,16 @@
 
   <div v-else class="min-h-screen text-foreground transition-colors duration-200">
     
-    <!-- Desktop Sidebar Navigation -->
-    <aside class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-card border-r border-border flex-col items-stretch py-8 px-4 z-50 transition-colors duration-200">
+    <!-- Desktop Sidebar Navigation with Liquid Glass -->
+    <aside 
+      ref="navbarRef"
+      class="hidden md:flex fixed left-0 top-0 h-full w-64 navbar-glass flex-col items-stretch py-8 px-4 z-50"
+      @mouseenter="navbarHoverIn"
+      @mouseleave="navbarHoverOut"
+    >
       
-      <!-- Logo -->
-      <div class="mb-12 text-center md:text-left">
+      <!-- Logo with liquid reveal -->
+      <div class="mb-12 text-center md:text-left liquid-reveal">
         <h1 class="text-2xl font-bold tracking-tight text-foreground">
           StyleSnap
         </h1>
@@ -47,11 +52,13 @@
           @mouseenter="item.name === 'Home' ? handleHomeHover : undefined"
           @touchstart="item.name === 'Home' ? handleHomeHover : undefined"
         >
-          <div :class="`flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative transition-all duration-200 hover:scale-105 hover:translate-x-1 ${
-            $route.path === item.path
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
-          }`">
+          <div 
+            :class="`nav-item-liquid flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative ${
+              $route.path === item.path
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
+            }`"
+          >
             <component :is="item.icon" class="w-5 h-5" />
             <span class="font-medium">
               {{ item.name }}
@@ -63,8 +70,12 @@
       <!-- Theme Toggle & Logout -->
       <div class="space-y-2">
         <button
+          ref="themeButtonRef"
           @click="handleThemeToggle"
-          class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 bg-secondary hover:bg-accent"
+          @mousedown="themePressIn"
+          @mouseup="themePressOut"
+          @mouseleave="themePressOut"
+          class="w-full flex items-center justify-between px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
           :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
         >
           <span class="font-medium text-secondary-foreground">
@@ -77,9 +88,13 @@
         </button>
 
         <button
+          ref="logoutButtonRef"
           @click="handleLogout"
+          @mousedown="logoutPressIn"
+          @mouseup="logoutPressOut"
+          @mouseleave="logoutPressOut"
           :disabled="loading"
-          :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+          :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press ${
             loading
               ? 'opacity-50 cursor-not-allowed text-muted-foreground'
               : 'text-muted-foreground hover:bg-destructive hover:text-destructive-foreground'
@@ -92,9 +107,14 @@
       </div>
     </aside>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 border-t border-border backdrop-blur-xl z-50 px-2 py-3 pb-safe transition-colors duration-200"
-    style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))">
+    <!-- Mobile Bottom Navigation with liquid glass -->
+    <nav 
+      ref="mobileNavRef"
+      class="md:hidden fixed bottom-0 left-0 right-0 navbar-glass z-50 px-2 py-3 pb-safe"
+      style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
+      @mouseenter="mobileNavHoverIn"
+      @mouseleave="mobileNavHoverOut"
+    >
       
       <div class="flex items-center justify-around max-w-md mx-auto">
         <router-link
@@ -180,6 +200,7 @@ import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
+import { useNavbarLiquid, useLiquidPress, useLiquidHover, useReducedMotion } from '@/composables/useLiquidGlass'
 import { 
   Home, 
   Shirt, 
@@ -196,6 +217,13 @@ import ThemeToggle from './ThemeToggle.vue'
 const router = useRouter()
 const { theme, loadUser, refreshTheme, toggleTheme } = useTheme()
 const authStore = useAuthStore()
+
+// Liquid glass composables
+const { navbarRef, isScrolled, hoverIn: navbarHoverIn, hoverOut: navbarHoverOut } = useNavbarLiquid()
+const { elementRef: themeButtonRef, pressIn: themePressIn, pressOut: themePressOut } = useLiquidPress()
+const { elementRef: logoutButtonRef, pressIn: logoutPressIn, pressOut: logoutPressOut } = useLiquidPress()
+const { elementRef: mobileNavRef, hoverIn: mobileNavHoverIn, hoverOut: mobileNavHoverOut } = useLiquidHover()
+const { prefersReducedMotion } = useReducedMotion()
 
 // Service instances for data prefetching
 const clothesService = new ClothesService()

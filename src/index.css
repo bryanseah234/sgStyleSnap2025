@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import animation tokens */
+@import './tokens/animations.css';
+
 @layer base {
   :root {
     /* Light mode - White background, black text, gray subtext */
@@ -484,4 +487,211 @@
 .scale-in-viewport.is-visible {
   opacity: 1;
   transform: scale(1);
+}
+
+/* ============================================
+   NAVBAR LIQUID GLASS EFFECTS
+   ============================================ */
+
+/* Navbar container with liquid glass */
+.navbar-glass {
+  -webkit-backdrop-filter: blur(var(--blur-medium));
+  backdrop-filter: blur(var(--blur-medium));
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all var(--duration-normal) var(--ease-liquid);
+}
+
+.navbar-glass:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Dark mode navbar */
+.dark .navbar-glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .navbar-glass:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Navigation item liquid effects */
+.nav-item-liquid {
+  position: relative;
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: translateZ(0);
+}
+
+.nav-item-liquid:hover {
+  transform: translateX(4px) translateZ(5px);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.nav-item-liquid::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-liquid);
+  z-index: -1;
+}
+
+.nav-item-liquid:hover::before {
+  opacity: 1;
+}
+
+/* Mobile fallback - simplified effects */
+@media (max-width: 768px) {
+  .navbar-glass {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .nav-item-liquid:hover {
+    transform: translateX(2px);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .nav-item-liquid::before {
+    display: none;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .navbar-glass,
+  .nav-item-liquid {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .nav-item-liquid::before {
+    display: none;
+  }
+}
+
+/* ============================================
+   HERO SECTION LIQUID GLASS EFFECTS
+   ============================================ */
+
+/* Hero text with liquid reveal */
+.liquid-text {
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-text:hover {
+  transform: translateZ(5px);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+/* Stats cards with liquid glass hover */
+.liquid-card {
+  position: relative;
+  transition: all var(--duration-normal) var(--ease-liquid);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.liquid-card:hover {
+  transform: translateY(-8px) translateZ(15px);
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-liquid);
+  z-index: -1;
+}
+
+.liquid-card:hover::before {
+  opacity: 1;
+}
+
+/* Card icons with liquid scale */
+.liquid-icon {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-card:hover .liquid-icon {
+  transform: scale(1.1) translateZ(5px);
+}
+
+/* Card numbers with liquid bounce */
+.liquid-number {
+  transition: all var(--duration-fast) var(--ease-spring-bouncy);
+  transform: translateZ(0);
+}
+
+.liquid-card:hover .liquid-number {
+  transform: scale(1.05) translateZ(5px);
+}
+
+/* Dark mode adjustments */
+.dark .liquid-card {
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .liquid-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.dark .liquid-card::before {
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-card:hover {
+    transform: translateY(-4px);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  
+  .liquid-card::before {
+    display: none;
+  }
+}
+
+/* Hero section accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-text,
+  .liquid-card,
+  .liquid-icon,
+  .liquid-number {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-card::before {
+    display: none;
+  }
 }

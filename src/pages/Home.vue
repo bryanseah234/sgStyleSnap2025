@@ -32,45 +32,58 @@
         : 'bg-gradient-to-r from-stone-300 via-black to-stone-300'
     }`" />
 
-    <!-- Hero Section -->
-    <div class="max-w-6xl mx-auto mb-16" v-scroll-animate.up>
-      <h1 :class="`text-5xl md:text-7xl font-bold tracking-tight mb-4 ${
-        theme.value === 'dark' ? 'text-white' : 'text-black'
-      }`">
+    <!-- Hero Section with Liquid Glass Reveal -->
+    <div 
+      ref="heroRef"
+      class="max-w-6xl mx-auto mb-16 liquid-reveal"
+      v-scroll-animate.up
+      @mousemove="handleHeroMouseMove"
+      @mouseleave="handleHeroMouseLeave"
+    >
+      <h1 
+        :class="`text-5xl md:text-7xl font-bold tracking-tight mb-4 liquid-text ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`"
+      >
         Welcome back{{ userName }}
       </h1>
-      <p :class="`text-xl md:text-2xl ${
-        theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-      } max-w-2xl`">
+      <p 
+        :class="`text-xl md:text-2xl liquid-text ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        } max-w-2xl`"
+      >
         Your digital wardrobe awaits. Create stunning outfits, discover new styles, and share your fashion journey.
       </p>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Stats Cards with Liquid Glass Hover -->
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
       <router-link
         v-for="(stat, index) in stats"
         :key="stat.label"
         :to="stat.route"
         v-scroll-animate.up
-        :class="`p-8 rounded-3xl transition-all duration-300 group cursor-pointer hover:-translate-y-2 hover:scale-105 ${
+        :class="`liquid-card p-8 rounded-3xl group cursor-pointer ${
           theme.value === 'dark'
             ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
             : 'bg-white border border-stone-200 hover:border-stone-300'
         }`"
         :style="{ transitionDelay: `${index * 100}ms` }"
+        @mouseenter="handleCardHover($event, index)"
+        @mouseleave="handleCardLeave($event, index)"
+        @mousemove="handleCardMouseMove($event, index)"
       >
         <div class="flex items-center justify-between mb-4">
-          <div :class="`p-3 rounded-2xl transition-transform duration-300 group-hover:scale-110 ${
+          <div :class="`liquid-icon p-3 rounded-2xl ${
             theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
           }`">
             <component :is="stat.icon" class="w-6 h-6" />
           </div>
-          <span class="text-4xl font-bold text-foreground">
+          <span class="text-4xl font-bold text-foreground liquid-number">
             {{ stat.value }}
           </span>
         </div>
-        <p :class="`text-lg font-medium ${
+        <p :class="`text-lg font-medium liquid-text ${
           theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">
           {{ stat.label }}
@@ -221,11 +234,16 @@ import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
 import { vScrollAnimate } from '@/composables/useScrollAnimation'
+import { useLiquidReveal, useLiquidHover } from '@/composables/useLiquidGlass'
 import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check } from 'lucide-vue-next'
 
 // Theme and auth composables
 const { theme } = useTheme()
 const authStore = useAuthStore()
+
+// Liquid glass composables
+const { elementRef: heroRef, reveal: heroReveal } = useLiquidReveal()
+const { elementRef: cardRefs, hoverIn: cardHoverIn, hoverOut: cardHoverOut } = useLiquidHover()
 
 // Service instances
 const clothesService = new ClothesService()
@@ -515,4 +533,53 @@ onMounted(async () => {
     console.error('❌ Home: Error loading data:', error)
   }
 })
+
+// Liquid glass event handlers
+const handleHeroMouseMove = (event) => {
+  // Apply parallax distortion to hero text
+  const heroText = event.target.querySelector('.liquid-text')
+  if (heroText) {
+    const rect = event.target.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    
+    const rotateX = (y - centerY) / centerY * 2
+    const rotateY = (x - centerX) / centerX * 2
+    
+    heroText.style.transform = `translateZ(5px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
+  }
+}
+
+const handleHeroMouseLeave = () => {
+  // Reset hero distortion
+  const heroTexts = document.querySelectorAll('.liquid-text')
+  heroTexts.forEach(text => {
+    text.style.transform = 'translateZ(0px) rotateX(0deg) rotateY(0deg)'
+  })
+}
+
+const handleCardHover = (event, index) => {
+  cardHoverIn(event.target)
+}
+
+const handleCardLeave = (event, index) => {
+  cardHoverOut(event.target)
+}
+
+const handleCardMouseMove = (event, index) => {
+  // Apply subtle parallax to cards
+  const card = event.target
+  const rect = card.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
+  
+  const rotateX = (y - centerY) / centerY * 2
+  const rotateY = (x - centerX) / centerX * 2
+  
+  card.style.transform = `translateY(-8px) translateZ(15px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
+}
 </script>

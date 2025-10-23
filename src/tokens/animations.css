@@ -73,11 +73,13 @@
 .liquid-hover {
   transition: all var(--duration-fast) var(--ease-liquid);
   transform: scale(var(--depth-scale));
+  -webkit-backdrop-filter: blur(var(--blur-light));
   backdrop-filter: blur(var(--blur-light));
 }
 
 .liquid-hover:hover {
   transform: scale(var(--depth-scale)) translateZ(10px);
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
   backdrop-filter: blur(var(--blur-dynamic));
 }
 
@@ -105,6 +107,7 @@
 
 /* Navbar liquid glass effects */
 .navbar-glass {
+  -webkit-backdrop-filter: blur(var(--blur-medium));
   backdrop-filter: blur(var(--blur-medium));
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -112,6 +115,7 @@
 }
 
 .navbar-glass:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
   backdrop-filter: blur(var(--blur-dynamic));
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
@@ -136,6 +140,7 @@
 
 .nav-item-liquid:hover {
   transform: translateX(4px) translateZ(5px);
+  -webkit-backdrop-filter: blur(var(--blur-light));
   backdrop-filter: blur(var(--blur-light));
 }
 
@@ -168,6 +173,7 @@
   .nav-item-liquid {
     transition: none;
     transform: none;
+    -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
   
