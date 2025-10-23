@@ -12,7 +12,7 @@
 -- ============================================
 
 -- Add privacy column to outfits table (similar to clothes table)
-DO $$ 
+DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns 
@@ -21,12 +21,12 @@ BEGIN
     ALTER TABLE outfits 
       ADD COLUMN privacy VARCHAR(20) DEFAULT 'friends' 
       CHECK (privacy IN ('private', 'friends', 'public'));
-    
     RAISE NOTICE '✅ Added privacy column to outfits table';
   ELSE
     RAISE NOTICE 'ℹ️ Privacy column already exists in outfits table';
   END IF;
-END $$;
+END
+$$ LANGUAGE plpgsql;
 
 -- Migrate existing outfits: is_public = true -> privacy = 'public', else 'friends'
 DO $$
@@ -39,52 +39,58 @@ BEGIN
   WHERE privacy IS NULL;
   
   RAISE NOTICE '✅ Migrated existing outfits to use privacy field';
-END $$;
+END
+$$ LANGUAGE plpgsql;
 
 -- ============================================
 -- 2. UPDATE CLOTHES PRIVACY CONSTRAINT
 -- ============================================
 
 -- Ensure clothes table allows 'public' privacy setting
+-- Drop old constraint if it exists (top-level DDL)
+ALTER TABLE clothes DROP CONSTRAINT IF EXISTS clothes_privacy_check;
+
+-- Add new constraint with public option (top-level DDL)
+ALTER TABLE clothes 
+  ADD CONSTRAINT clothes_privacy_check 
+  CHECK (privacy IN ('private', 'friends', 'public'));
+
 DO $$
 BEGIN
-  -- Drop old constraint if it exists
-  ALTER TABLE clothes DROP CONSTRAINT IF EXISTS clothes_privacy_check;
-  
-  -- Add new constraint with public option
-  ALTER TABLE clothes 
-    ADD CONSTRAINT clothes_privacy_check 
-    CHECK (privacy IN ('private', 'friends', 'public'));
-  
   RAISE NOTICE '✅ Updated clothes table privacy constraint to include public';
-END $$;
+END
+$$ LANGUAGE plpgsql;
 
 -- ============================================
 -- 3. UPDATE RLS POLICIES FOR CLOTHES
 -- ============================================
 
--- Drop old public clothes policy if exists
+-- Drop old public clothes policy if exists (top-level)
 DROP POLICY IF EXISTS "Anyone can view public clothes" ON clothes;
 
--- Create policy for public clothes
+-- Create policy for public clothes (top-level)
 CREATE POLICY "Anyone can view public clothes" ON clothes
   FOR SELECT USING (privacy = 'public' AND removed_at IS NULL);
 
-RAISE NOTICE '✅ Created RLS policy for public clothes';
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Created RLS policy for public clothes';
+END
+$$ LANGUAGE plpgsql;
 
 -- ============================================
 -- 4. UPDATE RLS POLICIES FOR OUTFITS
 -- ============================================
 
--- Drop old policies
+-- Drop old policies (top-level)
 DROP POLICY IF EXISTS "Users can view public outfits" ON outfits;
 DROP POLICY IF EXISTS "Friends can view friends outfits" ON outfits;
 
--- Create policy for public outfits
+-- Create policy for public outfits (top-level)
 CREATE POLICY "Anyone can view public outfits" ON outfits
   FOR SELECT USING (privacy = 'public' AND removed_at IS NULL);
 
--- Create policy for friends to view friends' outfits
+-- Create policy for friends to view friends' outfits (top-level)
 CREATE POLICY "Friends can view friends outfits" ON outfits
   FOR SELECT USING (
     privacy = 'friends' 
@@ -99,17 +105,21 @@ CREATE POLICY "Friends can view friends outfits" ON outfits
     )
   );
 
-RAISE NOTICE '✅ Created RLS policies for outfits (public and friends)';
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Created RLS policies for outfits (public and friends)';
+END
+$$ LANGUAGE plpgsql;
 
 -- ============================================
 -- 5. UPDATE RLS POLICIES FOR OUTFIT_ITEMS
 -- ============================================
 
--- Drop old policies
+-- Drop old policies (top-level)
 DROP POLICY IF EXISTS "Users can view outfit items for public outfits" ON outfit_items;
 DROP POLICY IF EXISTS "Friends can view friends outfit items" ON outfit_items;
 
--- Policy for public outfit items
+-- Policy for public outfit items (top-level)
 CREATE POLICY "Anyone can view public outfit items" ON outfit_items
   FOR SELECT USING (
     outfit_id IN (
@@ -118,7 +128,7 @@ CREATE POLICY "Anyone can view public outfit items" ON outfit_items
     )
   );
 
--- Policy for friends to view friends' outfit items
+-- Policy for friends to view friends' outfit items (top-level)
 CREATE POLICY "Friends can view friends outfit items" ON outfit_items
   FOR SELECT USING (
     outfit_id IN (
@@ -136,7 +146,11 @@ CREATE POLICY "Friends can view friends outfit items" ON outfit_items
     )
   );
 
-RAISE NOTICE '✅ Created RLS policies for outfit_items (public and friends)';
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Created RLS policies for outfit_items (public and friends)';
+END
+$$ LANGUAGE plpgsql;
 
 -- ============================================
 -- 6. CREATE INDEX FOR PERFORMANCE
@@ -149,12 +163,15 @@ BEGIN
     SELECT 1 FROM pg_indexes 
     WHERE indexname = 'idx_outfits_privacy'
   ) THEN
-    CREATE INDEX idx_outfits_privacy ON outfits(privacy) WHERE removed_at IS NULL;
+    -- Note: CREATE INDEX is top-level DDL; EXECUTE must be used if placed inside DO,
+    -- but we can use EXECUTE here safely.
+    EXECUTE 'CREATE INDEX idx_outfits_privacy ON outfits(privacy) WHERE removed_at IS NULL';
     RAISE NOTICE '✅ Created index on outfits.privacy';
   ELSE
     RAISE NOTICE 'ℹ️ Index on outfits.privacy already exists';
   END IF;
-END $$;
+END
+$$ LANGUAGE plpgsql;
 
 -- Index for privacy filtering on clothes
 DO $$
@@ -163,12 +180,13 @@ BEGIN
     SELECT 1 FROM pg_indexes 
     WHERE indexname = 'idx_clothes_privacy'
   ) THEN
-    CREATE INDEX idx_clothes_privacy ON clothes(privacy) WHERE removed_at IS NULL;
+    EXECUTE 'CREATE INDEX idx_clothes_privacy ON clothes(privacy) WHERE removed_at IS NULL';
     RAISE NOTICE '✅ Created index on clothes.privacy';
   ELSE
     RAISE NOTICE 'ℹ️ Index on clothes.privacy already exists';
   END IF;
-END $$;
+END
+$$ LANGUAGE plpgsql;
 
 -- ============================================
 -- SUMMARY
@@ -194,5 +212,5 @@ BEGIN
   RAISE NOTICE '  - public: Everyone can view';
   RAISE NOTICE '';
   RAISE NOTICE '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
-END $$;
-
+END
+$$ LANGUAGE plpgsql;

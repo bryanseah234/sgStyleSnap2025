@@ -1,16 +1,18 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="liquid-dialog-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     @click="$emit('close')"
   >
     <div
-      :class="`w-full max-w-md rounded-xl p-6 ${
+      :class="`liquid-dialog-card w-full max-w-md rounded-xl p-6 ${
         theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
       }`"
       @click.stop
     >
-      <slot />
+      <div class="liquid-dialog-content">
+        <slot />
+      </div>
     </div>
   </div>
 </template>

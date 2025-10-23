@@ -1,24 +1,27 @@
 <template>
-  <!-- Modal Backdrop -->
+  <!-- Modal Backdrop with Liquid Glass -->
   <Transition name="modal-backdrop">
     <div
       v-if="isOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      class="liquid-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="closeModal"
     >
-      <!-- Modal Card -->
+      <!-- Modal Card with Fluid Expansion -->
       <Transition name="modal" appear>
         <div
           v-if="isOpen"
-          :class="`relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
+          :class="`liquid-modal-card relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
             theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
           }`"
           @click.stop
         >
-          <!-- Close Button -->
+          <!-- Close Button with Liquid Press -->
           <button
             @click="closeModal"
-            :class="`icon-rotate-hover absolute top-4 right-4 z-10 p-2 rounded-lg transition-all duration-200 ${
+            @mousedown="handleClosePress"
+            @mouseup="handleCloseRelease"
+            @mouseleave="handleCloseRelease"
+            :class="`liquid-close-btn absolute top-4 right-4 z-10 p-2 rounded-lg ${
               theme.value === 'dark'
                 ? 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700'
                 : 'bg-white/80 text-stone-700 hover:bg-stone-100'
@@ -28,8 +31,8 @@
       </button>
 
       <div class="grid md:grid-cols-2">
-        <!-- Left: Image -->
-        <div class="aspect-square relative overflow-hidden bg-stone-100 dark:bg-zinc-800">
+        <!-- Left: Image with Liquid Scale -->
+        <div class="liquid-modal-image aspect-square relative overflow-hidden bg-stone-100 dark:bg-zinc-800">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
@@ -44,8 +47,8 @@
           </div>
         </div>
 
-        <!-- Right: Details -->
-        <div class="p-6 space-y-6">
+        <!-- Right: Details with Liquid Reveal -->
+        <div class="liquid-modal-content p-6 space-y-6">
           <!-- Item Name & Category -->
           <div>
             <h2 :class="`text-2xl font-bold mb-2 ${
@@ -161,11 +164,16 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useLiquidPress, useLiquidReveal } from '@/composables/useLiquidGlass'
 import { ClothesService } from '@/services/clothesService'
 import { X, Trash2, Shirt } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const clothesService = new ClothesService()
+
+// Liquid glass composables
+const { elementRef: closeButtonRef, pressIn: closePressIn, pressOut: closePressOut } = useLiquidPress()
+const { elementRef: modalContentRef, reveal: modalContentReveal } = useLiquidReveal()
 
 const props = defineProps({
   isOpen: {
@@ -251,5 +259,23 @@ const formatDate = (dateString) => {
     day: 'numeric'
   })
 }
+
+// Liquid glass event handlers
+const handleClosePress = (event) => {
+  closePressIn(event.target)
+}
+
+const handleCloseRelease = (event) => {
+  closePressOut(event.target)
+}
+
+// Trigger modal content reveal on open
+watch(isOpen, (newValue) => {
+  if (newValue && modalContentRef.value) {
+    setTimeout(() => {
+      modalContentReveal()
+    }, 100)
+  }
+})
 </script>
 

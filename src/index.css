@@ -695,3 +695,457 @@
     display: none;
   }
 }
+
+/* ============================================
+   CARDS/ITEMS GRID LIQUID GLASS EFFECTS
+   ============================================ */
+
+/* Item cards with liquid glass hover */
+.liquid-item-card {
+  position: relative;
+  transition: all var(--duration-normal) var(--ease-liquid);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.liquid-item-card:hover {
+  transform: translateY(-6px) translateZ(12px);
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-item-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-liquid);
+  z-index: -1;
+}
+
+.liquid-item-card:hover::before {
+  opacity: 1;
+}
+
+/* Item images with liquid scale */
+.liquid-item-image {
+  transition: all var(--duration-normal) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-item-card:hover .liquid-item-image {
+  transform: scale(1.05) translateZ(5px);
+}
+
+/* Item titles with liquid lift */
+.liquid-item-title {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-item-card:hover .liquid-item-title {
+  transform: translateY(-2px) translateZ(3px);
+}
+
+/* Item categories with liquid fade */
+.liquid-item-category {
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: translateZ(0);
+}
+
+.liquid-item-card:hover .liquid-item-category {
+  transform: translateY(-1px) translateZ(2px);
+  opacity: 0.8;
+}
+
+/* Favorite button with liquid press */
+.liquid-favorite-btn {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-favorite-btn:active {
+  transform: scale(0.9) translateZ(-3px);
+}
+
+.liquid-item-card:hover .liquid-favorite-btn {
+  transform: scale(1.05) translateZ(3px);
+}
+
+/* Dark mode adjustments */
+.dark .liquid-item-card {
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .liquid-item-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.dark .liquid-item-card::before {
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+}
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-item-card:hover {
+    transform: translateY(-3px);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  
+  .liquid-item-card::before {
+    display: none;
+  }
+  
+  .liquid-item-card:hover .liquid-item-image {
+    transform: scale(1.02);
+  }
+}
+
+/* Cards grid accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-item-card,
+  .liquid-item-image,
+  .liquid-item-title,
+  .liquid-item-category,
+  .liquid-favorite-btn {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-item-card::before {
+    display: none;
+  }
+}
+
+/* ============================================
+   BUTTONS LIQUID GLASS RIPPLE EFFECTS
+   ============================================ */
+
+/* Base liquid button */
+.liquid-button {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.liquid-button:hover {
+  transform: translateY(-1px) translateZ(2px);
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+}
+
+.liquid-button:active {
+  transform: scale(0.98) translateZ(-1px);
+}
+
+/* Button content */
+.liquid-button-content {
+  position: relative;
+  z-index: 2;
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+}
+
+.liquid-button:hover .liquid-button-content {
+  transform: translateZ(1px);
+}
+
+/* Ripple effect */
+.liquid-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+  animation: liquid-ripple 0.6s ease-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.liquid-ripple-active {
+  animation: liquid-ripple 0.6s ease-out;
+}
+
+@keyframes liquid-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Button click feedback */
+.liquid-button-clicked {
+  transform: scale(0.95) translateZ(-2px);
+  -webkit-backdrop-filter: blur(var(--blur-heavy));
+  backdrop-filter: blur(var(--blur-heavy));
+}
+
+/* Dark mode adjustments */
+.dark .liquid-button {
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.dark .liquid-button:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+}
+
+.dark .liquid-ripple {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Button variants with liquid glass */
+.liquid-button[data-variant="default"]:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-foreground));
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.liquid-button[data-variant="destructive"]:hover {
+  background: linear-gradient(135deg, var(--destructive), var(--destructive-foreground));
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+.liquid-button[data-variant="outline"]:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-button[data-variant="secondary"]:hover {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-foreground));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-button[data-variant="ghost"]:hover {
+  background: var(--accent);
+  transform: translateY(-2px) translateZ(3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-button:hover {
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-button:active {
+    transform: scale(0.95);
+  }
+  
+  .liquid-ripple {
+    display: none;
+  }
+}
+
+/* Button accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-button,
+  .liquid-button-content,
+  .liquid-ripple {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+  }
+  
+  .liquid-ripple {
+    display: none;
+  }
+}
+
+/* ============================================
+   MODALS/PANELS FLUID EXPANSION EFFECTS
+   ============================================ */
+
+/* Modal backdrop with liquid glass */
+.liquid-modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(var(--blur-medium));
+  backdrop-filter: blur(var(--blur-medium));
+  transition: all var(--duration-normal) var(--ease-liquid);
+}
+
+.liquid-modal-backdrop:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Modal card with fluid expansion */
+.liquid-modal-card {
+  position: relative;
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.liquid-modal-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  transform: translateY(-2px) translateZ(5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+
+.liquid-modal-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-liquid);
+  z-index: -1;
+}
+
+.liquid-modal-card:hover::before {
+  opacity: 1;
+}
+
+/* Modal image with liquid scale */
+.liquid-modal-image {
+  transition: all var(--duration-normal) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-modal-card:hover .liquid-modal-image {
+  transform: scale(1.02) translateZ(3px);
+}
+
+/* Modal content with liquid reveal */
+.liquid-modal-content {
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-modal-content:hover {
+  transform: translateZ(2px);
+}
+
+/* Close button with liquid press */
+.liquid-close-btn {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-close-btn:active {
+  transform: scale(0.9) translateZ(-2px);
+}
+
+.liquid-modal-card:hover .liquid-close-btn {
+  transform: scale(1.05) translateZ(3px);
+}
+
+/* Dialog with liquid glass */
+.liquid-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(var(--blur-medium));
+  backdrop-filter: blur(var(--blur-medium));
+  transition: all var(--duration-normal) var(--ease-liquid);
+}
+
+.liquid-dialog-card {
+  position: relative;
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.liquid-dialog-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  transform: translateY(-1px) translateZ(3px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.liquid-dialog-content {
+  transition: all var(--duration-normal) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-dialog-card:hover .liquid-dialog-content {
+  transform: translateZ(1px);
+}
+
+/* Dark mode adjustments */
+.dark .liquid-modal-card,
+.dark .liquid-dialog-card {
+  background: rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.dark .liquid-modal-card:hover,
+.dark .liquid-dialog-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(0, 0, 0, 0.95);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+}
+
+.dark .liquid-modal-card::before {
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-modal-card:hover,
+  .liquid-dialog-card:hover {
+    transform: none;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  
+  .liquid-modal-card::before {
+    display: none;
+  }
+  
+  .liquid-modal-card:hover .liquid-modal-image {
+    transform: scale(1.01);
+  }
+}
+
+/* Modal accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-modal-backdrop,
+  .liquid-modal-card,
+  .liquid-modal-image,
+  .liquid-modal-content,
+  .liquid-close-btn,
+  .liquid-dialog-backdrop,
+  .liquid-dialog-card,
+  .liquid-dialog-content {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-modal-card::before {
+    display: none;
+  }
+}
