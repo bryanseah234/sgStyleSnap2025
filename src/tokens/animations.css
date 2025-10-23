@@ -1,0 +1,196 @@
+/**
+ * Liquid Glass Animation Tokens
+ * iOS 26-inspired motion system for StyleSnap
+ * 
+ * Provides unified timing, easing, and visual tokens for
+ * viscous, refractive, fluid motion throughout the app.
+ * 
+ * @author StyleSnap Team
+ * @version 1.0.0
+ */
+
+:root {
+  /* ============================================
+     DURATION SCALE
+     ============================================ */
+  
+  --duration-instant:    100ms;   /* Micro-interactions */
+  --duration-fast:      200ms;   /* Hover states */
+  --duration-normal:     300ms;   /* Standard transitions */
+  --duration-slow:      500ms;   /* Content reveals */
+  --duration-glacial:   1000ms;  /* Ambient motion */
+
+  /* ============================================
+     LIQUID GLASS EASING CURVES
+     ============================================ */
+  
+  /* Base easing */
+  --ease-default:        cubic-bezier(0.4, 0, 0.2, 1);        /* Material Design */
+  --ease-liquid:         cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Viscous flow */
+  
+  /* Spring physics */
+  --ease-spring-gentle:  cubic-bezier(0.34, 1.45, 0.64, 1);   /* Soft bounce */
+  --ease-spring-bouncy: cubic-bezier(0.28, 1.75, 0.52, 1);   /* Playful bounce */
+  --ease-spring-soft:   cubic-bezier(0.42, 1.38, 0.58, 1);   /* Subtle overshoot */
+  
+  /* Liquid effects */
+  --ease-elastic:       cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Elastic snap */
+  --ease-viscous:      cubic-bezier(0.23, 1, 0.32, 1);       /* Thick liquid */
+  --ease-refractive:   cubic-bezier(0.19, 1, 0.22, 1);       /* Glass distortion */
+
+  /* ============================================
+     BLUR & DEPTH TOKENS
+     ============================================ */
+  
+  --blur-light:          4px;     /* Subtle glass effect */
+  --blur-medium:         8px;     /* Standard glass */
+  --blur-heavy:          16px;    /* Strong glass */
+  --blur-dynamic:        12px;    /* Hover glass */
+  
+  /* ============================================
+     REFRACTION & DISTORTION
+     ============================================ */
+  
+  --refract-scale:       1.02;    /* Subtle distortion */
+  --refract-intensity:   0.1;     /* Glass wobble */
+  --depth-scale:         1.05;    /* 3D lift effect */
+  --perspective:         1000px;  /* 3D perspective */
+  
+  /* ============================================
+     SURFACE TENSION
+     ============================================ */
+  
+  --tension-ripple:      0.95;    /* Ripple compression */
+  --tension-wobble:      2deg;    /* Surface wobble */
+  --tension-bounce:      1.1;     /* Elastic feedback */
+}
+
+/* ============================================
+   LIQUID GLASS UTILITY CLASSES
+   ============================================ */
+
+/* Micro-interactions */
+.liquid-hover {
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: scale(var(--depth-scale));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.liquid-hover:hover {
+  transform: scale(var(--depth-scale)) translateZ(10px);
+  backdrop-filter: blur(var(--blur-dynamic));
+}
+
+/* Content reveals */
+.liquid-reveal {
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+/* Surface interactions */
+.liquid-press {
+  transition: all var(--duration-instant) var(--ease-elastic);
+  transform: scale(var(--tension-ripple));
+}
+
+.liquid-press:active {
+  transform: scale(var(--tension-ripple)) translateZ(-5px);
+}
+
+/* Ambient motion */
+.liquid-float {
+  transition: all var(--duration-glacial) var(--ease-viscous);
+  transform: translateY(-2px);
+}
+
+/* Navbar liquid glass effects */
+.navbar-glass {
+  backdrop-filter: blur(var(--blur-medium));
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all var(--duration-normal) var(--ease-liquid);
+}
+
+.navbar-glass:hover {
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Dark mode navbar */
+.dark .navbar-glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .navbar-glass:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Navigation item liquid effects */
+.nav-item-liquid {
+  position: relative;
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: translateZ(0);
+}
+
+.nav-item-liquid:hover {
+  transform: translateX(4px) translateZ(5px);
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.nav-item-liquid::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-liquid);
+  z-index: -1;
+}
+
+.nav-item-liquid:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   ACCESSIBILITY & PERFORMANCE
+   ============================================ */
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-hover,
+  .liquid-reveal,
+  .liquid-press,
+  .liquid-float,
+  .navbar-glass,
+  .nav-item-liquid {
+    transition: none;
+    transform: none;
+    backdrop-filter: none;
+  }
+  
+  .nav-item-liquid::before {
+    display: none;
+  }
+}
+
+/* GPU acceleration for smooth animations */
+.liquid-hover,
+.liquid-reveal,
+.liquid-press,
+.liquid-float,
+.navbar-glass,
+.nav-item-liquid {
+  will-change: transform, backdrop-filter;
+  transform-style: preserve-3d;
+}
+
+/* Clean up will-change after animation */
+.liquid-hover:not(:hover),
+.liquid-reveal:not(:hover),
+.liquid-press:not(:active),
+.liquid-float:not(:hover) {
+  will-change: auto;
+}
