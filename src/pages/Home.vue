@@ -164,12 +164,12 @@
                     <h3 :class="`font-semibold text-sm mb-1 ${
                       theme.value === 'dark' ? 'text-white' : 'text-black'
                     }`">
-                      {{ notification.title }}
+                      {{ getNotificationTitle(notification) }}
                     </h3>
                     <p :class="`text-sm ${
                       theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
                     }`">
-                      {{ notification.message }}
+                      {{ getNotificationMessage(notification) }}
                     </p>
                   </div>
                   
@@ -472,6 +472,46 @@ const getNotificationIcon = (type) => {
     weather_alert: CloudRain
   }
   return icons[type] || Bell
+}
+
+/**
+ * Gets notification title based on type
+ */
+const getNotificationTitle = (notification) => {
+  const titles = {
+    friend_request: 'New Friend Request',
+    friend_request_accepted: 'Friend Request Accepted',
+    outfit_shared: 'Outfit Shared',
+    friend_outfit_suggestion: 'Outfit Suggestion',
+    outfit_like: 'Outfit Liked',
+    item_like: 'Item Liked',
+    style_suggestion: 'Style Suggestion',
+    weather_alert: 'Weather Alert'
+  }
+  return titles[notification.type] || 'Notification'
+}
+
+/**
+ * Gets notification message based on type and data
+ */
+const getNotificationMessage = (notification) => {
+  // If there's a custom message, use it
+  if (notification.custom_message) {
+    return notification.custom_message
+  }
+
+  // Generate message based on type
+  const messages = {
+    friend_request: 'Someone sent you a friend request',
+    friend_request_accepted: 'Your friend request was accepted',
+    outfit_shared: 'Someone shared an outfit with you',
+    friend_outfit_suggestion: 'Someone created an outfit suggestion using your items',
+    outfit_like: 'Someone liked your outfit',
+    item_like: 'Someone liked your closet item',
+    style_suggestion: 'Check out this outfit suggestion based on your wardrobe',
+    weather_alert: 'Consider updating your outfit for today\'s weather'
+  }
+  return messages[notification.type] || 'You have a new notification'
 }
 
 /**

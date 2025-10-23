@@ -281,7 +281,7 @@ export class NotificationsService {
   }
 
   // Helper method to create notification with template
-  async createNotificationFromTemplate(type, userId, data = {}) {
+  async createNotificationFromTemplate(type, recipientId, actorId = null, referenceId = null, customMessage = null) {
     const templates = NotificationsService.getNotificationTemplates()
     const template = templates[type]
     
@@ -289,17 +289,12 @@ export class NotificationsService {
       throw new Error(`Unknown notification type: ${type}`)
     }
 
-    let message = template.message
-    Object.keys(data).forEach(key => {
-      message = message.replace(`{${key}}`, data[key])
-    })
-
     return this.sendNotification({
-      user_id: userId,
+      recipient_id: recipientId,
+      actor_id: actorId,
       type,
-      title: template.title,
-      message,
-      data
+      reference_id: referenceId,
+      custom_message: customMessage
     })
   }
 
