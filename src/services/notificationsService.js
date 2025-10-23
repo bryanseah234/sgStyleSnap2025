@@ -8,8 +8,14 @@ export class NotificationsService {
 
   async getNotifications(filters = {}) {
     try {
+      console.log('🔔 NotificationsService: Getting notifications with filters:', filters)
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        console.error('🔔 NotificationsService: Not authenticated:', userError)
+        throw new Error('Not authenticated')
+      }
+
+      console.log('🔔 NotificationsService: User authenticated:', user.id)
 
       let query = supabase
         .from('notifications')
@@ -27,9 +33,15 @@ export class NotificationsService {
 
       const { data, error } = await query
 
-      if (error) throw error
+      if (error) {
+        console.error('🔔 NotificationsService: Error fetching notifications:', error)
+        throw error
+      }
+      
+      console.log('🔔 NotificationsService: Fetched notifications:', data)
       return data || []
     } catch (error) {
+      console.error('🔔 NotificationsService: Error in getNotifications:', error)
       handleSupabaseError(error, 'get notifications')
     }
   }
@@ -98,8 +110,14 @@ export class NotificationsService {
 
   async getUnreadCount() {
     try {
+      console.log('🔔 NotificationsService: Getting unread count')
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        console.error('🔔 NotificationsService: Not authenticated:', userError)
+        throw new Error('Not authenticated')
+      }
+
+      console.log('🔔 NotificationsService: User authenticated:', user.id)
 
       const { count, error } = await supabase
         .from('notifications')
@@ -107,9 +125,15 @@ export class NotificationsService {
         .eq('recipient_id', user.id)
         .eq('is_read', false)
 
-      if (error) throw error
+      if (error) {
+        console.error('🔔 NotificationsService: Error getting unread count:', error)
+        throw error
+      }
+      
+      console.log('🔔 NotificationsService: Unread count:', count)
       return count || 0
     } catch (error) {
+      console.error('🔔 NotificationsService: Error in getUnreadCount:', error)
       handleSupabaseError(error, 'get unread count')
     }
   }
@@ -231,51 +255,39 @@ export class NotificationsService {
     return {
       friend_request: {
         title: 'New Friend Request',
-        message: '{requester_name} sent you a friend request',
+        message: 'Someone sent you a friend request',
         icon: 'user-plus',
         action: 'View request'
       },
       friend_request_accepted: {
         title: 'Friend Request Accepted',
-        message: '{accepter_name} accepted your friend request',
+        message: 'Your friend request was accepted',
         icon: 'user-check',
         action: 'View profile'
       },
       outfit_shared: {
         title: 'Outfit Shared',
-        message: '{sharer_name} shared an outfit with you',
+        message: 'Someone shared an outfit with you',
         icon: 'share',
         action: 'View outfit'
       },
       friend_outfit_suggestion: {
         title: 'Outfit Suggestion',
-        message: '{suggester_name} created an outfit suggestion using your items',
+        message: 'Someone created an outfit suggestion using your items',
         icon: 'sparkles',
         action: 'View suggestion'
       },
       outfit_like: {
         title: 'Outfit Liked',
-        message: '{liker_name} liked your outfit',
+        message: 'Someone liked your outfit',
         icon: 'heart',
         action: 'View outfit'
       },
       item_like: {
         title: 'Item Liked',
-        message: '{liker_name} liked your closet item',
+        message: 'Someone liked your closet item',
         icon: 'heart',
         action: 'View item'
-      },
-      style_suggestion: {
-        title: 'Style Suggestion',
-        message: 'Check out this outfit suggestion based on your wardrobe',
-        icon: 'sparkles',
-        action: 'View suggestion'
-      },
-      weather_alert: {
-        title: 'Weather Alert',
-        message: 'Consider updating your outfit for today\'s weather',
-        icon: 'cloud-rain',
-        action: 'View suggestions'
       }
     }
   }

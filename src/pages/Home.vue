@@ -467,9 +467,7 @@ const getNotificationIcon = (type) => {
     outfit_shared: Share2,
     friend_outfit_suggestion: Sparkles,
     outfit_like: Heart,
-    item_like: Heart,
-    style_suggestion: Sparkles,
-    weather_alert: CloudRain
+    item_like: Heart
   }
   return icons[type] || Bell
 }
@@ -484,9 +482,7 @@ const getNotificationTitle = (notification) => {
     outfit_shared: 'Outfit Shared',
     friend_outfit_suggestion: 'Outfit Suggestion',
     outfit_like: 'Outfit Liked',
-    item_like: 'Item Liked',
-    style_suggestion: 'Style Suggestion',
-    weather_alert: 'Weather Alert'
+    item_like: 'Item Liked'
   }
   return titles[notification.type] || 'Notification'
 }
@@ -507,9 +503,7 @@ const getNotificationMessage = (notification) => {
     outfit_shared: 'Someone shared an outfit with you',
     friend_outfit_suggestion: 'Someone created an outfit suggestion using your items',
     outfit_like: 'Someone liked your outfit',
-    item_like: 'Someone liked your closet item',
-    style_suggestion: 'Check out this outfit suggestion based on your wardrobe',
-    weather_alert: 'Consider updating your outfit for today\'s weather'
+    item_like: 'Someone liked your closet item'
   }
   return messages[notification.type] || 'You have a new notification'
 }
