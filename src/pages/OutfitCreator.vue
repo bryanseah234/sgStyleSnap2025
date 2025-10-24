@@ -707,12 +707,12 @@ const itemsSectionTitle = computed(() => {
 
 const saveButtonLabel = computed(() => {
   if (currentSubRoute.value === 'friend') {
-    return 'Share Outfit'
+    return 'Share'
   }
   if (currentSubRoute.value === 'edit' && currentOutfitId.value) {
     return 'Update Outfit'
   }
-  return 'Save Outfit'
+  return 'Save'
 })
 
 // Watch for changes in items source and reload items

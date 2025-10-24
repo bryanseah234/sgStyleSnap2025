@@ -45,27 +45,24 @@ export class CloudinaryService {
   /**
    * Uploads an image to Cloudinary
    * 
-   * Uploads a file to Cloudinary with optional transformations and metadata.
-   * Returns comprehensive image information including URLs and dimensions.
+   * Uploads a file to Cloudinary with optional metadata. For unsigned uploads,
+   * transformations should be configured in the upload preset rather than
+   * passed as parameters.
    * 
    * @param {File} file - The image file to upload
-   * @param {Object} options - Upload options and transformations
+   * @param {Object} options - Upload options and metadata
    * @param {string} options.folder - Cloudinary folder to store the image
    * @param {string} options.public_id - Custom public ID for the image
-   * @param {number} options.width - Target width for transformation
-   * @param {number} options.height - Target height for transformation
-   * @param {number} options.quality - Image quality (1-100)
-   * @param {string} options.format - Output format (jpg, png, webp, etc.)
+   * @param {number} options.width - Target width (configured in upload preset)
+   * @param {number} options.height - Target height (configured in upload preset)
+   * @param {number} options.quality - Image quality (configured in upload preset)
+   * @param {string} options.format - Output format (configured in upload preset)
    * @returns {Promise<Object>} Upload result with image metadata and URLs
    * @throws {Error} If upload fails or Cloudinary is not configured
    * 
    * @example
    * const result = await cloudinary.uploadImage(file, {
-   *   folder: 'stylesnap/avatars',
-   *   width: 400,
-   *   height: 400,
-   *   quality: 80,
-   *   format: 'webp'
+   *   folder: 'stylesnap/avatars'
    * })
    * console.log('Image URL:', result.secure_url)
    */
@@ -107,16 +104,19 @@ export class CloudinaryService {
       formData.append('public_id', options.public_id)
     }
     
-    // Add image transformations
+    // Add transformation options (only for signed uploads)
+    // For unsigned uploads, transformations should be configured in the upload preset
     const transformations = []
     if (options.width) transformations.push(`w_${options.width}`)
     if (options.height) transformations.push(`h_${options.height}`)
     if (options.quality) transformations.push(`q_${options.quality}`)
     if (options.format) transformations.push(`f_${options.format}`)
     
-    if (transformations.length > 0) {
-      formData.append('transformation', transformations.join(','))
-    }
+    // Note: Transformation parameters are not allowed with unsigned uploads
+    // They should be configured in the Cloudinary upload preset instead
+    // if (transformations.length > 0) {
+    //   formData.append('transformation', transformations.join(','))
+    // }
 
     try {
       console.log('Uploading to Cloudinary:', {
@@ -125,7 +125,8 @@ export class CloudinaryService {
         fileName: file.name,
         fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
         fileType: file.type,
-        folder: options.folder || 'default'
+        folder: options.folder || 'default',
+        note: 'Transformations configured in upload preset (unsigned upload)'
       })
 
       const response = await fetch(

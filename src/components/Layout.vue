@@ -84,12 +84,12 @@
           :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
         >
           <span class="font-medium text-secondary-foreground">
-            {{ theme.value === 'dark' ? 'Light Mode' : 'Dark Mode' }}
+            Toggle Theme
           </span>
-          <!-- Sun icon for dark mode (clicking will switch to light) -->
-          <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
-          <!-- Moon icon for light mode (clicking will switch to dark) -->
-          <Moon v-else class="w-5 h-5" />
+          <!-- Moon icon for dark mode (indicating current dark state) -->
+          <Moon v-if="theme.value === 'dark'" class="w-5 h-5" />
+          <!-- Sun icon for light mode (indicating current light state) -->
+          <Sun v-else class="w-5 h-5" />
         </button>
 
         <button

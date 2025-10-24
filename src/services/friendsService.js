@@ -29,7 +29,6 @@ export class FriendsService {
             username,
             name,
             avatar_url,
-            email,
             created_at
           ),
           receiver:receiver_id (
@@ -37,7 +36,6 @@ export class FriendsService {
             username,
             name,
             avatar_url,
-            email,
             created_at
           )
         `)
