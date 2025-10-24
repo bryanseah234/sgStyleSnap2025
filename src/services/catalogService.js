@@ -167,6 +167,43 @@ export class CatalogService {
   }
 
   /**
+   * Check if a catalog item is already owned by the current user
+   * 
+   * @param {string} catalogItemId - UUID of the catalog item to check
+   * @returns {Promise<boolean>} True if user already owns this item (or similar item)
+   */
+  async isItemOwned(catalogItemId) {
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      console.log('CatalogService: Checking if item is owned:', catalogItemId)
+
+      // Call the Postgres function to check ownership
+      const { data, error } = await supabase
+        .rpc('is_catalog_item_owned', {
+          user_id_param: user.id,
+          catalog_item_id: catalogItemId
+        })
+
+      if (error) {
+        console.error('CatalogService: Error checking item ownership:', error)
+        throw error
+      }
+
+      console.log('CatalogService: Item ownership check result:', data)
+      return data || false
+
+    } catch (error) {
+      console.error('CatalogService: Error in isItemOwned:', error)
+      throw error
+    }
+  }
+
+  /**
    * Get available categories from catalog
    * @returns {Promise<Array>} Array of category objects with counts
    */

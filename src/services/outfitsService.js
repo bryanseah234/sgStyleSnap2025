@@ -67,25 +67,43 @@ export class OutfitsService {
     }
   }
 
-  async getPublicOutfits(ownerId, limit = 20) {
+  async getFriendsOutfits(ownerId, limit = 20) {
     try {
       if (!supabase) return []
       if (!ownerId) return []
 
-      let query = supabase
-        .from('outfits')
-        .select('*')
-        .eq('owner_id', ownerId)
-        .eq('is_public', true)
-        .is('removed_at', null)
-        .order('created_at', { ascending: false })
-        .limit(limit)
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
 
-      const { data, error } = await query
-      if (error) throw error
+      // Use RPC function to get outfits that friends can see
+      // This respects privacy settings and friendship status
+      const { data, error } = await supabase
+        .rpc('get_friend_outfits', {
+          friend_id: ownerId,
+          viewer_id: user.id,
+          p_limit: limit
+        })
+
+      if (error) {
+        console.error('OutfitsService: get_friend_outfits error:', error)
+        // Fallback to basic query if RPC doesn't exist
+        let query = supabase
+          .from('outfits')
+          .select('*')
+          .eq('owner_id', ownerId)
+          .eq('is_public', false) // Friends-level outfits (not public)
+          .is('removed_at', null)
+          .order('created_at', { ascending: false })
+          .limit(limit)
+
+        const { data: fallbackData, error: fallbackError } = await query
+        if (fallbackError) throw fallbackError
+        return fallbackData || []
+      }
+
       return data || []
     } catch (error) {
-      handleSupabaseError(error, 'get public outfits')
+      handleSupabaseError(error, 'get friends outfits')
       return []
     }
   }
@@ -127,6 +145,19 @@ export class OutfitsService {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
+
+      // Check outfit quota before creating
+      const { data: canCreate, error: quotaError } = await supabase
+        .rpc('can_create_outfit', { user_id: user.id })
+
+      if (quotaError) {
+        console.error('OutfitsService: Error checking outfit quota:', quotaError)
+        throw quotaError
+      }
+
+      if (!canCreate) {
+        throw new Error('Outfit quota exceeded. You can create up to 50 outfits. Please delete some outfits to create new ones.')
+      }
 
       const { data: outfit, error: outfitError } = await supabase
         .from('outfits')

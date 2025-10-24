@@ -291,6 +291,19 @@ export class FriendsService {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
+      // Check friends quota before sending request
+      const { data: canAddFriend, error: quotaError } = await supabase
+        .rpc('can_add_friend', { user_id: user.id })
+
+      if (quotaError) {
+        console.error('FriendsService: Error checking friends quota:', quotaError)
+        throw quotaError
+      }
+
+      if (!canAddFriend) {
+        throw new Error('Friends quota exceeded. You can have up to 50 friends. Please remove some friends to add new ones.')
+      }
+
       // Check if friendship already exists (check both possible orderings)
       const { data: existingFriendships1 } = await supabase
         .from('friends')

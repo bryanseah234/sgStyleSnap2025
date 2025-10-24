@@ -164,12 +164,12 @@ async function loadProfile() {
       return
     }
 
-    // Public clothes (privacy public)
-    const itemsRes = await clothesService.getClothes({ owner_id: friend.value.id, privacy: 'public', limit: 40 })
+    // Friends clothes (privacy friends)
+    const itemsRes = await clothesService.getFriendCloset(friend.value.id)
     publicItems.value = itemsRes?.data || []
 
-    // Public outfits
-    publicOutfits.value = await outfitsService.getPublicOutfits(friend.value.id)
+    // Friends outfits
+    publicOutfits.value = await outfitsService.getFriendsOutfits(friend.value.id)
   } catch (e) {
     errorMessage.value = e?.message || 'Failed to load friend profile'
   } finally {

@@ -285,6 +285,15 @@ const handleAddToCloset = async (item) => {
 
   addingItemId.value = item.id
   try {
+    // First check if item is already owned (additional safety check)
+    const isOwned = await catalogService.isItemOwned(item.id)
+    if (isOwned) {
+      showError('This item is already in your closet. Please refresh the catalog to see updated items.')
+      // Refresh catalog to remove the owned item
+      await loadCatalogItems()
+      return
+    }
+
     const newItemId = await catalogService.addToCloset(item.id, 'friends')
     
     // Mark item as added
@@ -299,7 +308,15 @@ const handleAddToCloset = async (item) => {
     console.log('CatalogueBrowser: Successfully added item to closet. New item ID:', newItemId)
   } catch (error) {
     console.error('CatalogueBrowser: Error adding to closet:', error)
-    showError(error.message || 'Failed to add item to closet')
+    
+    // Handle specific error cases
+    if (error.message?.includes('already in closet')) {
+      showError('This item is already in your closet. Please refresh the catalog to see updated items.')
+      // Refresh catalog to remove the owned item
+      await loadCatalogItems()
+    } else {
+      showError(error.message || 'Failed to add item to closet')
+    }
   } finally {
     addingItemId.value = null
   }

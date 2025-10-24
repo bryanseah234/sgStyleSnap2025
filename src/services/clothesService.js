@@ -243,6 +243,19 @@ export class ClothesService {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
+      // Check item upload quota before adding
+      const { data: canUpload, error: quotaError } = await supabase
+        .rpc('can_upload_item', { user_id: user.id })
+
+      if (quotaError) {
+        console.error('ClothesService: Error checking item quota:', quotaError)
+        throw quotaError
+      }
+
+      if (!canUpload) {
+        throw new Error('Item upload quota exceeded. You can upload up to 50 items. Please delete some items to upload new ones.')
+      }
+
       // Upload image if provided
       let imageData = null
       if (clothesData.image_file) {

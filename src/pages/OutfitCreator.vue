@@ -855,7 +855,7 @@ const loadExistingOutfit = async (outfitId) => {
       canvasItems.value = outfit.outfit_items.map(outfitItem => ({
         ...outfitItem.clothing_item,
         originalId: outfitItem.clothing_item.id, // Store original ID
-        id: `${outfitItem.clothing_item.id}-${Date.now()}-${Math.random()}`,
+        id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
         x: outfitItem.x_position || 100,
         y: outfitItem.y_position || 100,
         scale: outfitItem.scale || 1,
@@ -955,7 +955,8 @@ const generateAISuggestion = async () => {
     // Place selected items on canvas
     canvasItems.value = selectedItems.map((selected, index) => ({
       ...selected.item,
-      id: `${selected.item.id}-${Date.now()}-${index}`,
+      originalId: selected.item.id, // Store original clothing item ID
+      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
       x: 150 + (index * 20), // Slightly offset each item
       y: selected.y,
       scale: 1,
@@ -981,7 +982,7 @@ const addItemToCanvas = (item) => {
   const newItem = {
     ...item,
     originalId: item.id, // Store original clothing item ID
-    id: `${item.id}-${Date.now()}`, // Unique canvas ID
+    id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
     x: 50 + (canvasItems.value.length * 20),
     y: 50 + (canvasItems.value.length * 20),
     z_index: canvasItems.value.length,
@@ -1014,7 +1015,8 @@ const handleDrop = (event) => {
     
     const newItem = {
       ...item,
-      id: `${item.id}-${Date.now()}`,
+      originalId: item.id, // Store original clothing item ID
+      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
       x: Math.max(0, Math.min(x, rect.width - itemSize)),
       y: Math.max(0, Math.min(y, rect.height - itemSize)),
       z_index: canvasItems.value.length,
