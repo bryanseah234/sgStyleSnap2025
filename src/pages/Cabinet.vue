@@ -213,11 +213,27 @@
         <h3 class="text-xl font-semibold mb-2 text-foreground">
           {{ searchTerm ? 'No items found matching your search.' : 'No items found' }}
         </h3>
-        <p :class="`text-lg ${
+        <p :class="`text-lg mb-4 ${
           theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">
           {{ searchTerm ? 'Try adjusting your search terms.' : 'Start building your wardrobe by adding your first item!' }}
         </p>
+        
+        <!-- Add Item Button (only show when not searching and user is authenticated) -->
+        <div v-if="!searchTerm && authStore.isAuthenticated && currentUser?.id">
+          <button
+            @click="$router.push('/closet/add/manual')"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+              theme.value === 'dark'
+                ? 'bg-white text-black hover:bg-zinc-200'
+                : 'bg-black text-white hover:bg-zinc-800'
+            }`"
+          >
+            <Plus class="w-5 h-5" />
+            Add Item
+          </button>
+        </div>
+        
         <div v-if="!authStore.isAuthenticated" :class="`mt-4 p-4 rounded-lg ${
           theme.value === 'dark' 
             ? 'bg-yellow-900/20 border border-yellow-800 text-yellow-300' 

@@ -37,6 +37,12 @@ if (isSupabaseConfigured) {
           localStorage.removeItem(key)
         }
       }
+    },
+    global: {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
     }
   })
 } else {
@@ -137,8 +143,16 @@ export async function getCurrentUserProfile() {
     .from('users')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .maybeSingle() // Use maybeSingle() to handle empty results gracefully
   
-  if (error) handleSupabaseError(error, 'get user profile')
+  if (error) {
+    // Handle 406 errors gracefully
+    if (error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
+      console.warn('⚠️ User profile not found (406 error), this may indicate the profile needs to be created')
+      return null
+    }
+    handleSupabaseError(error, 'get user profile')
+  }
+  
   return data
 }

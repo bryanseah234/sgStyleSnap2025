@@ -444,16 +444,22 @@ export class AuthService {
         .from('users')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle() // Use maybeSingle() instead of single() to handle empty results gracefully
 
       if (error) {
         console.log('🔧 AuthService: Database query error:', error)
-        // If user profile doesn't exist, create it
-        if (error.code === 'PGRST116') {
+        // Handle specific error cases
+        if (error.code === 'PGRST116' || error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
           console.log('🔧 AuthService: User profile not found, creating new profile')
           return await this.createUserProfile(user)
         }
         throw error
+      }
+
+      // If no data returned (profile doesn't exist), create it
+      if (!data) {
+        console.log('🔧 AuthService: User profile not found, creating new profile')
+        return await this.createUserProfile(user)
       }
 
       console.log('🔧 AuthService: Profile fetched successfully:', data)
@@ -463,6 +469,16 @@ export class AuthService {
       return data
     } catch (error) {
       console.error('❌ AuthService: Error in getCurrentProfile:', error)
+      // If it's a 406 error or profile not found, try to create the profile
+      if (error.message?.includes('406') || error.message?.includes('Not Acceptable') || error.message?.includes('No data found')) {
+        console.log('🔧 AuthService: Handling 406 error by creating user profile')
+        try {
+          return await this.createUserProfile(user)
+        } catch (createError) {
+          console.error('❌ AuthService: Failed to create user profile:', createError)
+          throw createError
+        }
+      }
       handleSupabaseError(error, 'get user profile')
     }
   }
@@ -503,19 +519,27 @@ export class AuthService {
             .from('users')
             .select('*')
             .eq('id', authUser.id)
-            .single()
+            .maybeSingle() // Use maybeSingle() to handle empty results gracefully
 
-          if (error && error.code === 'PGRST116') {
+          if (error) {
+            console.error('❌ AuthService: Error checking for profile:', error)
+            // Handle 406 errors gracefully
+            if (error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
+              console.log(`🔧 AuthService: 406 error on attempt ${attempt}, treating as profile not found`)
+              const delay = baseDelay * Math.pow(2, attempt - 1) // Exponential backoff
+              console.log(`🔧 AuthService: Profile not found yet, waiting ${delay}ms before retry...`)
+              await new Promise(resolve => setTimeout(resolve, delay))
+              continue
+            }
+            throw error
+          }
+
+          if (!data) {
             // Profile not found yet, wait and retry
             const delay = baseDelay * Math.pow(2, attempt - 1) // Exponential backoff
             console.log(`🔧 AuthService: Profile not found yet, waiting ${delay}ms before retry...`)
             await new Promise(resolve => setTimeout(resolve, delay))
             continue
-          }
-
-          if (error) {
-            console.error('❌ AuthService: Error checking for profile:', error)
-            throw error
           }
 
           if (data) {
@@ -536,11 +560,78 @@ export class AuthService {
       }
 
       // If we get here, profile was not created within timeout
-      throw new Error('Profile was not created by Edge Function within expected timeframe')
+      // Try to create the profile manually as a fallback
+      console.log('⚠️ AuthService: Edge Function did not create profile within timeout, attempting manual creation...')
+      try {
+        return await this.createUserProfileManually(authUser)
+      } catch (manualError) {
+        console.error('❌ AuthService: Manual profile creation also failed:', manualError)
+        throw new Error('Profile was not created by Edge Function within expected timeframe and manual creation failed')
+      }
       
     } catch (error) {
       console.error('❌ AuthService: Error waiting for profile creation:', error)
       handleSupabaseError(error, 'wait for user profile creation')
+    }
+  }
+
+  /**
+   * Creates a user profile manually as a fallback when Edge Function fails
+   * 
+   * This method creates a user profile directly in the database when the
+   * Edge Function is not working or has failed. It extracts data from the
+   * auth user object and creates a basic profile.
+   * 
+   * @param {Object} authUser - User object from Supabase Auth
+   * @returns {Promise<Object>} Created user profile
+   * @throws {Error} If profile creation fails
+   */
+  async createUserProfileManually(authUser) {
+    if (!isSupabaseConfigured || !supabase) {
+      console.warn('⚠️ AuthService: Supabase not configured, cannot create user profile manually')
+      return null
+    }
+
+    try {
+      console.log('🔧 AuthService: ========== Manual Profile Creation ==========')
+      console.log('🔧 AuthService: Auth user ID:', authUser.id)
+      console.log('🔧 AuthService: Auth user email:', authUser.email)
+      
+      // Extract user data from auth user
+      const userData = {
+        id: authUser.id,
+        email: authUser.email,
+        username: authUser.email ? authUser.email.split('@')[0] : `user_${authUser.id.slice(0, 8)}`,
+        name: authUser.user_metadata?.name || authUser.user_metadata?.full_name || 'User',
+        avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+        google_id: authUser.user_metadata?.sub || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      console.log('🔧 AuthService: Creating profile with data:', userData)
+
+      // Insert the user profile
+      const { data, error } = await supabase
+        .from('users')
+        .insert([userData])
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ AuthService: Error creating profile manually:', error)
+        throw error
+      }
+
+      console.log('✅ AuthService: Profile created manually successfully!')
+      console.log('✅ AuthService: Created profile data:', data)
+      
+      this.currentProfile = data
+      return data
+      
+    } catch (error) {
+      console.error('❌ AuthService: Error in manual profile creation:', error)
+      handleSupabaseError(error, 'create user profile manually')
     }
   }
 

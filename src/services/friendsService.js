@@ -329,17 +329,12 @@ export class FriendsService {
         }
       }
 
-      // Create friend request - ensure requester_id < receiver_id for RLS policy
-      // The RLS policy requires requester_id < receiver_id, so we need to determine
-      // which user should be the requester based on their ID values
-      const requesterId = user.id < userId ? user.id : userId
-      const receiverId = user.id < userId ? userId : user.id
-      
+      // Create friend request - the authenticated user is always the requester
       const { data, error } = await supabase
         .from('friends')
         .insert({
-          requester_id: requesterId,
-          receiver_id: receiverId,
+          requester_id: user.id,
+          receiver_id: userId,
           status: 'pending'
         })
         .select()

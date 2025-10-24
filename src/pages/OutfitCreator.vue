@@ -224,11 +224,24 @@
           }`">
             No friends yet
           </p>
-          <p :class="`text-sm ${
+          <p :class="`text-sm mb-4 ${
             theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
           }`">
             Add friends to create outfit suggestions for them
           </p>
+          
+          <!-- Add Friend Button -->
+          <button
+            @click="showAddFriendModal = true"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+              theme.value === 'dark'
+                ? 'bg-white text-black hover:bg-zinc-200'
+                : 'bg-black text-white hover:bg-zinc-800'
+            }`"
+          >
+            <Plus class="w-5 h-5" />
+            Add Friend
+          </button>
         </div>
       </div>
 
@@ -561,6 +574,13 @@
         </div>
       </div>
     </div>
+    
+    <!-- Add Friend Dialog -->
+    <AddFriendDialog 
+      :isOpen="showAddFriendModal" 
+      @close="showAddFriendModal = false"
+      @friendRequestSent="handleFriendRequestSent"
+    />
   </div>
 </template>
 
@@ -586,6 +606,7 @@ import {
   Plus,
   Users
 } from 'lucide-vue-next'
+import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
 
 const { theme } = useTheme()
 const { showError, showSuccess, showWarning, showInfo } = usePopup()
@@ -636,6 +657,7 @@ const canvasContainer = ref(null)
 const friendProfile = ref(null)
 const friendUsername = computed(() => route.params.username)
 const friendsList = ref([]) // List of friends for selection
+const showAddFriendModal = ref(false) // Modal state for adding friends
 
 // State for edit mode
 const currentOutfitId = ref(null)
@@ -771,6 +793,14 @@ const selectFriend = (friend) => {
   console.log('OutfitCreator: Friend selected:', friend.username)
   // Navigate to the friend's outfit creator page
   router.push(`/outfits/add/friend/${friend.username}`)
+}
+
+const handleFriendRequestSent = async () => {
+  console.log('OutfitCreator: Friend request sent, reloading friends list...')
+  showAddFriendModal.value = false
+  // Reload the friends list to show the new friend request
+  await loadFriendsList()
+  showSuccess('Friend request sent successfully!')
 }
 
 const loadWardrobeItems = async () => {
