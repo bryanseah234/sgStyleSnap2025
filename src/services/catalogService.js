@@ -281,14 +281,14 @@ export class CatalogService {
     try {
       const { data, error } = await supabase
         .from('catalog_items')
-        .select('color')
+        .select('primary_color')
         .eq('is_active', true)
-        .not('color', 'is', null)
+        .not('primary_color', 'is', null)
 
       if (error) throw error
 
       // Get unique colors
-      const uniqueColors = [...new Set(data.map(item => item.color).filter(Boolean))]
+      const uniqueColors = [...new Set(data.map(item => item.primary_color).filter(Boolean))]
       return uniqueColors.sort()
 
     } catch (error) {

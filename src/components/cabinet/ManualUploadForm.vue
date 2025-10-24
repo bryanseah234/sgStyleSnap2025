@@ -117,9 +117,8 @@
             }`">
               Color
             </label>
-            <input
+            <select
               v-model="formData.color"
-              placeholder="e.g., Black"
               :class="`w-full h-12 px-4 rounded-xl transition-colors ${
                 theme.value === 'dark'
                   ? 'bg-zinc-800 border-zinc-700 text-white border'
@@ -127,7 +126,27 @@
               } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
               }`"
-            />
+            >
+              <option value="">Select color (optional)</option>
+              <option value="black">Black</option>
+              <option value="white">White</option>
+              <option value="gray">Gray</option>
+              <option value="beige">Beige</option>
+              <option value="brown">Brown</option>
+              <option value="red">Red</option>
+              <option value="blue">Blue</option>
+              <option value="yellow">Yellow</option>
+              <option value="green">Green</option>
+              <option value="orange">Orange</option>
+              <option value="purple">Purple</option>
+              <option value="pink">Pink</option>
+              <option value="navy">Navy</option>
+              <option value="teal">Teal</option>
+              <option value="maroon">Maroon</option>
+              <option value="olive">Olive</option>
+              <option value="gold">Gold</option>
+              <option value="silver">Silver</option>
+            </select>
           </div>
 
           <div>
