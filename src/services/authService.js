@@ -468,65 +468,79 @@ export class AuthService {
   }
 
   /**
-   * Creates a new user profile from authentication data
+   * Waits for Edge Function to create user profile
    * 
-   * Automatically creates a user profile in the database when
-   * a new user signs in for the first time.
+   * With the new Edge Function architecture, user profiles are automatically
+   * created by the sync-auth-users-realtime Edge Function. This method
+   * waits for the profile to be created and polls the database.
    * 
    * @param {Object} authUser - User object from Supabase Auth
    * @returns {Promise<Object>} Created user profile
-   * @throws {Error} If profile creation fails
+   * @throws {Error} If profile creation fails or times out
    */
   async createUserProfile(authUser) {
     if (!isSupabaseConfigured || !supabase) {
-      console.warn('⚠️ AuthService: Supabase not configured, cannot create user profile')
+      console.warn('⚠️ AuthService: Supabase not configured, cannot wait for user profile')
       return null
     }
 
     try {
-      console.log('🔧 AuthService: ========== Creating User Profile ==========')
+      console.log('🔧 AuthService: ========== Waiting for Edge Function to Create Profile ==========')
       console.log('🔧 AuthService: Auth user ID:', authUser.id)
       console.log('🔧 AuthService: Auth user email:', authUser.email)
-      console.log('🔧 AuthService: Auth user full metadata:', authUser)
-      console.log('🔧 AuthService: User metadata:', authUser.user_metadata)
-      console.log('🔧 AuthService: App metadata:', authUser.app_metadata)
+      console.log('🔧 AuthService: Edge Function sync-auth-users-realtime should create profile automatically')
       
-      const profileData = {
-        id: authUser.id,
-        email: authUser.email,
-        username: authUser.email?.split('@')[0] || 'user',
-        name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-        avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || '/avatars/default-1.png',
-        google_id: authUser.user_metadata?.provider_id || authUser.user_metadata?.sub
+      // Wait for Edge Function to create the profile
+      // Poll the database for the profile with exponential backoff
+      const maxAttempts = 10
+      const baseDelay = 1000 // 1 second
+      
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`🔧 AuthService: Checking for profile creation (attempt ${attempt}/${maxAttempts})`)
+        
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', authUser.id)
+            .single()
+
+          if (error && error.code === 'PGRST116') {
+            // Profile not found yet, wait and retry
+            const delay = baseDelay * Math.pow(2, attempt - 1) // Exponential backoff
+            console.log(`🔧 AuthService: Profile not found yet, waiting ${delay}ms before retry...`)
+            await new Promise(resolve => setTimeout(resolve, delay))
+            continue
+          }
+
+          if (error) {
+            console.error('❌ AuthService: Error checking for profile:', error)
+            throw error
+          }
+
+          if (data) {
+            console.log('✅ AuthService: Profile created by Edge Function successfully!')
+            console.log('✅ AuthService: Created profile data:', data)
+            console.log('✅ AuthService: Avatar URL in database:', data.avatar_url)
+            this.currentProfile = data
+            return data
+          }
+        } catch (checkError) {
+          if (attempt === maxAttempts) {
+            throw checkError
+          }
+          console.warn(`⚠️ AuthService: Profile check failed (attempt ${attempt}):`, checkError.message)
+          const delay = baseDelay * Math.pow(2, attempt - 1)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
       }
+
+      // If we get here, profile was not created within timeout
+      throw new Error('Profile was not created by Edge Function within expected timeframe')
       
-      console.log('🔧 AuthService: Profile data to insert:', profileData)
-
-      const { data, error } = await supabase
-        .from('users')
-        .insert(profileData)
-        .select()
-        .single()
-
-      if (error) {
-        console.error('❌ AuthService: Error inserting user profile:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        })
-        throw error
-      }
-
-      console.log('✅ AuthService: Profile created successfully!')
-      console.log('✅ AuthService: Created profile data:', data)
-      console.log('✅ AuthService: Avatar URL in database:', data.avatar_url)
-      
-      this.currentProfile = data
-      return data
     } catch (error) {
-      console.error('❌ AuthService: Fatal error creating user profile:', error)
-      handleSupabaseError(error, 'create user profile')
+      console.error('❌ AuthService: Error waiting for profile creation:', error)
+      handleSupabaseError(error, 'wait for user profile creation')
     }
   }
 

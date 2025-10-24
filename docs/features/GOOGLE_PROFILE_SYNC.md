@@ -5,8 +5,8 @@ This feature automatically synchronizes user profile data with their Google acco
 ## 🚀 Features
 
 ### Automatic Synchronization
-- **On Login**: Profile is automatically synced when users sign in
-- **Database Trigger**: Updates profile when Google data changes in auth.users
+- **On Login**: Profile is automatically synced when users sign in via Edge Function
+- **Edge Function**: `sync-auth-users-realtime` handles real-time user synchronization
 - **Manual Sync**: Users can manually trigger sync from the profile page
 
 ### Comprehensive Field Sync
@@ -41,16 +41,17 @@ Manually sync a specific user's profile with comprehensive Google data.
 #### `sync_all_user_profiles()`
 Sync all user profiles with their current Google data.
 
-### Database Trigger
+### Edge Function Integration
 
-```sql
-CREATE TRIGGER sync_google_profile_photo
-    AFTER UPDATE ON auth.users
-    FOR EACH ROW
-    EXECUTE FUNCTION sync_google_profile_photo();
+**Note**: As of Migration 041, database triggers have been replaced with Edge Functions for better scalability and error handling.
+
+```typescript
+// Edge Function: sync-auth-users-realtime
+// Handles real-time user synchronization when auth.users changes
+// Provides better error handling and logging than database triggers
 ```
 
-This trigger automatically updates the public.users table whenever Google profile data changes in auth.users.
+The Edge Function automatically updates the public.users table whenever Google profile data changes in auth.users.
 
 ### Frontend Integration
 
@@ -129,10 +130,12 @@ node scripts/test-profile-sync.js
 ### Data Flow
 
 ```
-Google OAuth → auth.users → Database Trigger → public.users → Frontend Cache
+Google OAuth → auth.users → Edge Function → public.users → Frontend Cache
      ↓
 Profile Page UI ← AuthService ← Database Functions ← RPC Calls
 ```
+
+**Architecture Change**: Database triggers have been replaced with Edge Functions for better scalability and error handling.
 
 ## 🛡️ Security
 
@@ -153,6 +156,7 @@ Profile Page UI ← AuthService ← Database Functions ← RPC Calls
 #### "Function does not exist"
 - Run the migration: `node scripts/run-migrations.js`
 - Check that migration 024 was executed successfully
+- Verify Edge Function `sync-auth-users-realtime` is deployed and active
 
 #### "Permission denied"
 - Ensure RLS policies are properly configured
@@ -243,9 +247,15 @@ When contributing to this feature:
 
 ## 📝 Changelog
 
+### v2.0.0 (Edge Function Architecture)
+- ✅ Edge Function-based user synchronization (Migration 041)
+- ✅ Improved error handling and logging
+- ✅ Better scalability for concurrent user registrations
+- ✅ Real-time synchronization via Supabase Edge Functions
+
 ### v1.0.0 (Initial Release)
 - ✅ Automatic profile sync on authentication
 - ✅ Manual sync from profile page
-- ✅ Database triggers for real-time updates
+- ✅ Database triggers for real-time updates (deprecated)
 - ✅ Comprehensive error handling
 - ✅ User-friendly UI feedback

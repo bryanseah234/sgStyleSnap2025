@@ -29,10 +29,11 @@ export class EdgeFunctionHealthService {
       }
 
       // Make a health check request to the Edge Function
-      const response = await fetch(`${this.functionUrl}`, {
+      const response = await fetch(`${this.functionUrl}/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await this.getSupabaseToken()}`
         }
       })
 
@@ -59,6 +60,28 @@ export class EdgeFunctionHealthService {
         error: error.message,
         timestamp: new Date().toISOString()
       }
+    }
+  }
+
+  /**
+   * Get Supabase access token for Edge Function authentication
+   * @returns {Promise<string>} Access token
+   */
+  async getSupabaseToken() {
+    try {
+      if (!supabase) {
+        throw new Error('Supabase not configured')
+      }
+
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('No valid session found')
+      }
+
+      return session.access_token
+    } catch (error) {
+      console.warn('⚠️ EdgeFunctionHealth: Could not get Supabase token:', error.message)
+      return null
     }
   }
 
@@ -133,6 +156,84 @@ export class EdgeFunctionHealthService {
       return {
         success: false,
         userExists: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+
+  /**
+   * Check if Edge Function is properly configured and deployed
+   * @returns {Promise<Object>} Deployment status
+   */
+  async checkDeploymentStatus() {
+    try {
+      console.log('🚀 EdgeFunctionHealth: Checking deployment status...')
+      
+      if (!this.functionUrl) {
+        throw new Error('Edge Function URL not configured')
+      }
+
+      // Check if the Edge Function endpoint is accessible
+      const response = await fetch(`${this.functionUrl}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      const isDeployed = response.ok
+      
+      return {
+        success: true,
+        deployed: isDeployed,
+        status: isDeployed ? 'Active' : 'Inactive',
+        url: this.functionUrl,
+        timestamp: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('❌ EdgeFunctionHealth: Deployment check failed:', error)
+      
+      return {
+        success: false,
+        deployed: false,
+        status: 'Error',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+
+  /**
+   * Monitor user sync performance
+   * @returns {Promise<Object>} Sync performance metrics
+   */
+  async getSyncPerformanceMetrics() {
+    try {
+      console.log('📈 EdgeFunctionHealth: Getting sync performance metrics...')
+      
+      // This would typically query metrics from a monitoring system
+      // For now, we'll return basic information
+      const deploymentStatus = await this.checkDeploymentStatus()
+      const healthStatus = await this.checkHealth()
+      
+      return {
+        success: true,
+        metrics: {
+          functionDeployed: deploymentStatus.deployed,
+          functionHealthy: healthStatus.healthy,
+          lastHealthCheck: healthStatus.timestamp,
+          responseTime: 'Unknown', // Would need metrics endpoint
+          syncSuccessRate: 'Unknown', // Would need metrics endpoint
+          totalSyncs: 'Unknown' // Would need metrics endpoint
+        },
+        timestamp: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('❌ EdgeFunctionHealth: Failed to get performance metrics:', error)
+      
+      return {
+        success: false,
         error: error.message,
         timestamp: new Date().toISOString()
       }

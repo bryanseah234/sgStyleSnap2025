@@ -32,11 +32,29 @@ Migrations must be executed in numerical order:
 19. `018_notification_cleanup_system.sql` - Notification cleanup
 20. `019_fix_notification_function_types.sql` - Fix notification functions
 
-### New Features (020+)
+### New Features (020-037)
 21. `020_add_outfits_table.sql` - Add outfits table and relationships
 22. `021_seed_data.sql` - Seed data for categories, colors, styles, brands
 23. `022_disable_auto_contribution.sql` - Disable auto-contribution (utility)
 24. `023_clear_catalog_data.sql` - Clear catalog data (utility)
+25. `024_google_profile_sync.sql` - Enhanced Google profile synchronization
+26. `025_fix_auth_user_sync.sql` - Fix authentication user sync issues
+27. `026_complete_auth_sync.sql` - Complete authentication sync system
+28. `027_fix_catalog_exclusion.sql` - Fix catalog exclusion functionality
+29. `028_implement_soft_caps.sql` - Implement soft caps for user quotas
+30. `029_add_get_friend_outfits.sql` - Add friend outfit retrieval functions
+31. `030_fix_friends_rls_final.sql` - Final friends table RLS fixes
+32. `031_diagnose_user_creation_issue.sql` - Diagnose user creation problems
+33. `032_comprehensive_user_creation_fix.sql` - Comprehensive user creation fixes
+34. `033_comprehensive_friends_fix.sql` - Comprehensive friends table fixes
+35. `034_fix_users_rls_for_friends.sql` - Fix users table RLS for friends
+36. `035_cleanup_old_user_sync_triggers.sql` - Clean up old user sync triggers
+
+### Architecture Transition (038-041)
+37. `038_comprehensive_user_creation_fix.sql` - Comprehensive user creation fixes
+38. `039_comprehensive_friends_fix.sql` - Comprehensive friends table fixes  
+39. `040_fix_users_rls_for_friends.sql` - Fix users table RLS for friends
+40. `041_cleanup_old_user_sync_triggers.sql` - **CLEANUP: Remove old database triggers**
 
 ## 🆕 Migration 011: Catalog Enhancements
 
@@ -106,6 +124,22 @@ psql $DATABASE_URL -f database/migrations/020_add_outfits_table.sql
 psql $DATABASE_URL -f database/migrations/021_seed_data.sql
 psql $DATABASE_URL -f database/migrations/022_disable_auto_contribution.sql
 psql $DATABASE_URL -f database/migrations/023_clear_catalog_data.sql
+psql $DATABASE_URL -f database/migrations/024_google_profile_sync.sql
+psql $DATABASE_URL -f database/migrations/025_fix_auth_user_sync.sql
+psql $DATABASE_URL -f database/migrations/026_complete_auth_sync.sql
+psql $DATABASE_URL -f database/migrations/027_fix_catalog_exclusion.sql
+psql $DATABASE_URL -f database/migrations/028_implement_soft_caps.sql
+psql $DATABASE_URL -f database/migrations/029_add_get_friend_outfits.sql
+psql $DATABASE_URL -f database/migrations/030_fix_friends_rls_final.sql
+psql $DATABASE_URL -f database/migrations/031_diagnose_user_creation_issue.sql
+psql $DATABASE_URL -f database/migrations/032_comprehensive_user_creation_fix.sql
+psql $DATABASE_URL -f database/migrations/033_comprehensive_friends_fix.sql
+psql $DATABASE_URL -f database/migrations/034_fix_users_rls_for_friends.sql
+psql $DATABASE_URL -f database/migrations/035_cleanup_old_user_sync_triggers.sql
+psql $DATABASE_URL -f database/migrations/038_comprehensive_user_creation_fix.sql
+psql $DATABASE_URL -f database/migrations/039_comprehensive_friends_fix.sql
+psql $DATABASE_URL -f database/migrations/040_fix_users_rls_for_friends.sql
+psql $DATABASE_URL -f database/migrations/041_cleanup_old_user_sync_triggers.sql
 ```
 
 ### Via Supabase CLI
@@ -169,6 +203,26 @@ After all migrations, `catalog_items` should have:
 - `search_vector` (tsvector)
 - `created_at` (TIMESTAMP)
 - `updated_at` (TIMESTAMP)
+
+## 🔄 Architecture Transition: Database Triggers → Edge Functions
+
+**Migration 041** marks a significant architectural change in user synchronization:
+
+### Before (Migrations 012-040)
+- User sync handled by database triggers on `auth.users` table
+- Triggers: `sync_auth_user_to_public`, `sync_google_profile_photo`
+- Functions: `sync_auth_user_to_public()`, `sync_google_profile_photo()`
+
+### After (Migration 041+)
+- User sync now handled by Edge Function: `sync-auth-users-realtime`
+- Database triggers removed for better scalability and maintainability
+- Real-time synchronization via Supabase Edge Functions
+
+### Benefits of Edge Function Approach
+- **Better Error Handling**: Edge Functions provide detailed logging and error reporting
+- **Scalability**: Functions can handle high concurrent user registrations
+- **Maintainability**: Easier to debug and update sync logic
+- **Real-time**: Immediate synchronization with better user experience
 
 ## 🔒 Security Notes
 

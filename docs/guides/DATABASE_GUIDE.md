@@ -20,8 +20,9 @@
 
 ## 🚀 Quick Start
 
-**TL;DR:** Run these 10 SQL migrations in order on your Supabase database:
+**TL;DR:** Run these 41 SQL migrations in order on your Supabase database:
 
+### Core Schema (001-010)
 1. `001_initial_schema.sql` - Core tables (users, clothes, friends, suggestions)
 2. `002_rls_policies.sql` - Row Level Security policies
 3. `003_indexes_functions.sql` - Performance indexes & helper functions
@@ -33,7 +34,37 @@
 9. `009_notifications_system.sql` - Notifications, friend suggestions, item likes
 10. `010_push_notifications.sql` - Push notification subscriptions
 
-**Expected Result:** 20+ tables, 50+ RLS policies, 40+ indexes, 20+ functions
+### Extended Features & Fixes (011-041)
+11. `011_catalog_enhancements.sql` - Catalog seeding support
+12. `012_auth_user_sync.sql` - User authentication sync (legacy triggers)
+13. `014_fix_catalog_insert_policy.sql` - Fix catalog insert permissions
+14. `015_dev_user_setup.sql` - Development user setup
+15. `016_disable_auto_contribution.sql` - Disable auto-contribution
+16. `017_fix_catalog_privacy.sql` - Fix catalog privacy settings
+17. `018_notification_cleanup_system.sql` - Notification cleanup
+18. `019_fix_notification_function_types.sql` - Fix notification functions
+19. `020_add_outfits_table.sql` - Add outfits table and relationships
+20. `021_seed_data.sql` - Seed data for categories, colors, styles, brands
+21. `022_disable_auto_contribution.sql` - Disable auto-contribution (utility)
+22. `023_clear_catalog_data.sql` - Clear catalog data (utility)
+23. `024_google_profile_sync.sql` - Enhanced Google profile synchronization
+24. `025_fix_auth_user_sync.sql` - Fix authentication user sync issues
+25. `026_complete_auth_sync.sql` - Complete authentication sync system
+26. `027_fix_catalog_exclusion.sql` - Fix catalog exclusion functionality
+27. `028_implement_soft_caps.sql` - Implement soft caps for user quotas
+28. `029_add_get_friend_outfits.sql` - Add friend outfit retrieval functions
+29. `030_fix_friends_rls_final.sql` - Final friends table RLS fixes
+30. `031_diagnose_user_creation_issue.sql` - Diagnose user creation problems
+31. `032_comprehensive_user_creation_fix.sql` - Comprehensive user creation fixes
+32. `033_comprehensive_friends_fix.sql` - Comprehensive friends table fixes
+33. `034_fix_users_rls_for_friends.sql` - Fix users table RLS for friends
+34. `035_cleanup_old_user_sync_triggers.sql` - Clean up old user sync triggers
+35. `038_comprehensive_user_creation_fix.sql` - Comprehensive user creation fixes
+36. `039_comprehensive_friends_fix.sql` - Comprehensive friends table fixes
+37. `040_fix_users_rls_for_friends.sql` - Fix users table RLS for friends
+38. `041_cleanup_old_user_sync_triggers.sql` - **CLEANUP: Remove old database triggers**
+
+**Expected Result:** 20+ tables, 50+ RLS policies, 40+ indexes, 20+ functions, **Edge Function-based user sync**
 
 ---
 
@@ -80,10 +111,11 @@
 - **Authentication Method:** Google OAuth only (no email/password)
 - **Pages:** `/login` and `/register` (both use same Google OAuth flow)
 - **After Auth:** Redirect to `/closet` (home page)
-- **User Creation:** Auto-created in `users` table on first Google sign-in
+- **User Creation:** Auto-created in `users` table on first Google sign-in via Edge Function
   - `username`: Auto-generated from email (part before @)
   - `email`: From Google OAuth
   - `avatar_url`: Defaults to first default avatar or Google photo
+  - **Sync Method**: Edge Function `sync-auth-users-realtime` (not database triggers)
 
 #### Step 1: Get Google OAuth Credentials
 
@@ -129,7 +161,15 @@
 
 ### Migration Overview
 
-StyleSnap uses **10 SQL migration files** that must be run in order. Each migration is **re-runnable** (safe to execute multiple times) thanks to `DROP IF EXISTS` statements.
+StyleSnap uses **41 SQL migration files** that must be run in order. Each migration is **re-runnable** (safe to execute multiple times) thanks to `DROP IF EXISTS` statements.
+
+### 🔄 Architecture Transition
+
+**Migration 041** marks a significant change in user synchronization architecture:
+
+- **Before (Migrations 012-040)**: Database triggers handled user sync
+- **After (Migration 041+)**: Edge Function `sync-auth-users-realtime` handles user sync
+- **Benefits**: Better error handling, scalability, and maintainability
 
 ### ⚠️ CRITICAL: Run in This Exact Order
 

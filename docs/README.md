@@ -27,7 +27,13 @@ Welcome to the StyleSnap documentation! This directory contains comprehensive do
 - [Friend Notifications](./features/FRIEND_NOTIFICATIONS.md) - Social notification system
 - [Friend Outfit Creation](./features/FRIEND_OUTFIT_CREATION.md) - Collaborative outfit creation
 - [Google Profile Sync](./features/GOOGLE_PROFILE_SYNC.md) - OAuth integration
+- [Edge Function Sync](./features/EDGE_FUNCTION_SYNC.md) - Edge Function-based user synchronization
+- [Frontend Edge Function Integration](./features/FRONTEND_EDGE_FUNCTION_INTEGRATION.md) - Frontend JavaScript integration
 - [Edit Outfit](./features/EDIT_OUTFIT.md) - Outfit editing capabilities
+
+### 🔒 [Security](./security/)
+- [Security Overview](./security/SECURITY_OVERVIEW.md) - Comprehensive security implementation
+- [RLS Policies Reference](./security/RLS_POLICIES_REFERENCE.md) - Complete RLS policy documentation
 
 ### 📖 [Guides](./guides/)
 - [Quick Reference](./guides/QUICK_REFERENCE.md) - Quick start guide

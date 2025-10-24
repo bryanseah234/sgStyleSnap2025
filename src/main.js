@@ -338,10 +338,24 @@ if (document.readyState === 'loading') {
   themeStore.refreshTheme()
 }
 
-const authInitPromise = authStore.initializeAuth().then(() => {
+const authInitPromise = authStore.initializeAuth().then(async () => {
   console.log('✅ Auth store initialized successfully')
+  
   // Load user theme preferences after auth is ready
-  return themeStore.loadUser()
+  await themeStore.loadUser()
+  
+  // Check Edge Function health in background
+  try {
+    const { edgeFunctionSyncService } = await import('@/services/edgeFunctionSyncService')
+    const healthStatus = await edgeFunctionSyncService.checkSyncHealth()
+    if (healthStatus.success && healthStatus.healthy) {
+      console.log('✅ Edge Function sync service is healthy')
+    } else {
+      console.warn('⚠️ Edge Function sync service health check failed:', healthStatus.error)
+    }
+  } catch (error) {
+    console.warn('⚠️ Could not check Edge Function health:', error.message)
+  }
 }).catch(error => {
   console.error('❌ Failed to initialize auth store:', error)
 })

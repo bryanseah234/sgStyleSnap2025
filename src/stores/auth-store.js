@@ -221,17 +221,33 @@ export const useAuthStore = defineStore('auth', {
             // Try to fetch/create profile in the background
             console.log('✅ AuthStore: Attempting to fetch or create user profile...')
             try {
-              // Import authService
+              // Import authService and Edge Function sync service
               const { authService } = await import('@/services/authService')
+              const { edgeFunctionSyncService } = await import('@/services/edgeFunctionSyncService')
               
-              // Try to get the profile, which will create it if it doesn't exist
-              const profile = await authService.getCurrentProfile()
+              // First, try to get the profile
+              let profile = await authService.getCurrentProfile()
               
               if (profile) {
-                console.log('✅ AuthStore: Profile fetched/created successfully:', profile.email)
+                console.log('✅ AuthStore: Profile fetched successfully:', profile.email)
                 this.profile = profile
               } else {
-                console.warn('⚠️ AuthStore: Profile fetch returned null')
+                console.log('🔄 AuthStore: Profile not found, waiting for Edge Function to create it...')
+                
+                // Wait for Edge Function to create the profile
+                const syncStatus = await edgeFunctionSyncService.waitForUserSync(user.id, 15000)
+                
+                if (syncStatus.success && syncStatus.synced) {
+                  console.log('✅ AuthStore: Profile created by Edge Function:', syncStatus.user.email)
+                  this.profile = syncStatus.user
+                } else {
+                  console.warn('⚠️ AuthStore: Edge Function did not create profile within timeout')
+                  // Fallback: try to create profile manually
+                  profile = await authService.createUserProfile(user)
+                  if (profile) {
+                    this.profile = profile
+                  }
+                }
               }
             } catch (profileError) {
               console.error('❌ AuthStore: Error fetching/creating profile:', profileError)

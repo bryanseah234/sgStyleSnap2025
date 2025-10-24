@@ -40,7 +40,8 @@ sequenceDiagram
     Supabase->>Google: Exchange code for tokens
     Google->>Supabase: Return access/refresh tokens
     Supabase->>Database: Create auth.users entry (if new)
-    Database->>Database: Trigger creates public.users entry
+    Database->>Edge Function: Trigger sync-auth-users-realtime
+    Edge Function->>Database: Create public.users entry
     Supabase->>App: Redirect to /closet
     App->>User: Show home page (Closet)
 ```
@@ -48,7 +49,7 @@ sequenceDiagram
 ### Key Points
 1. **Single OAuth method**: Both login and registration use `signInWithGoogle()`
 2. **Auto-registration**: New users are automatically registered on first sign-in
-3. **Profile creation**: Database trigger creates `public.users` entry linked to `auth.users`
+3. **Profile creation**: Edge Function `sync-auth-users-realtime` creates `public.users` entry linked to `auth.users`
 4. **Post-auth redirect**: Users always land on `/closet` after authentication
 
 ---
@@ -475,11 +476,12 @@ See `tests/unit/auth-service.test.js` for comprehensive test suite.
 
 ### Issue: User profile not created
 
-**Cause**: Database trigger not running.
+**Cause**: Edge Function not running or user sync failing.
 
 **Fix**:
-1. Check `sql/001_initial_schema.sql` trigger exists
-2. Manually create entry if needed:
+1. Check Edge Function `sync-auth-users-realtime` is deployed and active
+2. Check Supabase → Logs → Edge Functions for sync activity
+3. Manually create entry if needed:
 ```sql
 INSERT INTO users (id, email, username, name, avatar_url, google_id)
 VALUES (
