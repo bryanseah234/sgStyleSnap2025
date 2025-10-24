@@ -550,8 +550,8 @@ const navigateToCreate = (type) => {
   if (type === 'personal') {
     router.push('/outfits/add/personal')
   } else if (type === 'friend') {
-    // TODO: For now, navigate to a placeholder friend route
-    router.push('/outfits/add/friend/placeholder')
+    // Navigate to friend selection page
+    router.push('/outfits/add/friend')
   } else if (type === 'suggested') {
     router.push('/outfits/add/suggested')
   }

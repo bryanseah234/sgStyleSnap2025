@@ -249,6 +249,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { api } from '@/api/client'
+import { clothesService } from '@/services/clothesService'
 import { formatDate } from '@/utils'
 import { ArrowLeft, User, Shirt, Grid, List } from 'lucide-vue-next'
 
@@ -302,13 +303,19 @@ const loadFriendItems = async () => {
     const friendId = route.query.friendId
     if (!friendId) return
 
-    const itemsData = await api.entities.ClothingItem.filter(
-      { owner_id: friendId },
-      '-created_at'
-    )
-    items.value = itemsData
+    // Use the proper getFriendCloset method that respects privacy settings
+    const result = await clothesService.getFriendCloset(friendId)
+    
+    if (result && result.success) {
+      items.value = result.data || []
+      console.log('FriendCabinet: Loaded friend items:', items.value.length, 'items')
+    } else {
+      console.error('FriendCabinet: Failed to load friend items:', result?.error || 'Unknown error')
+      items.value = []
+    }
   } catch (error) {
     console.error('Error loading friend items:', error)
+    items.value = []
   } finally {
     loading.value = false
   }

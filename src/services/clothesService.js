@@ -134,6 +134,61 @@ export class ClothesService {
     }
   }
 
+  /**
+   * Get friend's closet items using the get_friend_closet function
+   * 
+   * This function respects privacy settings and only returns items
+   * that the friend has marked as 'friends' privacy level.
+   * 
+   * @param {string} friendId - The friend's user ID
+   * @returns {Promise<Object>} Object containing friend's items data
+   * @throws {Error} If database query fails or user not authenticated
+   * 
+   * @example
+   * const result = await clothesService.getFriendCloset('friend-uuid-here')
+   * console.log('Friend items:', result.data)
+   */
+  async getFriendCloset(friendId) {
+    try {
+      console.log('🔧 ClothesService: getFriendCloset called for friend:', friendId)
+      
+      if (!supabase) {
+        console.error('❌ ClothesService: Supabase not configured')
+        return { success: false, error: 'Supabase not configured', data: [] }
+      }
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.log('❌ ClothesService: User not authenticated')
+        throw new Error('Not authenticated')
+      }
+
+      console.log('🔧 ClothesService: User authenticated:', user.email)
+
+      // Use the get_friend_closet function which respects privacy settings
+      const { data, error } = await supabase
+        .rpc('get_friend_closet', {
+          friend_id: friendId,
+          viewer_id: user.id
+        })
+
+      if (error) {
+        console.error('❌ ClothesService: get_friend_closet error:', error)
+        throw error
+      }
+
+      console.log('✅ ClothesService: get_friend_closet successful, returning data:', data?.length || 0, 'items')
+      return {
+        success: true,
+        data: data || [],
+        count: data?.length || 0
+      }
+    } catch (error) {
+      console.error('❌ ClothesService: Error in getFriendCloset:', error)
+      handleSupabaseError(error, 'get friend closet')
+    }
+  }
+
   async getClothesById(id) {
     try {
       const { data, error } = await supabase

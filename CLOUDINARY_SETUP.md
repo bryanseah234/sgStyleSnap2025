@@ -26,8 +26,21 @@ StyleSnap uses Cloudinary for image uploads and management. This guide will help
    - **Folder**: `stylesnap` (optional, for organization)
    - **Access mode**: `Public`
    - **Auto-upload**: `Enabled`
+   - **Eager transformations**: Add transformations here (e.g., `w_800,h_600,c_fill,q_auto,f_auto`)
 5. Click **Save**
 6. Copy the **Preset name** - you'll need it for `VITE_CLOUDINARY_UPLOAD_PRESET`
+
+## Step 3.1: Configure Transformations (Optional)
+
+If you want to automatically resize or optimize images:
+
+1. In your upload preset settings, scroll to **Eager transformations**
+2. Add transformations like:
+   - `w_800,h_600,c_fill,q_auto,f_auto` (resize to 800x600, auto quality/format)
+   - `w_400,h_400,c_fill,q_80,f_webp` (resize to 400x400, 80% quality, WebP format)
+3. Save the preset
+
+**Note**: For unsigned uploads, transformations must be configured in the upload preset, not in the client code.
 
 ## Step 4: Configure Environment Variables
 
