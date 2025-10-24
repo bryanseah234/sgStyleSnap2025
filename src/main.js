@@ -17,6 +17,7 @@ import { useTheme } from './composables/useTheme'
 import { useThemeStore } from './stores/theme-store'
 
 // Import page components
+import Landing from './pages/Landing.vue'
 import Home from './pages/Home.vue'
 import Cabinet from './pages/Cabinet.vue'
 import Outfits from './pages/Outfits.vue'
@@ -39,7 +40,7 @@ import NotFound from './pages/NotFound.vue'
  * @type {Array<Object>} Array of route objects
  */
 const routes = [
-  { path: '/', redirect: '/home' },
+  { path: '/', component: Landing, meta: { requiresAuth: false } },
   { path: '/home', component: Home, meta: { requiresAuth: true } },
   { path: '/closet', component: Cabinet, meta: { requiresAuth: true } },
   { path: '/outfits', component: Outfits, meta: { requiresAuth: true } },
@@ -173,6 +174,19 @@ router.beforeEach(async (to, from, next) => {
         return
       } else {
         console.log('🚪 Router: Not authenticated, allowing access to login page')
+        next()
+        return
+      }
+    }
+    
+    // Handle landing page - redirect authenticated users to home
+    if (to.path === '/') {
+      if (isAuthenticated) {
+        console.log('👤 Router: Already authenticated, redirecting to home from landing page')
+        next('/home')
+        return
+      } else {
+        console.log('🏠 Router: Not authenticated, allowing access to landing page')
         next()
         return
       }
