@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen p-6 md:p-12 bg-background">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
@@ -140,27 +140,27 @@
             <!-- Theme Toggle Button -->
             <button
               @click="handleThemeToggle"
-              :class="`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+              :class="`w-full flex items-center justify-between px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
                 theme.value === 'dark'
                   ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
                   : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
               }`"
               :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
             >
-              <span class="font-medium">
+              <span class="font-medium text-sm md:text-base">
                 {{ theme.value === 'dark' ? 'Light Mode' : 'Dark Mode' }}
               </span>
               <!-- Sun icon for dark mode (clicking will switch to light) -->
-              <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
+              <Sun v-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5" />
               <!-- Moon icon for light mode (clicking will switch to dark) -->
-              <Moon v-else class="w-5 h-5" />
+              <Moon v-else class="w-4 h-4 md:w-5 md:h-5" />
             </button>
 
             <!-- Logout Button -->
             <button
               @click="handleLogout"
               :disabled="loading"
-              :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+              :class="`w-full flex items-center justify-start gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
                 loading
                   ? 'opacity-50 cursor-not-allowed text-muted-foreground'
                   : theme.value === 'dark'
@@ -168,9 +168,9 @@
                     : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700'
               }`"
             >
-              <LogOut v-if="!loading" class="w-5 h-5" />
-              <div v-else class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              <span class="font-medium">{{ loading ? 'Logging out...' : 'Logout' }}</span>
+              <LogOut v-if="!loading" class="w-4 h-4 md:w-5 md:h-5" />
+              <div v-else class="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <span class="font-medium text-sm md:text-base">{{ loading ? 'Logging out...' : 'Logout' }}</span>
             </button>
           </div>
         </div>

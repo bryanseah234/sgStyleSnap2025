@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen p-6 md:p-12 bg-background">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="flex items-start justify-between mb-8">

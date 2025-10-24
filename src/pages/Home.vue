@@ -16,7 +16,7 @@
   @version 1.0.0
 -->
 <template>
-  <div class="min-h-screen p-6 md:p-12 bg-background">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <!-- Debug info -->
     <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
       <p class="text-yellow-800">Debug: No user data available</p>
@@ -39,9 +39,7 @@
       @mouseleave="handleHeroMouseLeave"
     >
       <h1 
-        :class="`text-5xl md:text-7xl font-bold tracking-tight mb-4 liquid-text ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`"
+        class="text-5xl md:text-7xl font-bold tracking-tight mb-4 liquid-text text-foreground"
       >
         Welcome back{{ userName }}
       </h1>
@@ -105,9 +103,7 @@
               <Bell class="w-6 h-6" />
             </div>
             <div>
-              <h2 :class="`text-2xl font-bold ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">
+              <h2 class="text-2xl font-bold text-foreground">
                 Notifications
               </h2>
               <p v-if="unreadCount > 0" :class="`text-sm ${
@@ -159,9 +155,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-start justify-between gap-2">
                   <div class="flex-1 min-w-0">
-                    <h3 :class="`font-semibold text-sm mb-1 ${
-                      theme.value === 'dark' ? 'text-white' : 'text-black'
-                    }`">
+                    <h3 class="font-semibold text-sm mb-1 text-foreground">
                       {{ getNotificationTitle(notification) }}
                     </h3>
                     <p :class="`text-sm ${

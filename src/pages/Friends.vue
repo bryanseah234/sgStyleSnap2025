@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen p-6 md:p-12 bg-background">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="flex items-start justify-between mb-8">
@@ -29,69 +29,82 @@
       </div>
 
       <!-- Tab Navigation -->
-      <div class="flex gap-2 mb-6">
-        <button
-          @click="activeTab = 'friends'"
-          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-            activeTab === 'friends'
-              ? theme.value === 'dark'
-                ? 'bg-white text-black'
-                : 'bg-black text-white'
-              : theme.value === 'dark'
-              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-          }`"
-        >
-          My Friends
-        </button>
-        <button
-          @click="activeTab = 'requests'"
-          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-            activeTab === 'requests'
-              ? theme.value === 'dark'
-                ? 'bg-white text-black'
-                : 'bg-black text-white'
-              : theme.value === 'dark'
-              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-          }`"
-        >
-          <Bell class="w-5 h-5" />
-          Friend Requests
-          <span v-if="friendRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
-            activeTab === 'requests'
-              ? 'bg-black text-white'
-              : theme.value === 'dark'
-              ? 'bg-zinc-600 text-zinc-200'
-              : 'bg-stone-300 text-stone-800'
-          }`">
-            {{ friendRequests.length }}
-          </span>
-        </button>
-        <button
-          @click="activeTab = 'sent'"
-          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-            activeTab === 'sent'
-              ? theme.value === 'dark'
-                ? 'bg-white text-black'
-                : 'bg-black text-white'
-              : theme.value === 'dark'
-              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-          }`"
-        >
-          <UserPlus class="w-5 h-5" />
-          My Requests
-          <span v-if="sentRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
-            activeTab === 'sent'
-              ? 'bg-black text-white'
-              : theme.value === 'dark'
-              ? 'bg-zinc-600 text-zinc-200'
-              : 'bg-stone-300 text-stone-800'
-          }`">
-            {{ sentRequests.length }}
-          </span>
-        </button>
+      <div class="mb-6">
+        <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <button
+            @click="activeTab = 'friends'"
+            :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
+              activeTab === 'friends'
+                ? theme.value === 'dark'
+                  ? 'bg-white text-black'
+                  : 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`"
+          >
+            <Users class="w-4 h-4" />
+            My Friends
+            <span v-if="friends.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
+              activeTab === 'friends'
+                ? 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-600 text-zinc-200'
+                : 'bg-stone-300 text-stone-800'
+            }`">
+              {{ friends.length }}
+            </span>
+          </button>
+          <button
+            @click="activeTab = 'requests'"
+            :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
+              activeTab === 'requests'
+                ? theme.value === 'dark'
+                  ? 'bg-white text-black'
+                  : 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`"
+          >
+            <Bell class="w-4 h-4" />
+            Friend Requests
+            <span v-if="friendRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
+              activeTab === 'requests'
+                ? 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-600 text-zinc-200'
+                : 'bg-stone-300 text-stone-800'
+            }`">
+              {{ friendRequests.length }}
+            </span>
+          </button>
+          <button
+            @click="activeTab = 'sent'"
+            :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
+              activeTab === 'sent'
+                ? theme.value === 'dark'
+                  ? 'bg-white text-black'
+                  : 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`"
+          >
+            <UserPlus class="w-4 h-4" />
+            My Requests
+            <span v-if="sentRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
+              activeTab === 'sent'
+                ? 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-600 text-zinc-200'
+                : 'bg-stone-300 text-stone-800'
+            }`">
+              {{ sentRequests.length }}
+            </span>
+          </button>
+        </div>
       </div>
 
       <!-- Search Bar -->
@@ -170,9 +183,7 @@
 
               <!-- Friend Info -->
               <div class="text-left md:text-center md:mt-4">
-                <h3 :class="`font-bold text-lg mb-0 md:mb-1 ${
-                  theme.value === 'dark' ? 'text-white' : 'text-black'
-                }`">
+                <h3 class="font-bold text-lg mb-0 md:mb-1 text-foreground">
                   {{ friend.name || 'Friend User' }}
                 </h3>
                 <p :class="`text-sm ${
@@ -240,7 +251,7 @@
                 
                 <!-- Request Info -->
                 <div class="text-left">
-                  <h3 :class="`font-medium ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
+                  <h3 class="font-medium text-foreground">
                     {{ request.requester.name }}
                   </h3>
                   <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">

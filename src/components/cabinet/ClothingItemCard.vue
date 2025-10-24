@@ -1,11 +1,5 @@
 <template>
-  <div
-    :class="`group relative aspect-square rounded-3xl overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-2 ${
-      theme.value === 'dark'
-        ? 'bg-zinc-900 border border-zinc-800'
-        : 'bg-white border border-stone-200'
-    }`"
-  >
+  <div class="group relative aspect-square rounded-3xl overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-2 bg-white border border-stone-200 shadow-sm hover:shadow-md">
     <!-- Image -->
     <div class="w-full h-full p-4 flex items-center justify-center">
       <img
@@ -14,27 +8,18 @@
         :alt="item.name"
         class="max-w-full max-h-full object-contain"
       />
-      <div
-        v-else
-        :class="`w-full h-full flex items-center justify-center ${
-          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-        }`"
-      >
-        <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+      <div class="w-full h-full flex items-center justify-center bg-stone-100">
+        <Shirt class="w-12 h-12 text-stone-500" />
       </div>
     </div>
 
     <!-- Overlay -->
-    <div class="absolute inset-0 transition-all duration-300 flex flex-col justify-end p-4 bg-background bg-opacity-0 group-hover:bg-opacity-90">
+    <div class="absolute inset-0 transition-all duration-300 flex flex-col justify-end p-4 bg-white bg-opacity-0 group-hover:bg-opacity-90">
       <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <h3 :class="`font-semibold text-lg mb-1 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h3 class="font-semibold text-lg mb-1 text-black">
           {{ item.name }}
         </h3>
-        <p :class="`text-sm mb-3 ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
+        <p class="text-sm mb-3 text-stone-600">
           {{ item.category }}
           {{ item.brand ? ` • ${item.brand}` : '' }}
         </p>
@@ -45,8 +30,6 @@
             :class="`p-2 rounded-full transition-all duration-200 ${
               item.is_favorite
                 ? 'bg-red-500 text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
                 : 'bg-white text-stone-500 hover:bg-stone-100'
             }`"
           >
@@ -55,11 +38,7 @@
           
           <button
             @click="$emit('delete', item)"
-            :class="`p-2 rounded-full transition-all duration-200 ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-400 hover:bg-red-600 hover:text-white'
-                : 'bg-white text-stone-500 hover:bg-red-500 hover:text-white'
-            }`"
+            class="p-2 rounded-full transition-all duration-200 bg-white text-stone-500 hover:bg-red-500 hover:text-white"
           >
             <Trash2 class="w-4 h-4" />
           </button>

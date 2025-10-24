@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-6 bg-background">
+  <div class="min-h-screen flex items-center justify-center p-4 bg-background max-w-full overflow-x-hidden">
     <div class="text-center">
       <!-- Loading Spinner -->
       <div v-if="loggingOut" class="mb-6">
@@ -16,9 +16,7 @@
       </div>
       
       <!-- Status Message -->
-      <h1 :class="`text-2xl font-bold mb-2 ${
-        theme.value === 'dark' ? 'text-white' : 'text-black'
-      }`">
+      <h1 class="text-2xl font-bold mb-2 text-foreground">
         {{ loggingOut ? 'Logging out...' : 'Logged out successfully' }}
       </h1>
       

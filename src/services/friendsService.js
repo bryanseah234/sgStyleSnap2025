@@ -219,6 +219,71 @@ export class FriendsService {
     }
   }
 
+  async getFriendByUsername(username) {
+    try {
+      console.log('🔧 FriendsService: getFriendByUsername called with username:', username)
+      
+      if (!supabase) {
+        console.error('❌ FriendsService: Supabase not configured')
+        return null
+      }
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.log('❌ FriendsService: User not authenticated')
+        throw new Error('Not authenticated')
+      }
+
+      console.log('🔧 FriendsService: User authenticated:', user.email)
+
+      // First, get the user by username
+      const { data: targetUser, error: userError2 } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .is('removed_at', null)
+        .single()
+
+      if (userError2) {
+        console.error('❌ FriendsService: Error finding user by username:', userError2)
+        return null
+      }
+
+      if (!targetUser) {
+        console.log('❌ FriendsService: User not found with username:', username)
+        return null
+      }
+
+      console.log('🔧 FriendsService: Found target user:', targetUser.username)
+
+      // Check if they are friends
+      const { data: friendship, error: friendshipError } = await supabase
+        .from('friends')
+        .select('*')
+        .or(`and(requester_id.eq.${user.id},receiver_id.eq.${targetUser.id}),and(requester_id.eq.${targetUser.id},receiver_id.eq.${user.id})`)
+        .eq('status', 'accepted')
+        .single()
+
+      if (friendshipError) {
+        console.log('❌ FriendsService: Users are not friends:', friendshipError)
+        return null
+      }
+
+      console.log('✅ FriendsService: Found friendship, returning friend data')
+      return {
+        id: targetUser.id,
+        name: targetUser.name,
+        username: targetUser.username,
+        email: targetUser.email,
+        avatar_url: targetUser.avatar_url,
+        created_at: targetUser.created_at
+      }
+    } catch (error) {
+      console.error('❌ FriendsService: Error in getFriendByUsername:', error)
+      return null
+    }
+  }
+
   async sendFriendRequest(userId) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -249,13 +314,17 @@ export class FriendsService {
         }
       }
 
-      // Create friend request with current user as requester
-      // This satisfies the RLS policy requirement
+      // Create friend request - ensure requester_id < receiver_id for RLS policy
+      // The RLS policy requires requester_id < receiver_id, so we need to determine
+      // which user should be the requester based on their ID values
+      const requesterId = user.id < userId ? user.id : userId
+      const receiverId = user.id < userId ? userId : user.id
+      
       const { data, error } = await supabase
         .from('friends')
         .insert({
-          requester_id: user.id,
-          receiver_id: userId,
+          requester_id: requesterId,
+          receiver_id: receiverId,
           status: 'pending'
         })
         .select()

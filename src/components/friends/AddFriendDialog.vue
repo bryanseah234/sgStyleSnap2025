@@ -10,9 +10,7 @@
       }`"
       @click.stop
     >
-      <h3 :class="`text-xl font-bold mb-4 ${
-        theme.value === 'dark' ? 'text-white' : 'text-black'
-      }`">
+      <h3 class="text-xl font-bold mb-4 text-foreground">
         Add Friend
       </h3>
       
@@ -68,9 +66,7 @@
                 </div>
               </div>
               <div>
-                <p :class="`font-medium ${
-                  theme.value === 'dark' ? 'text-white' : 'text-black'
-                }`">
+                <p class="font-medium text-foreground">
                   {{ user.name || user.username }}
                 </p>
                 <p :class="`text-xs ${

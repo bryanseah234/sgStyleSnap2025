@@ -1,6 +1,6 @@
 <template>
   <!-- Main container with theme-aware background -->
-  <div class="min-h-screen p-6 md:p-12 bg-background">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     
     <!-- Page Header Section -->
     <div class="max-w-6xl mx-auto mb-8">
@@ -126,43 +126,49 @@
       </div>
 
       <!-- Filters (only show for default closet view) -->
-      <div v-if="currentSubRoute === 'default'" class="flex flex-wrap gap-4 mb-6">
-        <button
-          v-for="category in categories"
-          :key="category"
-          @click="activeCategory = category"
-          :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-            activeCategory === category
-              ? theme.value === 'dark'
-                ? 'bg-white text-black'
-                : 'bg-black text-white'
-              : theme.value === 'dark'
-              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-          }`"
-        >
-          {{ getCategoryLabel(category) }}
-        </button>
+      <div v-if="currentSubRoute === 'default'" class="mb-6">
+        <!-- Category Filters -->
+        <div class="flex flex-wrap gap-2 mb-3">
+          <button
+            v-for="category in categories"
+            :key="category"
+            @click="activeCategory = category"
+            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
+              activeCategory === category
+                ? theme.value === 'dark'
+                  ? 'bg-white text-black'
+                  : 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`"
+          >
+            {{ getCategoryLabel(category) }}
+          </button>
+        </div>
         
-        <button
-          @click="showFavoritesOnly = !showFavoritesOnly"
-          :class="`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-            showFavoritesOnly
-              ? theme.value === 'dark'
-                ? 'bg-red-600 text-white'
-                : 'bg-red-500 text-white'
-              : theme.value === 'dark'
-              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-          }`"
-        >
-          <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
-          Favorites
-        </button>
+        <!-- Favorites Button - Full width on mobile -->
+        <div class="w-full">
+          <button
+            @click="showFavoritesOnly = !showFavoritesOnly"
+            :class="`w-full flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
+              showFavoritesOnly
+                ? theme.value === 'dark'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-red-500 text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+            }`"
+          >
+            <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+            Favorites
+          </button>
+        </div>
       </div>
 
-      <!-- Search Bar -->
-      <div class="mb-6">
+      <!-- Search Bar (only show for default closet view) -->
+      <div v-if="currentSubRoute === 'default'" class="mb-6">
         <div class="relative">
           <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
             theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
@@ -184,14 +190,14 @@
 
     <!-- Items Grid (only show for default closet view) -->
     <div v-if="currentSubRoute === 'default'" class="max-w-6xl mx-auto">
-      <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div
-          v-for="i in 8"
-          :key="i"
-          :class="`aspect-square rounded-xl skeleton-shimmer ${
-            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
-          }`"
-        />
+      <!-- Loading state -->
+      <div v-if="loading" class="py-16 text-center">
+        <div :class="`spinner-modern mx-auto mb-6 ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`"></div>
+        <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
+          Loading your closet...
+        </p>
       </div>
 
       <div v-else-if="filteredItems.length === 0" class="text-center py-12">
@@ -200,9 +206,7 @@
         }`">
           <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
         </div>
-        <h3 :class="`text-xl font-semibold mb-2 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h3 class="text-xl font-semibold mb-2 text-foreground">
           {{ searchTerm ? 'No items found matching your search.' : 'No items found' }}
         </h3>
         <p :class="`text-lg ${
@@ -243,11 +247,7 @@
           @mouseenter="handleItemHover($event, index)"
           @mouseleave="handleItemLeave($event, index)"
           @mousemove="handleItemMouseMove($event, index)"
-          :class="`liquid-item-card group cursor-pointer ${
-            theme.value === 'dark'
-              ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
-              : 'bg-white border border-stone-200 hover:border-stone-300'
-          } rounded-xl overflow-hidden`"
+          class="liquid-item-card group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
           :style="{ transitionDelay: `${index * 50}ms` }"
         >
           <div class="aspect-square relative overflow-hidden">
@@ -259,11 +259,9 @@
             />
             <div
               v-else
-              :class="`w-full h-full flex items-center justify-center ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`"
+              class="w-full h-full flex items-center justify-center bg-stone-100"
             >
-              <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+              <Shirt class="w-12 h-12 text-stone-500" />
             </div>
             
             <button
@@ -273,9 +271,7 @@
               :class="`liquid-favorite-btn absolute top-2 right-2 p-2 rounded-full ${
                 item.is_favorite
                   ? 'bg-red-500 text-white'
-                  : theme.value === 'dark'
-                  ? 'bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700/80'
-                  : 'bg-white/80 text-stone-500 hover:bg-stone-100/80'
+                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90'
               }`"
             >
               <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current' : ''}`" />
@@ -283,19 +279,13 @@
           </div>
           
           <div class="p-4">
-            <h3 :class="`liquid-item-title font-semibold mb-1 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h3 class="liquid-item-title font-semibold mb-1 text-black">
               {{ item.name }}
             </h3>
-            <p :class="`liquid-item-category text-sm ${
-              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-            }`">
+            <p class="liquid-item-category text-sm text-stone-600">
               {{ item.brand || 'No brand' }}
             </p>
-            <span :class="`inline-block px-2 py-1 mt-2 text-xs rounded-full ${
-              theme.value === 'dark' ? 'bg-zinc-800 text-zinc-300' : 'bg-stone-100 text-stone-700'
-            }`">
+            <span class="inline-block px-2 py-1 mt-2 text-xs rounded-full bg-stone-100 text-stone-700">
               {{ item.category }}
             </span>
           </div>

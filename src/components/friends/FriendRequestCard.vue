@@ -34,9 +34,7 @@
         
         <!-- User Info -->
         <div>
-          <h3 :class="`font-semibold ${
-            theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`">
+          <h3 class="font-semibold text-foreground">
             {{ request.requester.name || request.requester.username }}
           </h3>
           <p :class="`text-sm ${

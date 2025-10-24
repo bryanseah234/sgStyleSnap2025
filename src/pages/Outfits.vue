@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen p-6 md:p-12 bg-background">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <!-- Header -->
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex items-center justify-between mb-6">
@@ -135,14 +135,14 @@
 
     <!-- Outfits Grid -->
     <div class="max-w-6xl mx-auto">
-      <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-6">
-        <div
-          v-for="i in 6"
-          :key="i"
-          :class="`aspect-square rounded-xl skeleton-shimmer ${
-            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-200'
-          }`"
-        />
+      <!-- Loading state -->
+      <div v-if="loading" class="py-16 text-center">
+        <div :class="`spinner-modern mx-auto mb-6 ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`"></div>
+        <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
+          Loading your outfits...
+        </p>
       </div>
 
       <div v-else-if="filteredOutfits.length === 0" class="text-center py-12">

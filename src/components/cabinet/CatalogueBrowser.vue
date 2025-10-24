@@ -7,9 +7,7 @@
         : 'bg-white border-stone-200'
     }`">
       <div class="flex items-center justify-between mb-4">
-        <h3 :class="`text-lg font-semibold ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h3 class="text-lg font-semibold text-foreground">
           Filter Items
         </h3>
         <button
@@ -162,7 +160,7 @@
 
         <!-- Item Info -->
         <div class="p-3">
-          <h3 :class="['font-semibold', 'text-sm', 'mb-1', 'truncate', theme.value === 'dark' ? 'text-white' : 'text-black']">
+          <h3 class="font-semibold text-sm mb-1 truncate text-foreground">
             {{ item.name }}
           </h3>
           

@@ -19,7 +19,7 @@
 -->
 <template>
   <!-- Main login container with theme toggle -->
-  <div class="min-h-screen flex items-center justify-center p-4 relative">
+  <div class="min-h-screen flex items-center justify-center p-4 relative max-w-full overflow-x-hidden">
     <!-- Theme Toggle (Top Right) - Works without authentication -->
     <div class="absolute top-4 right-4 z-10">
       <div :class="`p-2 rounded-lg backdrop-blur-sm ${
@@ -59,9 +59,7 @@
         
         <!-- Welcome Message -->
         <div class="text-center mb-8">
-          <h2 :class="`text-2xl font-bold mb-2 ${
-            theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`">
+          <h2 class="text-2xl font-bold mb-2 text-foreground">
             Welcome back
           </h2>
           <p :class="`text-lg ${
@@ -75,7 +73,7 @@
         <button
           @click="handleGoogleSignIn"
           :disabled="loading"
-          :class="`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+          :class="`w-full flex items-center justify-center gap-3 px-4 py-3 md:px-6 md:py-4 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
             theme.value === 'dark'
               ? 'bg-white text-black hover:bg-zinc-200'
               : 'bg-black text-white hover:bg-zinc-800'

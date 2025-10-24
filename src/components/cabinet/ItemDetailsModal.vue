@@ -51,9 +51,7 @@
         <div class="liquid-modal-content p-6 space-y-6">
           <!-- Item Name & Category -->
           <div>
-            <h2 :class="`text-2xl font-bold mb-2 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 class="text-2xl font-bold mb-2 text-foreground">
               {{ item?.name || 'Untitled Item' }}
             </h2>
             <span :class="`inline-block px-3 py-1 text-sm rounded-full ${
@@ -71,36 +69,28 @@
               <p :class="`text-sm font-medium ${
                 theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`">Brand</p>
-              <p :class="`text-base ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">{{ item.brand }}</p>
+              <p class="text-base text-foreground">{{ item.brand }}</p>
             </div>
 
             <div v-if="item?.color">
               <p :class="`text-sm font-medium ${
                 theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`">Color</p>
-              <p :class="`text-base ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">{{ item.color }}</p>
+              <p class="text-base text-foreground">{{ item.color }}</p>
             </div>
 
             <div v-if="item?.size">
               <p :class="`text-sm font-medium ${
                 theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`">Size</p>
-              <p :class="`text-base ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">{{ item.size }}</p>
+              <p class="text-base text-foreground">{{ item.size }}</p>
             </div>
 
             <div v-if="item?.season">
               <p :class="`text-sm font-medium ${
                 theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
               }`">Season</p>
-              <p :class="`text-base ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">{{ item.season.charAt(0).toUpperCase() + item.season.slice(1) }}</p>
+              <p class="text-base text-foreground">{{ item.season.charAt(0).toUpperCase() + item.season.slice(1) }}</p>
             </div>
           </div>
 

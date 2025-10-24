@@ -17,7 +17,7 @@
   @version 1.0.0
 -->
 <template>
-  <div class="min-h-screen bg-background">
+  <div class="min-h-screen bg-background max-w-full overflow-x-hidden">
     <!-- Hero Section -->
     <section class="relative overflow-hidden">
       <!-- Background gradient -->
@@ -65,16 +65,16 @@
           </p>
           
           <!-- Call-to-Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-12">
             <button
               @click="navigateToSignIn"
-              class="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
+              class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
             >
               Get Started
             </button>
             <button
               @click="scrollToFeatures"
-              class="px-8 py-4 border-2 border-primary text-primary rounded-xl font-semibold text-lg hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-105"
+              class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-primary rounded-xl font-semibold text-base sm:text-lg hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-105"
             >
               Learn More
             </button>
@@ -214,7 +214,7 @@
         </p>
         <button
           @click="navigateToSignIn"
-          class="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
+          class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
         >
           Get Started Now
         </button>
