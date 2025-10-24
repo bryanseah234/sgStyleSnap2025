@@ -154,20 +154,6 @@
             />
           </div>
         </router-link>
-        
-        <!-- Theme Toggle for Mobile -->
-        <div class="flex-1 flex justify-center">
-          <button
-            @click="handleThemeToggle"
-            class="p-3 rounded-2xl transition-all duration-200 hover:scale-110 bg-secondary hover:bg-accent"
-            :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-          >
-            <!-- Sun icon for dark mode (clicking will switch to light) -->
-            <Sun v-if="theme.value === 'dark'" class="w-6 h-6" />
-            <!-- Moon icon for light mode (clicking will switch to dark) -->
-            <Moon v-else class="w-6 h-6" />
-          </button>
-        </div>
       </div>
     </nav>
 
