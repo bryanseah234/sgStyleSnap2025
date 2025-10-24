@@ -157,7 +157,7 @@ export class CloudinaryService {
       
       return {
         public_id: data.public_id,
-        secure_url: data.secure_url,
+        secure_url: this.getOptimizedUrl(data.public_id, data.format, { quality: 'auto:good' }),
         width: data.width,
         height: data.height,
         format: data.format,
@@ -188,7 +188,7 @@ export class CloudinaryService {
   getThumbnailUrl(publicId, format = 'jpg') {
     if (!this.cloudName) return null
     
-    const transformations = 'c_thumb,w_300,h_300,f_auto,q_auto'
+    const transformations = 'f_webp,q_auto:good,w_400,h_400,c_fill'
     return `https://res.cloudinary.com/${this.cloudName}/image/upload/${transformations}/${publicId}.${format}`
   }
 
@@ -220,7 +220,7 @@ export class CloudinaryService {
     if (options.width) transformations.push(`w_${options.width}`)
     if (options.height) transformations.push(`h_${options.height}`)
     if (options.quality) transformations.push(`q_${options.quality}`)
-    transformations.push('f_auto')
+    transformations.push('f_webp')
     
     const transformString = transformations.length > 0 ? transformations.join(',') + '/' : ''
     return `https://res.cloudinary.com/${this.cloudName}/image/upload/${transformString}${publicId}.${format}`

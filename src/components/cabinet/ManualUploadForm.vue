@@ -333,14 +333,23 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true
   try {
+    // Create a File object from the image URL for Cloudinary upload
+    let imageFile = null
+    if (formData.value.image_url && formData.value.image_url.startsWith('blob:')) {
+      // Convert blob URL to File object
+      const response = await fetch(formData.value.image_url)
+      const blob = await response.blob()
+      imageFile = new File([blob], 'uploaded-image.jpg', { type: blob.type })
+    }
+
     const result = await clothesService.addClothes({
       name: formData.value.name,
       category: formData.value.category,
-      clothing_type: formData.value.type || null, // Use clothing_type for database
-      image_url: formData.value.image_url,
+      clothing_type: formData.value.type || null,
       color: formData.value.color || null,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
+      image_file: imageFile, // Pass the file for Cloudinary upload
     })
 
     if (result.success) {

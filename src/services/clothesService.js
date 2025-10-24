@@ -261,7 +261,7 @@ export class ClothesService {
       if (clothesData.image_file) {
         try {
           imageData = await cloudinary.uploadImage(clothesData.image_file, {
-            folder: 'stylesnap/clothes',
+            folder: 'closet-items',
             quality: 80,
             format: 'auto'
           })
@@ -279,16 +279,16 @@ export class ClothesService {
             // Use a fallback image URL to satisfy the not-null constraint
             console.warn('Using fallback image due to upload failure')
             imageData = {
-              secure_url: '/public/avatars/default-1.png',
-              thumbnail_url: '/public/avatars/default-1.png'
+              secure_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good/v1/defaults/default-clothing-item.webp',
+              thumbnail_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/v1/defaults/default-clothing-item.webp'
             }
           }
         }
       } else {
         // No image provided, use fallback
         imageData = {
-          secure_url: '/public/avatars/default-1.png',
-          thumbnail_url: '/public/avatars/default-1.png'
+          secure_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good/v1/defaults/default-clothing-item.webp',
+          thumbnail_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/v1/defaults/default-clothing-item.webp'
         }
       }
 
@@ -296,13 +296,13 @@ export class ClothesService {
         owner_id: user.id,
         name: clothesData.name,
         category: clothesData.category,
-        // clothing_type: clothesData.clothing_type, // Column doesn't exist in database
+        clothing_type: clothesData.clothing_type || null,
         brand: clothesData.brand,
         size: clothesData.size,
-        privacy: clothesData.privacy || 'private',
+        privacy: clothesData.privacy || 'friends', // Default to friends instead of private
         is_favorite: clothesData.is_favorite || false,
         style_tags: clothesData.style_tags || [],
-        // notes: clothesData.notes // Column doesn't exist in database
+        primary_color: clothesData.color || null, // Map color to primary_color
       }
 
       if (imageData) {
