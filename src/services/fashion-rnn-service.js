@@ -31,26 +31,26 @@ const CATEGORY_MAPPING = {
 
 // Clothing type mapping
 const CLOTHING_TYPE_MAPPING = {
-  'T-Shirt': 't-shirt',
-  Shirt: 'shirt',
-  Blouse: 'blouse',
-  Polo: 'polo',
-  Top: 'top',
-  Body: 'bodysuit',
-  Longsleeve: 'long-sleeve',
-  Undershirt: 'undershirt',
-  Pants: 'pants',
-  Shorts: 'shorts',
-  Dress: 'dress',
-  Skirt: 'skirt',
-  Shoes: 'shoes',
-  Hat: 'hat',
-  Blazer: 'blazer',
-  Hoodie: 'hoodie',
-  Outwear: 'outerwear',
-  Other: 'other',
-  'Not sure': 'other',
-  Skip: 'other'
+  'T-Shirt': 'T-Shirt',
+  Shirt: 'Shirt',
+  Blouse: 'Blouse',
+  Polo: 'Polo',
+  Top: 'Top',
+  Body: 'Body',
+  Longsleeve: 'Longsleeve',
+  Undershirt: 'Undershirt',
+  Pants: 'Pants',
+  Shorts: 'Shorts',
+  Dress: 'Dress',
+  Skirt: 'Skirt',
+  Shoes: 'Shoes',
+  Hat: 'Hat',
+  Blazer: 'Blazer',
+  Hoodie: 'Hoodie',
+  Outwear: 'Outwear',
+  Other: 'Other',
+  'Not sure': 'Other',
+  Skip: 'Other'
 }
 
 /**
@@ -208,11 +208,11 @@ export async function classifyClothingItem(image) {
       topPrediction: topPrediction,
       confidence: topConfidence,
       styleSnapCategory: CATEGORY_MAPPING[topPrediction] || 'top',
-      clothingType: CLOTHING_TYPE_MAPPING[topPrediction] || 'other',
+      clothingType: CLOTHING_TYPE_MAPPING[topPrediction] || 'Top',
       allPredictions: predictions.map(pred => ({
         fashionRnnCategory: pred.category,
         styleSnapCategory: CATEGORY_MAPPING[pred.category] || 'top',
-        clothingType: CLOTHING_TYPE_MAPPING[pred.category] || 'other',
+        clothingType: CLOTHING_TYPE_MAPPING[pred.category] || 'Top',
         confidence: pred.confidence
       }))
     }
@@ -280,11 +280,11 @@ function getFallbackClassification() {
     topPrediction: topCategory,
     confidence: topConfidence,
     styleSnapCategory: CATEGORY_MAPPING[topCategory] || 'top',
-    clothingType: CLOTHING_TYPE_MAPPING[topCategory] || 'other',
+    clothingType: CLOTHING_TYPE_MAPPING[topCategory] || 'Top',
     allPredictions: predictions.map(pred => ({
       fashionRnnCategory: pred.category,
       styleSnapCategory: CATEGORY_MAPPING[pred.category] || 'top',
-      clothingType: CLOTHING_TYPE_MAPPING[pred.category] || 'other',
+      clothingType: CLOTHING_TYPE_MAPPING[pred.category] || 'Top',
       confidence: pred.confidence
     }))
   }
@@ -334,5 +334,5 @@ export function getStyleSnapCategory(fashionRnnCategory) {
  * @returns {string} Clothing type
  */
 export function getClothingType(fashionRnnCategory) {
-  return CLOTHING_TYPE_MAPPING[fashionRnnCategory] || 'other'
+  return CLOTHING_TYPE_MAPPING[fashionRnnCategory] || 'Top'
 }
