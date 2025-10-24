@@ -1,7 +1,5 @@
 <template>
-  <div :class="`min-h-screen p-6 md:p-12 ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-white'
-  }`">
+  <div class="min-h-screen p-6 md:p-12 bg-background">
     <div class="max-w-4xl mx-auto">
       <!-- Error Code -->
       <div class="text-center mb-8">

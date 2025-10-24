@@ -25,9 +25,7 @@
     </div>
 
     <!-- Overlay -->
-    <div :class="`absolute inset-0 transition-all duration-300 flex flex-col justify-end p-4 ${
-      theme.value === 'dark' ? 'bg-black' : 'bg-white'
-    } bg-opacity-0 group-hover:bg-opacity-90`">
+    <div class="absolute inset-0 transition-all duration-300 flex flex-col justify-end p-4 bg-background bg-opacity-0 group-hover:bg-opacity-90">
       <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <h3 :class="`font-semibold text-lg mb-1 ${
           theme.value === 'dark' ? 'text-white' : 'text-black'

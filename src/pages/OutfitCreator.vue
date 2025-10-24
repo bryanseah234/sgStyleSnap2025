@@ -1,7 +1,5 @@
 <template>
-  <div :class="`min-h-screen p-6 md:p-12 ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-white'
-  }`">
+  <div class="min-h-screen p-6 md:p-12 bg-background">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="flex items-start justify-between mb-8">

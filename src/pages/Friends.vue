@@ -1,7 +1,5 @@
 <template>
-  <div :class="`min-h-screen p-6 md:p-12 ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-white'
-  }`">
+  <div class="min-h-screen p-6 md:p-12 bg-background">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="flex items-start justify-between mb-8">
@@ -185,7 +183,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </TransitionGroup>
         
         <div v-else class="text-center py-12">
           <Users :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />

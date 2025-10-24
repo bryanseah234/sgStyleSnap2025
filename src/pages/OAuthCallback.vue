@@ -9,7 +9,7 @@
   @version 1.0.0
 -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-black">
+  <div class="min-h-screen flex items-center justify-center bg-background">
     <div class="text-center">
       <!-- Loading Spinner -->
       <div class="mx-auto mb-6">

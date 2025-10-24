@@ -1,7 +1,5 @@
 <template>
-  <div :class="`min-h-screen p-6 md:p-12 ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-white'
-  }`">
+  <div class="min-h-screen p-6 md:p-12 bg-background">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
@@ -127,6 +125,55 @@
 
             </div>
         </div>
+
+        <!-- Account Actions Section -->
+        <div :class="`rounded-xl p-6 mt-6 ${
+          theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
+        }`">
+          <h3 :class="`text-lg font-semibold mb-4 ${
+            theme.value === 'dark' ? 'text-zinc-200' : 'text-stone-800'
+          }`">
+            Account Actions
+          </h3>
+          
+          <div class="space-y-3">
+            <!-- Theme Toggle Button -->
+            <button
+              @click="handleThemeToggle"
+              :class="`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+                theme.value === 'dark'
+                  ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
+                  : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+              }`"
+              :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+            >
+              <span class="font-medium">
+                {{ theme.value === 'dark' ? 'Light Mode' : 'Dark Mode' }}
+              </span>
+              <!-- Sun icon for dark mode (clicking will switch to light) -->
+              <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
+              <!-- Moon icon for light mode (clicking will switch to dark) -->
+              <Moon v-else class="w-5 h-5" />
+            </button>
+
+            <!-- Logout Button -->
+            <button
+              @click="handleLogout"
+              :disabled="loading"
+              :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+                loading
+                  ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+                  : theme.value === 'dark'
+                    ? 'bg-red-900/20 hover:bg-red-900/30 text-red-400 hover:text-red-300'
+                    : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700'
+              }`"
+            >
+              <LogOut v-if="!loading" class="w-5 h-5" />
+              <div v-else class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <span class="font-medium">{{ loading ? 'Logging out...' : 'Logout' }}</span>
+            </button>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -135,12 +182,38 @@
 </template>
 
 <script setup>
+/**
+ * Profile.vue - User Profile Page Component
+ * 
+ * Displays user profile information and provides account management actions.
+ * Shows user details from Google account and provides theme toggle and logout functionality.
+ * 
+ * Features:
+ * - Display user profile information (name, email, username)
+ * - Show profile photo from Google account
+ * - Theme toggle button (same as navbar)
+ * - Logout button with confirmation
+ * - Responsive design with theme-aware styling
+ * 
+ * @author StyleSnap Team
+ * @version 1.0.0
+ */
+
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
+import { usePopup } from '@/composables/usePopup'
+import { Sun, Moon, LogOut } from 'lucide-vue-next'
 
-const { theme } = useTheme()
+// Composables and stores
+const { theme, toggleTheme } = useTheme()
 const authStore = useAuthStore()
+const router = useRouter()
+const { showConfirm } = usePopup()
+
+// Reactive state
+const loading = ref(false)
 
 // Use computed to get reactive user data from auth store
 // Prefer profile data (from database) over user data (from auth) for username and other profile fields
@@ -210,6 +283,48 @@ const getUsername = () => {
   }
   
   return 'Not provided'
+}
+
+/**
+ * Handles theme toggle functionality
+ * 
+ * Properly handles the async theme toggle operation and provides
+ * user feedback during the process.
+ */
+const handleThemeToggle = async () => {
+  try {
+    console.log('🎨 Profile: Toggling theme...')
+    await toggleTheme()
+    console.log('✅ Profile: Theme toggled successfully')
+  } catch (error) {
+    console.error('❌ Profile: Theme toggle error:', error)
+  }
+}
+
+/**
+ * Handles user logout functionality
+ * 
+ * Shows a confirmation dialog and then signs out the current user
+ * using the auth store and redirects to the login page.
+ * Clears all authentication state and user data.
+ */
+const handleLogout = () => {
+  showConfirm(
+    'Are you sure you want to logout?',
+    'Logout',
+    async () => {
+      try {
+        console.log('🚪 Profile: Starting logout process...')
+        loading.value = true
+        
+        // Navigate to logout page which will handle the logout logic
+        router.push('/logout')
+      } catch (error) {
+        console.error('❌ Profile: Logout error:', error)
+        loading.value = false
+      }
+    }
+  )
 }
 
 onMounted(async () => {

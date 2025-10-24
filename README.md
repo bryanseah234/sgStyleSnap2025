@@ -1,365 +1,641 @@
-# StyleSnap - Digital Closet & Social Fashion Platform
+# StyleSnap 2025
 
-**Version 3.0.0** - Complete Outfit Management System
+A modern, full-stack fashion styling application built with Vue.js 3, Supabase, and Tailwind CSS. StyleSnap allows users to manage their wardrobe, create outfit combinations, connect with friends, and discover new styles.
 
-A modern, full-stack digital wardrobe application built with Vue 3, Supabase, and Tailwind CSS. StyleSnap combines personal wardrobe management with social features, AI-powered outfit suggestions, and an interactive canvas-based outfit creation system.
+## 🚀 Features
 
-## 🌟 Features
+### Core Functionality
+- **Wardrobe Management**: Upload, organize, and categorize clothing items
+- **Outfit Creation**: Build and save outfit combinations with drag-and-drop interface
+- **Social Features**: Connect with friends, share outfits, and get style suggestions
+- **Search & Discovery**: Advanced search across closet items and outfits
+- **Real-time Notifications**: Stay updated with friend requests and outfit interactions
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
-### 🎨 Core Functionality
-- **Digital Closet Management** - Upload, organize, and manage personal clothing items with category-based organization
-- **Interactive Outfit Canvas** - Drag-and-drop 600px canvas for creating outfits with full editing controls (scale, rotate, layer)
-- **AI-Powered Outfit Suggestions** - Auto-generated outfit suggestions with smart category-based positioning
-- **Friend Outfit Creation** - Create outfit suggestions for friends using items from their closet
-- **Outfit Gallery** - Visual gallery of saved outfits with preview images, filters, and quick edit/delete actions
-- **Edit Outfits** - Full editing mode for existing outfits with preserved transformations
-- **Social Fashion Network** - Connect with friends, share outfits, receive/send outfit suggestions
-- **Real-time Notifications** - Comprehensive notification system for friend requests, outfit suggestions, likes, and social interactions
-- **Personalized Dashboard** - Welcome message with user's name, stats cards, and notifications overview
+### Technical Features
+- **Modern UI/UX**: Liquid glass effects with smooth animations
+- **Dark/Light Mode**: Automatic theme switching with system preference detection
+- **Real-time Updates**: Live data synchronization using Supabase realtime
+- **Image Management**: Cloudinary integration for optimized image storage
+- **Authentication**: Secure user authentication with Supabase Auth
+- **Database**: PostgreSQL with Row-Level Security (RLS)
 
-### ⚡ Technical Features
-- **Interactive Canvas System** - 600px canvas with 128x128px items, grid overlay, undo/redo (50 steps)
-- **7-Day Notification Retention** - Automatic cleanup system for optimal performance
-- **Multi-Theme Support** - Light and dark modes with custom color schemes and 6 font styles
-- **Google OAuth Authentication** - Secure authentication with profile synchronization
-- **Session Management** - Persistent login sessions with theme preferences
-- **Terms of Service & Privacy Policy** - Comprehensive legal documents in dismissible modals
-- **Responsive Design** - Mobile-first design with desktop optimization
-- **Row-Level Security** - Database-level access control and privacy
-- **Real-time Updates** - Live data synchronization across devices via Supabase
-
-## 🚀 Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend
-- **Vue 3** - Progressive JavaScript framework
+- **Vue.js 3** - Progressive JavaScript framework
+- **Vite** - Fast build tool and development server
 - **Vue Router** - Client-side routing
 - **Pinia** - State management
 - **Tailwind CSS** - Utility-first CSS framework
-- **Lucide Vue** - Beautiful icons
-- **Vite** - Build tool and dev server
+- **Lucide Vue Next** - Icon library
+- **Motion** - Animation library for liquid glass effects
 
-### Backend
-- **Supabase** - Backend-as-a-Service
-  - PostgreSQL database
-  - Authentication (Google OAuth)
-  - Real-time subscriptions
-  - Row Level Security (RLS)
-- **Cloudinary** - Image CDN and management
+### Backend & Database
+- **Supabase** - Backend-as-a-Service platform
+- **PostgreSQL** - Relational database
+- **Row-Level Security (RLS)** - Database-level security policies
+- **Supabase Auth** - Authentication and user management
+- **Supabase Realtime** - Real-time data synchronization
 
-### Deployment
-- **Vercel** - Frontend deployment
-- **Supabase Cloud** - Backend hosting
+### External Services
+- **Cloudinary** - Image storage and optimization
+- **Vercel** - Deployment platform (optional)
 
-## 📦 Installation
+## 📋 Prerequisites
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd stylesnap
-   ```
+Before running this application, ensure you have:
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+- **Node.js** (v18 or higher)
+- **npm** (v8 or higher)
+- **Supabase Account** - For backend services
+- **Cloudinary Account** - For image storage (optional)
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Fill in your environment variables:
-   ```env
-   # Supabase Configuration
-   VITE_SUPABASE_URL=https://your-project-id.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+## 🚀 Quick Start
 
-   # Cloudinary Configuration
-   VITE_CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
-   VITE_CLOUDINARY_UPLOAD_PRESET=your-cloudinary-upload-preset
-
-   # Google OAuth Configuration
-   VITE_GOOGLE_CLIENT_ID=your-google-client-id
-
-   # Optional: Weather API
-   VITE_OPENWEATHER_API_KEY=your-openweather-api-key
-   ```
-
-4. **Set up the database**
-   ```bash
-   # Run the SQL migrations in your Supabase dashboard
-   # Files: database/migrations/001_initial_schema.sql, database/migrations/002_rls_policies.sql, etc.
-   # Or use the migration script: node scripts/run-migrations.js
-   ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-## 🗄️ Database Setup
-
-1. **Create a new Supabase project**
-2. **Run the SQL migrations in order:**
-   - Use the migration script: `node scripts/run-migrations.js` (recommended)
-   - Or manually run files from `database/migrations/` folder:
-     - `001_initial_schema.sql` - Creates all tables and relationships
-     - `002_rls_policies.sql` - Sets up Row Level Security
-     - `021_seed_data.sql` - Inserts initial data (categories, colors, styles, brands)
-
-3. **Configure Google OAuth in Supabase:**
-   - Go to Authentication > Providers
-   - Enable Google provider
-   - Add your Google OAuth credentials
-
-## 🎨 Project Structure
-
-```
-src/
-├── api/                 # API client and services
-├── components/          # Reusable Vue components
-│   ├── ui/             # Base UI components
-│   ├── TermsOfServiceModal.vue  # TOS modal
-│   ├── PrivacyPolicyModal.vue   # Privacy policy modal
-│   └── ThemeToggle.vue          # Theme switcher
-├── composables/        # Vue composables (useTheme, etc.)
-├── lib/                # Utility libraries
-├── pages/              # Page components
-│   ├── Home.vue        # Dashboard with notifications
-│   ├── Cabinet.vue     # Closet management
-│   ├── Outfits.vue     # Outfit gallery
-│   ├── OutfitCreator.vue  # Canvas for outfit creation
-│   ├── Friends.vue     # Friend management
-│   ├── Profile.vue     # User profile
-│   └── Login.vue       # Authentication
-├── services/           # Backend service classes
-│   ├── AuthService.js  # Authentication
-│   ├── ClothesService.js  # Closet items
-│   ├── OutfitsService.js  # Outfits CRUD
-│   ├── FriendsService.js  # Friend management
-│   └── NotificationsService.js  # Notifications
-└── utils/              # Helper functions
-
-docs/
-├── features/           # Feature-specific documentation
-│   ├── AI_OUTFIT_SUGGESTIONS.md
-│   ├── FRIEND_OUTFIT_CREATION.md
-│   ├── EDIT_OUTFIT.md
-│   └── FRIEND_NOTIFICATIONS.md
-├── guides/             # How-to guides
-├── FEATURE_OVERVIEW.md # Complete feature list
-├── ROUTES.md           # All application routes
-├── CHANGELOG.md        # Version history
-└── README.md           # Documentation hub
-
-database/
-└── migrations/         # SQL migration files
-    ├── 020_add_outfits_table.sql
-    ├── 027_friend_notifications.sql
-    └── ...
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd sgStyleSnap2025
 ```
 
-## 🔧 Available Scripts
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint errors
+### 3. Environment Setup
+Create a `.env.local` file in the root directory:
 
-## 🌐 Deployment
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Cloudinary Configuration (Optional)
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_API_KEY=your_cloudinary_api_key
+VITE_CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+```
+
+### 4. Database Setup
+Run the database migrations in order:
+
+```bash
+# Apply all migrations
+psql -h your-db-host -U your-username -d your-database -f database/migrations/001_initial_schema.sql
+psql -h your-db-host -U your-username -d your-database -f database/migrations/002_auth_setup.sql
+# ... continue with all migration files in order
+```
+
+### 5. Start Development Server
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+## 📁 Project Structure
+
+```
+sgStyleSnap2025/
+├── src/
+│   ├── components/           # Reusable Vue components
+│   │   ├── cabinet/         # Closet-related components
+│   │   ├── dashboard/       # Dashboard components
+│   │   ├── friends/         # Social features components
+│   │   └── ui/              # Base UI components
+│   ├── composables/         # Vue composables for reusable logic
+│   │   ├── useAuth.js       # Authentication composable
+│   │   ├── useTheme.js      # Theme management
+│   │   ├── useLiquidGlass.js # Animation effects
+│   │   └── usePopup.js      # Modal/popup management
+│   ├── pages/               # Route components
+│   │   ├── Home.vue         # Dashboard/home page
+│   │   ├── Cabinet.vue      # Closet management
+│   │   ├── Outfits.vue      # Outfit creation/management
+│   │   ├── Friends.vue      # Social features
+│   │   └── Profile.vue      # User profile
+│   ├── services/            # API service layers
+│   │   ├── authService.js   # Authentication API
+│   │   ├── clothesService.js # Wardrobe management API
+│   │   ├── outfitsService.js # Outfit management API
+│   │   ├── friendsService.js # Social features API
+│   │   └── notificationsService.js # Notifications API
+│   ├── stores/              # Pinia state management
+│   │   ├── auth-store.js    # Authentication state
+│   │   └── theme-store.js   # Theme state
+│   ├── assets/              # Static assets
+│   │   ├── css/             # Global styles
+│   │   └── images/          # Image assets
+│   └── router/              # Vue Router configuration
+├── database/
+│   └── migrations/          # Database migration files
+├── public/                  # Public static files
+└── docs/                    # Documentation files
+```
+
+## 🔧 Development
+
+### Available Scripts
+
+```bash
+# Development server
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint code
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
+
+# Run tests (when implemented)
+npm run test
+```
+
+### Code Style
+
+The project follows Vue.js 3 Composition API patterns with:
+- **ESLint** configuration for code quality
+- **Prettier** for code formatting (recommended)
+- **Vue 3 Composition API** for component logic
+- **TypeScript-ready** structure (can be migrated)
+
+## 🗄️ Database Schema
+
+### Core Tables
+
+#### Users
+```sql
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE NOT NULL,
+  name TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+#### Clothes
+```sql
+CREATE TABLE clothes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  brand TEXT,
+  color TEXT,
+  category TEXT NOT NULL,
+  image_url TEXT,
+  is_favorite BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+#### Outfits
+```sql
+CREATE TABLE outfits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  outfit_name TEXT NOT NULL,
+  description TEXT,
+  items JSONB NOT NULL,
+  is_favorite BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+#### Friends
+```sql
+CREATE TABLE friends (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  friend_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, friend_id)
+);
+```
+
+#### Notifications
+```sql
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipient_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  actor_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  reference_id UUID,
+  custom_message TEXT,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### Row-Level Security (RLS)
+
+All tables implement RLS policies to ensure data security:
+
+- **Users**: Can only access their own profile data
+- **Clothes**: Users can only access their own clothing items
+- **Outfits**: Users can only access their own outfits
+- **Friends**: Users can only access their own friend relationships
+- **Notifications**: Users can only access notifications sent to them
+
+## 🔍 Search Functionality
+
+### Implementation Overview
+
+The search functionality is implemented consistently across all pages using Vue.js computed properties and reactive filtering.
+
+### Closet Search (Cabinet.vue)
+```javascript
+const filteredItems = computed(() => {
+  let filtered = items.value
+
+  // Apply search filter
+  if (searchTerm.value) {
+    const query = searchTerm.value.toLowerCase()
+    filtered = filtered.filter(item => 
+      item.name?.toLowerCase().includes(query) ||
+      item.brand?.toLowerCase().includes(query) ||
+      item.color?.toLowerCase().includes(query) ||
+      item.category?.toLowerCase().includes(query)
+    )
+  }
+
+  // Apply additional filters (category, favorites)
+  if (activeCategory.value !== 'all') {
+    filtered = filtered.filter(item => item.category === activeCategory.value)
+  }
+
+  if (showFavoritesOnly.value) {
+    filtered = filtered.filter(item => item.is_favorite)
+  }
+
+  return filtered
+})
+```
+
+### Outfits Search (Outfits.vue)
+```javascript
+const filteredOutfits = computed(() => {
+  let filtered = outfits.value
+
+  // Apply search filter
+  if (searchTerm.value) {
+    const query = searchTerm.value.toLowerCase()
+    filtered = filtered.filter(outfit => 
+      outfit.outfit_name?.toLowerCase().includes(query) ||
+      outfit.name?.toLowerCase().includes(query) ||
+      outfit.description?.toLowerCase().includes(query)
+    )
+  }
+
+  // Apply favorites filter
+  if (activeFilter.value === 'favorites') {
+    filtered = filtered.filter(outfit => outfit.is_favorite)
+  }
+
+  return filtered
+})
+```
+
+### Friends Search (Friends.vue)
+```javascript
+const filteredFriends = computed(() => {
+  if (!searchTerm.value) return friends.value
+  
+  const query = searchTerm.value.toLowerCase()
+  return friends.value.filter(friend => 
+    friend.name?.toLowerCase().includes(query) ||
+    friend.username?.toLowerCase().includes(query)
+  )
+})
+```
+
+### Search Features
+- **Real-time Filtering**: Results update as you type
+- **Multi-field Search**: Searches across multiple relevant fields
+- **Case-insensitive**: Search is not case-sensitive
+- **Combined Filters**: Works alongside existing filters (categories, favorites)
+- **Empty State Handling**: Shows appropriate messages when no results found
+
+## 🔔 Notification System
+
+### Architecture
+
+The notification system uses Supabase realtime subscriptions and database triggers for automatic notification creation.
+
+### Database Schema
+```sql
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipient_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  actor_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK (type IN (
+    'friend_request',
+    'friend_request_accepted',
+    'outfit_shared',
+    'friend_outfit_suggestion',
+    'outfit_like',
+    'item_like'
+  )),
+  reference_id UUID,
+  custom_message TEXT,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### Notification Types
+- **friend_request**: New friend request received
+- **friend_request_accepted**: Friend request was accepted
+- **outfit_shared**: Friend shared an outfit with you
+- **friend_outfit_suggestion**: Friend suggested an outfit
+- **outfit_like**: Someone liked your outfit
+- **item_like**: Someone liked your clothing item
+
+### Service Implementation
+```javascript
+// notificationsService.js
+export class NotificationsService {
+  async getNotifications(filters = {}) {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    let query = supabase
+      .from('notifications')
+      .select('*')
+      .eq('recipient_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (filters.limit) query = query.limit(filters.limit)
+    if (filters.unread_only) query = query.eq('is_read', false)
+
+    const { data, error } = await query
+    return data || []
+  }
+
+  async subscribe(callback) {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    return supabase
+      .channel('notifications')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${user.id}`
+      }, callback)
+      .subscribe()
+  }
+}
+```
+
+### Database Triggers
+```sql
+-- Friend request notification trigger
+CREATE OR REPLACE FUNCTION create_friend_request_notification()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO notifications (recipient_id, actor_id, type, reference_id)
+  VALUES (NEW.friend_id, NEW.user_id, 'friend_request', NEW.id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER friend_request_notification_trigger
+  AFTER INSERT ON friends
+  FOR EACH ROW
+  EXECUTE FUNCTION create_friend_request_notification();
+```
+
+## 🎨 UI Components
+
+### Design System
+
+The application uses a consistent design system with:
+
+#### Color Palette
+- **Light Mode**: White backgrounds, black text, stone/zinc grays
+- **Dark Mode**: Black backgrounds, white text, zinc grays
+- **Accent Colors**: Brand-specific accent colors for interactive elements
+
+#### Typography
+- **Headings**: Bold, large text for page titles and section headers
+- **Body Text**: Regular weight for content
+- **Captions**: Smaller, muted text for secondary information
+
+#### Components
+- **Cards**: Rounded corners, subtle borders, hover effects
+- **Buttons**: Consistent styling with hover states and transitions
+- **Inputs**: Clean, accessible form elements
+- **Modals**: Overlay dialogs with backdrop blur effects
+
+### Liquid Glass Effects
+
+The application features custom liquid glass animations using the Motion library:
+
+```javascript
+// useLiquidGlass.js
+export function useLiquidHover() {
+  const hoverIn = async () => {
+    await loadMotionOne()
+    
+    if (animate && elementRef.value) {
+      animate(elementRef.value, {
+        scale: 1.05,
+        rotateX: 5,
+        rotateY: 5,
+        filter: 'blur(0px) brightness(1.1)'
+      }, {
+        duration: 0.3,
+        easing: spring({ stiffness: 300, damping: 30 })
+      })
+    }
+  }
+}
+```
+
+## 🚀 Deployment
 
 ### Vercel Deployment
 
-1. **Connect your repository to Vercel**
-2. **Set environment variables in Vercel dashboard**
-3. **Deploy automatically on push to main branch**
-
-The `vercel.json` configuration is already set up for optimal deployment.
+1. **Connect Repository**: Link your GitHub repository to Vercel
+2. **Environment Variables**: Add all required environment variables in Vercel dashboard
+3. **Build Settings**: 
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
 
 ### Environment Variables for Production
+```env
+VITE_SUPABASE_URL=your_production_supabase_url
+VITE_SUPABASE_ANON_KEY=your_production_supabase_anon_key
+VITE_CLOUDINARY_CLOUD_NAME=your_production_cloudinary_name
+VITE_CLOUDINARY_API_KEY=your_production_cloudinary_key
+VITE_CLOUDINARY_API_SECRET=your_production_cloudinary_secret
+```
 
-Make sure to set these in your Vercel dashboard:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_CLOUDINARY_CLOUD_NAME`
-- `VITE_CLOUDINARY_UPLOAD_PRESET`
-- `VITE_GOOGLE_CLIENT_ID`
-- `VITE_OPENWEATHER_API_KEY` (optional)
+### Database Migration for Production
+```bash
+# Run migrations on production database
+psql -h production-db-host -U production-user -d production-db -f database/migrations/001_initial_schema.sql
+# ... continue with all migrations
+```
 
-## 🔐 Authentication
+## 🧪 Testing
 
-StyleSnap uses Google OAuth exclusively for authentication:
+### Current Status
+- **Unit Tests**: Not yet implemented
+- **Integration Tests**: Not yet implemented
+- **E2E Tests**: Not yet implemented
 
-1. **Set up Google OAuth in Google Cloud Console**
-2. **Configure redirect URIs:**
-   - Development: `http://localhost:5173/auth/callback`
-   - Production: `https://your-domain.vercel.app/auth/callback`
-   - Supabase: `https://your-project.supabase.co/auth/v1/callback`
+### Planned Testing Strategy
+- **Unit Tests**: Jest + Vue Test Utils for component testing
+- **Integration Tests**: API service testing with mock data
+- **E2E Tests**: Playwright for full user journey testing
 
-3. **Add credentials to Supabase Authentication settings**
+## 📚 API Documentation
 
-## 📱 Features Overview
+### Authentication Endpoints
+```javascript
+// authService.js
+class AuthService {
+  async signUp(email, password, userData) {
+    // Creates new user account
+  }
+  
+  async signIn(email, password) {
+    // Authenticates user
+  }
+  
+  async signOut() {
+    // Signs out current user
+  }
+  
+  async getCurrentUser() {
+    // Returns current authenticated user
+  }
+}
+```
 
-### 👔 Digital Closet
-- Upload clothing items with images
-- Categorize by type (tops, bottoms, shoes, accessories, outerwear)
-- Mark favorites and add notes
-- Search and filter items
-- Category-based organization
-- View friend's closets
+### Clothes Management
+```javascript
+// clothesService.js
+class ClothesService {
+  async getClothes(userId) {
+    // Returns user's clothing items
+  }
+  
+  async addClothingItem(itemData) {
+    // Adds new clothing item
+  }
+  
+  async updateClothingItem(itemId, updates) {
+    // Updates existing clothing item
+  }
+  
+  async deleteClothingItem(itemId) {
+    // Removes clothing item
+  }
+}
+```
 
-### 👗 Outfit System (NEW v3.0)
-- **Interactive Canvas** - 600px drag-and-drop canvas with grid overlay
-- **Personal Creation** - Create outfits using your own items
-- **AI Suggestions** - Auto-generated outfits with smart positioning
-- **Friend Suggestions** - Create outfits for friends using their items
-- **Edit Mode** - Full editing of saved outfits
-- **Gallery View** - Visual grid of all saved outfits
-- **Canvas Controls**:
-  - Scale items (zoom in/out)
-  - Rotate items (15° increments)
-  - Layer items (z-index)
-  - Delete items
-  - Undo/Redo (50 steps)
-  - Grid toggle
-  - Clear canvas
-
-### 👥 Social Features
-- Add friends and manage connections
-- View friend's closets and profiles
-- Create outfit suggestions for friends
-- Share outfits with friends
-- Like items and outfits
-- Real-time notifications for:
-  - Friend requests (sent/received)
-  - Friend request accepted
-  - Outfit shared
-  - Friend outfit suggestions
-  - Outfit and item likes
-
-### 🔔 Notifications
-- Comprehensive notification system
-- Displayed on home page
-- Unread count badges
-- Mark as read functionality
-- 7-day auto-cleanup
-- Database triggers for automatic creation
-- Support for:
-  - Friend requests
-  - Outfit suggestions
-  - Outfit/item likes
-  - System updates
-
-## 🎯 Key Components
-
-### Pages
-- **Home** (`/home`) - Dashboard with stats, welcome message, and notifications
-- **Closet** (`/closet`) - Wardrobe management and item gallery
-- **Outfits** (`/outfits`) - Outfit gallery with filter options
-- **OutfitCreator** (`/outfits/add/*`) - Interactive canvas for outfit creation
-  - `/outfits/add/personal` - Personal outfit creation
-  - `/outfits/add/suggested` - AI outfit suggestions
-  - `/outfits/add/friend/:username` - Friend outfit creation
-  - `/outfits/edit/:outfitId` - Edit existing outfit
-- **Friends** (`/friends`) - Social features and friend management
-- **Profile** (`/profile`) - User settings and preferences
-- **Login** (`/login`) - Google OAuth authentication with legal modals
-
-### Services
-- **AuthService** - Authentication and user management
-- **ClothesService** - Wardrobe item CRUD operations
-- **OutfitsService** - Outfit creation, update, delete, and retrieval
-- **FriendsService** - Friend connections and management
-- **NotificationsService** - Notification creation, retrieval, and management
-- **ThemeService** - Theme management and preferences
-
-### Components
-- **TermsOfServiceModal** - Terms of Service legal document
-- **PrivacyPolicyModal** - Privacy Policy legal document
-- **ThemeToggle** - Light/dark mode switcher
-- **Navbar** - Main navigation
-- **Various UI Components** - Buttons, cards, modals, etc.
-
-## 🔒 Security
-
-- **Row Level Security (RLS)** - Database-level access control
-- **Google OAuth** - Secure authentication
-- **Environment Variables** - Sensitive data protection
-- **Input Validation** - Client and server-side validation
-- **CORS Configuration** - Proper cross-origin setup
-
-## 🚀 Performance
-
-- **Vite Build** - Fast development and optimized builds
-- **Image Optimization** - Cloudinary CDN integration
-- **Lazy Loading** - Component and route-based code splitting
-- **Real-time Updates** - Efficient Supabase subscriptions
-- **Caching** - Smart data caching strategies
-
-## 📄 License
-
-This project is licensed under the MIT License.
+### Outfit Management
+```javascript
+// outfitsService.js
+class OutfitsService {
+  async getOutfits(userId) {
+    // Returns user's outfits
+  }
+  
+  async createOutfit(outfitData) {
+    // Creates new outfit
+  }
+  
+  async updateOutfit(outfitId, updates) {
+    // Updates existing outfit
+  }
+  
+  async deleteOutfit(outfitId) {
+    // Removes outfit
+  }
+}
+```
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Development Workflow
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
-## 📚 Documentation
+### Code Standards
+- Follow Vue.js 3 Composition API patterns
+- Use ESLint configuration provided
+- Write clear, descriptive commit messages
+- Add comments for complex logic
+- Update documentation for new features
 
-Comprehensive documentation is available in the `docs/` directory:
+## 📄 License
 
-- **[Feature Overview](docs/FEATURE_OVERVIEW.md)** - Complete feature list (v3.0.0)
-- **[Routes Guide](docs/ROUTES.md)** - All application routes and navigation
-- **[Changelog](docs/CHANGELOG.md)** - Version history and updates
-- **[Project Structure](docs/PROJECT_STRUCTURE.md)** - Code organization
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### New Features Documentation (v3.0.0)
-- **[AI Outfit Suggestions](docs/features/AI_OUTFIT_SUGGESTIONS.md)** - Auto-generated outfits
-- **[Friend Outfit Creation](docs/features/FRIEND_OUTFIT_CREATION.md)** - Create outfits for friends
-- **[Edit Outfit](docs/features/EDIT_OUTFIT.md)** - Edit existing outfits
-- **[Friend Notifications](docs/features/FRIEND_NOTIFICATIONS.md)** - Notification system
+## 🆘 Support
 
-### Guides
-- **[Authentication Guide](docs/guides/AUTHENTICATION_GUIDE.md)** - OAuth setup
-- **[Database Guide](docs/guides/DATABASE_GUIDE.md)** - Database schema and management
-- **[User Flows](docs/guides/USER_FLOWS.md)** - User experience flows
+### Common Issues
 
-## 🎉 What's New in v3.0.0
+#### Build Errors
+- Ensure all dependencies are installed: `npm install`
+- Check environment variables are properly set
+- Verify database migrations are applied
 
-### Major Features
-- ✨ **Interactive Outfit Canvas** - Drag-and-drop canvas with full editing controls
-- 🤖 **AI Outfit Suggestions** - Auto-generated outfits with smart positioning
-- 👥 **Friend Outfit Creation** - Create outfit suggestions for friends
-- ✏️ **Edit Mode** - Full editing capability for existing outfits
-- 🖼️ **Outfit Gallery** - Visual grid display of saved outfits
-- 🔔 **Enhanced Notifications** - Comprehensive notification system
-- 📜 **Legal Compliance** - Terms of Service and Privacy Policy modals
-- 👋 **Personalized Dashboard** - Welcome message with user's name
+#### Runtime Errors
+- Check browser console for detailed error messages
+- Verify Supabase connection and authentication
+- Ensure Cloudinary credentials are correct (if using image uploads)
 
-### Technical Improvements
-- Canvas system with transform controls
-- Undo/Redo history (50 steps)
-- Database triggers for notifications
-- Enhanced RLS policies
-- Custom scrollbar styling
-- Improved responsive design
+#### Performance Issues
+- Check network tab for slow API calls
+- Verify database queries are optimized
+- Consider implementing pagination for large datasets
 
-See [CHANGELOG.md](docs/CHANGELOG.md) for complete details.
+### Getting Help
+- **Issues**: Create a GitHub issue with detailed description
+- **Discussions**: Use GitHub Discussions for questions
+- **Documentation**: Check this README and inline code comments
 
-## 📞 Support
+## 🔄 Changelog
 
-For support and questions:
-- **Documentation**: Check the `docs/` directory
-- **Issues**: Open an issue in the repository
-- **Guides**: Refer to specific guides in `docs/guides/`
+### Version 1.0.0 (Current)
+- ✅ Initial release with core functionality
+- ✅ Wardrobe management system
+- ✅ Outfit creation and management
+- ✅ Social features (friends, sharing)
+- ✅ Search functionality across all pages
+- ✅ Real-time notifications
+- ✅ Responsive design with dark/light mode
+- ✅ Liquid glass animations
+
+### Planned Features
+- 🔄 Advanced outfit recommendations
+- 🔄 Weather-based outfit suggestions
+- 🔄 Style trend analysis
+- 🔄 Mobile app (React Native)
+- 🔄 AI-powered style matching
+- 🔄 Social feed and discovery
 
 ---
 
-**Version 3.0.0** - Built with ❤️ using Vue 3, Supabase, and modern web technologies.
-
-**Last Updated**: October 22, 2025
+**StyleSnap 2025** - Where fashion meets technology! 🎨✨

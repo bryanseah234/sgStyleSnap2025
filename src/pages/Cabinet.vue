@@ -1,14 +1,19 @@
 <template>
-  <div :class="`min-h-screen p-6 md:p-12 ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-white'
-  }`">
-    <!-- Header -->
+  <!-- Main container with theme-aware background -->
+  <div class="min-h-screen p-6 md:p-12 bg-background">
+    
+    <!-- Page Header Section -->
     <div class="max-w-6xl mx-auto mb-8">
+      <!-- Header with title and add button -->
       <div class="flex items-center justify-between mb-6">
+        <!-- Dynamic page title based on current sub-route -->
         <h1 class="text-4xl font-bold text-foreground">
           {{ subRouteTitle }}
         </h1>
+        
+        <!-- Add Item Dropdown Button (only shown on default closet view) -->
         <div v-if="currentSubRoute === 'default'" class="relative">
+          <!-- Toggle button for add item dropdown menu -->
           <button
             @click="showAddMenu = !showAddMenu"
             :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
@@ -19,12 +24,13 @@
           >
             <Plus class="w-5 h-5" />
             Add Item
+            <!-- Animated chevron icon that rotates when menu is open -->
             <svg :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
 
-          <!-- Dropdown Menu -->
+          <!-- Dropdown Menu with Add Item Options -->
           <div
             v-if="showAddMenu"
             :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 ${
@@ -33,6 +39,7 @@
                 : 'bg-white border-stone-200'
             }`"
           >
+            <!-- Manual Upload Option -->
             <button
               @click="navigateToManual"
               :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
@@ -50,6 +57,7 @@
               </div>
             </button>
 
+            <!-- Catalogue Browse Option -->
             <button
               @click="navigateToCatalogue"
               :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
@@ -152,6 +160,26 @@
           Favorites
         </button>
       </div>
+
+      <!-- Search Bar -->
+      <div class="mb-6">
+        <div class="relative">
+          <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
+          }`" />
+          <input
+            v-model="searchTerm"
+            type="text"
+            placeholder="Search your closet..."
+            :class="`w-full pl-10 pr-4 py-3 rounded-lg border ${
+              theme.value === 'dark'
+                ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+                : 'bg-stone-100 border-stone-300 text-black placeholder-stone-500'
+            }`"
+            @input="handleSearch"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Items Grid (only show for default closet view) -->
@@ -175,12 +203,12 @@
         <h3 :class="`text-xl font-semibold mb-2 ${
           theme.value === 'dark' ? 'text-white' : 'text-black'
         }`">
-          No items found
+          {{ searchTerm ? 'No items found matching your search.' : 'No items found' }}
         </h3>
         <p :class="`text-lg ${
           theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">
-          Start building your wardrobe by adding your first item!
+          {{ searchTerm ? 'Try adjusting your search terms.' : 'Start building your wardrobe by adding your first item!' }}
         </p>
         <div v-if="!authStore.isAuthenticated" :class="`mt-4 p-4 rounded-lg ${
           theme.value === 'dark' 
@@ -294,28 +322,54 @@
 </template>
 
 <script setup>
+/**
+ * Cabinet.vue - Closet Management Page
+ * 
+ * Main component for managing clothing items in the user's wardrobe.
+ * Provides functionality for viewing, adding, editing, and organizing
+ * clothing items with search and filtering capabilities.
+ * 
+ * Features:
+ * - Display clothing items in responsive grid layout
+ * - Search functionality across name, brand, color, and category
+ * - Category and favorites filtering
+ * - Add items via manual upload or catalogue browsing
+ * - Item details modal with edit/delete functionality
+ * - Liquid glass hover effects for enhanced UX
+ * - Theme-aware styling (dark/light mode)
+ * 
+ * @author StyleSnap Team
+ * @version 1.0.0
+ */
+
+// Vue 3 Composition API imports
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
+// Composables and stores
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
-import { Plus, Heart, Shirt } from 'lucide-vue-next'
 import { useLiquidHover, useLiquidPress } from '@/composables/useLiquidGlass'
+
+// UI Components
+import { Plus, Heart, Shirt, Search } from 'lucide-vue-next'
 import UploadItemModal from '@/components/cabinet/UploadItemModal.vue'
 import ManualUploadForm from '@/components/cabinet/ManualUploadForm.vue'
 import CatalogueBrowser from '@/components/cabinet/CatalogueBrowser.vue'
 import ItemDetailsModal from '@/components/cabinet/ItemDetailsModal.vue'
 
-const { theme } = useTheme()
-const authStore = useAuthStore()
-const route = useRoute()
-const router = useRouter()
+// Initialize composables and services
+const { theme } = useTheme()                    // Theme management
+const authStore = useAuthStore()                // Authentication state
+const route = useRoute()                        // Current route information
+const router = useRouter()                      // Router for navigation
 
-// Liquid glass composables
+// Liquid glass animation effects for enhanced UX
 const { elementRef: itemCardRefs, hoverIn: itemHoverIn, hoverOut: itemHoverOut } = useLiquidHover()
 const { elementRef: favoriteButtonRefs, pressIn: favoritePressIn, pressOut: favoritePressOut } = useLiquidPress()
 
-// Sub-route detection
+// Route-based computed properties for dynamic content
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
@@ -326,24 +380,32 @@ const subRouteTitle = computed(() => {
   }
 })
 
-// Initialize clothes service
+// Initialize clothes service for API operations
 const clothesService = new ClothesService()
 
-// Use computed to get reactive user data from auth store
+// Reactive user data from authentication store
 const currentUser = computed(() => authStore.user || authStore.profile)
 
-const items = ref([])
-const loading = ref(true)
-const showUpload = ref(false)
-const showAddMenu = ref(false)
-const showItemDetails = ref(false)
-const selectedItem = ref(null)
-const activeCategory = ref('all')
-const showFavoritesOnly = ref(false)
+// Reactive state variables
+const items = ref([])                    // Array of clothing items
+const loading = ref(true)                // Loading state for data fetching
+const showUpload = ref(false)            // Upload modal visibility
+const showAddMenu = ref(false)           // Add item dropdown menu visibility
+const showItemDetails = ref(false)       // Item details modal visibility
+const selectedItem = ref(null)           // Currently selected item for details
+const activeCategory = ref('all')        // Currently active category filter
+const showFavoritesOnly = ref(false)     // Favorites-only filter toggle
+const searchTerm = ref('')               // Search input value
 
+// Available clothing categories for filtering
 const categories = ['all', 'top', 'bottom', 'outerwear', 'shoes', 'hat']
 
-// Get proper case label for category
+/**
+ * Converts category key to display label
+ * 
+ * @param {string} category - Category key (e.g., 'top', 'bottom')
+ * @returns {string} Display label (e.g., 'Tops', 'Bottoms')
+ */
 const getCategoryLabel = (category) => {
   const labels = {
     'all': 'All Items',
@@ -356,24 +418,55 @@ const getCategoryLabel = (category) => {
   return labels[category] || category.charAt(0).toUpperCase() + category.slice(1)
 }
 
-// Navigation methods
+// Navigation functions for add item routes
+/**
+ * Navigates to manual item upload page
+ * Closes the add menu dropdown before navigation
+ */
 const navigateToManual = () => {
   showAddMenu.value = false
   router.push('/closet/add/manual')
 }
 
+/**
+ * Navigates to catalogue browsing page
+ * Closes the add menu dropdown before navigation
+ */
 const navigateToCatalogue = () => {
   showAddMenu.value = false
   router.push('/closet/add/catalogue')
 }
 
+/**
+ * Computed property that filters items based on search term, category, and favorites
+ * 
+ * Applies multiple filters in sequence:
+ * 1. Search filter across name, brand, color, and category
+ * 2. Category filter (if not 'all')
+ * 3. Favorites filter (if enabled)
+ * 
+ * @returns {Array} Filtered array of clothing items
+ */
 const filteredItems = computed(() => {
   let filtered = items.value
 
+  // Apply search filter across multiple fields
+  if (searchTerm.value) {
+    const query = searchTerm.value.toLowerCase()
+    filtered = filtered.filter(item => 
+      item.name?.toLowerCase().includes(query) ||
+      item.brand?.toLowerCase().includes(query) ||
+      item.color?.toLowerCase().includes(query) ||
+      item.category?.toLowerCase().includes(query)
+    )
+  }
+
+  // Apply category filter
   if (activeCategory.value !== 'all') {
     filtered = filtered.filter(item => item.category === activeCategory.value)
   }
 
+  // Apply favorites filter
   if (showFavoritesOnly.value) {
     filtered = filtered.filter(item => item.is_favorite)
   }
@@ -551,5 +644,9 @@ const handleFavoriteRelease = (event, item) => {
   setTimeout(() => {
     event.target.classList.remove('heart-pulse')
   }, 300)
+}
+
+const handleSearch = () => {
+  // Search is handled by computed property
 }
 </script>

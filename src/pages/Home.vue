@@ -16,9 +16,7 @@
   @version 1.0.0
 -->
 <template>
-  <div :class="`min-h-screen p-6 md:p-12 ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-white'
-  }`">
+  <div class="min-h-screen p-6 md:p-12 bg-background">
     <!-- Debug info -->
     <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
       <p class="text-yellow-800">Debug: No user data available</p>

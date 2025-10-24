@@ -1,7 +1,5 @@
 <template>
-  <div :class="`min-h-screen p-6 md:p-12 ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-white'
-  }`">
+  <div class="min-h-screen p-6 md:p-12 bg-background">
     <!-- Header -->
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex items-center justify-between mb-6">
@@ -115,6 +113,26 @@
       </div>
     </div>
 
+    <!-- Search Bar -->
+    <div class="max-w-6xl mx-auto mb-8">
+      <div class="relative">
+        <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
+        }`" />
+        <input
+          v-model="searchTerm"
+          type="text"
+          placeholder="Search your outfits..."
+          :class="`w-full pl-10 pr-4 py-3 rounded-lg border ${
+            theme.value === 'dark'
+              ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
+              : 'bg-stone-100 border-stone-300 text-black placeholder-stone-500'
+          }`"
+          @input="handleSearch"
+        />
+      </div>
+    </div>
+
     <!-- Outfits Grid -->
     <div class="max-w-6xl mx-auto">
       <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -136,12 +154,12 @@
         <h3 :class="`text-xl font-semibold mb-2 ${
           theme.value === 'dark' ? 'text-white' : 'text-black'
         }`">
-          No outfits found
+          {{ searchTerm ? 'No outfits found matching your search.' : 'No outfits found' }}
         </h3>
         <p :class="`text-lg mb-4 ${
           theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">
-          Start creating your first outfit!
+          {{ searchTerm ? 'Try adjusting your search terms.' : 'Start creating your first outfit!' }}
         </p>
         <button
           @click="navigateToCreate('personal')"
@@ -445,7 +463,7 @@ import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
 import { OutfitsService } from '@/services/outfitsService'
-import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart } from 'lucide-vue-next'
+import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart, Search } from 'lucide-vue-next'
 import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
 
 const { theme } = useTheme()
@@ -465,6 +483,7 @@ const showAddMenu = ref(false)
 const activeFilter = ref('all')
 const showOutfitDetail = ref(false)
 const selectedOutfit = ref(null)
+const searchTerm = ref('')
 
 const filters = [
   { value: 'all', label: 'All Outfits' },
@@ -474,6 +493,17 @@ const filters = [
 const filteredOutfits = computed(() => {
   let filtered = outfits.value
 
+  // Apply search filter
+  if (searchTerm.value) {
+    const query = searchTerm.value.toLowerCase()
+    filtered = filtered.filter(outfit => 
+      outfit.outfit_name?.toLowerCase().includes(query) ||
+      outfit.name?.toLowerCase().includes(query) ||
+      outfit.description?.toLowerCase().includes(query)
+    )
+  }
+
+  // Apply favorites filter
   if (activeFilter.value === 'favorites') {
     filtered = filtered.filter(outfit => outfit.is_favorite)
   }
@@ -604,6 +634,10 @@ const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+const handleSearch = () => {
+  // Search is handled by computed property
 }
 
 onMounted(async () => {
