@@ -128,7 +128,7 @@
       <!-- Filters (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
         <!-- Category Filters -->
-        <div class="flex flex-wrap gap-2 mb-3">
+        <div class="flex flex-wrap gap-2">
           <button
             v-for="category in categories"
             :key="category"
@@ -145,13 +145,11 @@
           >
             {{ getCategoryLabel(category) }}
           </button>
-        </div>
-        
-        <!-- Favorites Button - Full width on mobile -->
-        <div class="w-full">
+          
+          <!-- Favorites Button - Same size as other filter buttons -->
           <button
             @click="showFavoritesOnly = !showFavoritesOnly"
-            :class="`w-full flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
+            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
               showFavoritesOnly
                 ? theme.value === 'dark'
                   ? 'bg-red-600 text-white'
@@ -192,9 +190,7 @@
     <div v-if="currentSubRoute === 'default'" class="max-w-6xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="py-16 text-center">
-        <div :class="`spinner-modern mx-auto mb-6 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`"></div>
+        <div class="spinner-modern mx-auto mb-6"></div>
         <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
           Loading your closet...
         </p>

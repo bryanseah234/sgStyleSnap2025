@@ -160,6 +160,19 @@
   background: var(--background);
 }
 
+/* Dark mode spinner - use white for better visibility */
+.dark .spinner-modern {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    white 100%
+  );
+}
+
+.dark .spinner-modern::before {
+  background: var(--background);
+}
+
 /* Shimmer Effect for Skeleton Loaders - Right to Left */
 @keyframes shimmer {
   0% {
@@ -527,15 +540,15 @@
 .navbar-glass {
   -webkit-backdrop-filter: blur(var(--blur-medium));
   backdrop-filter: blur(var(--blur-medium));
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all var(--duration-normal) var(--ease-liquid);
 }
 
 .navbar-glass:hover {
   -webkit-backdrop-filter: blur(var(--blur-dynamic));
   backdrop-filter: blur(var(--blur-dynamic));
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.25);
   transform: translateY(-1px);
 }
 
@@ -546,7 +559,7 @@
 }
 
 .dark .navbar-glass:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 /* Navigation item liquid effects */
@@ -598,7 +611,14 @@
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .navbar-glass,
+  .navbar-glass {
+    transition: none;
+    transform: none;
+    /* Keep backdrop filter for translucency even with reduced motion */
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  
   .nav-item-liquid {
     transition: none;
     transform: none;
