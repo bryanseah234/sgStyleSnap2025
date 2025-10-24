@@ -20,7 +20,7 @@
   <div v-if="loading" :class="`min-h-screen flex items-center justify-center ${
     theme.value === 'dark' ? 'bg-black' : 'bg-stone-50'
   }`">
-    <div :class="`spinner-modern ${
+    <div :class="`spinner-modern mx-auto ${
       theme.value === 'dark' ? 'text-white' : 'text-black'
     }`" />
   </div>
