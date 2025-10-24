@@ -12,17 +12,15 @@
   <div class="min-h-screen flex items-center justify-center bg-background max-w-full overflow-x-hidden">
     <div class="text-center">
       <!-- Loading Spinner -->
-      <div class="mx-auto mb-6">
-        <div class="spinner-modern"></div>
+      <div class="flex flex-col items-center mb-6">
+        <div class="spinner-modern mb-4"></div>
+        <h1 class="text-2xl font-bold text-foreground mb-2">
+          {{ statusMessage }}
+        </h1>
+        <p class="text-stone-600 dark:text-zinc-400">
+          {{ statusDescription }}
+        </p>
       </div>
-      
-      <!-- Status Message -->
-      <h1 class="text-2xl font-bold text-foreground mb-2">
-        {{ statusMessage }}
-      </h1>
-      <p class="text-stone-600 dark:text-zinc-400">
-        {{ statusDescription }}
-      </p>
       
       <!-- Error Message -->
       <div v-if="error" class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg">

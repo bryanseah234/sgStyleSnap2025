@@ -27,6 +27,7 @@
     
     <!-- Desktop Sidebar Navigation with Liquid Glass -->
     <aside 
+      v-if="!isLandingPage"
       ref="navbarRef"
       class="hidden md:flex fixed left-0 top-0 h-full w-64 navbar-glass flex-col items-stretch py-8 px-4 z-50"
       @mouseenter="navbarHoverIn"
@@ -116,6 +117,7 @@
 
     <!-- Mobile Bottom Navigation with liquid glass -->
     <nav 
+      v-if="!isLandingPage"
       ref="mobileNavRef"
       class="md:hidden fixed bottom-0 left-0 right-0 navbar-glass z-50 px-2 py-3 pb-safe"
       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
@@ -165,7 +167,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="md:ml-64 pb-24 md:pb-0 min-h-screen">
+    <main :class="`${isLandingPage ? '' : 'md:ml-64'} ${isLandingPage ? '' : 'pb-24 md:pb-0'} min-h-screen`">
       <transition
         :name="'page'"
         mode="out-in"
@@ -187,8 +189,8 @@
  * Provides responsive navigation for both desktop and mobile devices.
  */
 
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
@@ -213,6 +215,7 @@ import GlobalPopup from './GlobalPopup.vue'
 
 // Router, theme, and auth composables
 const router = useRouter()
+const route = useRoute()
 const { theme, loadUser, refreshTheme, toggleTheme } = useTheme()
 const { showConfirm } = usePopup()
 const authStore = useAuthStore()
@@ -223,6 +226,9 @@ const { elementRef: themeButtonRef, pressIn: themePressIn, pressOut: themePressO
 const { elementRef: logoutButtonRef, pressIn: logoutPressIn, pressOut: logoutPressOut } = useLiquidPress()
 const { elementRef: mobileNavRef, hoverIn: mobileNavHoverIn, hoverOut: mobileNavHoverOut } = useLiquidHover()
 const { prefersReducedMotion } = useReducedMotion()
+
+// Computed property to check if current route is landing page
+const isLandingPage = computed(() => route.path === '/')
 
 // Service instances for data prefetching
 const clothesService = new ClothesService()

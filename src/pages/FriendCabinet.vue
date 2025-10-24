@@ -143,8 +143,8 @@
       </div>
 
       <!-- Items Grid/List -->
-      <div v-if="loading" class="text-center py-12">
-        <div class="spinner-modern mx-auto mb-4" />
+      <div v-if="loading" class="flex flex-col items-center py-12">
+        <div class="spinner-modern mb-4" />
         <p :class="`text-lg ${
           theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">

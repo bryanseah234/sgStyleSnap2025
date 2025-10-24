@@ -2,8 +2,8 @@
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <div class="max-w-5xl mx-auto">
       <!-- Loading -->
-      <div v-if="isLoading" class="py-16 text-center">
-        <div class="spinner-modern mx-auto mb-6"></div>
+      <div v-if="isLoading" class="flex flex-col items-center py-16">
+        <div class="spinner-modern mb-6"></div>
         <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">Loading profile...</p>
       </div>
 

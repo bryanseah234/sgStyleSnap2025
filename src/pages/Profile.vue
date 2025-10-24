@@ -15,8 +15,8 @@
       
       <div v-if="user" class="max-w-2xl mx-auto">
         <!-- Loading state -->
-        <div v-if="authStore.loading" class="text-center py-8">
-          <div class="spinner-modern mx-auto mb-4" />
+        <div v-if="authStore.loading" class="flex flex-col items-center py-8">
+          <div class="spinner-modern mb-4" />
           <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
             Loading profile...
           </p>

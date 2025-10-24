@@ -2,29 +2,34 @@
   <div class="min-h-screen flex items-center justify-center p-4 bg-background max-w-full overflow-x-hidden">
     <div class="text-center">
       <!-- Loading Spinner -->
-      <div v-if="loggingOut" class="mb-6">
-        <div class="spinner-modern text-foreground mx-auto"></div>
+      <div v-if="loggingOut" class="flex flex-col items-center mb-6">
+        <div class="spinner-modern text-foreground mb-4"></div>
+        <h1 class="text-2xl font-bold mb-2 text-foreground">
+          Logging out...
+        </h1>
+        <p :class="`text-lg ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        }`">
+          Please wait while we sign you out
+        </p>
       </div>
       
       <!-- Logout Complete -->
-      <div v-else class="mb-6">
+      <div v-else class="flex flex-col items-center mb-6">
         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
           </svg>
         </div>
+        <h1 class="text-2xl font-bold mb-2 text-foreground">
+          Logged out successfully
+        </h1>
+        <p :class="`text-lg ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        }`">
+          Redirecting to landing page...
+        </p>
       </div>
-      
-      <!-- Status Message -->
-      <h1 class="text-2xl font-bold mb-2 text-foreground">
-        {{ loggingOut ? 'Logging out...' : 'Logged out successfully' }}
-      </h1>
-      
-      <p :class="`text-lg ${
-        theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-      }`">
-        {{ loggingOut ? 'Please wait while we sign you out' : 'Redirecting to landing page...' }}
-      </p>
     </div>
   </div>
 </template>

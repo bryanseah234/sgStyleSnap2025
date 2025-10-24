@@ -128,8 +128,8 @@
       </div>
 
       <!-- Loading state -->
-      <div v-if="isLoading" class="py-16 text-center">
-        <div class="spinner-modern mx-auto mb-6"></div>
+      <div v-if="isLoading" class="flex flex-col items-center py-16">
+        <div class="spinner-modern mb-6"></div>
         <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
           Loading your friends...
         </p>
