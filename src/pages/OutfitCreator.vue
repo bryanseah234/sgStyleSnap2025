@@ -802,7 +802,7 @@ const loadWardrobeItems = async () => {
         wardrobeItems.value = []
       }
     } else if (itemsSource.value === 'friends') {
-      // Load items from friend's closet
+      // Load items from friend's closet using privacy-respecting method
       if (!friendProfile.value?.id) {
         console.log('OutfitCreator: No friend profile loaded, cannot load items')
         wardrobeItems.value = []
@@ -810,10 +810,7 @@ const loadWardrobeItems = async () => {
       }
       
       console.log('OutfitCreator: Loading friend items for:', friendProfile.value.username)
-      const result = await clothesService.getClothes({
-        owner_id: friendProfile.value.id,
-        limit: 100 // Load up to 100 items
-      })
+      const result = await clothesService.getFriendCloset(friendProfile.value.id)
       
       if (result && result.success) {
         wardrobeItems.value = result.data || []
