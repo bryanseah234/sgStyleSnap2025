@@ -50,6 +50,7 @@ StyleSnap 2025 is designed for easy deployment on modern cloud platforms. This g
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SUPABASE_SYNC_FUNCTION_URL=https://your-project-ref.supabase.co/functions/v1/sync-auth-users-realtime
 ```
 
 #### Cloudinary Configuration (Optional)
@@ -150,7 +151,30 @@ supabase db push
 psql -h db.your-project.supabase.co -U postgres -d postgres -f database/migrations/001_initial_schema.sql
 ```
 
-#### 4. Configure RLS Policies
+#### 4. Deploy Edge Function for User Sync
+The application uses a Supabase Edge Function for real-time user synchronization:
+
+```bash
+# Deploy the Edge Function
+supabase functions deploy sync-auth-users-realtime
+
+# Verify deployment
+curl https://your-project-ref.supabase.co/functions/v1/sync-auth-users-realtime
+```
+
+**Edge Function Features**:
+- Real-time subscription to `auth.users` INSERT events
+- Automatic user profile creation in `public.users`
+- Username generation from email
+- Service role authentication (bypasses RLS)
+- Health endpoint for monitoring
+
+**Monitoring**:
+- Check Edge Function logs in Supabase Dashboard
+- Monitor real-time user sync activity
+- Use health endpoint for status checks
+
+#### 5. Configure RLS Policies
 ```sql
 -- Enable RLS on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
