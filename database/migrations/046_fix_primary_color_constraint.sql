@@ -74,52 +74,33 @@ ALTER TABLE catalog_items
   ));
 
 -- ============================================
--- 3. ADD SECONDARY COLORS CONSTRAINTS
+-- 3. ADD SECONDARY COLORS CONSTRAINTS (SIMPLIFIED)
 -- ============================================
 
 -- Drop existing secondary colors constraints
 ALTER TABLE clothes DROP CONSTRAINT IF EXISTS check_secondary_colors;
 ALTER TABLE catalog_items DROP CONSTRAINT IF EXISTS check_catalog_secondary_colors;
 
--- Create comprehensive secondary colors constraints
+-- Create simplified secondary colors constraints
+-- Note: We can't use subqueries in check constraints, so we'll use a simpler approach
 ALTER TABLE clothes 
   ADD CONSTRAINT check_secondary_colors 
   CHECK (
     secondary_colors IS NULL OR 
-    (array_length(secondary_colors, 1) IS NULL) OR
-    (array_length(secondary_colors, 1) <= 3 AND 
-     NOT EXISTS (
-       SELECT 1 FROM unnest(secondary_colors) AS color
-       WHERE color NOT IN (
-         'black', 'white', 'gray', 'beige', 'brown',
-         'red', 'blue', 'yellow',
-         'green', 'orange', 'purple', 'pink',
-         'navy', 'teal', 'maroon', 'olive', 'gold', 'silver'
-       )
-     )
-    )
+    array_length(secondary_colors, 1) IS NULL OR
+    array_length(secondary_colors, 1) <= 3
   );
 
 ALTER TABLE catalog_items 
   ADD CONSTRAINT check_catalog_secondary_colors 
   CHECK (
     secondary_colors IS NULL OR 
-    (array_length(secondary_colors, 1) IS NULL) OR
-    (array_length(secondary_colors, 1) <= 3 AND 
-     NOT EXISTS (
-       SELECT 1 FROM unnest(secondary_colors) AS color
-       WHERE color NOT IN (
-         'black', 'white', 'gray', 'beige', 'brown',
-         'red', 'blue', 'yellow',
-         'green', 'orange', 'purple', 'pink',
-         'navy', 'teal', 'maroon', 'olive', 'gold', 'silver'
-       )
-     )
-    )
+    array_length(secondary_colors, 1) IS NULL OR
+    array_length(secondary_colors, 1) <= 3
   );
 
 -- ============================================
--- 4. CREATE HELPER FUNCTION FOR COLOR VALIDATION
+-- 4. CREATE HELPER FUNCTIONS FOR COLOR VALIDATION
 -- ============================================
 
 -- Function to validate color values
@@ -132,6 +113,29 @@ BEGIN
     'green', 'orange', 'purple', 'pink',
     'navy', 'teal', 'maroon', 'olive', 'gold', 'silver'
   );
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Function to validate secondary colors array
+CREATE OR REPLACE FUNCTION validate_secondary_colors(colors_array VARCHAR(50)[])
+RETURNS BOOLEAN AS $$
+DECLARE
+  color_item VARCHAR(50);
+BEGIN
+  -- If array is null or empty, it's valid
+  IF colors_array IS NULL OR array_length(colors_array, 1) IS NULL THEN
+    RETURN TRUE;
+  END IF;
+  
+  -- Check each color in the array
+  FOREACH color_item IN ARRAY colors_array
+  LOOP
+    IF NOT is_valid_color(color_item) THEN
+      RETURN FALSE;
+    END IF;
+  END LOOP;
+  
+  RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
@@ -181,6 +185,7 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- Grant execute permissions on color functions
 GRANT EXECUTE ON FUNCTION is_valid_color(VARCHAR(50)) TO authenticated;
+GRANT EXECUTE ON FUNCTION validate_secondary_colors(VARCHAR(50)[]) TO authenticated;
 GRANT EXECUTE ON FUNCTION normalize_color(VARCHAR(50)) TO authenticated;
 
 -- ============================================
@@ -195,13 +200,13 @@ DECLARE
 BEGIN
   SELECT COUNT(*) INTO clothes_constraint_count
   FROM information_schema.check_constraints 
-  WHERE table_name = 'clothes' 
-    AND constraint_name IN ('check_primary_color', 'check_secondary_colors');
+  WHERE constraint_name IN ('check_primary_color', 'check_secondary_colors')
+    AND constraint_schema = 'public';
   
   SELECT COUNT(*) INTO catalog_constraint_count
   FROM information_schema.check_constraints 
-  WHERE table_name = 'catalog_items' 
-    AND constraint_name IN ('check_catalog_primary_color', 'check_catalog_secondary_colors');
+  WHERE constraint_name IN ('check_catalog_primary_color', 'check_catalog_secondary_colors')
+    AND constraint_schema = 'public';
   
   IF clothes_constraint_count = 2 THEN
     RAISE NOTICE 'SUCCESS: All clothes color constraints created';
@@ -227,13 +232,16 @@ COMMENT ON CONSTRAINT check_catalog_primary_color ON catalog_items IS
 'Ensures primary_color contains only valid color values or NULL';
 
 COMMENT ON CONSTRAINT check_secondary_colors ON clothes IS 
-'Ensures secondary_colors array contains only valid color values (max 3) or NULL';
+'Ensures secondary_colors array has max 3 elements or NULL (color validation done by application)';
 
 COMMENT ON CONSTRAINT check_catalog_secondary_colors ON catalog_items IS 
-'Ensures secondary_colors array contains only valid color values (max 3) or NULL';
+'Ensures secondary_colors array has max 3 elements or NULL (color validation done by application)';
 
 COMMENT ON FUNCTION is_valid_color IS 
 'Validates if a color value is in the allowed list';
+
+COMMENT ON FUNCTION validate_secondary_colors IS 
+'Validates if all colors in an array are valid (use this in application logic)';
 
 COMMENT ON FUNCTION normalize_color IS 
 'Normalizes color values to standard format and handles common variations';
