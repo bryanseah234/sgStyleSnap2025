@@ -93,6 +93,7 @@
             </label>
             <select
               v-model="formData.category"
+              @change="onCategoryChange"
               :class="`w-full h-12 px-4 rounded-xl transition-colors ${
                 theme.value === 'dark'
                   ? 'bg-zinc-800 border-zinc-700 text-white border'
@@ -106,7 +107,7 @@
               <option value="bottom">Bottoms</option>
               <option value="shoes">Shoes</option>
               <option value="outerwear">Outerwear</option>
-              <option value="hat">Accessories</option>
+              <option value="accessory">Accessories</option>
             </select>
           </div>
 
@@ -154,17 +155,32 @@
             }`">
               Type
             </label>
-            <input
+            <select
               v-model="formData.type"
-              placeholder="e.g., T-Shirt, Jeans, Sneakers"
+              :disabled="!formData.category"
               :class="`w-full h-12 px-4 rounded-xl transition-colors ${
                 theme.value === 'dark'
                   ? 'bg-zinc-800 border-zinc-700 text-white border'
                   : 'bg-stone-50 border-stone-200 text-black border'
               } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
+              } ${
+                !formData.category 
+                  ? theme.value === 'dark' 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'opacity-50 cursor-not-allowed'
+                  : ''
               }`"
-            />
+            >
+              <option value="">Select type</option>
+              <option 
+                v-for="type in availableTypes" 
+                :key="type" 
+                :value="type"
+              >
+                {{ type }}
+              </option>
+            </select>
           </div>
 
           <div>
@@ -237,6 +253,15 @@ const clothesService = new ClothesService()
 
 const emit = defineEmits(['item-added'])
 
+// Category to clothing type mapping
+const categoryTypeMapping = {
+  top: ['Blouse', 'Body', 'Dress', 'Hoodie', 'Longsleeve', 'Polo', 'Shirt', 'T-Shirt', 'Top', 'Undershirt'],
+  bottom: ['Pants', 'Shorts', 'Skirt'],
+  outerwear: ['Blazer', 'Outwear'],
+  shoes: ['Shoes'],
+  accessory: ['Hat']
+}
+
 const uploading = ref(false)
 const isSubmitting = ref(false)
 const previewUrl = ref('')
@@ -250,9 +275,20 @@ const formData = ref({
   image_url: '',
 })
 
+// Computed property for available types based on selected category
+const availableTypes = computed(() => {
+  if (!formData.value.category) return []
+  return categoryTypeMapping[formData.value.category] || []
+})
+
 const canSubmit = computed(() => {
   return formData.value.name && formData.value.category && formData.value.privacy && formData.value.image_url
 })
+
+// Handle category change - reset type when category changes
+const onCategoryChange = () => {
+  formData.value.type = '' // Reset type when category changes
+}
 
 const handleFileUpload = async (e) => {
   const file = e.target.files?.[0]
@@ -297,10 +333,10 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true
   try {
-    const result = await clothesService.createClothingItem({
+    const result = await clothesService.addClothes({
       name: formData.value.name,
       category: formData.value.category,
-      type: formData.value.type || null,
+      clothing_type: formData.value.type || null, // Use clothing_type for database
       image_url: formData.value.image_url,
       color: formData.value.color || null,
       brand: formData.value.brand || null,
