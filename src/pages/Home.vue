@@ -52,43 +52,8 @@
       </p>
     </div>
 
-    <!-- Stats Cards with Liquid Glass Hover -->
-    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-      <router-link
-        v-for="(stat, index) in stats"
-        :key="stat.label"
-        :to="stat.route"
-        v-scroll-animate.up
-        :class="`liquid-card p-8 rounded-3xl group cursor-pointer ${
-          theme.value === 'dark'
-            ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
-            : 'bg-white border border-stone-200 hover:border-stone-300'
-        }`"
-        :style="{ transitionDelay: `${index * 100}ms` }"
-        @mouseenter="handleCardHover($event, index)"
-        @mouseleave="handleCardLeave($event, index)"
-        @mousemove="handleCardMouseMove($event, index)"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <div :class="`liquid-icon p-3 rounded-2xl ${
-            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-          }`">
-            <component :is="stat.icon" class="w-6 h-6" />
-          </div>
-          <span class="text-4xl font-bold text-foreground liquid-number">
-            {{ stat.value }}
-          </span>
-        </div>
-        <p :class="`text-lg font-medium liquid-text ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
-          {{ stat.label }}
-        </p>
-      </router-link>
-    </div>
-
-    <!-- Notifications Section -->
-    <div class="max-w-6xl mx-auto" v-scroll-animate.scale>
+    <!-- Notifications Section - First on mobile -->
+    <div class="max-w-6xl mx-auto mb-16" v-scroll-animate.scale>
       <div :class="`p-8 rounded-3xl transition-all duration-300 ${
         theme.value === 'dark'
           ? 'bg-zinc-900 border border-zinc-800'
@@ -203,6 +168,33 @@
           </p>
         </div>
       </div>
+    </div>
+
+    <!-- Stats Cards with Liquid Glass Hover - Second on mobile -->
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+      <router-link
+        v-for="(stat, index) in stats"
+        :key="stat.label"
+        :to="stat.route"
+        v-scroll-animate.up
+        class="liquid-card p-8 rounded-3xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300"
+        :style="{ transitionDelay: `${index * 100}ms` }"
+        @mouseenter="handleCardHover($event, index)"
+        @mouseleave="handleCardLeave($event, index)"
+        @mousemove="handleCardMouseMove($event, index)"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div class="liquid-icon p-3 rounded-2xl bg-stone-100">
+            <component :is="stat.icon" class="w-6 h-6" />
+          </div>
+          <span class="text-4xl font-bold text-foreground liquid-number">
+            {{ stat.value }}
+          </span>
+        </div>
+        <p class="text-lg font-medium liquid-text text-stone-600">
+          {{ stat.label }}
+        </p>
+      </router-link>
     </div>
 
   </div>

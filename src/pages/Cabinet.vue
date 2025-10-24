@@ -78,30 +78,38 @@
         </div>
       </div>
       
-      <!-- Sub-route Navigation -->
+      <!-- Sub-route Navigation - Individual Buttons -->
       <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="mb-8">
-        <div class="flex space-x-1 p-1 rounded-lg bg-stone-100 dark:bg-zinc-800">
+        <div class="flex flex-wrap gap-2">
           <button
             @click="$router.push('/closet/add/manual')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'manual' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
+            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+              currentSubRoute === 'manual'
+                ? theme.value === 'dark'
+                  ? 'bg-white text-black'
+                  : 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
             }`"
           >
-            <Plus class="w-4 h-4 inline mr-2" />
+            <Plus class="w-4 h-4" />
             Manual Add
           </button>
           <button
             @click="$router.push('/closet/add/catalogue')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'catalogue' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
+            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+              currentSubRoute === 'catalogue'
+                ? theme.value === 'dark'
+                  ? 'bg-white text-black'
+                  : 'bg-black text-white'
+                : theme.value === 'dark'
+                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
             }`"
           >
-            <Shirt class="w-4 h-4 inline mr-2" />
-            Catalogue
+            <Shirt class="w-4 h-4" />
+            Browse Catalogue
           </button>
         </div>
       </div>

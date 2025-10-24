@@ -699,22 +699,7 @@
 }
 
 /* Dark mode adjustments */
-.dark .liquid-card {
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.dark .liquid-card:hover {
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
-  background: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-.dark .liquid-card::before {
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-}
+/* Stats cards remain theme-neutral - no dark mode overrides */
 
 /* Mobile fallback */
 @media (max-width: 768px) {
@@ -827,22 +812,7 @@
 }
 
 /* Dark mode adjustments */
-.dark .liquid-item-card {
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.dark .liquid-item-card:hover {
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
-  background: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-}
-
-.dark .liquid-item-card::before {
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
-}
+/* Clothing item cards remain theme-neutral - no dark mode overrides */
 
 /* Mobile fallback */
 @media (max-width: 768px) {

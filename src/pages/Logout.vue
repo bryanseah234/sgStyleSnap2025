@@ -23,7 +23,7 @@
       <p :class="`text-lg ${
         theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
       }`">
-        {{ loggingOut ? 'Please wait while we sign you out' : 'Redirecting to login page...' }}
+        {{ loggingOut ? 'Please wait while we sign you out' : 'Redirecting to landing page...' }}
       </p>
     </div>
   </div>
@@ -66,8 +66,8 @@ const performLogout = async () => {
     
     // Wait a moment to show success message, then redirect
     setTimeout(() => {
-      console.log('🚪 Logout Page: Redirecting to login...')
-      router.push('/login')
+      console.log('🚪 Logout Page: Redirecting to landing page...')
+      router.push('/')
     }, 1500)
     
   } catch (error) {
@@ -78,8 +78,8 @@ const performLogout = async () => {
     loggingOut.value = false
     
     setTimeout(() => {
-      console.log('🚪 Logout Page: Redirecting to login after error...')
-      router.push('/login')
+      console.log('🚪 Logout Page: Redirecting to landing page after error...')
+      router.push('/')
     }, 1000)
   }
 }
@@ -93,7 +93,7 @@ onMounted(() => {
     if (loggingOut.value) {
       console.log('🚪 Logout Page: Fallback redirect triggered')
       loggingOut.value = false
-      router.push('/login')
+      router.push('/')
     }
   }, 15000)
 })
