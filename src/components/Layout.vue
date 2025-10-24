@@ -86,10 +86,10 @@
           <span class="font-medium text-secondary-foreground">
             Toggle Theme
           </span>
-          <!-- Moon icon for dark mode (indicating current dark state) -->
-          <Moon v-if="theme.value === 'dark'" class="w-5 h-5" />
-          <!-- Sun icon for light mode (indicating current light state) -->
-          <Sun v-else class="w-5 h-5" />
+         <!-- Sun icon for dark mode (action: switch to light) -->
+         <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
+         <!-- Moon icon for light mode (action: switch to dark) -->
+         <Moon v-else class="w-5 h-5" />
         </button>
 
         <button
