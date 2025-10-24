@@ -128,13 +128,36 @@ export class CatalogService {
    */
   async addToCloset(catalogItemId, privacy = 'friends') {
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        throw new Error('User not authenticated')
+      console.log('📦 CatalogService: ========== Adding Catalog Item to Closet ==========')
+      console.log('📦 CatalogService: Catalog item ID:', catalogItemId)
+      console.log('📦 CatalogService: Privacy setting:', privacy)
+      console.log('📦 CatalogService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ CatalogService: Supabase not configured')
+        throw new Error('Supabase not configured')
       }
 
-      console.log('CatalogService: Adding catalog item to closet:', catalogItemId)
+      // Get current user
+      console.log('📦 CatalogService: Getting current user...')
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('❌ CatalogService: User not authenticated:', userError)
+        throw new Error('User not authenticated')
+      }
+      
+      console.log('✅ CatalogService: User authenticated:', {
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.name || 'Unknown'
+      })
+
+      console.log('📦 CatalogService: Calling Postgres function add_catalog_item_to_closet...')
+      console.log('📦 CatalogService: Function parameters:', {
+        user_id_param: user.id,
+        catalog_item_id_param: catalogItemId,
+        privacy_param: privacy
+      })
 
       // Call the Postgres function to add item to closet
       const { data, error } = await supabase
@@ -144,24 +167,40 @@ export class CatalogService {
           privacy_param: privacy
         })
 
+      console.log('📦 CatalogService: Function call result:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        newItemId: data
+      })
+
       if (error) {
-        console.error('CatalogService: Error adding to closet:', error)
+        console.error('❌ CatalogService: Error adding to closet:', error)
         
         // Handle specific errors
         if (error.message?.includes('already in closet')) {
+          console.warn('⚠️ CatalogService: Item already in closet')
           throw new Error('This item is already in your closet')
         } else if (error.message?.includes('not found or inactive')) {
+          console.warn('⚠️ CatalogService: Catalog item not found or inactive')
           throw new Error('Catalog item not found or no longer available')
         }
         
         throw error
       }
 
-      console.log('CatalogService: Successfully added item to closet. New item ID:', data)
+      console.log('✅ CatalogService: Successfully added item to closet!', {
+        catalog_item_id: catalogItemId,
+        new_clothing_item_id: data,
+        privacy: privacy,
+        user_id: user.id
+      })
+      
       return data
 
     } catch (error) {
-      console.error('CatalogService: Error in addToCloset:', error)
+      console.error('❌ CatalogService: Error in addToCloset:', error)
       throw error
     }
   }

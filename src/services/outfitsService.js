@@ -143,73 +143,166 @@ export class OutfitsService {
 
   async createOutfit(outfitData) {
     try {
+      console.log('👗 OutfitsService: ========== Creating New Outfit ==========')
+      console.log('👗 OutfitsService: Input data:', {
+        name: outfitData.name,
+        description: outfitData.description,
+        occasion: outfitData.occasion,
+        weather: outfitData.weather,
+        temperature: outfitData.temperature,
+        is_public: outfitData.is_public,
+        style_tags: outfitData.style_tags,
+        itemsCount: outfitData.items?.length || 0,
+        items: outfitData.items?.map(item => ({
+          id: item.id || item.clothing_item_id,
+          position_x: item.position_x || item.x,
+          position_y: item.position_y || item.y,
+          z_index: item.z_index,
+          scale: item.scale,
+          rotation: item.rotation
+        }))
+      })
+      console.log('👗 OutfitsService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ OutfitsService: Supabase not configured')
+        throw new Error('Supabase not configured')
+      }
+
+      // Get current authenticated user
+      console.log('👗 OutfitsService: Getting current user...')
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        console.error('❌ OutfitsService: User not authenticated:', userError)
+        throw new Error('Not authenticated')
+      }
+      
+      console.log('✅ OutfitsService: User authenticated:', {
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.name || 'Unknown'
+      })
 
       // Check outfit quota before creating
+      console.log('👗 OutfitsService: Checking outfit quota...')
       const { data: canCreate, error: quotaError } = await supabase
         .rpc('can_create_outfit', { user_id: user.id })
 
+      console.log('👗 OutfitsService: Quota check result:', {
+        canCreate,
+        hasError: !!quotaError,
+        errorMessage: quotaError?.message
+      })
+
       if (quotaError) {
-        console.error('OutfitsService: Error checking outfit quota:', quotaError)
+        console.error('❌ OutfitsService: Error checking outfit quota:', quotaError)
         throw quotaError
       }
 
       if (!canCreate) {
+        console.warn('⚠️ OutfitsService: Outfit quota exceeded')
         throw new Error('Outfit quota exceeded. You can create up to 50 outfits. Please delete some outfits to create new ones.')
       }
 
+      console.log('✅ OutfitsService: Quota check passed')
+
+      // Create outfit record
+      console.log('👗 OutfitsService: Creating outfit record...')
+      const outfitInsertData = {
+        owner_id: user.id,
+        outfit_name: outfitData.name,
+        description: outfitData.description,
+        occasion: outfitData.occasion,
+        weather_condition: outfitData.weather,
+        temperature: outfitData.temperature,
+        is_public: outfitData.is_public || false,
+        style_tags: outfitData.style_tags || []
+      }
+      
+      console.log('👗 OutfitsService: Outfit insert data:', outfitInsertData)
+
       const { data: outfit, error: outfitError } = await supabase
         .from('outfits')
-        .insert({
-          owner_id: user.id,
-          outfit_name: outfitData.name,
-          description: outfitData.description,
-          occasion: outfitData.occasion,
-          weather_condition: outfitData.weather,
-          temperature: outfitData.temperature,
-          is_public: outfitData.is_public || false,
-          style_tags: outfitData.style_tags || []
-        })
+        .insert(outfitInsertData)
         .select()
         .single()
 
-      if (outfitError) throw outfitError
+      console.log('👗 OutfitsService: Outfit creation result:', {
+        hasData: !!outfit,
+        hasError: !!outfitError,
+        errorMessage: outfitError?.message,
+        errorCode: outfitError?.code,
+        outfitId: outfit?.id
+      })
+
+      if (outfitError) {
+        console.error('❌ OutfitsService: Error creating outfit:', outfitError)
+        throw outfitError
+      }
+
+      console.log('✅ OutfitsService: Outfit created successfully!', {
+        outfit_id: outfit.id,
+        outfit_name: outfit.outfit_name,
+        owner_id: outfit.owner_id,
+        created_at: outfit.created_at
+      })
 
       // Add outfit items
       if (outfitData.items && outfitData.items.length > 0) {
-        console.log('OutfitsService: Adding outfit items:', outfitData.items)
+        console.log('👗 OutfitsService: Adding outfit items:', outfitData.items.length)
         
-        const outfitItems = outfitData.items.map((item, index) => ({
-          outfit_id: outfit.id,
-          // Support both formats: direct id or clothing_item_id
-          clothing_item_id: item.clothing_item_id || item.id,
-          // Support both formats: position_x/y or x/y
-          x_position: item.position_x || item.x || 0,
-          y_position: item.position_y || item.y || 0,
-          z_index: item.z_index || index,
-          scale: item.scale || 1.0,
-          rotation: item.rotation || 0
-        }))
+        const outfitItems = outfitData.items.map((item, index) => {
+          const mappedItem = {
+            outfit_id: outfit.id,
+            // Support both formats: direct id or clothing_item_id
+            clothing_item_id: item.clothing_item_id || item.id,
+            // Support both formats: position_x/y or x/y
+            x_position: item.position_x || item.x || 0,
+            y_position: item.position_y || item.y || 0,
+            z_index: item.z_index || index,
+            scale: item.scale || 1.0,
+            rotation: item.rotation || 0
+          }
+          
+          console.log(`👗 OutfitsService: Mapped item ${index + 1}:`, mappedItem)
+          return mappedItem
+        })
 
-        console.log('OutfitsService: Mapped outfit items:', outfitItems)
+        console.log('👗 OutfitsService: All mapped outfit items:', outfitItems)
 
+        console.log('👗 OutfitsService: Inserting outfit items into database...')
         const { error: itemsError } = await supabase
           .from('outfit_items')
           .insert(outfitItems)
 
+        console.log('👗 OutfitsService: Outfit items insert result:', {
+          hasError: !!itemsError,
+          errorMessage: itemsError?.message,
+          errorCode: itemsError?.code
+        })
+
         if (itemsError) {
-          console.error('OutfitsService: Error inserting outfit items:', itemsError)
+          console.error('❌ OutfitsService: Error inserting outfit items:', itemsError)
           throw itemsError
         }
         
-        console.log('OutfitsService: Outfit items inserted successfully')
+        console.log('✅ OutfitsService: Outfit items inserted successfully!', {
+          itemsCount: outfitItems.length,
+          outfitId: outfit.id
+        })
       } else {
-        console.warn('OutfitsService: No items to add to outfit')
+        console.log('👗 OutfitsService: No items to add to outfit')
       }
+
+      console.log('✅ OutfitsService: Outfit creation completed successfully!', {
+        outfit_id: outfit.id,
+        outfit_name: outfit.outfit_name,
+        items_count: outfitData.items?.length || 0
+      })
 
       return outfit
     } catch (error) {
+      console.error('❌ OutfitsService: Error in createOutfit:', error)
       handleSupabaseError(error, 'create outfit')
     }
   }

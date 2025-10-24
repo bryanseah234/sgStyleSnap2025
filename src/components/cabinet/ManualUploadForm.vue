@@ -329,20 +329,58 @@ const clearImage = () => {
 }
 
 const handleSubmit = async () => {
-  if (!canSubmit.value || isSubmitting.value) return
+  console.log('📝 ManualUploadForm: ========== Form Submission Started ==========')
+  console.log('📝 ManualUploadForm: Form validation:', {
+    canSubmit: canSubmit.value,
+    isSubmitting: isSubmitting.value,
+    formData: {
+      name: formData.value.name,
+      category: formData.value.category,
+      type: formData.value.type,
+      color: formData.value.color,
+      brand: formData.value.brand,
+      privacy: formData.value.privacy,
+      hasImage: !!formData.value.image_url,
+      imageUrl: formData.value.image_url?.substring(0, 50) + '...'
+    }
+  })
+
+  if (!canSubmit.value || isSubmitting.value) {
+    console.log('📝 ManualUploadForm: Form submission blocked:', {
+      canSubmit: canSubmit.value,
+      isSubmitting: isSubmitting.value
+    })
+    return
+  }
 
   isSubmitting.value = true
+  console.log('📝 ManualUploadForm: Form submission in progress...')
+  
   try {
     // Create a File object from the image URL for Cloudinary upload
     let imageFile = null
     if (formData.value.image_url && formData.value.image_url.startsWith('blob:')) {
-      // Convert blob URL to File object
-      const response = await fetch(formData.value.image_url)
-      const blob = await response.blob()
-      imageFile = new File([blob], 'uploaded-image.jpg', { type: blob.type })
+      console.log('📝 ManualUploadForm: Converting blob URL to File object...')
+      try {
+        // Convert blob URL to File object
+        const response = await fetch(formData.value.image_url)
+        const blob = await response.blob()
+        imageFile = new File([blob], 'uploaded-image.jpg', { type: blob.type })
+        
+        console.log('📝 ManualUploadForm: File conversion successful:', {
+          fileName: imageFile.name,
+          fileSize: `${(imageFile.size / 1024 / 1024).toFixed(2)}MB`,
+          fileType: imageFile.type
+        })
+      } catch (conversionError) {
+        console.error('❌ ManualUploadForm: Error converting blob to file:', conversionError)
+        throw new Error('Failed to process image file')
+      }
+    } else {
+      console.log('📝 ManualUploadForm: No image file to convert')
     }
 
-    const result = await clothesService.addClothes({
+    const serviceData = {
       name: formData.value.name,
       category: formData.value.category,
       clothing_type: formData.value.type || null,
@@ -350,22 +388,43 @@ const handleSubmit = async () => {
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
       image_file: imageFile, // Pass the file for Cloudinary upload
+    }
+
+    console.log('📝 ManualUploadForm: Calling clothesService.addClothes with data:', serviceData)
+
+    const result = await clothesService.addClothes(serviceData)
+
+    console.log('📝 ManualUploadForm: Service call result:', {
+      success: result.success,
+      hasData: !!result.data,
+      hasError: !!result.error
     })
 
     if (result.success) {
-      console.log('ManualUploadForm: Item created successfully')
+      console.log('✅ ManualUploadForm: Item created successfully!', {
+        itemId: result.data?.id,
+        itemName: result.data?.name,
+        category: result.data?.category
+      })
       showSuccess('Item added successfully!')
       emit('item-added')
+      console.log('📝 ManualUploadForm: Navigating to /closet')
       router.push('/closet')
     } else {
-      console.error('ManualUploadForm: Failed to create item:', result.error)
+      console.error('❌ ManualUploadForm: Failed to create item:', result.error)
       showError('Failed to add item. Please try again.')
     }
   } catch (error) {
-    console.error('ManualUploadForm: Error creating item:', error)
+    console.error('❌ ManualUploadForm: Error creating item:', error)
+    console.error('❌ ManualUploadForm: Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
     showError('An error occurred. Please try again.')
   } finally {
     isSubmitting.value = false
+    console.log('📝 ManualUploadForm: Form submission completed')
   }
 }
 </script>

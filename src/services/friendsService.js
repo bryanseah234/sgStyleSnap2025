@@ -288,23 +288,54 @@ export class FriendsService {
 
   async sendFriendRequest(userId) {
     try {
+      console.log('🤝 FriendsService: ========== Sending Friend Request ==========')
+      console.log('🤝 FriendsService: Target user ID:', userId)
+      console.log('🤝 FriendsService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ FriendsService: Supabase not configured')
+        throw new Error('Supabase not configured')
+      }
+
+      // Get current authenticated user
+      console.log('🤝 FriendsService: Getting current user...')
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        console.error('❌ FriendsService: User not authenticated:', userError)
+        throw new Error('Not authenticated')
+      }
+      
+      console.log('✅ FriendsService: User authenticated:', {
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.name || 'Unknown'
+      })
 
       // Check friends quota before sending request
+      console.log('🤝 FriendsService: Checking friends quota...')
       const { data: canAddFriend, error: quotaError } = await supabase
         .rpc('can_add_friend', { user_id: user.id })
 
+      console.log('🤝 FriendsService: Quota check result:', {
+        canAddFriend,
+        hasError: !!quotaError,
+        errorMessage: quotaError?.message
+      })
+
       if (quotaError) {
-        console.error('FriendsService: Error checking friends quota:', quotaError)
+        console.error('❌ FriendsService: Error checking friends quota:', quotaError)
         throw quotaError
       }
 
       if (!canAddFriend) {
+        console.warn('⚠️ FriendsService: Friends quota exceeded')
         throw new Error('Friends quota exceeded. You can have up to 50 friends. Please remove some friends to add new ones.')
       }
 
+      console.log('✅ FriendsService: Friends quota check passed')
+
       // Check if friendship already exists (check both possible orderings)
+      console.log('🤝 FriendsService: Checking for existing friendship...')
       const { data: existingFriendships1 } = await supabase
         .from('friends')
         .select('id, status')
@@ -317,11 +348,25 @@ export class FriendsService {
         .eq('requester_id', userId)
         .eq('receiver_id', user.id)
 
+      console.log('🤝 FriendsService: Existing friendship check results:', {
+        direction1: existingFriendships1?.length || 0,
+        direction2: existingFriendships2?.length || 0,
+        friendship1: existingFriendships1?.[0],
+        friendship2: existingFriendships2?.[0]
+      })
+
       const existingFriendship1 = existingFriendships1 && existingFriendships1.length > 0 ? existingFriendships1[0] : null
       const existingFriendship2 = existingFriendships2 && existingFriendships2.length > 0 ? existingFriendships2[0] : null
       const existingFriendship = existingFriendship1 || existingFriendship2
 
       if (existingFriendship) {
+        console.warn('⚠️ FriendsService: Friendship already exists:', {
+          friendship_id: existingFriendship.id,
+          status: existingFriendship.status,
+          requester_id: user.id,
+          receiver_id: userId
+        })
+        
         if (existingFriendship.status === 'pending') {
           throw new Error('Friend request already sent')
         } else if (existingFriendship.status === 'accepted') {
@@ -329,38 +374,80 @@ export class FriendsService {
         }
       }
 
+      console.log('✅ FriendsService: No existing friendship found, proceeding with request')
+
       // Create friend request - the authenticated user is always the requester
+      console.log('🤝 FriendsService: Creating friend request...')
+      const friendRequestData = {
+        requester_id: user.id,
+        receiver_id: userId,
+        status: 'pending'
+      }
+      
+      console.log('🤝 FriendsService: Friend request data:', friendRequestData)
+      
       const { data, error } = await supabase
         .from('friends')
-        .insert({
-          requester_id: user.id,
-          receiver_id: userId,
-          status: 'pending'
-        })
+        .insert(friendRequestData)
         .select()
         .single()
 
-      if (error) throw error
+      console.log('🤝 FriendsService: Insert result:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorMessage: error?.message,
+        errorCode: error?.code
+      })
+
+      if (error) {
+        console.error('❌ FriendsService: Error inserting friend request:', error)
+        throw error
+      }
+
+      console.log('✅ FriendsService: Friend request sent successfully!', {
+        friendship_id: data.id,
+        requester_id: data.requester_id,
+        receiver_id: data.receiver_id,
+        status: data.status,
+        created_at: data.created_at
+      })
 
       // The notification will be created automatically by the database trigger
       // defined in the 027_friend_notifications.sql migration
       // No need to manually insert notification here
+      console.log('📧 FriendsService: Notification will be created automatically by database trigger')
 
       return data
     } catch (error) {
+      console.error('❌ FriendsService: Error in sendFriendRequest:', error)
       handleSupabaseError(error, 'send friend request')
     }
   }
 
   async getFriendRequests() {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) {
-        console.error('Authentication error in getFriendRequests:', userError)
-        throw new Error('Not authenticated')
+      console.log('📥 FriendsService: ========== Getting Friend Requests ==========')
+      console.log('📥 FriendsService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ FriendsService: Supabase not configured')
+        return []
       }
 
-      console.log('Getting friend requests for user:', user.id)
+      // Get current authenticated user
+      console.log('📥 FriendsService: Getting current user...')
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('❌ FriendsService: User not authenticated:', userError)
+        throw new Error('Not authenticated')
+      }
+      
+      console.log('✅ FriendsService: User authenticated:', {
+        user_id: user.id,
+        user_email: user.email
+      })
+
+      console.log('📥 FriendsService: Getting pending friend requests where user is receiver...')
 
       // Get pending friend requests where current user is the receiver
       const { data, error } = await supabase
@@ -379,35 +466,75 @@ export class FriendsService {
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
 
+      console.log('📥 FriendsService: Query result:', {
+        hasData: !!data,
+        hasError: !!error,
+        requestCount: data?.length || 0,
+        errorMessage: error?.message
+      })
+
       if (error) {
-        console.error('Database error in getFriendRequests:', error)
+        console.error('❌ FriendsService: Database error in getFriendRequests:', error)
         throw error
       }
 
-      console.log('Raw friend requests data:', data)
+      console.log('📥 FriendsService: Raw friend requests data:', data)
 
       // Map the data to match expected format
-      const requests = (data || []).map(request => ({
-        id: request.id,
-        requester: request.requester,
-        status: request.status,
-        created_at: request.created_at
-      }))
+      console.log('📥 FriendsService: Processing friend requests data...')
+      const requests = (data || []).map(request => {
+        console.log('📥 FriendsService: Processing request:', {
+          request_id: request.id,
+          requester_id: request.requester_id,
+          receiver_id: request.receiver_id,
+          status: request.status,
+          requester_name: request.requester?.name,
+          requester_username: request.requester?.username
+        })
+        
+        return {
+          id: request.id,
+          requester: request.requester,
+          status: request.status,
+          created_at: request.created_at
+        }
+      })
 
-      console.log('Processed friend requests:', requests)
+      console.log('✅ FriendsService: Successfully processed friend requests:', requests.length)
+      console.log('📥 FriendsService: Processed friend requests:', requests)
       return requests
     } catch (error) {
-      console.error('getFriendRequests error:', error)
+      console.error('❌ FriendsService: Error in getFriendRequests:', error)
       handleSupabaseError(error, 'get friend requests')
     }
   }
 
   async acceptFriendRequest(requestId) {
     try {
+      console.log('✅ FriendsService: ========== Accepting Friend Request ==========')
+      console.log('✅ FriendsService: Request ID:', requestId)
+      console.log('✅ FriendsService: Supabase configured:', !!supabase)
+      
+      if (!supabase) {
+        console.error('❌ FriendsService: Supabase not configured')
+        throw new Error('Supabase not configured')
+      }
+
+      // Get current authenticated user
+      console.log('✅ FriendsService: Getting current user...')
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        console.error('❌ FriendsService: User not authenticated:', userError)
+        throw new Error('Not authenticated')
+      }
+      
+      console.log('✅ FriendsService: User authenticated:', {
+        user_id: user.id,
+        user_email: user.email
+      })
 
       // Get the request details
+      console.log('✅ FriendsService: Fetching friend request details...')
       const { data: requests, error: requestError } = await supabase
         .from('friends')
         .select('*')
@@ -415,31 +542,63 @@ export class FriendsService {
         .eq('receiver_id', user.id)
         .eq('status', 'pending')
 
+      console.log('✅ FriendsService: Request fetch result:', {
+        hasData: !!requests,
+        hasError: !!requestError,
+        requestCount: requests?.length || 0,
+        errorMessage: requestError?.message
+      })
+
       if (requestError) {
         console.error('❌ FriendsService: Error fetching friend request:', requestError)
         throw new Error('Error fetching friend request')
       }
 
       if (!requests || requests.length === 0) {
+        console.warn('⚠️ FriendsService: Friend request not found or not pending')
         throw new Error('Friend request not found')
       }
 
       const request = requests[0]
+      console.log('✅ FriendsService: Found friend request:', {
+        request_id: request.id,
+        requester_id: request.requester_id,
+        receiver_id: request.receiver_id,
+        status: request.status,
+        created_at: request.created_at
+      })
 
       // Update request status to accepted
+      console.log('✅ FriendsService: Updating request status to accepted...')
       const { error: updateError } = await supabase
         .from('friends')
         .update({ status: 'accepted' })
         .eq('id', requestId)
 
-      if (updateError) throw updateError
+      console.log('✅ FriendsService: Update result:', {
+        hasError: !!updateError,
+        errorMessage: updateError?.message
+      })
+
+      if (updateError) {
+        console.error('❌ FriendsService: Error updating friend request:', updateError)
+        throw updateError
+      }
+
+      console.log('✅ FriendsService: Friend request accepted successfully!', {
+        request_id: requestId,
+        requester_id: request.requester_id,
+        receiver_id: request.receiver_id
+      })
 
       // The notification will be created automatically by the database trigger
       // defined in the 027_friend_notifications.sql migration
       // No need to manually insert notification here
+      console.log('📧 FriendsService: Notification will be created automatically by database trigger')
 
       return { success: true }
     } catch (error) {
+      console.error('❌ FriendsService: Error in acceptFriendRequest:', error)
       handleSupabaseError(error, 'accept friend request')
     }
   }

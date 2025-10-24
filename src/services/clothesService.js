@@ -240,44 +240,101 @@ export class ClothesService {
    */
   async addClothes(clothesData) {
     try {
+      console.log('👕 ClothesService: ========== Adding New Clothing Item ==========')
+      console.log('👕 ClothesService: Input data:', {
+        name: clothesData.name,
+        category: clothesData.category,
+        clothing_type: clothesData.clothing_type,
+        brand: clothesData.brand,
+        size: clothesData.size,
+        privacy: clothesData.privacy,
+        color: clothesData.color,
+        hasImageFile: !!clothesData.image_file,
+        imageFileName: clothesData.image_file?.name,
+        imageFileSize: clothesData.image_file?.size,
+        imageFileType: clothesData.image_file?.type
+      })
+      console.log('👕 ClothesService: Supabase configured:', !!supabase)
+      console.log('👕 ClothesService: Cloudinary configured:', !!cloudinary)
+
+      if (!supabase) {
+        console.error('❌ ClothesService: Supabase not configured')
+        throw new Error('Supabase not configured')
+      }
+
+      // Get current authenticated user
+      console.log('👕 ClothesService: Getting current user...')
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        console.error('❌ ClothesService: User not authenticated:', userError)
+        throw new Error('Not authenticated')
+      }
+      
+      console.log('✅ ClothesService: User authenticated:', {
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.name || 'Unknown'
+      })
 
       // Check item upload quota before adding
+      console.log('👕 ClothesService: Checking item upload quota...')
       const { data: canUpload, error: quotaError } = await supabase
         .rpc('can_upload_item', { user_id: user.id })
 
+      console.log('👕 ClothesService: Quota check result:', {
+        canUpload,
+        hasError: !!quotaError,
+        errorMessage: quotaError?.message
+      })
+
       if (quotaError) {
-        console.error('ClothesService: Error checking item quota:', quotaError)
+        console.error('❌ ClothesService: Error checking item quota:', quotaError)
         throw quotaError
       }
 
       if (!canUpload) {
+        console.warn('⚠️ ClothesService: Item upload quota exceeded')
         throw new Error('Item upload quota exceeded. You can upload up to 50 items. Please delete some items to upload new ones.')
       }
+
+      console.log('✅ ClothesService: Quota check passed')
 
       // Upload image if provided
       let imageData = null
       if (clothesData.image_file) {
+        console.log('📸 ClothesService: Uploading image to Cloudinary...')
         try {
           imageData = await cloudinary.uploadImage(clothesData.image_file, {
             folder: 'closet-items',
             quality: 80,
             format: 'auto'
           })
+          
+          console.log('✅ ClothesService: Image uploaded successfully:', {
+            public_id: imageData.public_id,
+            secure_url: imageData.secure_url,
+            thumbnail_url: imageData.thumbnail_url,
+            width: imageData.width,
+            height: imageData.height,
+            format: imageData.format,
+            size: `${(imageData.bytes / 1024 / 1024).toFixed(2)}MB`
+          })
         } catch (uploadError) {
-          console.warn('Cloudinary upload failed:', uploadError)
+          console.warn('⚠️ ClothesService: Cloudinary upload failed:', uploadError)
           
           // Check if it's a configuration error
           if (uploadError.message.includes('Cloudinary not configured')) {
+            console.error('❌ ClothesService: Cloudinary not configured')
             throw new Error('Image upload is not configured. Please contact support.')
           } else if (uploadError.message.includes('Unsupported file type')) {
+            console.error('❌ ClothesService: Unsupported file type:', clothesData.image_file?.type)
             throw new Error('Please select a valid image file (JPEG, PNG, WebP, or GIF).')
           } else if (uploadError.message.includes('File too large')) {
+            console.error('❌ ClothesService: File too large:', `${(clothesData.image_file?.size / 1024 / 1024).toFixed(2)}MB`)
             throw new Error('Image file is too large. Please select a file smaller than 10MB.')
           } else {
             // Use a fallback image URL to satisfy the not-null constraint
-            console.warn('Using fallback image due to upload failure')
+            console.warn('⚠️ ClothesService: Using fallback image due to upload failure')
             imageData = {
               secure_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good/v1/defaults/default-clothing-item.webp',
               thumbnail_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/v1/defaults/default-clothing-item.webp'
@@ -286,12 +343,15 @@ export class ClothesService {
         }
       } else {
         // No image provided, use fallback
+        console.log('📸 ClothesService: No image provided, using fallback image')
         imageData = {
           secure_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good/v1/defaults/default-clothing-item.webp',
           thumbnail_url: 'https://res.cloudinary.com/sgstylesnap/image/upload/f_webp,q_auto:good,w_400,h_400,c_fill/v1/defaults/default-clothing-item.webp'
         }
       }
 
+      // Prepare data for database insertion
+      console.log('👕 ClothesService: Preparing data for database insertion...')
       const insertData = {
         owner_id: user.id,
         name: clothesData.name,
@@ -310,16 +370,45 @@ export class ClothesService {
         insertData.thumbnail_url = imageData.thumbnail_url
       }
 
+      console.log('👕 ClothesService: Final insert data:', insertData)
+
+      // Insert into database
+      console.log('👕 ClothesService: Inserting item into database...')
       const { data, error } = await supabase
         .from('clothes')
         .insert(insertData)
         .select()
         .single()
 
-      if (error) throw error
+      console.log('👕 ClothesService: Database insert result:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        itemId: data?.id
+      })
+
+      if (error) {
+        console.error('❌ ClothesService: Error inserting item:', error)
+        throw error
+      }
+
+      console.log('✅ ClothesService: Item added successfully!', {
+        item_id: data.id,
+        name: data.name,
+        category: data.category,
+        clothing_type: data.clothing_type,
+        brand: data.brand,
+        privacy: data.privacy,
+        primary_color: data.primary_color,
+        image_url: data.image_url,
+        thumbnail_url: data.thumbnail_url,
+        created_at: data.created_at
+      })
 
       return { success: true, data }
     } catch (error) {
+      console.error('❌ ClothesService: Error in addClothes:', error)
       handleSupabaseError(error, 'add clothes')
     }
   }

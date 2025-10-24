@@ -154,39 +154,85 @@ const sendingRequest = ref(null)
 
 // Search users
 const searchUsers = async () => {
+  console.log('🔍 AddFriendDialog: ========== Searching Users ==========')
+  console.log('🔍 AddFriendDialog: Search query:', searchQuery.value)
+  
   if (!searchQuery.value.trim()) {
+    console.log('🔍 AddFriendDialog: Empty search query, clearing results')
     searchResults.value = []
     return
   }
   
+  console.log('🔍 AddFriendDialog: Starting user search...')
   searching.value = true
+  
   try {
+    console.log('🔍 AddFriendDialog: Calling api.entities.User.search...')
     const result = await api.entities.User.search(searchQuery.value)
+    
+    console.log('🔍 AddFriendDialog: Search result:', {
+      hasResult: !!result,
+      resultCount: result?.length || 0,
+      users: result?.map(user => ({
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        email: user.email
+      }))
+    })
+    
     searchResults.value = result || []
   } catch (error) {
-    console.error('Error searching users:', error)
+    console.error('❌ AddFriendDialog: Error searching users:', error)
+    console.error('❌ AddFriendDialog: Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
     searchResults.value = []
   } finally {
     searching.value = false
+    console.log('🔍 AddFriendDialog: Search completed')
   }
 }
 
 // Send friend request
 const sendFriendRequest = async (userId) => {
+  console.log('🤝 AddFriendDialog: ========== Sending Friend Request ==========')
+  console.log('🤝 AddFriendDialog: Target user ID:', userId)
+  console.log('🤝 AddFriendDialog: Current search results:', searchResults.value.length)
+  
   sendingRequest.value = userId
+  console.log('🤝 AddFriendDialog: Setting sendingRequest state to:', userId)
+  
   try {
-    await api.entities.Friendship.create({
+    console.log('🤝 AddFriendDialog: Calling api.entities.Friendship.create...')
+    const requestData = {
       friend_id: userId,
       status: 'pending'
-    })
+    }
+    console.log('🤝 AddFriendDialog: Request data:', requestData)
+    
+    await api.entities.Friendship.create(requestData)
+    
+    console.log('✅ AddFriendDialog: Friend request sent successfully!')
+    console.log('🤝 AddFriendDialog: Emitting friendRequestSent event')
     emit('friendRequestSent')
+    
+    console.log('🤝 AddFriendDialog: Clearing search form...')
     searchQuery.value = ''
     searchResults.value = []
   } catch (error) {
-    console.error('Error sending friend request:', error)
+    console.error('❌ AddFriendDialog: Error sending friend request:', error)
+    console.error('❌ AddFriendDialog: Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
     showError('Failed to send friend request')
   } finally {
     sendingRequest.value = null
+    console.log('🤝 AddFriendDialog: Clearing sendingRequest state')
   }
 }
 
