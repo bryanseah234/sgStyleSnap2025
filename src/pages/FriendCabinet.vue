@@ -144,9 +144,7 @@
 
       <!-- Items Grid/List -->
       <div v-if="loading" class="text-center py-12">
-        <div :class="`spinner-modern mx-auto mb-4 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`" />
+        <div class="spinner-modern mx-auto mb-4" />
         <p :class="`text-lg ${
           theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
         }`">

@@ -38,9 +38,7 @@
                 : 'border-stone-300 hover:border-stone-400 bg-stone-50 hover:bg-stone-100'
             }`"
           >
-            <div v-if="uploading" :class="`spinner-modern ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`" />
+            <div v-if="uploading" class="spinner-modern" />
             <template v-else>
               <Upload :class="`w-16 h-16 mb-4 ${
                 theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'

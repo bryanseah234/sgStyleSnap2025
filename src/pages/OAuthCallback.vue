@@ -13,9 +13,7 @@
     <div class="text-center">
       <!-- Loading Spinner -->
       <div class="mx-auto mb-6">
-        <div :class="`spinner-modern ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`"></div>
+        <div class="spinner-modern"></div>
       </div>
       
       <!-- Status Message -->

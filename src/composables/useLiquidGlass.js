@@ -202,34 +202,52 @@ export function useLiquidPress() {
     // Prevent animation if element not available
     if (!elementRef.value) return
     
-    // Update press state
-    isPressing.value = true
-    
-    // Ensure Motion library is loaded
-    await loadMotionOne()
+    try {
+      // Update press state
+      isPressing.value = true
+      
+      // Ensure Motion library is loaded
+      await loadMotionOne()
 
-    // Apply elastic compression effect
-    if (animate && spring) {
-      animate(
-        elementRef.value,
-        {
-          scale: 0.95,                    // Compress element slightly
-          translateZ: -5,                  // Push element back in 3D space
-          filter: 'brightness(0.9)'        // Dim brightness for pressed feel
-        },
-        {
-          duration: 0.1,                   // Quick compression
-          easing: spring({ 
-            stiffness: 400,                // High stiffness for immediate response
-            damping: 15                    // Low damping for elastic feel
-          })
-        }
-      )
-    } else {
-      // Fallback CSS animation when Motion library unavailable
-      elementRef.value.style.transform = 'scale(0.95) translateZ(-5px)'
-      elementRef.value.style.filter = 'brightness(0.9)'
-      elementRef.value.style.transition = 'all 0.1s ease-out'
+      // Apply elastic compression effect
+      if (animate && spring) {
+        animate(
+          elementRef.value,
+          {
+            scale: 0.95,                    // Compress element slightly
+            translateZ: -5,                  // Push element back in 3D space
+            filter: 'brightness(0.9)'        // Dim brightness for pressed feel
+          },
+          {
+            duration: 0.1,                   // Quick compression
+            easing: spring({ 
+              stiffness: 400,                // High stiffness for immediate response
+              damping: 15                    // Low damping for elastic feel
+            })
+          }
+        ).catch((error) => {
+          console.warn('⚠️ Press in animation error:', error)
+          // Fallback CSS animation on error
+          if (elementRef.value) {
+            elementRef.value.style.transform = 'scale(0.95) translateZ(-5px)'
+            elementRef.value.style.filter = 'brightness(0.9)'
+            elementRef.value.style.transition = 'all 0.1s ease-out'
+          }
+        })
+      } else {
+        // Fallback CSS animation when Motion library unavailable
+        elementRef.value.style.transform = 'scale(0.95) translateZ(-5px)'
+        elementRef.value.style.filter = 'brightness(0.9)'
+        elementRef.value.style.transition = 'all 0.1s ease-out'
+      }
+    } catch (error) {
+      console.warn('⚠️ Press in animation error:', error)
+      // Fallback CSS animation on error
+      if (elementRef.value) {
+        elementRef.value.style.transform = 'scale(0.95) translateZ(-5px)'
+        elementRef.value.style.filter = 'brightness(0.9)'
+        elementRef.value.style.transition = 'all 0.1s ease-out'
+      }
     }
   }
 
@@ -245,61 +263,79 @@ export function useLiquidPress() {
     // Prevent animation if element not available
     if (!elementRef.value) return
     
-    // Ensure Motion library is loaded
-    await loadMotionOne()
+    try {
+      // Ensure Motion library is loaded
+      await loadMotionOne()
 
-    // Apply elastic release with overshoot effect
-    if (animate && spring) {
-      animate(
-        elementRef.value,
-        {
-          scale: 1.02,                    // Slight overshoot for elastic feel
-          translateZ: 2,                   // Lift element slightly
-          filter: 'brightness(1.05)'       // Brighten for release feedback
-        },
-        {
-          duration: 0.2,                   // Release animation duration
-          easing: spring({ 
-            stiffness: 300,                // Moderate stiffness for smooth release
-            damping: 20                    // Moderate damping for controlled motion
-          })
-        }
-      ).then(() => {
-        // Final settle animation to return to exact original state
-        if (animate && spring) {
-          animate(
-            elementRef.value,
-            {
-              scale: 1,                     // Return to exact original scale
-              translateZ: 0,                 // Return to original Z position
-              filter: 'brightness(1)'        // Return to original brightness
-            },
-            {
-              duration: 0.15,                // Quick settle animation
-              easing: spring({ 
-                stiffness: 250,              // Lower stiffness for gentle settle
-                damping: 25                  // Higher damping for smooth settling
-              })
-            }
-          )
-        } else {
-          // Fallback CSS animation when Motion library unavailable
+      // Apply elastic release with overshoot effect
+      if (animate && spring) {
+        animate(
+          elementRef.value,
+          {
+            scale: 1.02,                    // Slight overshoot for elastic feel
+            translateZ: 2,                   // Lift element slightly
+            filter: 'brightness(1.05)'       // Brighten for release feedback
+          },
+          {
+            duration: 0.2,                   // Release animation duration
+            easing: spring({ 
+              stiffness: 300,                // Moderate stiffness for smooth release
+              damping: 20                    // Moderate damping for controlled motion
+            })
+          }
+        ).then(() => {
+          // Final settle animation to return to exact original state
+          if (animate && spring) {
+            animate(
+              elementRef.value,
+              {
+                scale: 1,                     // Return to exact original scale
+                translateZ: 0,                 // Return to original Z position
+                filter: 'brightness(1)'        // Return to original brightness
+              },
+              {
+                duration: 0.15,                // Quick settle animation
+                easing: spring({ 
+                  stiffness: 250,              // Lower stiffness for gentle settle
+                  damping: 25                  // Higher damping for smooth settling
+                })
+              }
+            )
+          } else {
+            // Fallback CSS animation when Motion library unavailable
+            elementRef.value.style.transform = 'scale(1) translateZ(0px)'
+            elementRef.value.style.filter = 'brightness(1)'
+            elementRef.value.style.transition = 'all 0.15s ease-out'
+          }
+        }).catch((error) => {
+          console.warn('⚠️ Press out animation error:', error)
+          // Fallback CSS animation on error
+          if (elementRef.value) {
+            elementRef.value.style.transform = 'scale(1) translateZ(0px)'
+            elementRef.value.style.filter = 'brightness(1)'
+            elementRef.value.style.transition = 'all 0.15s ease-out'
+          }
+        })
+      } else {
+        // Fallback CSS animation when Motion library unavailable
+        elementRef.value.style.transform = 'scale(1.02) translateZ(2px)'
+        elementRef.value.style.filter = 'brightness(1.05)'
+        elementRef.value.style.transition = 'all 0.2s ease-out'
+        
+        // Settle after release
+        setTimeout(() => {
           elementRef.value.style.transform = 'scale(1) translateZ(0px)'
           elementRef.value.style.filter = 'brightness(1)'
-          elementRef.value.style.transition = 'all 0.15s ease-out'
-        }
-      })
-    } else {
-      // Fallback CSS animation when Motion library unavailable
-      elementRef.value.style.transform = 'scale(1.02) translateZ(2px)'
-      elementRef.value.style.filter = 'brightness(1.05)'
-      elementRef.value.style.transition = 'all 0.2s ease-out'
-      
-      // Settle after release
-      setTimeout(() => {
+        }, 200)
+      }
+    } catch (error) {
+      console.warn('⚠️ Press out animation error:', error)
+      // Fallback CSS animation on error
+      if (elementRef.value) {
         elementRef.value.style.transform = 'scale(1) translateZ(0px)'
         elementRef.value.style.filter = 'brightness(1)'
-      }, 200)
+        elementRef.value.style.transition = 'all 0.15s ease-out'
+      }
     }
 
     // Update press state

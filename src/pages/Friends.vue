@@ -129,9 +129,7 @@
 
       <!-- Loading state -->
       <div v-if="isLoading" class="py-16 text-center">
-        <div :class="`spinner-modern mx-auto mb-6 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`"></div>
+        <div class="spinner-modern mx-auto mb-6"></div>
         <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
           Loading your friends...
         </p>

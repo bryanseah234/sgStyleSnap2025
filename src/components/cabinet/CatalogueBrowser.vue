@@ -117,9 +117,7 @@
 
     <!-- Catalog Items Grid -->
     <div v-if="loading" class="flex justify-center items-center h-64">
-      <div :class="`spinner-modern ${
-        theme.value === 'dark' ? 'text-white' : 'text-black'
-      }`" />
+      <div class="spinner-modern" />
     </div>
 
     <div v-else-if="catalogItems.length === 0" :class="`text-center py-16 rounded-2xl border ${
