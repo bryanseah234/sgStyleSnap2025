@@ -292,6 +292,7 @@ const formData = ref({
   brand: '',
   privacy: 'friends', // Default to friends
   image_url: '',
+  image_file: null, // Store the actual file for upload
 })
 
 // Computed property for available types based on selected category
@@ -315,28 +316,24 @@ const handleFileUpload = async (e) => {
 
   uploading.value = true
   try {
-    // Upload to Cloudinary instead of Supabase storage
-    const imageData = await cloudinary.uploadImage(file, {
-      folder: 'stylesnap/clothes',
-      quality: 80,
-      format: 'auto'
+    console.log('📸 ManualUploadForm: Starting file upload...', {
+      fileName: file.name,
+      fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+      fileType: file.type
     })
 
-    formData.value.image_url = imageData.secure_url
-    previewUrl.value = imageData.secure_url
-  } catch (error) {
-    console.error('Error uploading file:', error)
+    // Store the file for later upload (don't upload to Cloudinary yet)
+    formData.value.image_file = file
     
-    // Check if it's a configuration error
-    if (error.message.includes('Cloudinary not configured')) {
-      showError('Image upload is not configured. Please contact support.')
-    } else if (error.message.includes('Unsupported file type')) {
-      showError('Please select a valid image file (JPEG, PNG, WebP, or GIF).')
-    } else if (error.message.includes('File too large')) {
-      showError('Image file is too large. Please select a file smaller than 10MB.')
-    } else {
-      showError('Failed to upload image. Please try again.')
-    }
+    // Create preview URL from the file
+    const previewBlob = URL.createObjectURL(file)
+    formData.value.image_url = previewBlob
+    previewUrl.value = previewBlob
+    
+    console.log('📸 ManualUploadForm: File stored for upload, preview created')
+  } catch (error) {
+    console.error('❌ ManualUploadForm: Error processing file:', error)
+    showError('Failed to process image file. Please try again.')
   } finally {
     uploading.value = false
   }
