@@ -198,11 +198,22 @@ export class ClothesService {
             format: 'auto'
           })
         } catch (uploadError) {
-          console.warn('Cloudinary upload failed, using fallback image:', uploadError)
-          // Use a fallback image URL to satisfy the not-null constraint
-          imageData = {
-            secure_url: '/public/avatars/default-1.png',
-            thumbnail_url: '/public/avatars/default-1.png'
+          console.warn('Cloudinary upload failed:', uploadError)
+          
+          // Check if it's a configuration error
+          if (uploadError.message.includes('Cloudinary not configured')) {
+            throw new Error('Image upload is not configured. Please contact support.')
+          } else if (uploadError.message.includes('Unsupported file type')) {
+            throw new Error('Please select a valid image file (JPEG, PNG, WebP, or GIF).')
+          } else if (uploadError.message.includes('File too large')) {
+            throw new Error('Image file is too large. Please select a file smaller than 10MB.')
+          } else {
+            // Use a fallback image URL to satisfy the not-null constraint
+            console.warn('Using fallback image due to upload failure')
+            imageData = {
+              secure_url: '/public/avatars/default-1.png',
+              thumbnail_url: '/public/avatars/default-1.png'
+            }
           }
         }
       } else {

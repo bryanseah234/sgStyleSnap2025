@@ -71,7 +71,28 @@ export class CloudinaryService {
    */
   async uploadImage(file, options = {}) {
     if (!this.cloudName || !this.uploadPreset) {
-      throw new Error('Cloudinary not configured')
+      console.error('Cloudinary configuration missing:')
+      console.error('- CLOUDINARY_CLOUD_NAME:', this.cloudName ? '✅ Set' : '❌ Missing')
+      console.error('- CLOUDINARY_UPLOAD_PRESET:', this.uploadPreset ? '✅ Set' : '❌ Missing')
+      console.error('Please check your environment variables in .env.local')
+      throw new Error('Cloudinary not configured - missing environment variables')
+    }
+
+    // Validate file
+    if (!file) {
+      throw new Error('No file provided for upload')
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`Unsupported file type: ${file.type}. Allowed types: ${allowedTypes.join(', ')}`)
+    }
+
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxSize) {
+      throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size: 10MB`)
     }
 
     const formData = new FormData()
@@ -98,6 +119,15 @@ export class CloudinaryService {
     }
 
     try {
+      console.log('Uploading to Cloudinary:', {
+        cloudName: this.cloudName,
+        uploadPreset: this.uploadPreset,
+        fileName: file.name,
+        fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        fileType: file.type,
+        folder: options.folder || 'default'
+      })
+
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${this.cloudName}/image/upload`,
         {
@@ -107,10 +137,22 @@ export class CloudinaryService {
       )
 
       if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`)
+        const errorText = await response.text()
+        console.error('Cloudinary upload failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        })
+        throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`)
       }
 
       const data = await response.json()
+      console.log('Cloudinary upload successful:', {
+        publicId: data.public_id,
+        url: data.secure_url,
+        size: `${(data.bytes / 1024 / 1024).toFixed(2)}MB`,
+        format: data.format
+      })
       
       return {
         public_id: data.public_id,
@@ -124,7 +166,7 @@ export class CloudinaryService {
       }
     } catch (error) {
       console.error('Cloudinary upload error:', error)
-      throw new Error('Failed to upload image')
+      throw new Error(`Failed to upload image: ${error.message}`)
     }
   }
 

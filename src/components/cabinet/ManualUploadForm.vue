@@ -271,7 +271,17 @@ const handleFileUpload = async (e) => {
     previewUrl.value = imageData.secure_url
   } catch (error) {
     console.error('Error uploading file:', error)
-    showError('Failed to upload image. Please try again.')
+    
+    // Check if it's a configuration error
+    if (error.message.includes('Cloudinary not configured')) {
+      showError('Image upload is not configured. Please contact support.')
+    } else if (error.message.includes('Unsupported file type')) {
+      showError('Please select a valid image file (JPEG, PNG, WebP, or GIF).')
+    } else if (error.message.includes('File too large')) {
+      showError('Image file is too large. Please select a file smaller than 10MB.')
+    } else {
+      showError('Failed to upload image. Please try again.')
+    }
   } finally {
     uploading.value = false
   }
