@@ -351,7 +351,7 @@ const authInitPromise = authStore.initializeAuth().then(async () => {
     // Check if Edge Function URL is configured before attempting health check
     const configStatus = edgeFunctionSyncService.getConfigStatus()
     if (configStatus.functionUrl.includes('Not configured')) {
-      console.log('ℹ️ Edge Function sync service not configured - skipping health check')
+      console.log('ℹ️ Edge Function sync service not configured (base URL missing) - skipping health check')
     } else {
       const healthStatus = await edgeFunctionSyncService.checkSyncHealth()
       if (healthStatus.success && healthStatus.healthy) {

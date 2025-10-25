@@ -12,8 +12,9 @@ import { supabase } from '@/lib/supabase'
 
 export class EdgeFunctionHealthService {
   constructor() {
-    this.functionUrl = import.meta.env.VITE_SUPABASE_SYNC_FUNCTION_URL
     this.baseUrl = import.meta.env.VITE_SUPABASE_URL
+    // Construct Edge Function URL from base Supabase URL
+    this.functionUrl = this.baseUrl ? `${this.baseUrl}/functions/v1/sync-auth-users-realtime` : null
   }
 
   /**

@@ -12,8 +12,9 @@ import { supabase } from '@/lib/supabase'
 
 export class EdgeFunctionSyncService {
   constructor() {
-    this.functionUrl = import.meta.env.VITE_SUPABASE_SYNC_FUNCTION_URL
     this.baseUrl = import.meta.env.VITE_SUPABASE_URL
+    // Construct Edge Function URL from base Supabase URL
+    this.functionUrl = this.baseUrl ? `${this.baseUrl}/functions/v1/sync-auth-users-realtime` : null
   }
 
   /**
@@ -26,7 +27,7 @@ export class EdgeFunctionSyncService {
       console.log('🔍 EdgeFunctionSync: Monitoring user sync for:', userId)
       
       if (!this.functionUrl) {
-        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured - using fallback sync check')
+        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured (base URL missing) - using fallback sync check')
         // Fallback to direct database check when Edge Function is not available
         return await this.checkUserSyncFallback(userId)
       }
@@ -144,11 +145,11 @@ export class EdgeFunctionSyncService {
       console.log('🔍 EdgeFunctionSync: Checking sync function health...')
       
       if (!this.functionUrl) {
-        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured - skipping health check')
+        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured (base URL missing) - skipping health check')
         return {
           success: false,
           healthy: false,
-          error: 'Edge Function URL not configured',
+          error: 'Edge Function URL not configured (base URL missing)',
           timestamp: new Date().toISOString()
         }
       }
@@ -193,7 +194,7 @@ export class EdgeFunctionSyncService {
    */
   getConfigStatus() {
     return {
-      functionUrl: this.functionUrl ? '✅ Configured' : '❌ Not configured',
+      functionUrl: this.functionUrl ? '✅ Configured (constructed from base URL)' : '❌ Not configured (base URL missing)',
       baseUrl: this.baseUrl ? '✅ Configured' : '❌ Not configured',
       supabase: supabase ? '✅ Configured' : '❌ Not configured'
     }
@@ -269,11 +270,11 @@ export class EdgeFunctionSyncService {
       console.log('🔍 EdgeFunctionSync: Testing Edge Function connectivity...')
       
       if (!this.functionUrl) {
-        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured - skipping connectivity test')
+        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured (base URL missing) - skipping connectivity test')
         return {
           success: false,
           connected: false,
-          error: 'Edge Function URL not configured',
+          error: 'Edge Function URL not configured (base URL missing)',
           timestamp: new Date().toISOString()
         }
       }
