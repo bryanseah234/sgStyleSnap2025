@@ -198,3 +198,4 @@ const rejectSuggestion = async () => {
   }
 }
 </script>
+

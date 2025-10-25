@@ -224,3 +224,4 @@ export class FriendSuggestionsService {
 }
 
 export const friendSuggestionsService = new FriendSuggestionsService()
+
