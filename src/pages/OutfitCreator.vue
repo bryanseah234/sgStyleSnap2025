@@ -649,7 +649,7 @@ const activeCategory = ref('all')
 const wardrobeItems = ref([])
 const canvasItems = ref([])
 const selectedItemId = ref(null)
-const showGrid = ref(false)
+const showGrid = ref(true)
 const savingOutfit = ref(false)
 const canvasContainer = ref(null)
 

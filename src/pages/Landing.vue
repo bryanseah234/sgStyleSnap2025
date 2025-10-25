@@ -112,14 +112,14 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <Shirt class="w-6 h-6 text-primary" />
                 </div>
-                <h3 class="text-xl font-semibold text-foreground mb-3">Digital Closet</h3>
-                <p class="text-muted-foreground text-sm leading-relaxed">
+                <h3 class="text-xl font-semibold text-stone-900 mb-3">Digital Closet</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
                   Organize all your clothes digitally with photos and details.
                 </p>
               </div>
@@ -134,16 +134,16 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-8 md:p-12 shadow-xl transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden flex flex-col items-center justify-center text-center">
+            <div class="relative h-full bg-gradient-to-br from-white via-white to-primary/5 rounded-3xl p-8 md:p-12 shadow-xl transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden flex flex-col items-center justify-center text-center">
               <div class="shimmer-overlay-large"></div>
               <div class="relative z-10 w-full">
                 <div class="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-6 mx-auto group-hover:bg-primary/20 transition-colors duration-300 group-hover:rotate-6">
                   <Palette class="w-10 h-10 text-primary" />
                 </div>
-                <h3 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                <h3 class="text-3xl md:text-4xl font-bold text-stone-900 mb-4">
                   Outfit Creator
                 </h3>
-                <p class="text-lg text-muted-foreground leading-relaxed max-w-md mx-auto">
+                <p class="text-lg text-stone-600 leading-relaxed max-w-md mx-auto">
                   Mix and match your clothes to create stunning outfits and save your favorite combinations.
                 </p>
               </div>

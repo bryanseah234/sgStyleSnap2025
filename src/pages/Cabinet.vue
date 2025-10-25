@@ -223,7 +223,7 @@
         <div v-if="!searchTerm && authStore.isAuthenticated && currentUser?.id">
           <button
             @click="$router.push('/closet/add/manual')"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto ${
               theme.value === 'dark'
                 ? 'bg-white text-black hover:bg-zinc-200'
                 : 'bg-black text-white hover:bg-zinc-800'

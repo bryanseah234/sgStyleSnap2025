@@ -4,14 +4,9 @@
       <!-- Header -->
       <div class="flex items-start justify-between mb-8">
         <div>
-          <h1 class="text-4xl font-bold mb-2 text-foreground">
+          <h1 class="text-4xl font-bold text-foreground">
             Friends
           </h1>
-          <p :class="`text-lg ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
-            Connect and get inspired by others
-          </p>
         </div>
         
         <!-- Add Friend Button -->

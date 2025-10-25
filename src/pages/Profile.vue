@@ -3,17 +3,12 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold mb-2 text-foreground">
+        <h1 class="text-4xl font-bold text-foreground">
           Profile Settings
         </h1>
-        <p :class="`text-lg ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
-          Manage your account and preferences
-        </p>
       </div>
       
-      <div v-if="user" class="max-w-2xl mx-auto">
+      <div v-if="user">
         <!-- Loading state -->
         <div v-if="authStore.loading" class="flex flex-col items-center py-8">
           <div class="spinner-modern mb-4" />
@@ -22,8 +17,9 @@
           </p>
         </div>
         
-        <!-- Profile content -->
-        <div v-else>
+        <!-- Profile content - Grid layout for large screens, stacked on mobile -->
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- User Account Card -->
         <div :class="`rounded-xl p-6 ${
           theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
         }`">
@@ -125,7 +121,7 @@
         </div>
 
         <!-- Account Actions Section -->
-        <div :class="`rounded-xl p-6 mt-6 ${
+        <div :class="`rounded-xl p-6 ${
           theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
         }`">
           <h3 :class="`text-lg font-semibold mb-4 ${

@@ -4,14 +4,9 @@
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-4xl font-bold text-foreground mb-2">
+          <h1 class="text-4xl font-bold text-foreground">
             Your Outfits
           </h1>
-          <p :class="`text-lg ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
-            Browse and manage your saved outfit combinations
-          </p>
         </div>
         
         <!-- Add Outfit Dropdown Button -->
