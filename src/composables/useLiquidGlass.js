@@ -33,9 +33,24 @@ const loadMotionOne = async () => {
     try {
       // Dynamic import of Motion One library
       const motion = await import('motion')
-      animate = motion.animate
-      spring = motion.spring
-      timeline = motion.timeline
+      
+      // Defensive check to ensure motion object and its properties exist
+      if (motion && typeof motion.animate === 'function') {
+        animate = motion.animate
+      } else {
+        throw new Error('Motion animate function not available')
+      }
+      
+      if (motion && typeof motion.spring === 'function') {
+        spring = motion.spring
+      } else {
+        throw new Error('Motion spring function not available')
+      }
+      
+      if (motion && typeof motion.timeline === 'function') {
+        timeline = motion.timeline
+      }
+      
       console.log('✅ Motion One library loaded successfully')
     } catch (error) {
       console.warn('⚠️ Motion library not available, using fallback animations:', error)
@@ -84,30 +99,38 @@ export function useLiquidHover() {
     isHovering.value = true
     isAnimating.value = true
 
-    // Ensure Motion library is loaded
-    await loadMotionOne()
+    try {
+      // Ensure Motion library is loaded
+      await loadMotionOne()
 
-    // Apply liquid glass hover effect with spring physics
-    if (animate && spring) {
-      animate(
-        elementRef.value,
-        {
-          scale: 1.05,                    // Slight scale increase
-          rotateX: 2,                     // Subtle X-axis rotation
-          rotateY: 1,                     // Subtle Y-axis rotation
-          translateZ: 10,                  // Lift element in 3D space
-          filter: 'blur(0px) brightness(1.1)' // Enhance brightness
-        },
-        {
-          duration: 0.3,                  // Quick animation duration
-          easing: spring({ 
-            stiffness: 300,               // High stiffness for snappy feel
-            damping: 20                   // Moderate damping for smooth motion
-          })
-        }
-      )
-    } else {
-      // Fallback CSS animation when Motion library unavailable
+      // Apply liquid glass hover effect with spring physics
+      if (animate && spring && typeof animate === 'function' && typeof spring === 'function') {
+        animate(
+          elementRef.value,
+          {
+            scale: 1.05,                    // Slight scale increase
+            rotateX: 2,                     // Subtle X-axis rotation
+            rotateY: 1,                     // Subtle Y-axis rotation
+            translateZ: 10,                  // Lift element in 3D space
+            filter: 'blur(0px) brightness(1.1)' // Enhance brightness
+          },
+          {
+            duration: 0.3,                  // Quick animation duration
+            easing: spring({ 
+              stiffness: 300,               // High stiffness for snappy feel
+              damping: 20                   // Moderate damping for smooth motion
+            })
+          }
+        )
+      } else {
+        // Fallback CSS animation when Motion library unavailable
+        elementRef.value.style.transform = 'scale(1.05) translateZ(10px)'
+        elementRef.value.style.filter = 'brightness(1.1)'
+        elementRef.value.style.transition = 'all 0.3s ease-out'
+      }
+    } catch (error) {
+      console.warn('⚠️ Error in hoverIn animation, using fallback:', error)
+      // Fallback CSS animation on error
       elementRef.value.style.transform = 'scale(1.05) translateZ(10px)'
       elementRef.value.style.filter = 'brightness(1.1)'
       elementRef.value.style.transition = 'all 0.3s ease-out'
@@ -132,30 +155,38 @@ export function useLiquidHover() {
     isHovering.value = false
     isAnimating.value = true
 
-    // Ensure Motion library is loaded
-    await loadMotionOne()
+    try {
+      // Ensure Motion library is loaded
+      await loadMotionOne()
 
-    // Return to rest state with spring physics
-    if (animate && spring) {
-      animate(
-        elementRef.value,
-        {
-          scale: 1,                       // Return to original scale
-          rotateX: 0,                      // Reset X rotation
-          rotateY: 0,                      // Reset Y rotation
-          translateZ: 0,                   // Return to original Z position
-          filter: 'blur(0px) brightness(1)' // Reset brightness
-        },
-        {
-          duration: 0.4,                   // Slightly longer for smooth return
-          easing: spring({ 
-            stiffness: 200,                // Lower stiffness for gentler return
-            damping: 25                    // Higher damping for smooth settling
-          })
-        }
-      )
-    } else {
-      // Fallback CSS animation when Motion library unavailable
+      // Return to rest state with spring physics
+      if (animate && spring && typeof animate === 'function' && typeof spring === 'function') {
+        animate(
+          elementRef.value,
+          {
+            scale: 1,                       // Return to original scale
+            rotateX: 0,                      // Reset X rotation
+            rotateY: 0,                      // Reset Y rotation
+            translateZ: 0,                   // Return to original Z position
+            filter: 'blur(0px) brightness(1)' // Reset brightness
+          },
+          {
+            duration: 0.4,                   // Slightly longer for smooth return
+            easing: spring({ 
+              stiffness: 200,                // Lower stiffness for gentler return
+              damping: 25                    // Higher damping for smooth settling
+            })
+          }
+        )
+      } else {
+        // Fallback CSS animation when Motion library unavailable
+        elementRef.value.style.transform = 'scale(1) translateZ(0px)'
+        elementRef.value.style.filter = 'brightness(1)'
+        elementRef.value.style.transition = 'all 0.4s ease-out'
+      }
+    } catch (error) {
+      console.warn('⚠️ Error in hoverOut animation, using fallback:', error)
+      // Fallback CSS animation on error
       elementRef.value.style.transform = 'scale(1) translateZ(0px)'
       elementRef.value.style.filter = 'brightness(1)'
       elementRef.value.style.transition = 'all 0.4s ease-out'

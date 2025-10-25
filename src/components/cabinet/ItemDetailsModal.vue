@@ -266,7 +266,7 @@ const handleCloseRelease = (event) => {
 }
 
 // Trigger modal content reveal on open
-watch(isOpen, (newValue) => {
+watch(() => props.isOpen, (newValue) => {
   if (newValue && modalContentRef.value) {
     setTimeout(() => {
       modalContentReveal()

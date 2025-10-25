@@ -84,21 +84,7 @@
             <span class="hidden sm:inline">Clear</span>
           </button>
           
-          <!-- Regenerate AI button (only in AI mode) -->
-          <button
-            v-if="currentSubRoute === 'suggested'"
-            @click="generateAISuggestion"
-            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-              theme.value === 'dark'
-                ? 'bg-purple-600 text-white hover:bg-purple-500'
-                : 'bg-purple-500 text-white hover:bg-purple-600'
-            }`"
-            title="Generate New AI Suggestion"
-          >
-            <Sparkles class="w-5 h-5" />
-            <span class="hidden sm:inline">Regenerate</span>
-          </button>
-          
+          <!-- Save button - shown first on mobile, second on desktop -->
           <button
             @click="saveOutfit"
             :disabled="canvasItems.length < 2 || savingOutfit"
@@ -112,6 +98,21 @@
           >
             <Save class="w-5 h-5" />
             <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
+          </button>
+          
+          <!-- Regenerate AI button (only in AI mode) - shown second on mobile, third on desktop -->
+          <button
+            v-if="currentSubRoute === 'suggested'"
+            @click="generateAISuggestion"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              theme.value === 'dark'
+                ? 'bg-purple-600 text-white hover:bg-purple-500'
+                : 'bg-purple-500 text-white hover:bg-purple-600'
+            }`"
+            title="Generate New AI Suggestion"
+          >
+            <Sparkles class="w-5 h-5" />
+            <span class="hidden sm:inline">Regenerate</span>
           </button>
           
         </div>
