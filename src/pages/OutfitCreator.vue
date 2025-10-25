@@ -699,11 +699,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
@@ -727,6 +728,9 @@ const { showError, showSuccess, showWarning, showInfo } = usePopup()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
+
+// Keyboard shortcuts
+const { registerCanvasItems, registerPopup, unregisterPopup } = useKeyboardShortcuts()
 
 // Initialize services
 const clothesService = new ClothesService()
@@ -1570,5 +1574,109 @@ onMounted(async () => {
     // Personal/friend/other modes: Start with empty canvas
     saveToHistory() // Initialize history
   }
+
+  // Register canvas items for keyboard navigation
+  registerCanvasItems(canvasItems.value)
+
+  // Setup keyboard event listeners
+  const handleKeyboardEvent = (event) => {
+    switch (event.type) {
+      case 'keyboard-select-item':
+        if (event.detail && event.detail.index >= 0) {
+          selectedItemId.value = event.detail.item?.id || null
+        }
+        break
+      
+      case 'keyboard-move-item':
+        if (event.detail && event.detail.index >= 0) {
+          const item = canvasItems.value[event.detail.index]
+          if (item) {
+            const { direction, amount } = event.detail
+            let newX = item.x
+            let newY = item.y
+            
+            switch (direction) {
+              case 'left':
+                newX = Math.max(0, item.x - amount)
+                break
+              case 'right':
+                newX = Math.min(400, item.x + amount) // Assuming canvas width
+                break
+              case 'up':
+                newY = Math.max(0, item.y - amount)
+                break
+              case 'down':
+                newY = Math.min(300, item.y + amount) // Assuming canvas height
+                break
+            }
+            
+            updateItemPosition(item.id, newX, newY)
+          }
+        }
+        break
+      
+      case 'keyboard-save-outfit':
+        saveOutfit()
+        break
+      
+      case 'keyboard-undo':
+        undoAction()
+        break
+      
+      case 'keyboard-redo':
+        redoAction()
+        break
+      
+      case 'keyboard-clear-canvas':
+        clearCanvas()
+        break
+      
+      case 'keyboard-toggle-grid':
+        toggleGrid()
+        break
+      
+      case 'keyboard-toggle-selection':
+        if (event.detail && event.detail.index >= 0) {
+          const item = canvasItems.value[event.detail.index]
+          if (item) {
+            selectedItemId.value = selectedItemId.value === item.id ? null : item.id
+          }
+        }
+        break
+      
+      case 'keyboard-remove-item':
+        if (event.detail && event.detail.index >= 0) {
+          const item = canvasItems.value[event.detail.index]
+          if (item) {
+            removeItemFromCanvas(item.id)
+          }
+        }
+        break
+    }
+  }
+
+  // Add event listeners
+  window.addEventListener('keyboard-select-item', handleKeyboardEvent)
+  window.addEventListener('keyboard-move-item', handleKeyboardEvent)
+  window.addEventListener('keyboard-save-outfit', handleKeyboardEvent)
+  window.addEventListener('keyboard-undo', handleKeyboardEvent)
+  window.addEventListener('keyboard-redo', handleKeyboardEvent)
+  window.addEventListener('keyboard-clear-canvas', handleKeyboardEvent)
+  window.addEventListener('keyboard-toggle-grid', handleKeyboardEvent)
+  window.addEventListener('keyboard-toggle-selection', handleKeyboardEvent)
+  window.addEventListener('keyboard-remove-item', handleKeyboardEvent)
+
+  // Cleanup on unmount
+  onUnmounted(() => {
+    window.removeEventListener('keyboard-select-item', handleKeyboardEvent)
+    window.removeEventListener('keyboard-move-item', handleKeyboardEvent)
+    window.removeEventListener('keyboard-save-outfit', handleKeyboardEvent)
+    window.removeEventListener('keyboard-undo', handleKeyboardEvent)
+    window.removeEventListener('keyboard-redo', handleKeyboardEvent)
+    window.removeEventListener('keyboard-clear-canvas', handleKeyboardEvent)
+    window.removeEventListener('keyboard-toggle-grid', handleKeyboardEvent)
+    window.removeEventListener('keyboard-toggle-selection', handleKeyboardEvent)
+    window.removeEventListener('keyboard-remove-item', handleKeyboardEvent)
+  })
 })
 </script>

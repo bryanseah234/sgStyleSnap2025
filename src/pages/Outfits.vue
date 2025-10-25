@@ -119,6 +119,7 @@
           theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
         }`" />
         <input
+          ref="searchInputRef"
           v-model="searchTerm"
           type="text"
           placeholder="Search your outfits..."
@@ -502,6 +503,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { OutfitsService } from '@/services/outfitsService'
 import { friendSuggestionsService } from '@/services/friendSuggestionsService'
 import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart, Search } from 'lucide-vue-next'
@@ -513,6 +515,9 @@ const { showError, showSuccess, showConfirm } = usePopup()
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+
+// Keyboard shortcuts
+const { registerSearchInput } = useKeyboardShortcuts()
 
 // Initialize outfits service
 const outfitsService = new OutfitsService()
@@ -527,6 +532,7 @@ const activeFilter = ref('all')
 const showOutfitDetail = ref(false)
 const selectedOutfit = ref(null)
 const searchTerm = ref('')
+const searchInputRef = ref(null)
 
 // Initialize activeFilter from URL parameter
 if (route.query.filter === 'suggestions') {

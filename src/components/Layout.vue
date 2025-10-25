@@ -246,6 +246,9 @@ const { elementRef: logoutButtonRef, pressIn: logoutPressIn, pressOut: logoutPre
 const { elementRef: mobileNavRef, hoverIn: mobileNavHoverIn, hoverOut: mobileNavHoverOut } = useLiquidHover()
 const { prefersReducedMotion } = useReducedMotion()
 
+// Keyboard shortcuts
+const { registerSearchInput } = useKeyboardShortcuts()
+
 // Computed property to check if current route is landing page
 const isLandingPage = computed(() => route.path === '/')
 
