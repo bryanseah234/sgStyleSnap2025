@@ -218,6 +218,7 @@ import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
 import { useNavbarLiquid, useLiquidPress, useLiquidHover, useReducedMotion } from '@/composables/useLiquidGlass'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { 
   Home, 
   Shirt, 
