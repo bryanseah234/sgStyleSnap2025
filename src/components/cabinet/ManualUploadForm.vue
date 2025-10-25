@@ -302,7 +302,7 @@ const availableTypes = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return formData.value.name && formData.value.category && formData.value.privacy && formData.value.image_url
+  return formData.value.name && formData.value.category && formData.value.privacy && formData.value.image_file
 })
 
 // Handle category change - reset type when category changes
@@ -342,6 +342,7 @@ const handleFileUpload = async (e) => {
 const clearImage = () => {
   previewUrl.value = ''
   formData.value.image_url = ''
+  formData.value.image_file = null
 }
 
 const handleSubmit = async () => {
@@ -356,8 +357,8 @@ const handleSubmit = async () => {
       color: formData.value.color,
       brand: formData.value.brand,
       privacy: formData.value.privacy,
-      hasImage: !!formData.value.image_url,
-      imageUrl: formData.value.image_url?.substring(0, 50) + '...'
+      hasImage: !!formData.value.image_file,
+      imageFile: formData.value.image_file?.name || 'No file'
     }
   })
 
@@ -373,29 +374,6 @@ const handleSubmit = async () => {
   console.log('📝 ManualUploadForm: Form submission in progress...')
   
   try {
-    // Create a File object from the image URL for Cloudinary upload
-    let imageFile = null
-    if (formData.value.image_url && formData.value.image_url.startsWith('blob:')) {
-      console.log('📝 ManualUploadForm: Converting blob URL to File object...')
-      try {
-        // Convert blob URL to File object
-        const response = await fetch(formData.value.image_url)
-        const blob = await response.blob()
-        imageFile = new File([blob], 'uploaded-image.jpg', { type: blob.type })
-        
-        console.log('📝 ManualUploadForm: File conversion successful:', {
-          fileName: imageFile.name,
-          fileSize: `${(imageFile.size / 1024 / 1024).toFixed(2)}MB`,
-          fileType: imageFile.type
-        })
-      } catch (conversionError) {
-        console.error('❌ ManualUploadForm: Error converting blob to file:', conversionError)
-        throw new Error('Failed to process image file')
-      }
-    } else {
-      console.log('📝 ManualUploadForm: No image file to convert')
-    }
-
     const serviceData = {
       name: formData.value.name,
       category: formData.value.category,
@@ -403,7 +381,7 @@ const handleSubmit = async () => {
       color: formData.value.color || null,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
-      image_file: imageFile, // Pass the file for Cloudinary upload
+      image_file: formData.value.image_file, // Pass the file for Cloudinary upload
     }
 
     console.log('📝 ManualUploadForm: Calling clothesService.addClothes with data:', serviceData)

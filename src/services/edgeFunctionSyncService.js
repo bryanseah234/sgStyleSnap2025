@@ -26,7 +26,9 @@ export class EdgeFunctionSyncService {
       console.log('🔍 EdgeFunctionSync: Monitoring user sync for:', userId)
       
       if (!this.functionUrl) {
-        throw new Error('Edge Function URL not configured')
+        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured - using fallback sync check')
+        // Fallback to direct database check when Edge Function is not available
+        return await this.checkUserSyncFallback(userId)
       }
 
       // Check if user exists in public.users table
@@ -142,7 +144,13 @@ export class EdgeFunctionSyncService {
       console.log('🔍 EdgeFunctionSync: Checking sync function health...')
       
       if (!this.functionUrl) {
-        throw new Error('Edge Function URL not configured')
+        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured - skipping health check')
+        return {
+          success: false,
+          healthy: false,
+          error: 'Edge Function URL not configured',
+          timestamp: new Date().toISOString()
+        }
       }
 
       // Try to make a simple request to the Edge Function
@@ -192,6 +200,67 @@ export class EdgeFunctionSyncService {
   }
 
   /**
+   * Fallback method to check user sync when Edge Function is not available
+   * @param {string} userId - User ID to check
+   * @returns {Promise<Object>} Sync status
+   */
+  async checkUserSyncFallback(userId) {
+    try {
+      console.log('🔍 EdgeFunctionSync: Using fallback sync check for:', userId)
+      
+      // Check if user exists in public.users table
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error && error.code === 'PGRST116') {
+        return {
+          success: true,
+          synced: false,
+          status: 'pending',
+          message: 'User sync in progress - profile not yet created (fallback check)',
+          timestamp: new Date().toISOString()
+        }
+      }
+
+      if (error) {
+        throw error
+      }
+
+      if (user) {
+        return {
+          success: true,
+          synced: true,
+          status: 'completed',
+          message: 'User profile successfully synchronized (fallback check)',
+          user: user,
+          timestamp: new Date().toISOString()
+        }
+      }
+
+      return {
+        success: false,
+        synced: false,
+        status: 'error',
+        message: 'Unknown sync status (fallback check)',
+        timestamp: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('❌ EdgeFunctionSync: Error in fallback sync check:', error)
+      
+      return {
+        success: false,
+        synced: false,
+        status: 'error',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+
+  /**
    * Test Edge Function connectivity
    * @returns {Promise<Object>} Connectivity test result
    */
@@ -200,7 +269,13 @@ export class EdgeFunctionSyncService {
       console.log('🔍 EdgeFunctionSync: Testing Edge Function connectivity...')
       
       if (!this.functionUrl) {
-        throw new Error('Edge Function URL not configured')
+        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured - skipping connectivity test')
+        return {
+          success: false,
+          connected: false,
+          error: 'Edge Function URL not configured',
+          timestamp: new Date().toISOString()
+        }
       }
 
       // Simple connectivity test

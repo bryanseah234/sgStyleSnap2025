@@ -344,14 +344,21 @@ const authInitPromise = authStore.initializeAuth().then(async () => {
   // Load user theme preferences after auth is ready
   await themeStore.loadUser()
   
-  // Check Edge Function health in background
+  // Check Edge Function health in background (optional)
   try {
     const { edgeFunctionSyncService } = await import('@/services/edgeFunctionSyncService')
-    const healthStatus = await edgeFunctionSyncService.checkSyncHealth()
-    if (healthStatus.success && healthStatus.healthy) {
-      console.log('✅ Edge Function sync service is healthy')
+    
+    // Check if Edge Function URL is configured before attempting health check
+    const configStatus = edgeFunctionSyncService.getConfigStatus()
+    if (configStatus.functionUrl.includes('Not configured')) {
+      console.log('ℹ️ Edge Function sync service not configured - skipping health check')
     } else {
-      console.warn('⚠️ Edge Function sync service health check failed:', healthStatus.error)
+      const healthStatus = await edgeFunctionSyncService.checkSyncHealth()
+      if (healthStatus.success && healthStatus.healthy) {
+        console.log('✅ Edge Function sync service is healthy')
+      } else {
+        console.warn('⚠️ Edge Function sync service health check failed:', healthStatus.error)
+      }
     }
   } catch (error) {
     console.warn('⚠️ Could not check Edge Function health:', error.message)
