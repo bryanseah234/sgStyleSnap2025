@@ -19,7 +19,7 @@
 <template>
   <div class="min-h-screen bg-background max-w-full overflow-x-hidden">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden">
+    <section class="relative overflow-hidden min-h-screen flex flex-col">
       <!-- Background gradient -->
       <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5"></div>
       
@@ -46,74 +46,51 @@
         </div>
       </nav>
       
-      <!-- Hero Content -->
-      <div class="relative z-10 px-6 py-16 md:py-24">
+      <!-- Hero Content - Vertically Centered -->
+      <div class="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
         <div class="max-w-7xl mx-auto text-center">
           <!-- Main Headline -->
-          <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
+          <h1 
+            class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight hero-fade-in"
+            :class="{ 'animate-shimmer': isHeroHovered }"
+            @mouseenter="isHeroHovered = true"
+            @mouseleave="isHeroHovered = false"
+          >
             Your Digital
-            <span class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <span class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent gradient-shift">
               Wardrobe
             </span>
             Awaits
           </h1>
           
           <!-- Subtitle -->
-          <p class="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p class="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed hero-fade-in-delay">
             Organize your clothes, create stunning outfits, and discover your personal style. 
             StyleSnap makes fashion fun, organized, and accessible for everyone.
           </p>
           
           <!-- Call-to-Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-12">
+          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center hero-fade-in-delay-2">
             <button
               @click="navigateToSignIn"
-              class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
+              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg relative overflow-hidden"
             >
-              Get Started
+              <span class="relative z-10">Get Started</span>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </button>
             <button
               @click="scrollToFeatures"
-              class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-primary rounded-xl font-semibold text-base sm:text-lg hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-105"
+              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-primary rounded-xl font-semibold text-base sm:text-lg hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-105 relative overflow-hidden"
             >
-              Learn More
+              <span class="relative z-10">Learn More</span>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </button>
-          </div>
-          
-          <!-- Hero Image/Preview -->
-          <div class="relative max-w-4xl mx-auto">
-            <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-3xl p-8 md:p-12">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Mock phone screens -->
-                <div class="bg-card rounded-2xl p-4 shadow-lg">
-                  <div class="bg-muted rounded-lg h-32 mb-3"></div>
-                  <div class="space-y-2">
-                    <div class="bg-muted h-3 rounded w-3/4"></div>
-                    <div class="bg-muted h-3 rounded w-1/2"></div>
-                  </div>
-                </div>
-                <div class="bg-card rounded-2xl p-4 shadow-lg">
-                  <div class="bg-muted rounded-lg h-32 mb-3"></div>
-                  <div class="space-y-2">
-                    <div class="bg-muted h-3 rounded w-3/4"></div>
-                    <div class="bg-muted h-3 rounded w-1/2"></div>
-                  </div>
-                </div>
-                <div class="bg-card rounded-2xl p-4 shadow-lg">
-                  <div class="bg-muted rounded-lg h-32 mb-3"></div>
-                  <div class="space-y-2">
-                    <div class="bg-muted h-3 rounded w-3/4"></div>
-                    <div class="bg-muted h-3 rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </section>
     
-    <!-- Features Section -->
+    <!-- Features Section - Bento Grid -->
     <section ref="featuresSection" class="py-16 md:py-24 bg-muted/30">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
@@ -125,78 +102,140 @@
           </p>
         </div>
         
-        <!-- Features Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- Feature 1 -->
-          <div class="bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-              <Shirt class="w-6 h-6 text-primary" />
+        <!-- Bento Grid Layout -->
+        <div class="bento-grid">
+          <!-- Feature 1: Digital Closet - Top Left -->
+          <div 
+            class="bento-item bento-small group"
+            :class="{ 'card-hover': hoveredCard === 1 }"
+            @mouseenter="hoveredCard = 1"
+            @mouseleave="hoveredCard = null"
+            v-scroll-reveal
+          >
+            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+              <div class="shimmer-overlay"></div>
+              <div class="relative z-10">
+                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
+                  <Shirt class="w-6 h-6 text-primary" />
+                </div>
+                <h3 class="text-xl font-semibold text-foreground mb-3">Digital Closet</h3>
+                <p class="text-muted-foreground text-sm leading-relaxed">
+                  Organize all your clothes digitally with photos and details.
+                </p>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-foreground mb-4">Digital Closet</h3>
-            <p class="text-muted-foreground leading-relaxed">
-              Organize all your clothes digitally. Upload photos, add details like brand and color, 
-              and keep track of your entire wardrobe in one place.
-            </p>
           </div>
-          
-          <!-- Feature 2 -->
-          <div class="bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-              <Palette class="w-6 h-6 text-primary" />
+
+          <!-- Feature 2: Outfit Creator - Center Large Feature -->
+          <div 
+            class="bento-item bento-large group"
+            :class="{ 'card-hover': hoveredCard === 2 }"
+            @mouseenter="hoveredCard = 2"
+            @mouseleave="hoveredCard = null"
+            v-scroll-reveal
+          >
+            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-8 md:p-12 shadow-xl transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden flex flex-col items-center justify-center text-center">
+              <div class="shimmer-overlay-large"></div>
+              <div class="relative z-10 w-full">
+                <div class="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-6 mx-auto group-hover:bg-primary/20 transition-colors duration-300 group-hover:rotate-6">
+                  <Palette class="w-10 h-10 text-primary" />
+                </div>
+                <h3 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  Outfit Creator
+                </h3>
+                <p class="text-lg text-muted-foreground leading-relaxed max-w-md mx-auto">
+                  Mix and match your clothes to create stunning outfits and save your favorite combinations.
+                </p>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-foreground mb-4">Outfit Creator</h3>
-            <p class="text-muted-foreground leading-relaxed">
-              Mix and match your clothes to create stunning outfits. Save your favorite combinations 
-              and get inspired by new style possibilities.
-            </p>
           </div>
-          
-          <!-- Feature 3 -->
-          <div class="bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-              <Users class="w-6 h-6 text-primary" />
+
+          <!-- Feature 3: Social Features - Top Right -->
+          <div 
+            class="bento-item bento-small group"
+            :class="{ 'card-hover': hoveredCard === 3 }"
+            @mouseenter="hoveredCard = 3"
+            @mouseleave="hoveredCard = null"
+            v-scroll-reveal
+          >
+            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+              <div class="shimmer-overlay"></div>
+              <div class="relative z-10">
+                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
+                  <Users class="w-6 h-6 text-primary" />
+                </div>
+                <h3 class="text-xl font-semibold text-foreground mb-3">Social Features</h3>
+                <p class="text-muted-foreground text-sm leading-relaxed">
+                  Connect with friends and share your style journey.
+                </p>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-foreground mb-4">Social Features</h3>
-            <p class="text-muted-foreground leading-relaxed">
-              Connect with friends, share your outfits, and get style inspiration from others. 
-              Build your fashion community.
-            </p>
           </div>
-          
-          <!-- Feature 4 -->
-          <div class="bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-              <Search class="w-6 h-6 text-primary" />
+
+          <!-- Feature 4: Smart Search - Bottom Left -->
+          <div 
+            class="bento-item bento-medium group"
+            :class="{ 'card-hover': hoveredCard === 4 }"
+            @mouseenter="hoveredCard = 4"
+            @mouseleave="hoveredCard = null"
+            v-scroll-reveal
+          >
+            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+              <div class="shimmer-overlay"></div>
+              <div class="relative z-10">
+                <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
+                  <Search class="w-7 h-7 text-primary" />
+                </div>
+                <h3 class="text-2xl font-semibold text-foreground mb-3">Smart Search</h3>
+                <p class="text-muted-foreground leading-relaxed">
+                  Find exactly what you need with powerful search and filtering by color, brand, and style.
+                </p>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-foreground mb-4">Smart Search</h3>
-            <p class="text-muted-foreground leading-relaxed">
-              Find exactly what you're looking for with powerful search and filtering options. 
-              Search by color, brand, category, or style.
-            </p>
           </div>
-          
-          <!-- Feature 5 -->
-          <div class="bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-              <Heart class="w-6 h-6 text-primary" />
+
+          <!-- Feature 5: Favorites - Bottom Center -->
+          <div 
+            class="bento-item bento-small group"
+            :class="{ 'card-hover': hoveredCard === 5 }"
+            @mouseenter="hoveredCard = 5"
+            @mouseleave="hoveredCard = null"
+            v-scroll-reveal
+          >
+            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+              <div class="shimmer-overlay"></div>
+              <div class="relative z-10">
+                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
+                  <Heart class="w-6 h-6 text-primary" />
+                </div>
+                <h3 class="text-xl font-semibold text-foreground mb-3">Favorites</h3>
+                <p class="text-muted-foreground text-sm leading-relaxed">
+                  Save your most-loved pieces for quick access.
+                </p>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-foreground mb-4">Favorites</h3>
-            <p class="text-muted-foreground leading-relaxed">
-              Mark your favorite items and outfits for quick access. Build collections of your 
-              most-loved pieces and combinations.
-            </p>
           </div>
-          
-          <!-- Feature 6 -->
-          <div class="bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-              <Smartphone class="w-6 h-6 text-primary" />
+
+          <!-- Feature 6: Mobile First - Bottom Right -->
+          <div 
+            class="bento-item bento-medium group"
+            :class="{ 'card-hover': hoveredCard === 6 }"
+            @mouseenter="hoveredCard = 6"
+            @mouseleave="hoveredCard = null"
+            v-scroll-reveal
+          >
+            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+              <div class="shimmer-overlay"></div>
+              <div class="relative z-10">
+                <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
+                  <Smartphone class="w-7 h-7 text-primary" />
+                </div>
+                <h3 class="text-2xl font-semibold text-foreground mb-3">Mobile First</h3>
+                <p class="text-muted-foreground leading-relaxed">
+                  Access your wardrobe anywhere, anytime with our responsive interface.
+                </p>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-foreground mb-4">Mobile First</h3>
-            <p class="text-muted-foreground leading-relaxed">
-              Designed for mobile devices with a responsive interface. Access your wardrobe 
-              and create outfits anywhere, anytime.
-            </p>
           </div>
         </div>
       </div>
@@ -251,7 +290,7 @@
  * @version 1.0.0
  */
 
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { 
@@ -271,6 +310,31 @@ const { theme, toggleTheme } = useTheme()
 
 // Reactive references
 const featuresSection = ref(null)
+const isHeroHovered = ref(false)
+const hoveredCard = ref(null)
+
+// Custom directive for scroll reveal animations
+const vScrollReveal = {
+  mounted(el) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-active')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      }
+    )
+    
+    el.classList.add('reveal-element')
+    observer.observe(el)
+  }
+}
 
 /**
  * Navigates to the sign-in page
@@ -315,7 +379,11 @@ const handleThemeToggle = async () => {
 </script>
 
 <style scoped>
-/* Custom animations for the landing page */
+/* ============================================
+   Hero Section Animations
+   ============================================ */
+
+/* Fade in animations with delays */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -327,23 +395,22 @@ const handleThemeToggle = async () => {
   }
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
+.hero-fade-in {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
-/* Smooth transitions for interactive elements */
-button {
-  transition: all 0.2s ease-in-out;
+.hero-fade-in-delay {
+  animation: fadeInUp 0.8s ease-out 0.4s both;
 }
 
-button:hover {
-  transform: translateY(-2px);
+.hero-fade-in-delay-2 {
+  animation: fadeInUp 0.8s ease-out 0.6s both;
 }
 
 /* Gradient text animation */
-.bg-gradient-to-r {
+.gradient-shift {
   background-size: 200% 200%;
-  animation: gradientShift 3s ease-in-out infinite;
+  animation: gradientShift 4s ease-in-out infinite;
 }
 
 @keyframes gradientShift {
@@ -352,6 +419,297 @@ button:hover {
   }
   50% {
     background-position: 100% 50%;
+  }
+}
+
+/* Shimmer effect on hero hover */
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* ============================================
+   Bento Grid Layout
+   ============================================ */
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Mobile: Stack vertically */
+@media (min-width: 640px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Tablet and Desktop: Bento layout */
+@media (min-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, minmax(200px, auto));
+    gap: 1.5rem;
+  }
+
+  /* Feature 1: Digital Closet - Top Left */
+  .bento-small:nth-child(1) {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
+
+  /* Feature 2: Outfit Creator - Center Large (2x2) */
+  .bento-large:nth-child(2) {
+    grid-column: 2 / 4;
+    grid-row: 1 / 3;
+  }
+
+  /* Feature 3: Social Features - Top Right */
+  .bento-small:nth-child(3) {
+    grid-column: 4 / 5;
+    grid-row: 1 / 2;
+  }
+
+  /* Feature 4: Smart Search - Bottom Left (2 columns wide) */
+  .bento-medium:nth-child(4) {
+    grid-column: 1 / 3;
+    grid-row: 2 / 3;
+  }
+
+  /* Feature 5: Favorites - Bottom Center */
+  .bento-small:nth-child(5) {
+    grid-column: 4 / 5;
+    grid-row: 2 / 3;
+  }
+
+  /* Feature 6: Mobile First - Bottom (spans 2 rows on right) */
+  .bento-medium:nth-child(6) {
+    grid-column: 1 / 3;
+    grid-row: 3 / 4;
+  }
+
+  /* Adjust for 4-column layout */
+  .bento-small:nth-child(1),
+  .bento-small:nth-child(3) {
+    min-height: 220px;
+  }
+
+  .bento-small:nth-child(5) {
+    grid-column: 3 / 4;
+    grid-row: 3 / 4;
+    min-height: 220px;
+  }
+
+  .bento-medium:nth-child(4) {
+    min-height: 220px;
+  }
+
+  .bento-medium:nth-child(6) {
+    grid-column: 4 / 5;
+    grid-row: 3 / 4;
+    min-height: 220px;
+  }
+
+  .bento-large:nth-child(2) {
+    min-height: 440px;
+  }
+}
+
+/* ============================================
+   Shimmer Overlay Effects
+   ============================================ */
+
+.shimmer-overlay {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  z-index: 1;
+  transition: left 0.8s ease-in-out;
+}
+
+.group:hover .shimmer-overlay {
+  left: 100%;
+}
+
+.shimmer-overlay-large {
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  width: 100%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  z-index: 1;
+  transition: left 1s ease-in-out;
+}
+
+.group:hover .shimmer-overlay-large {
+  left: 100%;
+}
+
+/* ============================================
+   Scroll Reveal Animations
+   ============================================ */
+
+.reveal-element {
+  opacity: 0;
+  transform: translateY(40px) scale(0.95);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.reveal-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Staggered animation delays for grid items */
+.bento-item:nth-child(1) {
+  transition-delay: 0.1s;
+}
+
+.bento-item:nth-child(2) {
+  transition-delay: 0.2s;
+}
+
+.bento-item:nth-child(3) {
+  transition-delay: 0.3s;
+}
+
+.bento-item:nth-child(4) {
+  transition-delay: 0.15s;
+}
+
+.bento-item:nth-child(5) {
+  transition-delay: 0.25s;
+}
+
+.bento-item:nth-child(6) {
+  transition-delay: 0.35s;
+}
+
+/* ============================================
+   Interactive States
+   ============================================ */
+
+/* Card hover effect */
+.card-hover {
+  z-index: 10;
+}
+
+/* Button hover effects */
+button {
+  transition: all 0.3s ease-in-out;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   Smooth Scrolling
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================================
+   Dark/Light Mode Transitions
+   ============================================ */
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Override for elements that shouldn't transition */
+button,
+.shimmer-overlay,
+.shimmer-overlay-large {
+  transition-property: none;
+}
+
+button {
+  transition: all 0.3s ease-in-out;
+}
+
+/* ============================================
+   Responsive Touch Targets
+   ============================================ */
+
+@media (max-width: 640px) {
+  button {
+    min-height: 44px; /* iOS recommended touch target */
+  }
+}
+
+/* ============================================
+   Performance Optimizations
+   ============================================ */
+
+.bento-grid,
+.bento-item,
+.group {
+  will-change: transform;
+}
+
+.group:hover {
+  will-change: transform, box-shadow;
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 </style>
