@@ -506,12 +506,14 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useAuthStore } from '@/stores/auth-store'
 import { FriendsService } from '@/services/friendsService'
 import { UserService } from '@/services/userService'
 import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X } from 'lucide-vue-next'
 
 const router = useRouter()
 const { theme } = useTheme()
+const authStore = useAuthStore()
 
 // Initialize services
 const friendsService = new FriendsService()
@@ -587,9 +589,8 @@ const searchAndAddFriend = async () => {
     const result = await userService.searchUsersByUsername(usernameQuery)
     console.log('✅ Friends: Search result:', result)
     
-    // Get current user ID to filter out from results
-    const currentUser = await userService.getCurrentUser()
-    const currentUserId = currentUser?.id
+    // Get current user ID from auth store to filter out from results
+    const currentUserId = authStore.userId
     
     // Filter out the current user from search results
     const filteredResults = (result || []).filter(user => user.id !== currentUserId)
