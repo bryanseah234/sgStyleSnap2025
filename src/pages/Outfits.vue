@@ -776,7 +776,6 @@ watch(activeFilter, (newFilter) => {
 
 
 
-
 const deleteOutfit = async (outfit) => {
   const outfitName = outfit.outfit_name || outfit.name || 'this outfit'
   showConfirm(
