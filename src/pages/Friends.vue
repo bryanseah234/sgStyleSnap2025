@@ -479,7 +479,7 @@
       </div>
 
   <!-- Toasts -->
-  <div class="fixed top-4 right-4 z-[60] space-y-2">
+  <div class="fixed top-4 right-4 z-[60] space-y-4">
     <transition-group name="toast-fade" tag="div">
       <div
         v-for="t in toasts"
