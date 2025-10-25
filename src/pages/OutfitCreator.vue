@@ -12,7 +12,7 @@
           }`">
             {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
                currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
-               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
+               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
                currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
                'Create and save your perfect looks' }}
           </p>
@@ -233,7 +233,7 @@
           <!-- Add Friend Button -->
           <button
             @click="showAddFriendModal = true"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
+            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto ${
               theme.value === 'dark'
                 ? 'bg-white text-black hover:bg-zinc-200'
                 : 'bg-black text-white hover:bg-zinc-800'
@@ -637,7 +637,7 @@ const subRouteTitle = computed(() => {
     case 'suggested': return 'AI Suggested Outfits'
     case 'personal': return 'Create Your Outfit'
     case 'friendSelect': return 'Select a Friend'
-    case 'friend': return friendProfile.value ? `Create Outfit for ${friendProfile.value.username}` : `Create with Friend's Items`
+    case 'friend': return friendProfile.value ? `Create Outfit for ${friendProfile.value.name || friendProfile.value.username}` : `Create with Friend's Items`
     case 'edit': return 'Edit Outfit'
     default: return 'Create Outfit'
   }
@@ -717,7 +717,7 @@ const selectedItem = computed(() => {
 
 const itemsSectionTitle = computed(() => {
   if (currentSubRoute.value === 'friend' && friendProfile.value) {
-    return `${friendProfile.value.username}'s Closet`
+    return `${friendProfile.value.name || friendProfile.value.username}'s Closet`
   }
   switch (itemsSource.value) {
     case 'my-cabinet': return 'My Closet'

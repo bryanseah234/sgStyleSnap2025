@@ -284,6 +284,7 @@ const outfits = ref([])
 const friends = ref([])
 const notifications = ref([])
 const unreadCount = ref(0)
+const totalItemsCount = ref(0) // Total count of all items in closet
 
 /**
  * Computed statistics for the dashboard cards
@@ -294,21 +295,31 @@ const unreadCount = ref(0)
  * @returns {Array<Object>} Array of stat objects with label, value, icon, and route
  */
 const stats = computed(() => [
-  { label: 'Items', value: items.value.length, icon: Shirt, route: '/closet' },
+  { label: 'Items', value: totalItemsCount.value, icon: Shirt, route: '/closet' },
   { label: 'Outfits', value: outfits.value.length, icon: Palette, route: '/outfits' },
   { label: 'Friends', value: friends.value.length, icon: Users, route: '/friends' },
 ])
 
 /**
- * Loads user's clothing items
+ * Loads user's clothing items and total count
  * 
- * Fetches the user's clothing items from the API, limited to
- * the 6 most recent items for the dashboard preview.
+ * Fetches the user's total items count for statistics
+ * and the 6 most recent items for the dashboard preview.
  */
 const loadItems = async () => {
   try {
     console.log('🏠 Home: Loading items...')
     if (user.value?.id) {
+      // Get total items count from stats
+      const statsResult = await clothesService.getClothesStats()
+      if (statsResult && statsResult.success) {
+        totalItemsCount.value = statsResult.data.total_items || 0
+        console.log('🏠 Home: Total items count:', totalItemsCount.value)
+      } else {
+        totalItemsCount.value = 0
+      }
+      
+      // Still load recent items for any potential display (future feature)
       const result = await clothesService.getClothes({
         owner_id: user.value.id,
         limit: 6
@@ -316,7 +327,7 @@ const loadItems = async () => {
       
       if (result.success) {
         items.value = result.data || []
-        console.log('🏠 Home: Items loaded successfully:', items.value.length, 'items')
+        console.log('🏠 Home: Items loaded successfully:', items.value.length, 'recent items')
       } else {
         console.error('🏠 Home: Failed to load items:', result.error)
         items.value = []
@@ -324,10 +335,12 @@ const loadItems = async () => {
     } else {
       console.log('🏠 Home: No user ID, setting items to empty array')
       items.value = []
+      totalItemsCount.value = 0
     }
   } catch (error) {
     console.error('❌ Home: Error loading items:', error)
     items.value = []
+    totalItemsCount.value = 0
   }
 }
 

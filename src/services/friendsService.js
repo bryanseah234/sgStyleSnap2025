@@ -311,6 +311,12 @@ export class FriendsService {
         user_name: user.user_metadata?.name || 'Unknown'
       })
 
+      // Validate: Cannot add yourself as a friend
+      if (userId === user.id) {
+        console.warn('⚠️ FriendsService: User attempting to add themselves as a friend')
+        throw new Error('You cannot add yourself as a friend')
+      }
+
       // Check friends quota before sending request
       console.log('🤝 FriendsService: Checking friends quota...')
       const { data: canAddFriend, error: quotaError } = await supabase
@@ -401,7 +407,18 @@ export class FriendsService {
 
       if (error) {
         console.error('❌ FriendsService: Error inserting friend request:', error)
-        throw error
+        
+        // Handle specific error cases with user-friendly messages
+        if (error.code === '42501') {
+          // RLS policy violation - shouldn't happen with our validation, but just in case
+          throw new Error('Unable to send friend request. You cannot add yourself as a friend.')
+        } else if (error.code === '23505') {
+          // Unique constraint violation - friendship already exists
+          throw new Error('Friend request already exists')
+        } else {
+          // Generic error
+          throw new Error(error.message || 'Failed to send friend request')
+        }
       }
 
       console.log('✅ FriendsService: Friend request sent successfully!', {

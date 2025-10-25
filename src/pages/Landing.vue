@@ -472,74 +472,54 @@ const handleThemeToggle = async () => {
   }
 }
 
-/* Tablet and Desktop: Bento layout */
+/* Tablet and Desktop: Bento layout - 3 rows x 4 columns */
 @media (min-width: 1024px) {
   .bento-grid {
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(3, minmax(200px, auto));
+    grid-template-rows: repeat(3, minmax(220px, auto));
     gap: 1.5rem;
   }
 
-  /* Feature 1: Digital Closet - Top Left */
+  /* Feature 1: Digital Closet - Left side (spans rows 1-2) */
   .bento-small:nth-child(1) {
     grid-column: 1 / 2;
-    grid-row: 1 / 2;
+    grid-row: 1 / 3;
+    min-height: 460px;
   }
 
-  /* Feature 2: Outfit Creator - Center Large (2x2) */
+  /* Feature 2: Outfit Creator - Center (2x2 square, spans rows 1-2) */
   .bento-large:nth-child(2) {
     grid-column: 2 / 4;
     grid-row: 1 / 3;
+    min-height: 460px;
   }
 
-  /* Feature 3: Social Features - Top Right */
+  /* Feature 3: Social Features - Top right */
   .bento-small:nth-child(3) {
     grid-column: 4 / 5;
     grid-row: 1 / 2;
+    min-height: 220px;
   }
 
-  /* Feature 4: Smart Search - Bottom Left (2 columns wide) */
+  /* Feature 4: Smart Search - Bottom left (2 columns wide) */
   .bento-medium:nth-child(4) {
     grid-column: 1 / 3;
-    grid-row: 2 / 3;
+    grid-row: 3 / 4;
+    min-height: 220px;
   }
 
-  /* Feature 5: Favorites - Bottom Center */
+  /* Feature 5: Favorites - Middle right */
   .bento-small:nth-child(5) {
     grid-column: 4 / 5;
     grid-row: 2 / 3;
+    min-height: 220px;
   }
 
-  /* Feature 6: Mobile First - Bottom (spans 2 rows on right) */
+  /* Feature 6: Mobile First - Bottom right (2 columns wide) */
   .bento-medium:nth-child(6) {
-    grid-column: 1 / 3;
-    grid-row: 3 / 4;
-  }
-
-  /* Adjust for 4-column layout */
-  .bento-small:nth-child(1),
-  .bento-small:nth-child(3) {
-    min-height: 220px;
-  }
-
-  .bento-small:nth-child(5) {
-    grid-column: 3 / 4;
+    grid-column: 3 / 5;
     grid-row: 3 / 4;
     min-height: 220px;
-  }
-
-  .bento-medium:nth-child(4) {
-    min-height: 220px;
-  }
-
-  .bento-medium:nth-child(6) {
-    grid-column: 4 / 5;
-    grid-row: 3 / 4;
-    min-height: 220px;
-  }
-
-  .bento-large:nth-child(2) {
-    min-height: 440px;
   }
 }
 

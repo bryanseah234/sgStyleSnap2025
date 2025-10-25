@@ -591,7 +591,19 @@ const searchAndAddFriend = async () => {
   try {
     const result = await userService.searchUsersByUsername(usernameQuery)
     console.log('✅ Friends: Search result:', result)
-    addFriendResults.value = result || []
+    
+    // Get current user ID to filter out from results
+    const currentUser = await userService.getCurrentUser()
+    const currentUserId = currentUser?.id
+    
+    // Filter out the current user from search results
+    const filteredResults = (result || []).filter(user => user.id !== currentUserId)
+    
+    if (filteredResults.length < result?.length) {
+      console.log('🔧 Friends: Filtered out current user from search results')
+    }
+    
+    addFriendResults.value = filteredResults
   } catch (error) {
     console.error('❌ Friends: Error searching users:', error)
     addFriendResults.value = []
