@@ -108,7 +108,7 @@
                 : 'bg-stone-100 border border-stone-300'
             }`"
           >
-            <div class="flex items-start gap-4">
+            <div class="flex items-center gap-4">
               <!-- Icon -->
               <div :class="`p-2 rounded-lg flex-shrink-0 ${
                 theme.value === 'dark' ? 'bg-zinc-700' : 'bg-white'
