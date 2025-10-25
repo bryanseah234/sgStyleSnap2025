@@ -9,8 +9,15 @@
 <template>
   <div class="add-item-form">
     <!-- Header -->
-    <div class="form-header">
+    <div class="form-header relative">
       <h2 class="header-title">Add New Item</h2>
+      <!-- Close Button -->
+      <button
+        @click="$emit('close')"
+        class="absolute top-0 right-0 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black"
+      >
+        <X class="w-5 h-5" />
+      </button>
     </div>
 
     <form @submit.prevent="handleSubmit" class="form-content">
@@ -99,7 +106,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { Brain, AlertCircle } from 'lucide-vue-next'
+import { Brain, AlertCircle, X } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
 

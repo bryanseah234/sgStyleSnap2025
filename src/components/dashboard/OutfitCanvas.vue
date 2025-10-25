@@ -155,7 +155,7 @@ const props = defineProps({
   },
   showGrid: {
     type: Boolean,
-    default: true
+    default: false
   }
 })
 

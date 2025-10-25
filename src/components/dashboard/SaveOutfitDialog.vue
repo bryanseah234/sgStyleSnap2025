@@ -5,12 +5,24 @@
     @click="$emit('close')"
   >
     <div
-      :class="`w-full max-w-md rounded-xl p-6 ${
+      :class="`w-full max-w-md rounded-xl p-6 relative ${
         theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
       }`"
       @click.stop
     >
-      <h3 :class="`text-2xl font-bold mb-4 ${
+      <!-- Close Button -->
+      <button
+        @click="$emit('close')"
+        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
+          theme.value === 'dark'
+            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
+            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
+        }`"
+      >
+        <X class="w-5 h-5" />
+      </button>
+
+      <h3 :class="`text-2xl font-bold mb-4 pr-8 ${
         theme.value === 'dark' ? 'text-white' : 'text-black'
       }`">
         Save Outfit
@@ -69,6 +81,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { X } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({

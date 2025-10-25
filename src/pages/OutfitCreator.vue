@@ -2,24 +2,26 @@
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
-      <div class="flex items-start justify-between mb-8">
-        <div>
-          <h1 class="text-4xl font-bold mb-2 text-foreground">
-            {{ subRouteTitle }}
-          </h1>
-          <p :class="`text-lg ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
-            {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
-               currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
-               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
-               currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
-               'Create and save your perfect looks' }}
-          </p>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="flex items-center gap-3">
+      <div class="mb-8">
+        <!-- Desktop Layout -->
+        <div class="hidden md:flex items-start justify-between">
+          <div>
+            <h1 class="text-4xl font-bold mb-2 text-foreground">
+              {{ subRouteTitle }}
+            </h1>
+            <p :class="`text-lg ${
+              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+            }`">
+              {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
+                 currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
+                 currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
+                 currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
+                 'Create and save your perfect looks' }}
+            </p>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-3">
           <button
             @click="undoAction"
             :disabled="!canUndo"
@@ -112,6 +114,118 @@
             <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
           </button>
           
+        </div>
+        </div>
+
+        <!-- Mobile Layout -->
+        <div class="md:hidden">
+          <h1 class="text-3xl font-bold mb-2 text-foreground">
+            {{ subRouteTitle }}
+          </h1>
+          <p :class="`text-base mb-4 ${
+            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+          }`">
+            {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
+               currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
+               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
+               currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
+               'Create and save your perfect looks' }}
+          </p>
+          
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <button
+              @click="undoAction"
+              :disabled="!canUndo"
+              :class="`p-2 rounded-lg transition-all duration-200 ${
+                canUndo
+                  ? theme.value === 'dark'
+                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+              title="Undo"
+            >
+              <Undo class="w-4 h-4" />
+            </button>
+            
+            <button
+              @click="redoAction"
+              :disabled="!canRedo"
+              :class="`p-2 rounded-lg transition-all duration-200 ${
+                canRedo
+                  ? theme.value === 'dark'
+                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+              title="Redo"
+            >
+              <Redo class="w-4 h-4" />
+            </button>
+            
+            <button
+              @click="toggleGrid"
+              :class="`p-2 rounded-lg transition-all duration-200 ${
+                showGrid
+                  ? theme.value === 'dark'
+                    ? 'bg-white text-black'
+                    : 'bg-black text-white'
+                  : theme.value === 'dark'
+                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+              }`"
+              title="Toggle Grid"
+            >
+              <Grid3X3 class="w-4 h-4" />
+            </button>
+            
+            <button
+              @click="clearCanvas"
+              :disabled="canvasItems.length === 0"
+              :class="`p-2 rounded-lg transition-all duration-200 flex items-center gap-1 ${
+                canvasItems.length > 0
+                  ? theme.value === 'dark'
+                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+              title="Clear Canvas"
+            >
+              <Trash2 class="w-4 h-4" />
+              <span class="text-xs">Clear</span>
+            </button>
+            
+            <!-- Regenerate AI button (only in AI mode) -->
+            <button
+              v-if="currentSubRoute === 'suggested'"
+              @click="generateAISuggestion"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+                theme.value === 'dark'
+                  ? 'bg-purple-600 text-white hover:bg-purple-500'
+                  : 'bg-purple-500 text-white hover:bg-purple-600'
+              }`"
+              title="Generate New AI Suggestion"
+            >
+              <Sparkles class="w-4 h-4" />
+              <span class="text-xs">Regenerate</span>
+            </button>
+            
+            <button
+              @click="saveOutfit"
+              :disabled="canvasItems.length < 2 || savingOutfit"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+                canvasItems.length >= 2 && !savingOutfit
+                  ? theme.value === 'dark'
+                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+            >
+              <Save class="w-4 h-4" />
+              <span class="text-xs">{{ saveButtonLabel }}</span>
+            </button>
+          </div>
         </div>
       </div>
       
@@ -649,7 +763,7 @@ const activeCategory = ref('all')
 const wardrobeItems = ref([])
 const canvasItems = ref([])
 const selectedItemId = ref(null)
-const showGrid = ref(true)
+const showGrid = ref(false)
 const savingOutfit = ref(false)
 const canvasContainer = ref(null)
 
@@ -1253,7 +1367,7 @@ const saveOwnOutfit = async () => {
     }
     
     const outfitData = {
-      name: outfitName,
+      outfit_name: outfitName,
       description: 'Created in Outfit Creator',
       occasion: null,
       weather_condition: null,

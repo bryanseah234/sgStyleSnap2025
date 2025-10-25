@@ -75,6 +75,8 @@ export class OutfitsService {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) throw new Error('Not authenticated')
 
+      console.log('OutfitsService: Getting friend outfits for owner:', ownerId, 'viewer:', user.id)
+
       // Use RPC function to get outfits that friends can see
       // This respects privacy settings and friendship status
       const { data, error } = await supabase
@@ -86,8 +88,16 @@ export class OutfitsService {
 
       if (error) {
         console.error('OutfitsService: get_friend_outfits error:', error)
+        console.error('OutfitsService: Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        
         // Fallback to basic query if RPC doesn't exist
-        let query = supabase
+        console.log('OutfitsService: Falling back to basic query...')
+        const { data: fallbackData, error: fallbackError } = await supabase
           .from('outfits')
           .select('*')
           .eq('owner_id', ownerId)
@@ -96,13 +106,19 @@ export class OutfitsService {
           .order('created_at', { ascending: false })
           .limit(limit)
 
-        const { data: fallbackData, error: fallbackError } = await query
-        if (fallbackError) throw fallbackError
+        if (fallbackError) {
+          console.error('OutfitsService: Fallback query also failed:', fallbackError)
+          throw fallbackError
+        }
+        
+        console.log('OutfitsService: Fallback successful, returning:', fallbackData?.length || 0, 'outfits')
         return fallbackData || []
       }
 
+      console.log('OutfitsService: RPC successful, returning:', data?.length || 0, 'outfits')
       return data || []
     } catch (error) {
+      console.error('OutfitsService: Error in getFriendsOutfits:', error)
       handleSupabaseError(error, 'get friends outfits')
       return []
     }
@@ -333,31 +349,66 @@ export class OutfitsService {
 
       // Update outfit items if provided
       if (outfitData.items) {
-        // Delete existing items
+        console.log('🔄 OutfitsService: Updating outfit items for outfit:', outfitId)
+        console.log('🔄 OutfitsService: Items to update:', outfitData.items.length)
+        
+        // Delete existing items first
+        console.log('🗑️ OutfitsService: Deleting existing outfit items...')
         const { error: deleteError } = await supabase
           .from('outfit_items')
           .delete()
           .eq('outfit_id', outfitId)
 
-        if (deleteError) throw deleteError
+        if (deleteError) {
+          console.error('❌ OutfitsService: Error deleting existing items:', deleteError)
+          throw deleteError
+        }
+        
+        console.log('✅ OutfitsService: Existing items deleted successfully')
 
-        // Insert new items
+        // Insert new items if any
         if (outfitData.items.length > 0) {
-          const outfitItems = outfitData.items.map((item, index) => ({
-            outfit_id: outfitId,
-            clothing_item_id: item.clothing_item_id,
-            x_position: item.x_position || item.x || 0,
-            y_position: item.y_position || item.y || 0,
-            z_index: item.z_index || index,
-            scale: item.scale || 1.0,
-            rotation: item.rotation || 0
-          }))
+          console.log('➕ OutfitsService: Inserting new outfit items...')
+          
+          const outfitItems = outfitData.items.map((item, index) => {
+            const mappedItem = {
+              outfit_id: outfitId,
+              clothing_item_id: item.clothing_item_id || item.id, // Support both formats
+              x_position: item.x_position || item.x || 0,
+              y_position: item.y_position || item.y || 0,
+              z_index: item.z_index || index,
+              scale: item.scale || 1.0,
+              rotation: item.rotation || 0
+            }
+            
+            console.log(`📦 OutfitsService: Item ${index + 1}:`, {
+              clothing_item_id: mappedItem.clothing_item_id,
+              x_position: mappedItem.x_position,
+              y_position: mappedItem.y_position,
+              z_index: mappedItem.z_index
+            })
+            
+            return mappedItem
+          })
 
           const { error: itemsError } = await supabase
             .from('outfit_items')
             .insert(outfitItems)
 
-          if (itemsError) throw itemsError
+          if (itemsError) {
+            console.error('❌ OutfitsService: Error inserting new items:', itemsError)
+            console.error('❌ OutfitsService: Error details:', {
+              message: itemsError.message,
+              details: itemsError.details,
+              hint: itemsError.hint,
+              code: itemsError.code
+            })
+            throw itemsError
+          }
+          
+          console.log('✅ OutfitsService: New items inserted successfully')
+        } else {
+          console.log('ℹ️ OutfitsService: No items to insert (outfit is now empty)')
         }
       }
 

@@ -5,12 +5,24 @@
     @click="$emit('close')"
   >
     <div
-      :class="`w-full max-w-md rounded-xl p-6 ${
+      :class="`w-full max-w-md rounded-xl p-6 relative ${
         theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
       }`"
       @click.stop
     >
-      <h3 class="text-xl font-bold mb-4 text-foreground">
+      <!-- Close Button -->
+      <button
+        @click="$emit('close')"
+        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
+          theme.value === 'dark'
+            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
+            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
+        }`"
+      >
+        <X class="w-5 h-5" />
+      </button>
+
+      <h3 class="text-xl font-bold mb-4 text-foreground pr-8">
         Add Friend
       </h3>
       
@@ -131,6 +143,7 @@ import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { UserService } from '@/services/userService'
 import { FriendsService } from '@/services/friendsService'
+import { X } from 'lucide-vue-next'
 
 // Service instances
 const userService = new UserService()

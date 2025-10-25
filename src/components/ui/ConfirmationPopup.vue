@@ -2,8 +2,20 @@
   <!-- Confirmation Popup -->
   <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="handleBackdropClick">
     <div :class="`w-full max-w-md rounded-xl p-6 ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white'}`" @click.stop>
+      <!-- Close Button -->
+      <button
+        @click="$emit('close')"
+        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
+          theme === 'dark'
+            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
+            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
+        }`"
+      >
+        <X class="w-5 h-5" />
+      </button>
+
       <!-- Header -->
-      <div class="flex items-center gap-3 mb-4">
+      <div class="flex items-center gap-3 mb-4 pr-8">
         <div v-if="type === 'error'" class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
           <X class="w-5 h-5 text-white" />
         </div>
