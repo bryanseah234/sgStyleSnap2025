@@ -115,6 +115,25 @@
             <span class="hidden sm:inline">Regenerate</span>
           </button>
           
+          <!-- AI Score button - shown when there are items on canvas -->
+          <button
+            v-if="canvasItems.length >= 2"
+            @click="scoreOutfitAI"
+            :disabled="scoringOutfit"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              !scoringOutfit
+                ? theme.value === 'dark'
+                  ? 'bg-blue-600 text-white hover:bg-blue-500'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+                : 'opacity-50 cursor-not-allowed'
+            }`"
+            title="Get AI Compatibility Score"
+          >
+            <Sparkles v-if="!scoringOutfit" class="w-5 h-5" />
+            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span class="hidden sm:inline">{{ scoringOutfit ? 'Scoring...' : 'AI Score' }}</span>
+          </button>
+          
         </div>
         </div>
 
@@ -210,6 +229,25 @@
             >
               <Sparkles class="w-4 h-4" />
               <span class="text-xs">Regenerate</span>
+            </button>
+            
+            <!-- AI Score button - mobile -->
+            <button
+              v-if="canvasItems.length >= 2"
+              @click="scoreOutfitAI"
+              :disabled="scoringOutfit"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+                !scoringOutfit
+                  ? theme.value === 'dark'
+                    ? 'bg-blue-600 text-white hover:bg-blue-500'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+              title="Get AI Compatibility Score"
+            >
+              <Sparkles v-if="!scoringOutfit" class="w-4 h-4" />
+              <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-xs">{{ scoringOutfit ? 'Scoring...' : 'AI Score' }}</span>
             </button>
             
             <button
@@ -770,6 +808,8 @@ const canvasItems = ref([])
 const selectedItemId = ref(null)
 const showGrid = ref(false)
 const savingOutfit = ref(false)
+const scoringOutfit = ref(false)
+const outfitScore = ref(null)
 const canvasContainer = ref(null)
 
 // State for friend data
@@ -1032,8 +1072,8 @@ const generateAISuggestion = async () => {
       return
     }
     
-    // TODO: Replace with actual AI backend call
-    // For now, use mock logic to select items from different categories
+    // Import fashion transformer service
+    const { scoreOutfit, validateOutfitItems } = await import('@/services/fashion-transformer-service')
     
     const categories = {
       top: wardrobeItems.value.filter(item => {
@@ -1118,6 +1158,83 @@ const generateAISuggestion = async () => {
     
   } catch (error) {
     console.error('OutfitCreator: Error generating AI suggestion:', error)
+  }
+}
+
+const scoreOutfitAI = async () => {
+  try {
+    console.log('OutfitCreator: Scoring outfit with AI...')
+    
+    if (canvasItems.value.length < 2) {
+      showWarning('Need at least 2 items to score an outfit')
+      return
+    }
+    
+    scoringOutfit.value = true
+    
+    // Import fashion transformer service
+    const { scoreOutfit, validateOutfitItems } = await import('@/services/fashion-transformer-service')
+    
+    // Prepare outfit items for scoring
+    const outfitItems = canvasItems.value.map(item => ({
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      image_url: item.image_url,
+      description: item.description || item.name || `${item.category} item`
+    }))
+    
+    // Validate items
+    const validation = validateOutfitItems(outfitItems)
+    if (!validation.isValid) {
+      console.warn('Cannot score outfit:', validation.errors)
+      showWarning('Cannot score outfit. Make sure all items have images.')
+      scoringOutfit.value = false
+      return
+    }
+    
+    // Score the outfit
+    const result = await scoreOutfit(outfitItems)
+    
+    scoringOutfit.value = false
+    
+    if (result.success) {
+      outfitScore.value = result.score
+      const scorePercent = Math.round(result.score * 100)
+      
+      // Show user the score with a nice notification
+      let message = `Outfit Compatibility: ${scorePercent}%`
+      let type = 'info'
+      
+      if (scorePercent >= 80) {
+        message = `Excellent outfit! ${scorePercent}% compatible`
+        type = 'success'
+      } else if (scorePercent >= 60) {
+        message = `Good outfit combination! ${scorePercent}% compatible`
+        type = 'info'
+      } else {
+        message = `Compatibility score: ${scorePercent}%. Consider trying different combinations.`
+        type = 'warning'
+      }
+      
+      // Show notification based on type
+      if (type === 'success') {
+        showSuccess(message)
+      } else if (type === 'warning') {
+        showWarning(message)
+      } else {
+        showInfo(message)
+      }
+      
+      console.log('OutfitCreator: Outfit scored:', scorePercent + '%')
+    } else {
+      showError(result.error || 'Failed to score outfit')
+    }
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error scoring outfit:', error)
+    scoringOutfit.value = false
+    showError('Failed to score outfit. Please try again.')
   }
 }
 
