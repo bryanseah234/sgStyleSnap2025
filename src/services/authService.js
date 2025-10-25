@@ -598,12 +598,18 @@ export class AuthService {
       console.log('🔧 AuthService: Auth user email:', authUser.email)
       
       // Extract user data from auth user
+      // Username format: emailprefix_uuid4chars (e.g., john_a3f2)
+      // This prevents collisions between john@gmail.com and john@smu.edu.sg
+      const emailPrefix = authUser.email ? authUser.email.split('@')[0] : 'user'
+      const cleanEmailPrefix = emailPrefix.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20)
+      const uuidSuffix = authUser.id.slice(-4)
+      
       const userData = {
         id: authUser.id,
         email: authUser.email,
-        username: authUser.email ? authUser.email.split('@')[0] : `user_${authUser.id.slice(0, 8)}`,
+        username: `${cleanEmailPrefix}_${uuidSuffix}`,
         name: authUser.user_metadata?.name || authUser.user_metadata?.full_name || 'User',
-        avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+        avatar_url: authUser.user_metadata?.picture || null,  // Google photo ONLY
         google_id: authUser.user_metadata?.sub || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()

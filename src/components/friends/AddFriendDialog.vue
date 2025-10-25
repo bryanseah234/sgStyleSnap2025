@@ -129,7 +129,12 @@
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
-import { api } from '@/api/base44Client'
+import { UserService } from '@/services/userService'
+import { FriendsService } from '@/services/friendsService'
+
+// Service instances
+const userService = new UserService()
+const friendsService = new FriendsService()
 
 // Props
 defineProps({
@@ -167,8 +172,8 @@ const searchUsers = async () => {
   searching.value = true
   
   try {
-    console.log('🔍 AddFriendDialog: Calling api.entities.User.search...')
-    const result = await api.entities.User.search(searchQuery.value)
+    console.log('🔍 AddFriendDialog: Calling userService.searchUsers...')
+    const result = await userService.searchUsers(searchQuery.value)
     
     console.log('🔍 AddFriendDialog: Search result:', {
       hasResult: !!result,
@@ -176,8 +181,7 @@ const searchUsers = async () => {
       users: result?.map(user => ({
         id: user.id,
         username: user.username,
-        name: user.name,
-        email: user.email
+        name: user.name
       }))
     })
     
@@ -206,14 +210,10 @@ const sendFriendRequest = async (userId) => {
   console.log('🤝 AddFriendDialog: Setting sendingRequest state to:', userId)
   
   try {
-    console.log('🤝 AddFriendDialog: Calling api.entities.Friendship.create...')
-    const requestData = {
-      friend_id: userId,
-      status: 'pending'
-    }
-    console.log('🤝 AddFriendDialog: Request data:', requestData)
+    console.log('🤝 AddFriendDialog: Calling friendsService.sendFriendRequest...')
+    console.log('🤝 AddFriendDialog: Target user ID:', userId)
     
-    await api.entities.Friendship.create(requestData)
+    await friendsService.sendFriendRequest(userId)
     
     console.log('✅ AddFriendDialog: Friend request sent successfully!')
     console.log('🤝 AddFriendDialog: Emitting friendRequestSent event')
@@ -229,7 +229,7 @@ const sendFriendRequest = async (userId) => {
       stack: error.stack,
       name: error.name
     })
-    showError('Failed to send friend request')
+    showError(error.message || 'Failed to send friend request')
   } finally {
     sendingRequest.value = null
     console.log('🤝 AddFriendDialog: Clearing sendingRequest state')
