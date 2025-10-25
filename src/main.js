@@ -248,9 +248,8 @@ app.provide('authStore', authStore)
 const themeStore = useThemeStore()
 const { loadUser } = useTheme()
 
-// Initialize theme immediately
-themeStore.initializeTheme()
-console.log('🎨 Main: Theme initialized:', themeStore.theme)
+// Note: Theme initialization is handled by initializeThemeSystem() function below
+// to consolidate all theme logic in one place
 
 app.config.globalProperties.$themeStore = themeStore
 app.provide('themeStore', themeStore)
@@ -321,22 +320,33 @@ router.afterEach((to, from) => {
   // Ensure theme is applied on route changes
   themeStore.refreshTheme()
 })
-// Initialize theme store first and apply theme immediately
-themeStore.initializeTheme()
 
-// Add global theme persistence for immediate application
-document.addEventListener('DOMContentLoaded', () => {
-  themeStore.refreshTheme()
-})
-
-// Also apply theme immediately if DOM is already loaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+/**
+ * Initialize theme system
+ * 
+ * Consolidates all theme initialization logic into a single function
+ * to avoid redundancy and ensure consistent theme application.
+ */
+function initializeThemeSystem() {
+  console.log('🎨 Main: Initializing theme system...')
+  
+  // Initialize theme store with user preferences or system defaults
+  themeStore.initializeTheme()
+  
+  // Apply theme immediately if DOM is already loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🎨 Main: Applying theme on DOMContentLoaded')
+      themeStore.refreshTheme()
+    })
+  } else {
+    console.log('🎨 Main: Applying theme immediately (DOM already loaded)')
     themeStore.refreshTheme()
-  })
-} else {
-  themeStore.refreshTheme()
+  }
 }
+
+// Initialize theme system once
+initializeThemeSystem()
 
 const authInitPromise = authStore.initializeAuth().then(async () => {
   console.log('✅ Auth store initialized successfully')
@@ -435,6 +445,30 @@ document.addEventListener('scroll', () => { lastActivityTime = Date.now() })
 // Start monitoring after a delay
 setTimeout(startBlankPageMonitor, 5000)
 
+/**
+ * Helper function to detect browser extension errors
+ * 
+ * Checks if an error message is related to browser extensions
+ * (e.g., Chrome extension errors that shouldn't break the app)
+ * 
+ * @param {string|Object} messageOrObj - Error message or error object
+ * @returns {boolean} True if this is a browser extension error
+ */
+function isBrowserExtensionError(messageOrObj) {
+  const message = typeof messageOrObj === 'string' 
+    ? messageOrObj 
+    : (messageOrObj?.message || String(messageOrObj || ''))
+  
+  return message && (
+    message.includes('No tab with id') ||
+    message.includes('runtime.lastError') ||
+    message.includes('Extension context') ||
+    message.includes('message channel closed') ||
+    message.includes('chrome-extension://') ||
+    message.includes('moz-extension://')
+  )
+}
+
 // Additional aggressive error suppression for runtime.lastError
 const originalOnError = window.onerror
 window.onerror = function(message, source, lineno, colno, error) {
@@ -450,17 +484,12 @@ window.onerror = function(message, source, lineno, colno, error) {
   return false
 }
 
-// Load user theme preferences after app is mounted
-// This is called asynchronously to avoid blocking the app mount
-loadUser().catch(error => {
-  console.error('Error loading user theme preferences:', error)
-})
+// Note: loadUser() is already called inside authInitPromise (line ~355)
+// No need to call it again here to avoid duplicate API requests
 
-// Ensure theme is applied after app is mounted
-setTimeout(() => {
-  console.log('🎨 Main: Ensuring theme is applied after mount')
-  themeStore.refreshTheme()
-}, 500)
+// Note: Theme initialization is already handled by initializeThemeSystem() (line ~350)
+// and refreshTheme() is called on route changes (router.afterEach)
+// No need for additional setTimeout calls
 
 // Global error handler for browser extension errors
 window.addEventListener('unhandledrejection', (event) => {
