@@ -97,7 +97,7 @@
           <div
             v-for="(notification, index) in notifications"
             :key="notification.id"
-            @click="markNotificationAsRead(notification)"
+            @click="handleNotificationClick(notification)"
             :class="`stagger-item p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
               notification.is_read
                 ? theme.value === 'dark'
@@ -118,16 +118,11 @@
 
               <!-- Content -->
               <div class="flex-1 min-w-0">
-                <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center justify-between gap-2">
                   <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-sm mb-1 text-foreground">
+                    <h3 class="font-semibold text-sm text-foreground">
                       {{ getNotificationTitle(notification) }}
                     </h3>
-                    <p :class="`text-sm ${
-                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-                    }`">
-                      {{ getNotificationMessage(notification) }}
-                    </p>
                   </div>
                   
                   <!-- Time and unread indicator -->
@@ -210,6 +205,7 @@
  */
 
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { api } from '@/api/base44Client'
@@ -224,6 +220,7 @@ import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRa
 // Theme and auth composables
 const { theme } = useTheme()
 const authStore = useAuthStore()
+const router = useRouter()
 
 // Liquid glass composables
 const { elementRef: heroRef, reveal: heroReveal } = useLiquidReveal()
@@ -451,6 +448,45 @@ const markAllAsRead = async () => {
     unreadCount.value = 0
   } catch (error) {
     console.error('❌ Home: Error marking all notifications as read:', error)
+  }
+}
+
+/**
+ * Handles notification click - navigates to appropriate page and marks as read
+ */
+const handleNotificationClick = async (notification) => {
+  // Mark as read first
+  await markNotificationAsRead(notification)
+  
+  // Navigate based on notification type
+  switch (notification.type) {
+    case 'friend_request':
+      // Navigate to friends page with requests tab
+      router.push('/friends?tab=requests')
+      break
+    case 'friend_request_accepted':
+      // Navigate to friends page
+      router.push('/friends')
+      break
+    case 'outfit_shared':
+      // Navigate to outfits page
+      router.push('/outfits')
+      break
+    case 'friend_outfit_suggestion':
+      // Navigate to outfit suggestions page
+      router.push('/outfits?filter=suggestions')
+      break
+    case 'outfit_like':
+      // Navigate to outfits page
+      router.push('/outfits')
+      break
+    case 'item_like':
+      // Navigate to closet page
+      router.push('/closet')
+      break
+    default:
+      // Default to notifications page if it exists
+      console.log('Unknown notification type:', notification.type)
   }
 }
 

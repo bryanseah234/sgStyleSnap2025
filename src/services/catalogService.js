@@ -225,7 +225,7 @@ export class CatalogService {
       const { data, error } = await supabase
         .rpc('is_catalog_item_owned', {
           user_id_param: user.id,
-          catalog_item_id: catalogItemId
+          catalog_item_id_param: catalogItemId
         })
 
       if (error) {

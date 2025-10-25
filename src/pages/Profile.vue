@@ -134,20 +134,20 @@
             <!-- Theme Toggle Button -->
             <button
               @click="handleThemeToggle"
-              :class="`w-full flex items-center justify-between px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+              :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
                 theme.value === 'dark'
                   ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
                   : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
               }`"
               :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
             >
-              <span class="font-medium text-sm md:text-base">
-              Toggle Theme
-              </span>
          <!-- Sun icon for dark mode (action: switch to light) -->
          <Sun v-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5" />
          <!-- Moon icon for light mode (action: switch to dark) -->
          <Moon v-else class="w-4 h-4 md:w-5 md:h-5" />
+              <span class="font-medium text-sm md:text-base">
+              Toggle Theme
+              </span>
             </button>
 
             <!-- Logout Button -->

@@ -683,11 +683,17 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
   const now = new Date()
   const diffTime = Math.abs(now - date)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const diffMinutes = Math.floor(diffTime / (1000 * 60))
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
   
+  // Show more precise timing for recent requests
+  if (diffMinutes < 1) return 'just now'
+  if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
   if (diffDays === 1) return 'yesterday'
   if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) === 1 ? '' : 's'} ago`
   return date.toLocaleDateString()
 }
 

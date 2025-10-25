@@ -104,6 +104,10 @@
           }`"
         >
           {{ filter.label }}
+          <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 
+                class="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white">
+            {{ suggestionStats.pending }}
+          </span>
         </button>
       </div>
     </div>
@@ -128,8 +132,51 @@
       </div>
     </div>
 
+    <!-- Suggestions Section -->
+    <div v-if="activeFilter === 'suggestions'" class="max-w-6xl mx-auto">
+      <!-- Loading state -->
+      <div v-if="suggestionsLoading" class="flex flex-col items-center py-16">
+        <div class="spinner-modern mb-6"></div>
+        <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
+          Loading suggestions...
+        </p>
+      </div>
+
+      <!-- Empty state -->
+      <div v-else-if="suggestions.length === 0" class="text-center py-12">
+        <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center ${
+          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
+        }`">
+          <Sparkles :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+        </div>
+        <h3 :class="`text-xl font-semibold mb-2 ${
+          theme.value === 'dark' ? 'text-white' : 'text-black'
+        }`">
+          No outfit suggestions yet
+        </h3>
+        <p :class="`text-lg mb-4 ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        }`">
+          When friends suggest outfits using your items, they'll appear here.
+        </p>
+      </div>
+
+      <!-- Suggestions Grid -->
+      <div v-else class="space-y-6">
+        <div
+          v-for="suggestion in suggestions"
+          :key="suggestion.id"
+        >
+          <FriendSuggestionCard
+            :suggestion="suggestion"
+            @suggestion-processed="handleSuggestionProcessed"
+          />
+        </div>
+      </div>
+    </div>
+
     <!-- Outfits Grid -->
-    <div class="max-w-6xl mx-auto">
+    <div v-else class="max-w-6xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="flex flex-col items-center py-16">
         <div class="spinner-modern mb-6"></div>
@@ -450,19 +497,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
 import { OutfitsService } from '@/services/outfitsService'
+import { friendSuggestionsService } from '@/services/friendSuggestionsService'
 import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart, Search } from 'lucide-vue-next'
 import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
+import FriendSuggestionCard from '@/components/outfits/FriendSuggestionCard.vue'
 
 const { theme } = useTheme()
 const { showError, showSuccess, showConfirm } = usePopup()
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 // Initialize outfits service
 const outfitsService = new OutfitsService()
@@ -478,9 +528,20 @@ const showOutfitDetail = ref(false)
 const selectedOutfit = ref(null)
 const searchTerm = ref('')
 
+// Initialize activeFilter from URL parameter
+if (route.query.filter === 'suggestions') {
+  activeFilter.value = 'suggestions'
+}
+
+// Suggestions state
+const suggestions = ref([])
+const suggestionsLoading = ref(false)
+const suggestionStats = ref({ pending: 0, approved: 0, rejected: 0, total: 0 })
+
 const filters = [
   { value: 'all', label: 'All Outfits' },
-  { value: 'favorites', label: 'Favorites' }
+  { value: 'favorites', label: 'Favorites' },
+  { value: 'suggestions', label: 'Suggestions' }
 ]
 
 const filteredOutfits = computed(() => {
@@ -633,6 +694,51 @@ const handleSearch = () => {
   // Search is handled by computed property
 }
 
+// Load suggestions
+const loadSuggestions = async () => {
+  try {
+    suggestionsLoading.value = true
+    console.log('Outfits: Loading suggestions...')
+    
+    const [suggestionsData, statsData] = await Promise.all([
+      friendSuggestionsService.getReceivedSuggestions({ limit: 20 }),
+      friendSuggestionsService.getSuggestionStats()
+    ])
+    
+    suggestions.value = suggestionsData || []
+    suggestionStats.value = statsData || { pending: 0, approved: 0, rejected: 0, total: 0 }
+    
+    console.log('Outfits: Loaded', suggestions.value.length, 'suggestions')
+  } catch (error) {
+    console.error('Outfits: Error loading suggestions:', error)
+    suggestions.value = []
+  } finally {
+    suggestionsLoading.value = false
+  }
+}
+
+// Handle suggestion processed (approved/rejected)
+const handleSuggestionProcessed = ({ action, suggestionId }) => {
+  console.log('Outfits: Suggestion processed:', action, suggestionId)
+  
+  // Remove the processed suggestion from the list
+  suggestions.value = suggestions.value.filter(s => s.id !== suggestionId)
+  
+  // Update stats
+  if (action === 'approved') {
+    suggestionStats.value.pending = Math.max(0, suggestionStats.value.pending - 1)
+    suggestionStats.value.approved += 1
+  } else if (action === 'rejected') {
+    suggestionStats.value.pending = Math.max(0, suggestionStats.value.pending - 1)
+    suggestionStats.value.rejected += 1
+  }
+  
+  // Reload outfits to show the new approved outfit
+  if (action === 'approved') {
+    loadOutfits()
+  }
+}
+
 onMounted(async () => {
   console.log('Outfits: Component mounted, initializing...')
   
@@ -645,10 +751,20 @@ onMounted(async () => {
   // Only load outfits if user is authenticated
   if (authStore.isAuthenticated && authStore.user?.id) {
     console.log('Outfits: User is authenticated, loading outfits...')
-    await loadOutfits()
+    await Promise.all([
+      loadOutfits(),
+      loadSuggestions()
+    ])
   } else {
     console.log('Outfits: User not authenticated, skipping outfit loading')
     loading.value = false
+  }
+})
+
+// Watch for filter changes to load suggestions when needed
+watch(activeFilter, (newFilter) => {
+  if (newFilter === 'suggestions' && suggestions.value.length === 0 && !suggestionsLoading.value) {
+    loadSuggestions()
   }
 })
 </script>
