@@ -1,4 +1,5 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { authService } from '@/services/authService'
 
 export class FriendsService {
   async getFriends(filters = {}) {
@@ -18,6 +19,23 @@ export class FriendsService {
       }
 
       console.log('🔧 FriendsService: User authenticated:', user.email)
+
+      // Ensure user profile exists in database (required for foreign key constraint)
+      console.log('🔧 FriendsService: Ensuring user profile exists...')
+      try {
+        const profile = await authService.getCurrentProfile()
+        if (!profile) {
+          console.warn('⚠️ FriendsService: Profile not found, creating profile...')
+          await authService.createUserProfile(user)
+          console.log('✅ FriendsService: Profile created successfully')
+        } else {
+          console.log('✅ FriendsService: Profile exists:', profile.email)
+        }
+      } catch (profileError) {
+        console.error('❌ FriendsService: Error ensuring profile exists:', profileError)
+        // Don't throw error here, just log warning and continue
+        console.warn('⚠️ FriendsService: Continuing without profile check')
+      }
 
       // Get friendships where user is either requester or receiver
       let query = supabase
@@ -311,6 +329,22 @@ export class FriendsService {
         user_name: user.user_metadata?.name || 'Unknown'
       })
 
+      // Ensure user profile exists in database (required for foreign key constraint)
+      console.log('🤝 FriendsService: Ensuring user profile exists...')
+      try {
+        const profile = await authService.getCurrentProfile()
+        if (!profile) {
+          console.warn('⚠️ FriendsService: Profile not found, creating profile...')
+          await authService.createUserProfile(user)
+          console.log('✅ FriendsService: Profile created successfully')
+        } else {
+          console.log('✅ FriendsService: Profile exists:', profile.email)
+        }
+      } catch (profileError) {
+        console.error('❌ FriendsService: Error ensuring profile exists:', profileError)
+        throw new Error('Unable to complete request. Please refresh the page and try again.')
+      }
+
       // Validate: Cannot add yourself as a friend
       if (userId === user.id) {
         console.warn('⚠️ FriendsService: User attempting to add themselves as a friend')
@@ -412,6 +446,9 @@ export class FriendsService {
         if (error.code === '42501') {
           // RLS policy violation - shouldn't happen with our validation, but just in case
           throw new Error('Unable to send friend request. You cannot add yourself as a friend.')
+        } else if (error.code === '23503') {
+          // Foreign key constraint violation - user profile doesn't exist
+          throw new Error('Unable to send friend request. Please refresh the page and try again.')
         } else if (error.code === '23505') {
           // Unique constraint violation - friendship already exists
           throw new Error('Friend request already exists')

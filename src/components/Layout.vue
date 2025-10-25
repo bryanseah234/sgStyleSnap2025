@@ -115,11 +115,29 @@
       </div>
     </aside>
 
+    <!-- Mobile Top Bar -->
+    <div 
+      v-if="!isLandingPage"
+      class="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-stone-200 z-50 px-4 py-3 pt-safe"
+      style="padding-top: calc(0.75rem + env(safe-area-inset-top))"
+    >
+      <div class="flex items-center justify-center">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
+            <Shirt class="w-4 h-4 text-white" />
+          </div>
+          <h1 class="text-xl font-bold tracking-tight text-black">
+            StyleSnap
+          </h1>
+        </div>
+      </div>
+    </div>
+
     <!-- Mobile Bottom Navigation with liquid glass -->
     <nav 
       v-if="!isLandingPage"
       ref="mobileNavRef"
-      class="md:hidden fixed bottom-0 left-0 right-0 navbar-glass z-50 px-2 py-3 pb-safe"
+      class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-50 px-2 py-3 pb-safe"
       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
@@ -135,23 +153,23 @@
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               $route.path === item.path
-                ? 'bg-primary scale-110 -translate-y-0.5'
+                ? 'bg-black scale-110 -translate-y-0.5'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
                   $route.path === item.path
-                    ? 'text-primary-foreground'
-                    : 'text-muted-foreground'
+                    ? 'text-white'
+                    : 'text-black'
                 }`"
               />
             </div>
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
               $route.path === item.path
-                ? 'text-primary-foreground opacity-100 scale-100'
-                : 'text-muted-foreground opacity-60 scale-90'
+                ? 'text-black opacity-100 scale-100'
+                : 'text-black opacity-60 scale-90'
             }`">
               {{ item.name }}
             </span>
@@ -159,7 +177,7 @@
             <!-- Active indicator -->
             <div
               v-if="$route.path === item.path"
-              class="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-primary"
+              class="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-black"
             />
           </div>
         </router-link>
@@ -167,7 +185,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main :class="`${isLandingPage ? '' : 'md:ml-64'} ${isLandingPage ? '' : 'pb-24 md:pb-0'} min-h-screen`">
+    <main :class="`${isLandingPage ? '' : 'md:ml-64'} ${isLandingPage ? '' : 'pt-16 pb-24 md:pt-0 md:pb-0'} min-h-screen`">
       <transition
         :name="'page'"
         mode="out-in"

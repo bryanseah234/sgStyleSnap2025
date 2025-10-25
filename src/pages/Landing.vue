@@ -158,14 +158,14 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <Users class="w-6 h-6 text-primary" />
                 </div>
-                <h3 class="text-xl font-semibold text-foreground mb-3">Social Features</h3>
-                <p class="text-muted-foreground text-sm leading-relaxed">
+                <h3 class="text-xl font-semibold text-stone-900 mb-3">Social Features</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
                   Connect with friends and share your style journey.
                 </p>
               </div>
@@ -180,14 +180,14 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <Search class="w-7 h-7 text-primary" />
                 </div>
-                <h3 class="text-2xl font-semibold text-foreground mb-3">Smart Search</h3>
-                <p class="text-muted-foreground leading-relaxed">
+                <h3 class="text-2xl font-semibold text-stone-900 mb-3">Smart Search</h3>
+                <p class="text-stone-600 leading-relaxed">
                   Find exactly what you need with powerful search and filtering by color, brand, and style.
                 </p>
               </div>
@@ -202,14 +202,14 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <Heart class="w-6 h-6 text-primary" />
                 </div>
-                <h3 class="text-xl font-semibold text-foreground mb-3">Favorites</h3>
-                <p class="text-muted-foreground text-sm leading-relaxed">
+                <h3 class="text-xl font-semibold text-stone-900 mb-3">Favorites</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
                   Save your most-loved pieces for quick access.
                 </p>
               </div>
@@ -224,14 +224,14 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <Smartphone class="w-7 h-7 text-primary" />
                 </div>
-                <h3 class="text-2xl font-semibold text-foreground mb-3">Mobile First</h3>
-                <p class="text-muted-foreground leading-relaxed">
+                <h3 class="text-2xl font-semibold text-stone-900 mb-3">Mobile First</h3>
+                <p class="text-stone-600 leading-relaxed">
                   Access your wardrobe anywhere, anytime with our responsive interface.
                 </p>
               </div>
