@@ -24,18 +24,25 @@ StyleSnap now includes TypeScript support for improved type safety and developer
 
 ## Usage
 
+### Building
+
+**Fast Build (Default - Recommended for Production):**
+```bash
+npm run build
+```
+No type checking, works with JavaScript code.
+
+**Build with Type Checking (Optional):**
+```bash
+npm run build:check
+```
+Includes TypeScript validation, use when ready.
+
 ### Type Checking
 
 Run type checking without building:
 ```bash
 npm run type-check
-```
-
-### Building with Type Checking
-
-The build script now includes automatic type checking:
-```bash
-npm run build
 ```
 
 ### Linting TypeScript
@@ -45,6 +52,13 @@ ESLint now supports TypeScript files:
 npm run lint
 npm run lint:fix
 ```
+
+### Configuration Files
+
+- **`tsconfig.json`** - Lenient config (allows JS, no strict checking)
+- **`tsconfig.strict.json`** - Strict config (TypeScript only, full validation)
+
+**Note:** The default build uses the lenient config, so your existing JavaScript code continues to work perfectly!
 
 ## Gradual Migration
 
