@@ -1,0 +1,105 @@
+<template>
+  <div class="min-h-screen flex items-center justify-center p-4 bg-background max-w-full overflow-x-hidden">
+    <div class="text-center">
+      <!-- Loading Spinner -->
+      <div v-if="loggingOut" class="flex flex-col items-center mb-6">
+        <div class="spinner-modern text-foreground mb-4"></div>
+        <h1 class="text-2xl font-bold mb-2 text-foreground">
+          Logging out...
+        </h1>
+        <p :class="`text-lg ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        }`">
+          Please wait while we sign you out
+        </p>
+      </div>
+      
+      <!-- Logout Complete -->
+      <div v-else class="flex flex-col items-center mb-6">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold mb-2 text-foreground">
+          Logged out successfully
+        </h1>
+        <p :class="`text-lg ${
+          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
+        }`">
+          Redirecting to landing page...
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useTheme } from '@/composables/useTheme'
+import { useAuthStore } from '@/stores/auth-store'
+
+// Composables
+const router = useRouter()
+const { theme } = useTheme()
+const authStore = useAuthStore()
+
+// State
+const loggingOut = ref(true)
+
+// Logout process
+const performLogout = async () => {
+  try {
+    console.log('🚪 Logout Page: Starting logout process...')
+    
+    // Clear auth store first to prevent auto sign-in
+    authStore.clearUser()
+    
+    // Perform logout through auth store with timeout
+    const logoutPromise = authStore.logout()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Logout timeout')), 8000)
+    )
+    
+    await Promise.race([logoutPromise, timeoutPromise])
+    
+    console.log('✅ Logout Page: Logout completed successfully')
+    
+    // Show success state briefly
+    loggingOut.value = false
+    
+    // Wait a moment to show success message, then redirect
+    setTimeout(() => {
+      console.log('🚪 Logout Page: Redirecting to landing page...')
+      router.push('/')
+    }, 1500)
+    
+  } catch (error) {
+    console.error('❌ Logout Page: Logout error:', error)
+    
+    // Even if logout fails, clear user data and redirect
+    authStore.clearUser()
+    loggingOut.value = false
+    
+    setTimeout(() => {
+      console.log('🚪 Logout Page: Redirecting to landing page after error...')
+      router.push('/')
+    }, 1000)
+  }
+}
+
+// Start logout process when component mounts
+onMounted(() => {
+  performLogout()
+  
+  // Fallback: ensure we always redirect after 15 seconds
+  setTimeout(() => {
+    if (loggingOut.value) {
+      console.log('🚪 Logout Page: Fallback redirect triggered')
+      loggingOut.value = false
+      router.push('/')
+    }
+  }, 15000)
+})
+</script>

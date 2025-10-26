@@ -1,0 +1,1171 @@
+/* Import animation tokens */
+@import './tokens/animations.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode - White background, black text, gray subtext */
+    --background: 0 0% 100%;        /* Pure white */
+    --foreground: 0 0% 0%;          /* Pure black */
+    --card: 0 0% 100%;              /* White cards */
+    --card-foreground: 0 0% 0%;     /* Black text on cards */
+    --popover: 0 0% 100%;           /* White popovers */
+    --popover-foreground: 0 0% 0%;  /* Black text on popovers */
+    --primary: 0 0% 0%;             /* Black primary */
+    --primary-foreground: 0 0% 100%; /* White text on black */
+    --secondary: 0 0% 96%;          /* Light gray secondary */
+    --secondary-foreground: 0 0% 0%; /* Black text on gray */
+    --muted: 0 0% 96%;              /* Light gray muted */
+    --muted-foreground: 0 0% 45%;   /* Dark gray subtext */
+    --accent: 0 0% 96%;             /* Light gray accent */
+    --accent-foreground: 0 0% 0%;   /* Black text on accent */
+    --destructive: 0 84% 60%;       /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%; /* White text on red */
+    --border: 0 0% 90%;             /* Light gray borders */
+    --input: 0 0% 96%;              /* Light gray inputs */
+    --ring: 0 0% 0%;                /* Black focus rings */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode - Black background, white text, gray subtext */
+    --background: 0 0% 0%;          /* Pure black */
+    --foreground: 0 0% 100%;        /* Pure white */
+    --card: 0 0% 5%;                /* Very dark gray cards */
+    --card-foreground: 0 0% 100%;   /* White text on cards */
+    --popover: 0 0% 5%;             /* Very dark gray popovers */
+    --popover-foreground: 0 0% 100%; /* White text on popovers */
+    --primary: 0 0% 100%;           /* White primary */
+    --primary-foreground: 0 0% 0%;  /* Black text on white */
+    --secondary: 0 0% 15%;          /* Dark gray secondary */
+    --secondary-foreground: 0 0% 100%; /* White text on gray */
+    --muted: 0 0% 15%;              /* Dark gray muted */
+    --muted-foreground: 0 0% 65%;   /* Light gray subtext */
+    --accent: 0 0% 15%;             /* Dark gray accent */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+    --destructive: 0 84% 60%;       /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%; /* White text on red */
+    --border: 0 0% 20%;             /* Dark gray borders */
+    --input: 0 0% 15%;              /* Dark gray inputs */
+    --ring: 0 0% 100%;              /* White focus rings */
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground transition-colors duration-200;
+  }
+  html {
+    @apply bg-background;
+  }
+}
+
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-zinc-600 dark:bg-zinc-700 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-zinc-500 dark:bg-zinc-600;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  /* Fallback for browsers that don't support scrollbar-width */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(82 82 91) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(82 82 91);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(64 64 64);
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: rgb(63 63 70) transparent;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(63 63 70);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(82 82 82);
+}
+
+/* ============================================
+   LOADING ANIMATIONS
+   ============================================ */
+
+/* Modern Spinner Animation - Rotating circle with gradient */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-modern {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    currentColor 100%
+  );
+  animation: spin 1s linear infinite;
+}
+
+.spinner-modern::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: inherit;
+  background: var(--background);
+}
+
+/* Dark mode spinner - use white for better visibility */
+.dark .spinner-modern {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    white 100%
+  );
+}
+
+.dark .spinner-modern::before {
+  background: var(--background);
+}
+
+/* Shimmer Effect for Skeleton Loaders - Right to Left */
+@keyframes shimmer {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+.skeleton-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Light mode shimmer */
+:root .skeleton-shimmer::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+/* Content Loading States - Fade In + Slide Up */
+.content-loading {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+.content-loaded {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+/* Staggered Animation for Grid Items */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-item {
+  animation: fadeInSlideUp 0.4s ease-out backwards;
+}
+
+/* Apply stagger delays for up to 20 items */
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger-item:nth-child(7) { animation-delay: 0.35s; }
+.stagger-item:nth-child(8) { animation-delay: 0.4s; }
+.stagger-item:nth-child(9) { animation-delay: 0.45s; }
+.stagger-item:nth-child(10) { animation-delay: 0.5s; }
+.stagger-item:nth-child(11) { animation-delay: 0.55s; }
+.stagger-item:nth-child(12) { animation-delay: 0.6s; }
+.stagger-item:nth-child(13) { animation-delay: 0.65s; }
+.stagger-item:nth-child(14) { animation-delay: 0.7s; }
+.stagger-item:nth-child(15) { animation-delay: 0.75s; }
+.stagger-item:nth-child(16) { animation-delay: 0.8s; }
+.stagger-item:nth-child(17) { animation-delay: 0.85s; }
+.stagger-item:nth-child(18) { animation-delay: 0.9s; }
+.stagger-item:nth-child(19) { animation-delay: 0.95s; }
+.stagger-item:nth-child(20) { animation-delay: 1s; }
+
+/* Pulse Animation for Loading States */
+@keyframes pulse-smooth {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.pulse-smooth {
+  animation: pulse-smooth 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scale In Animation for Cards */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* ============================================
+   ADVANCED ANIMATIONS
+   ============================================ */
+
+/* 1. TransitionGroup List Animations */
+.list-enter-active {
+  transition: all 0.4s ease-out;
+}
+
+.list-leave-active {
+  transition: all 0.3s ease-in;
+  position: absolute;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.list-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.list-move {
+  transition: transform 0.3s ease;
+}
+
+/* 2. Form Input Focus Enhancements */
+.form-field {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 0.75rem;
+  padding-top: 1.25rem;
+  border: none;
+  border-bottom: 2px solid;
+  background: transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  outline: none;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  background-color: transparent;
+}
+
+.form-field label {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  transform-origin: left top;
+}
+
+.form-field input:focus + label,
+.form-field input:not(:placeholder-shown) + label,
+.form-field textarea:focus + label,
+.form-field textarea:not(:placeholder-shown) + label,
+.form-field.has-value label {
+  transform: translateY(-0.75rem) scale(0.85);
+  font-weight: 600;
+}
+
+/* Light mode form colors */
+:root .form-field input,
+:root .form-field textarea {
+  border-bottom-color: hsl(0 0% 90%);
+  color: hsl(0 0% 0%);
+}
+
+:root .form-field input:focus,
+:root .form-field textarea:focus {
+  border-bottom-color: hsl(0 0% 0%);
+}
+
+:root .form-field label {
+  color: hsl(0 0% 45%);
+}
+
+:root .form-field input:focus + label,
+:root .form-field textarea:focus + label {
+  color: hsl(0 0% 0%);
+}
+
+/* Dark mode form colors */
+.dark .form-field input,
+.dark .form-field textarea {
+  border-bottom-color: hsl(0 0% 20%);
+  color: hsl(0 0% 100%);
+}
+
+.dark .form-field input:focus,
+.dark .form-field textarea:focus {
+  border-bottom-color: hsl(0 0% 100%);
+}
+
+.dark .form-field label {
+  color: hsl(0 0% 65%);
+}
+
+.dark .form-field input:focus + label,
+.dark .form-field textarea:focus + label {
+  color: hsl(0 0% 100%);
+}
+
+/* 3. Icon Micro-interactions */
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.heart-pulse {
+  animation: heartPulse 0.3s ease-out;
+}
+
+.icon-rotate-hover {
+  transition: transform 0.3s ease;
+}
+
+.icon-rotate-hover:hover {
+  transform: rotate(90deg);
+}
+
+.icon-scale-hover {
+  transition: transform 0.2s ease;
+}
+
+.icon-scale-hover:hover {
+  transform: scale(1.1);
+}
+
+.hamburger-bar {
+  transition: all 0.3s ease;
+}
+
+.hamburger-hover:hover .hamburger-bar:nth-child(1) {
+  transform: translateY(-2px);
+}
+
+.hamburger-hover:hover .hamburger-bar:nth-child(3) {
+  transform: translateY(2px);
+}
+
+/* 4. Modal/Dialog Physics-Based Animations */
+.modal-enter-active {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-leave-active {
+  transition: all 0.2s ease-out;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.modal-enter-to,
+.modal-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Backdrop fade */
+.modal-backdrop-enter-active,
+.modal-backdrop-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop-enter-from,
+.modal-backdrop-leave-to {
+  opacity: 0;
+}
+
+/* 5. Scroll-Triggered Animations */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-up.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scale-in-viewport {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.scale-in-viewport.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ============================================
+   NAVBAR LIQUID GLASS EFFECTS
+   ============================================ */
+
+/* Navbar container with liquid glass */
+.navbar-glass {
+  -webkit-backdrop-filter: blur(var(--blur-medium));
+  backdrop-filter: blur(var(--blur-medium));
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all var(--duration-normal) var(--ease-liquid);
+}
+
+.navbar-glass:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Dark mode navbar */
+.dark .navbar-glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .navbar-glass:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* Navigation item liquid effects */
+.nav-item-liquid {
+  position: relative;
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: translateZ(0);
+}
+
+.nav-item-liquid:hover {
+  transform: translateX(4px) translateZ(5px);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.nav-item-liquid::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-liquid);
+  z-index: -1;
+}
+
+.nav-item-liquid:hover::before {
+  opacity: 1;
+}
+
+/* Mobile fallback - simplified effects */
+@media (max-width: 768px) {
+  .navbar-glass {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .nav-item-liquid:hover {
+    transform: translateX(2px);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .nav-item-liquid::before {
+    display: none;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .navbar-glass {
+    transition: none;
+    transform: none;
+    /* Keep backdrop filter for translucency even with reduced motion */
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  
+  .nav-item-liquid {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .nav-item-liquid::before {
+    display: none;
+  }
+}
+
+/* ============================================
+   HERO SECTION LIQUID GLASS EFFECTS
+   ============================================ */
+
+/* Hero text with liquid reveal */
+.liquid-text {
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-text:hover {
+  transform: translateZ(5px);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+/* Stats cards with liquid glass hover */
+.liquid-card {
+  position: relative;
+  transition: all var(--duration-normal) var(--ease-liquid);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.liquid-card:hover {
+  transform: translateY(-8px) translateZ(15px);
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-liquid);
+  z-index: -1;
+}
+
+.liquid-card:hover::before {
+  opacity: 1;
+}
+
+/* Card icons with liquid scale */
+.liquid-icon {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-card:hover .liquid-icon {
+  transform: scale(1.1) translateZ(5px);
+}
+
+/* Card numbers with liquid bounce */
+.liquid-number {
+  transition: all var(--duration-fast) var(--ease-spring-bouncy);
+  transform: translateZ(0);
+}
+
+.liquid-card:hover .liquid-number {
+  transform: scale(1.05) translateZ(5px);
+}
+
+/* Dark mode adjustments */
+/* Stats cards remain theme-neutral - no dark mode overrides */
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-card:hover {
+    transform: translateY(-4px);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  
+  .liquid-card::before {
+    display: none;
+  }
+}
+
+/* Hero section accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-text,
+  .liquid-card,
+  .liquid-icon,
+  .liquid-number {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-card::before {
+    display: none;
+  }
+}
+
+/* ============================================
+   CARDS/ITEMS GRID LIQUID GLASS EFFECTS
+   ============================================ */
+
+/* Item cards with liquid glass hover */
+.liquid-item-card {
+  position: relative;
+  transition: all var(--duration-normal) var(--ease-liquid);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.liquid-item-card:hover {
+  transform: translateY(-6px) translateZ(12px);
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-item-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-liquid);
+  z-index: -1;
+}
+
+.liquid-item-card:hover::before {
+  opacity: 1;
+}
+
+/* Item images with liquid scale */
+.liquid-item-image {
+  transition: all var(--duration-normal) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-item-card:hover .liquid-item-image {
+  transform: scale(1.05) translateZ(5px);
+}
+
+/* Item titles with liquid lift */
+.liquid-item-title {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-item-card:hover .liquid-item-title {
+  transform: translateY(-2px) translateZ(3px);
+}
+
+/* Item categories with liquid fade */
+.liquid-item-category {
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: translateZ(0);
+}
+
+.liquid-item-card:hover .liquid-item-category {
+  transform: translateY(-1px) translateZ(2px);
+  opacity: 0.8;
+}
+
+/* Favorite button with liquid press */
+.liquid-favorite-btn {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-favorite-btn:active {
+  transform: scale(0.9) translateZ(-3px);
+}
+
+.liquid-item-card:hover .liquid-favorite-btn {
+  transform: scale(1.05) translateZ(3px);
+}
+
+/* Dark mode adjustments */
+/* Clothing item cards remain theme-neutral - no dark mode overrides */
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-item-card:hover {
+    transform: translateY(-3px);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  
+  .liquid-item-card::before {
+    display: none;
+  }
+  
+  .liquid-item-card:hover .liquid-item-image {
+    transform: scale(1.02);
+  }
+}
+
+/* Cards grid accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-item-card,
+  .liquid-item-image,
+  .liquid-item-title,
+  .liquid-item-category,
+  .liquid-favorite-btn {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-item-card::before {
+    display: none;
+  }
+}
+
+/* ============================================
+   BUTTONS LIQUID GLASS RIPPLE EFFECTS
+   ============================================ */
+
+/* Base liquid button */
+.liquid-button {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-fast) var(--ease-liquid);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.liquid-button:hover {
+  transform: translateY(-1px) translateZ(2px);
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+}
+
+.liquid-button:active {
+  transform: scale(0.98) translateZ(-1px);
+}
+
+/* Button content */
+.liquid-button-content {
+  position: relative;
+  z-index: 2;
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+}
+
+.liquid-button:hover .liquid-button-content {
+  transform: translateZ(1px);
+}
+
+/* Ripple effect */
+.liquid-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+  animation: liquid-ripple 0.6s ease-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.liquid-ripple-active {
+  animation: liquid-ripple 0.6s ease-out;
+}
+
+@keyframes liquid-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Button click feedback */
+.liquid-button-clicked {
+  transform: scale(0.95) translateZ(-2px);
+  -webkit-backdrop-filter: blur(var(--blur-heavy));
+  backdrop-filter: blur(var(--blur-heavy));
+}
+
+/* Dark mode adjustments */
+.dark .liquid-button {
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.dark .liquid-button:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+}
+
+.dark .liquid-ripple {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Button variants with liquid glass */
+.liquid-button[data-variant="default"]:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-foreground));
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.liquid-button[data-variant="destructive"]:hover {
+  background: linear-gradient(135deg, var(--destructive), var(--destructive-foreground));
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+.liquid-button[data-variant="outline"]:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-button[data-variant="secondary"]:hover {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-foreground));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-button[data-variant="ghost"]:hover {
+  background: var(--accent);
+  transform: translateY(-2px) translateZ(3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-button:hover {
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-button:active {
+    transform: scale(0.95);
+  }
+  
+  .liquid-ripple {
+    display: none;
+  }
+}
+
+/* Button accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-button,
+  .liquid-button-content,
+  .liquid-ripple {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+  }
+  
+  .liquid-ripple {
+    display: none;
+  }
+}
+
+/* ============================================
+   MODALS/PANELS FLUID EXPANSION EFFECTS
+   ============================================ */
+
+/* Modal backdrop with liquid glass */
+.liquid-modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(var(--blur-medium));
+  backdrop-filter: blur(var(--blur-medium));
+  transition: all var(--duration-normal) var(--ease-liquid);
+}
+
+.liquid-modal-backdrop:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Modal card with fluid expansion */
+.liquid-modal-card {
+  position: relative;
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.liquid-modal-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  transform: translateY(-2px) translateZ(5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+
+.liquid-modal-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-liquid);
+  z-index: -1;
+}
+
+.liquid-modal-card:hover::before {
+  opacity: 1;
+}
+
+/* Modal image with liquid scale */
+.liquid-modal-image {
+  transition: all var(--duration-normal) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-modal-card:hover .liquid-modal-image {
+  transform: scale(1.02) translateZ(3px);
+}
+
+/* Modal content with liquid reveal */
+.liquid-modal-content {
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-modal-content:hover {
+  transform: translateZ(2px);
+}
+
+/* Close button with liquid press */
+.liquid-close-btn {
+  transition: all var(--duration-fast) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-close-btn:active {
+  transform: scale(0.9) translateZ(-2px);
+}
+
+.liquid-modal-card:hover .liquid-close-btn {
+  transform: scale(1.05) translateZ(3px);
+}
+
+/* Dialog with liquid glass */
+.liquid-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(var(--blur-medium));
+  backdrop-filter: blur(var(--blur-medium));
+  transition: all var(--duration-normal) var(--ease-liquid);
+}
+
+.liquid-dialog-card {
+  position: relative;
+  transition: all var(--duration-slow) var(--ease-spring-gentle);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.liquid-dialog-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  transform: translateY(-1px) translateZ(3px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.liquid-dialog-content {
+  transition: all var(--duration-normal) var(--ease-spring-gentle);
+  transform: translateZ(0);
+}
+
+.liquid-dialog-card:hover .liquid-dialog-content {
+  transform: translateZ(1px);
+}
+
+/* Dark mode adjustments */
+.dark .liquid-modal-card,
+.dark .liquid-dialog-card {
+  background: rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: blur(var(--blur-light));
+}
+
+.dark .liquid-modal-card:hover,
+.dark .liquid-dialog-card:hover {
+  -webkit-backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: blur(var(--blur-dynamic));
+  background: rgba(0, 0, 0, 0.95);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+}
+
+.dark .liquid-modal-card::before {
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .liquid-modal-card:hover,
+  .liquid-dialog-card:hover {
+    transform: none;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  
+  .liquid-modal-card::before {
+    display: none;
+  }
+  
+  .liquid-modal-card:hover .liquid-modal-image {
+    transform: scale(1.01);
+  }
+}
+
+/* Modal accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-modal-backdrop,
+  .liquid-modal-card,
+  .liquid-modal-image,
+  .liquid-modal-content,
+  .liquid-close-btn,
+  .liquid-dialog-backdrop,
+  .liquid-dialog-card,
+  .liquid-dialog-content {
+    transition: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .liquid-modal-card::before {
+    display: none;
+  }
+}

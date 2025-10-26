@@ -1,0 +1,10 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with primary color -->
+  <circle cx="16" cy="16" r="16" fill="#000000"/>
+  
+  <!-- Shirt icon with clean design -->
+  <path d="M9 12h14v2c0 1.1-.9 2-2 2H11c-1.1 0-2-.9-2-2v-2z" fill="white"/>
+  <path d="M9 14v8c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-8" fill="white"/>
+  <path d="M11 8h10v4H11V8z" fill="white"/>
+  <path d="M13 6h6v2h-6V6z" fill="white"/>
+</svg>
