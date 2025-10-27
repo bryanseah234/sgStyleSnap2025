@@ -1,17 +1,9 @@
 <template>
-  <div
-    :class="`p-6 rounded-2xl transition-all duration-300 hover:scale-[1.02] ${
-      theme.value === 'dark'
-        ? 'bg-zinc-900 border border-zinc-800'
-        : 'bg-white border border-stone-200'
-    }`"
-  >
+  <div class="p-6 rounded-2xl transition-all duration-300 hover:scale-[1.02] bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800">
     <!-- Header with friend info -->
     <div class="flex items-center gap-4 mb-4">
       <!-- Friend Avatar -->
-      <div :class="`w-12 h-12 rounded-full overflow-hidden ${
-        theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-      }`">
+      <div class="w-12 h-12 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
         <img
           v-if="suggestion.suggester?.avatar_url"
           :src="suggestion.suggester.avatar_url"
@@ -20,13 +12,9 @@
         />
         <div
           v-else
-          :class="`w-full h-full flex items-center justify-center ${
-            theme.value === 'dark' ? 'bg-zinc-600' : 'bg-stone-300'
-          }`"
+          class="w-full h-full flex items-center justify-center bg-stone-300 dark:bg-zinc-600"
         >
-          <span :class="`text-sm font-bold ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-          }`">
+          <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
             {{ (suggestion.suggester?.name || suggestion.suggester?.username || 'F').charAt(0).toUpperCase() }}
           </span>
         </div>
@@ -37,35 +25,27 @@
         <h3 class="font-semibold text-foreground">
           {{ suggestion.suggester?.name || suggestion.suggester?.username || 'Unknown Friend' }}
         </h3>
-        <p :class="`text-sm ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
+        <p :class="`text-sm text-stone-600 dark:text-zinc-400}`">
           Suggested an outfit
         </p>
       </div>
       
       <!-- Time -->
-      <span :class="`text-xs ${
-        theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-      }`">
+      <span class="text-xs text-stone-500 dark:text-zinc-500">
         {{ formatTimeAgo(suggestion.created_at) }}
       </span>
     </div>
 
     <!-- Message (if provided) -->
     <div v-if="suggestion.message" class="mb-4">
-      <p :class="`text-sm italic ${
-        theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-      }`">
+      <p class="text-sm italic text-stone-700 dark:text-zinc-300">
         "{{ suggestion.message }}"
       </p>
     </div>
 
     <!-- Outfit Preview -->
     <div class="mb-6">
-      <h4 :class="`text-sm font-medium mb-3 ${
-        theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-      }`">
+      <h4 class="text-sm font-medium mb-3 text-stone-700 dark:text-zinc-300">
         Suggested Outfit ({{ suggestion.outfit_items?.length || 0 }} items)
       </h4>
       
@@ -74,9 +54,7 @@
         <div
           v-for="item in suggestion.outfit_items"
           :key="item.clothes_id"
-          :class="`aspect-square rounded-lg overflow-hidden ${
-            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-          }`"
+          class="aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-800"
         >
           <img
             v-if="item.image_url"
@@ -86,13 +64,9 @@
           />
           <div
             v-else
-            :class="`w-full h-full flex items-center justify-center ${
-              theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-            }`"
+            class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
           >
-            <Shirt :class="`w-6 h-6 ${
-              theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'
-            }`" />
+            <Shirt :class="`w-6 h-6 text-stone-400 dark:text-zinc-500`" />
           </div>
         </div>
       </div>

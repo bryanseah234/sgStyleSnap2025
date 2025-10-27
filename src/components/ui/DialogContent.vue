@@ -1,7 +1,5 @@
 <template>
-  <div :class="`max-w-md ${
-    theme.value === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-stone-200'
-  }`">
+  <div class="max-w-md bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800">
     <slot />
   </div>
 </template>

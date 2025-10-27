@@ -1,11 +1,7 @@
 <template>
   <div>
     <!-- Filters Section -->
-    <div :class="`rounded-2xl border p-6 mb-6 ${
-      theme.value === 'dark'
-        ? 'bg-zinc-900 border-zinc-800'
-        : 'bg-white border-stone-200'
-    }`">
+    <div :class="`rounded-2xl border p-6 mb-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-foreground">
           Filter Items
@@ -13,11 +9,7 @@
         <button
           v-if="hasActiveFilters"
           @click="clearFilters"
-          :class="`text-sm font-medium transition-colors ${
-            theme.value === 'dark'
-              ? 'text-zinc-400 hover:text-white'
-              : 'text-stone-600 hover:text-black'
-          }`"
+          :class="`text-sm font-medium transition-colors text-stone-600 hover:text-black dark:text-zinc-400 dark:hover:text-white`"
         >
           <X class="w-4 h-4 inline mr-1" />
           Clear Filters
@@ -27,18 +19,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Category Filter -->
         <div>
-          <label :class="`text-sm mb-2 block ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
             Category
           </label>
           <select
             v-model="filters.category"
-            :class="`w-full h-10 px-3 rounded-lg transition-colors ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white border'
-                : 'bg-stone-50 border-stone-200 text-black border'
-            }`"
+            :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white border`"
           >
             <option :value="null">All Categories</option>
             <option v-for="category in categories" :key="category.value" :value="category.value">
@@ -49,18 +35,12 @@
 
         <!-- Color Filter -->
         <div>
-          <label :class="`text-sm mb-2 block ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
             Color
           </label>
           <select
             v-model="filters.color"
-            :class="`w-full h-10 px-3 rounded-lg transition-colors ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white border'
-                : 'bg-stone-50 border-stone-200 text-black border'
-            }`"
+            :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white border`"
           >
             <option :value="null">All Colors</option>
             <option v-for="color in colors" :key="color" :value="color">
@@ -71,18 +51,12 @@
 
         <!-- Brand Filter -->
         <div>
-          <label :class="`text-sm mb-2 block ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
             Brand
           </label>
           <select
             v-model="filters.brand"
-            :class="`w-full h-10 px-3 rounded-lg transition-colors ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white border'
-                : 'bg-stone-50 border-stone-200 text-black border'
-            }`"
+            :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white border`"
           >
             <option :value="null">All Brands</option>
             <option v-for="brand in brands" :key="brand" :value="brand">
@@ -93,18 +67,12 @@
 
         <!-- Season Filter -->
         <div>
-          <label :class="`text-sm mb-2 block ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
             Season
           </label>
           <select
             v-model="filters.season"
-            :class="`w-full h-10 px-3 rounded-lg transition-colors ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white border'
-                : 'bg-stone-50 border-stone-200 text-black border'
-            }`"
+            :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white border`"
           >
             <option :value="null">All Seasons</option>
             <option v-for="season in seasons" :key="season" :value="season">
@@ -117,20 +85,15 @@
 
     <!-- Catalog Items Grid -->
     <div v-if="loading" class="flex flex-col items-center justify-center h-64">
-      <div class="spinner-modern mb-4" />
-      <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+      <div class="spinner-modern mb-4"></div>
+      <p :class="`text-sm text-stone-600 dark:text-zinc-400`">
         Loading catalog items...
       </p>
     </div>
 
-    <div v-else-if="catalogItems.length === 0" :class="`text-center py-16 rounded-2xl border ${
-      theme.value === 'dark'
-        ? 'bg-zinc-900 border-zinc-800 text-zinc-400'
-        : 'bg-white border-stone-200 text-stone-600'
-    }`">
-      <Shirt :class="`w-16 h-16 mx-auto mb-4 ${
-        theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'
-      }`" />
+    <div v-else-if="catalogItems.length === 0" :class="`text-center py-16 rounded-2xl border bg-white border-stone-200 text-stone-600
+    dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400`">
+      <Shirt :class="`w-16 h-16 mx-auto mb-4 text-stone-400 dark:text-zinc-600`" />
       <p class="text-lg">
         {{ hasActiveFilters
           ? 'No items match your filters. Try adjusting or clearing them.'
@@ -142,16 +105,11 @@
       <div
         v-for="(item, index) in catalogItems"
         :key="item.id"
-        :class="`stagger-item rounded-xl border overflow-hidden transition-all ${
-          theme.value === 'dark'
-            ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
-            : 'bg-white border-stone-200 hover:border-stone-300'
-        }`"
+        :class="`stagger-item rounded-xl border overflow-hidden transition-all bg-white border-stone-200 hover:border-stone-300
+        dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700`"
       >
         <!-- Item Image -->
-        <div :class="`aspect-square ${
-          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-        }`">
+        <div :class="`aspect-square bg-stone-100 dark:bg-zinc-800`">
           <img
             :src="item.image_url"
             :alt="item.name"
@@ -166,12 +124,10 @@
           </h3>
           
           <div class="flex items-center justify-between mb-3">
-            <span :class="['text-xs', theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500']">
+            <span :class="`text-xs text-stone-500 dark:text-zinc-400`">
               {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
             </span>
-            <span v-if="item.brand" :class="`text-xs font-medium ${
-              theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-600'
-            }`">
+            <span v-if="item.brand" :class="`text-xs font-medium text-stone-600 dark:text-zinc-500`">
               {{ item.brand }}
             </span>
           </div>
@@ -184,8 +140,8 @@
               'w-full', 'h-9', 'text-sm', 'rounded-lg', 'font-medium', 'transition-all', 'flex', 'items-center', 'justify-center', 'gap-1',
               'disabled:opacity-50', 'disabled:cursor-not-allowed',
               addedItems.has(item.id)
-                ? (theme.value === 'dark' ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700')
-                : (theme.value === 'dark' ? 'bg-white text-black hover:bg-zinc-100' : 'bg-black text-white hover:bg-stone-900')
+                ? ('bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300')
+                : ('bg-black text-white hover:bg-stone-900 dark:bg-white text-black dark:hover:bg-zinc-100')
             ]"
           >
             <template v-if="addingItemId === item.id">
@@ -206,9 +162,7 @@
     </div>
 
     <!-- Results Count -->
-    <div v-if="!loading && catalogItems.length > 0" :class="`mt-8 text-center text-sm ${
-      theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-    }`">
+    <div v-if="!loading && catalogItems.length > 0" :class="`mt-8 text-center text-sm text-stone-500 dark:text-zinc-500`">
       Showing {{ catalogItems.length }} item{{ catalogItems.length !== 1 ? 's' : '' }}
     </div>
   </div>

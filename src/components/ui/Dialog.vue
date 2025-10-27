@@ -5,19 +5,13 @@
     @click="$emit('close')"
   >
     <div
-      :class="`liquid-dialog-card relative w-full max-w-md rounded-xl p-6 ${
-        theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-      }`"
+      class="liquid-dialog-card relative w-full max-w-md rounded-xl p-6 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800"
       @click.stop
     >
       <!-- Close Button -->
       <button
         @click="$emit('close')"
-        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
-          theme.value === 'dark'
-            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
-            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
-        }`"
+        class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
       >
         <X class="w-5 h-5" />
       </button>

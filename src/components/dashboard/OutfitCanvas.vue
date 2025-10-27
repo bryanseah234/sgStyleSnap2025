@@ -19,11 +19,11 @@
 -->
 <template>
   <!-- Main canvas container with drag-and-drop support -->
-  <div class="relative w-full h-96 border-2 border-dashed rounded-xl overflow-hidden" :class="theme.value === 'dark' ? 'border-zinc-700' : 'border-stone-300'">
+  <div class="relative w-full h-96 border-2 border-dashed rounded-xl overflow-hidden" :class="'border-stone-300 dark:border-zinc-700'">
     <!-- Canvas Background -->
     <div class="absolute inset-0 bg-gradient-to-br from-stone-50 to-stone-100 dark:from-zinc-800 dark:to-zinc-900">
       <!-- Grid Pattern -->
-      <div v-if="showGrid" class="absolute inset-0 opacity-20" :class="theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-300'" style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 20px 20px;"></div>
+      <div v-if="showGrid" class="absolute inset-0 opacity-20" :class="'bg-stone-300 dark:bg-zinc-700'" style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 20px 20px;"></div>
     </div>
 
     <!-- Outfit Items -->
@@ -96,19 +96,13 @@
 
     <!-- Empty State -->
     <div v-if="items.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-      <div :class="`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-        theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-      }`">
-        <Palette :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+      <div :class="`w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-stone-100 dark:bg-zinc-800`">
+        <Palette :class="`w-8 h-8 text-stone-500 dark:text-zinc-400`" />
       </div>
-      <h3 :class="`text-lg font-semibold mb-2 ${
-        theme.value === 'dark' ? 'text-white' : 'text-black'
-      }`">
+      <h3 :class="`text-lg font-semibold mb-2 text-black dark:text-white`">
         Start Building Your Outfit
       </h3>
-      <p :class="`text-sm ${
-        theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-      }`">
+      <p class="text-sm text-stone-600 dark:text-zinc-400">
         Drag items from your wardrobe to create the perfect look
       </p>
     </div>

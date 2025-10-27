@@ -4,15 +4,12 @@
       v-for="category in categories"
       :key="category.id"
       @click="$emit('update:activeCategory', category.id)"
-      :class="`px-6 py-3 rounded-full font-medium whitespace-nowrap transition-all duration-300 hover:scale-105 ${
+      :class="[
+        'px-6 py-3 rounded-full font-medium whitespace-nowrap transition-all duration-300 hover:scale-105 border',
         activeCategory === category.id
-          ? theme.value === 'dark'
-            ? 'bg-white text-black'
-            : 'bg-black text-white'
-          : theme.value === 'dark'
-          ? 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-          : 'bg-white text-stone-600 hover:text-black border border-stone-200'
-      }`"
+          ? 'bg-black text-white dark:bg-white dark:text-black'
+          : 'bg-white text-stone-600 border-stone-200 hover:text-black dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 dark:hover:text-white'
+      ]"
     >
       {{ category.label }}
     </button>
