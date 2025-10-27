@@ -7,9 +7,7 @@
         <h1 class="text-2xl font-bold mb-2 text-foreground">
           Logging out...
         </h1>
-        <p :class="`text-lg ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
+        <p :class="`text-lg text-stone-600 dark:text-zinc-400`">
           Please wait while we sign you out
         </p>
       </div>
@@ -24,9 +22,7 @@
         <h1 class="text-2xl font-bold mb-2 text-foreground">
           Logged out successfully
         </h1>
-        <p :class="`text-lg ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
+        <p :class="`text-lg text-stone-600 dark:text-zinc-400`">
           Redirecting to landing page...
         </p>
       </div>

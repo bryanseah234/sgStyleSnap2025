@@ -24,11 +24,7 @@
     </div>
     
     <!-- Loading Bar Animation -->
-    <div :class="`h-1 w-full mb-12 rounded-full ${
-      theme.value === 'dark' 
-        ? 'bg-gradient-to-r from-zinc-700 via-white to-zinc-700' 
-        : 'bg-gradient-to-r from-stone-300 via-black to-stone-300'
-    }`" />
+    <div class="h-1 w-full mb-12 rounded-full bg-gradient-to-r from-stone-300 via-black to-stone-300 dark:from-zinc-700 dark:via-white dark:to-zinc-700" />
 
     <!-- Hero Section with Liquid Glass Reveal -->
     <div 
@@ -44,9 +40,7 @@
         Welcome back{{ userName }}
       </h1>
       <p 
-        :class="`text-xl md:text-2xl liquid-text ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        } max-w-2xl`"
+        class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
       >
         Your digital wardrobe awaits. Create stunning outfits, discover new styles, and share your fashion journey.
       </p>
@@ -54,26 +48,18 @@
 
     <!-- Notifications Section - First on mobile -->
     <div class="max-w-6xl mx-auto mb-16" v-scroll-animate.scale>
-      <div :class="`p-8 rounded-3xl transition-all duration-300 ${
-        theme.value === 'dark'
-          ? 'bg-zinc-900 border border-zinc-800'
-          : 'bg-white border border-stone-200'
-      }`">
+      <div class="p-8 rounded-3xl transition-all duration-300 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
-            <div :class="`p-3 rounded-2xl ${
-              theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-            }`">
+            <div class="p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
               <Bell class="w-6 h-6" />
             </div>
             <div>
               <h2 class="text-2xl font-bold text-foreground">
                 Notifications
               </h2>
-              <p v-if="unreadCount > 0" :class="`text-sm ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">
+              <p v-if="unreadCount > 0" class="text-sm text-stone-600 dark:text-zinc-400">
                 {{ unreadCount }} unread
               </p>
             </div>
@@ -82,11 +68,7 @@
           <button
             v-if="unreadCount > 0"
             @click="markAllAsRead"
-            :class="`text-sm px-4 py-2 rounded-lg transition-all duration-200 ${
-              theme.value === 'dark'
-                ? 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-                : 'text-stone-600 hover:text-black hover:bg-stone-100'
-            }`"
+            class="text-sm px-4 py-2 rounded-lg transition-all duration-200 text-stone-600 hover:text-black hover:bg-stone-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
           >
             Mark all as read
           </button>
@@ -100,19 +82,13 @@
             @click="handleNotificationClick(notification)"
             :class="`stagger-item p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
               notification.is_read
-                ? theme.value === 'dark'
-                  ? 'bg-zinc-800/50 border border-zinc-800'
-                  : 'bg-stone-50 border border-stone-200'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 border border-zinc-700'
-                : 'bg-stone-100 border border-stone-300'
+                ? 'bg-stone-50 border border-stone-200 dark:bg-zinc-800/50 dark:border-zinc-800'
+                : 'bg-stone-100 border border-stone-300 dark:bg-zinc-800 dark:border-zinc-700'
             }`"
           >
             <div class="flex items-center gap-4">
               <!-- Icon -->
-              <div :class="`p-2 rounded-lg flex-shrink-0 ${
-                theme.value === 'dark' ? 'bg-zinc-700' : 'bg-white'
-              }`">
+              <div class="p-2 rounded-lg flex-shrink-0 bg-white dark:bg-zinc-700">
                 <component :is="getNotificationIcon(notification.type)" class="w-5 h-5" />
               </div>
 
@@ -127,9 +103,7 @@
                   
                   <!-- Time and unread indicator -->
                   <div class="flex items-center gap-2 flex-shrink-0">
-                    <span :class="`text-xs ${
-                      theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-                    }`">
+                    <span class="text-xs text-stone-500 dark:text-zinc-500">
                       {{ formatTimeAgo(notification.created_at) }}
                     </span>
                     <div
@@ -146,19 +120,13 @@
 
         <!-- Empty State -->
         <div v-else class="text-center py-12">
-          <div :class="`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-          }`">
-            <Bell :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+            <Bell class="w-8 h-8 text-stone-500 dark:text-zinc-400" />
           </div>
-          <p :class="`text-lg font-medium ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <p class="text-lg font-medium text-stone-600 dark:text-zinc-400">
             No notifications yet
           </p>
-          <p :class="`text-sm mt-1 ${
-            theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-          }`">
+          <p class="text-sm mt-1 text-stone-500 dark:text-zinc-500">
             We'll notify you when something happens
           </p>
         </div>
@@ -172,21 +140,21 @@
         :key="stat.label"
         :to="stat.route"
         v-scroll-animate.up
-        class="liquid-card p-8 rounded-3xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300"
+        class="liquid-card p-8 rounded-3xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
         :style="{ transitionDelay: `${index * 100}ms` }"
         @mouseenter="handleCardHover($event, index)"
         @mouseleave="handleCardLeave($event, index)"
         @mousemove="handleCardMouseMove($event, index)"
       >
         <div class="flex items-center justify-between mb-4">
-          <div class="liquid-icon p-3 rounded-2xl bg-stone-100">
+          <div class="liquid-icon p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
             <component :is="stat.icon" class="w-6 h-6" />
           </div>
           <span class="text-4xl font-bold text-foreground liquid-number">
             {{ stat.value }}
           </span>
         </div>
-        <p class="text-lg font-medium liquid-text text-stone-600">
+        <p class="text-lg font-medium liquid-text text-stone-600 dark:text-zinc-400">
           {{ stat.label }}
         </p>
       </router-link>

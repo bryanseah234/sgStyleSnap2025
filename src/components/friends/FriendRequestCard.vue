@@ -1,17 +1,11 @@
 <template>
   <div
-    :class="`p-4 rounded-xl ${
-      theme.value === 'dark'
-        ? 'bg-zinc-900 border border-zinc-800'
-        : 'bg-white border border-stone-200'
-    } transition-all duration-300`"
+    class="p-4 rounded-xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 transition-all duration-300"
   >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <!-- Avatar -->
-        <div :class="`w-12 h-12 rounded-full overflow-hidden ${
-          theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-        }`">
+        <div class="w-12 h-12 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
           <img
             v-if="request.requester.avatar_url"
             :src="request.requester.avatar_url"
@@ -20,13 +14,9 @@
           />
           <div
             v-else
-            :class="`w-full h-full flex items-center justify-center ${
-              theme.value === 'dark' ? 'bg-zinc-600' : 'bg-stone-300'
-            }`"
+            class="w-full h-full flex items-center justify-center bg-stone-300 dark:bg-zinc-600"
           >
-            <span :class="`text-sm font-bold ${
-              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-            }`">
+            <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
               {{ (request.requester.name || 'U').charAt(0).toUpperCase() }}
             </span>
           </div>
@@ -37,9 +27,7 @@
           <h3 class="font-semibold text-foreground">
             {{ request.requester.name || request.requester.username }}
           </h3>
-          <p :class="`text-sm ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <p class="text-sm text-stone-600 dark:text-zinc-400">
             @{{ request.requester.username }}
           </p>
         </div>

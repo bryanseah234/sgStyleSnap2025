@@ -12,11 +12,7 @@
         <!-- Add Friend Button -->
         <button
           @click="showAddFriendModal = true"
-          :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-            theme.value === 'dark'
-              ? 'bg-white text-black hover:bg-zinc-200'
-              : 'bg-black text-white hover:bg-zinc-800'
-          }`"
+          class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           <UserPlus class="w-5 h-5" />
           Add Friend
@@ -31,22 +27,16 @@
             @click="activeTab = 'friends'"
             :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
               activeTab === 'friends'
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
           >
             <Users class="w-4 h-4" />
             My Friends
             <span v-if="friends.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
               activeTab === 'friends'
-                ? 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-600 text-zinc-200'
-                : 'bg-stone-300 text-stone-800'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'
             }`">
               {{ friends.length }}
             </span>
@@ -55,22 +45,16 @@
             @click="activeTab = 'requests'"
             :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
               activeTab === 'requests'
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
           >
             <Bell class="w-4 h-4" />
             Friend Requests
             <span v-if="friendRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
               activeTab === 'requests'
-                ? 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-600 text-zinc-200'
-                : 'bg-stone-300 text-stone-800'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'
             }`">
               {{ friendRequests.length }}
             </span>
@@ -79,22 +63,16 @@
             @click="activeTab = 'sent'"
             :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
               activeTab === 'sent'
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
           >
             <UserPlus class="w-4 h-4" />
             My Requests
             <span v-if="sentRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
               activeTab === 'sent'
-                ? 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-600 text-zinc-200'
-                : 'bg-stone-300 text-stone-800'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'
             }`">
               {{ sentRequests.length }}
             </span>
@@ -105,18 +83,12 @@
       <!-- Search Bar -->
       <div class="mb-8">
         <div class="relative">
-          <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
-          }`" />
+          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
           <input
             v-model="searchTerm"
             type="text"
             placeholder="Search friends..."
-            :class="`w-full pl-10 pr-4 py-3 rounded-lg border ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                : 'bg-stone-100 border-stone-300 text-black placeholder-stone-500'
-            }`"
+            class="w-full pl-10 pr-4 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
             @input="handleSearch"
           />
         </div>
@@ -125,7 +97,7 @@
       <!-- Loading state -->
       <div v-if="isLoading" class="flex flex-col items-center py-16">
         <div class="spinner-modern mb-6"></div>
-        <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
+        <p class="text-stone-600 dark:text-zinc-400">
           Loading your friends...
         </p>
       </div>
@@ -142,18 +114,14 @@
           <div
             v-for="(friend, index) in filteredFriends"
             :key="friend.id"
-            :class="`p-6 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer ${
-              theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-            }`"
+            class="p-6 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800"
             :style="{ transitionDelay: `${index * 50}ms` }"
             @click="viewFriendProfile(friend.username)"
           >
             <!-- Mobile row layout; stacked on md+ -->
             <div class="flex items-center gap-4 md:block">
               <!-- Avatar -->
-              <div :class="`w-12 h-12 md:w-16 md:h-16 md:mx-auto rounded-full overflow-hidden ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`">
+              <div class="w-12 h-12 md:w-16 md:h-16 md:mx-auto rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                 <img
                   v-if="friend.avatar_url"
                   :src="friend.avatar_url"
@@ -162,13 +130,9 @@
                 />
                 <div
                   v-else
-                  :class="`w-full h-full flex items-center justify-center ${
-                    theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                  }`"
+                  class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
                 >
-                  <span :class="`text-lg md:text-xl font-bold ${
-                    theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                  }`">
+                  <span class="text-lg md:text-xl font-bold text-stone-500 dark:text-zinc-400">
                     {{ (friend.name || friend.username || 'F').charAt(0).toUpperCase() }}
                   </span>
                 </div>
@@ -179,9 +143,7 @@
                 <h3 class="font-bold text-lg mb-0 md:mb-1 text-foreground">
                   {{ friend.name || 'Friend User' }}
                 </h3>
-                <p :class="`text-sm ${
-                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-                }`">
+                <p class="text-sm text-stone-600 dark:text-zinc-400">
                   @{{ friend.username || 'username' }}
                 </p>
               </div>
@@ -190,11 +152,11 @@
         </TransitionGroup>
         
         <div v-else class="text-center py-12">
-          <Users :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-          <p :class="`text-lg ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+          <Users class="w-16 h-16 mx-auto mb-4 text-stone-400 dark:text-zinc-600" />
+          <p class="text-lg text-stone-600 dark:text-zinc-400">
             {{ searchTerm ? 'No friends found matching your search.' : 'You don\'t have any friends yet.' }}
           </p>
-          <p v-if="!searchTerm" :class="`text-sm mt-2 ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
+          <p v-if="!searchTerm" class="text-sm mt-2 text-stone-500 dark:text-zinc-500">
             Click "Add Friend" to start connecting!
           </p>
         </div>
@@ -211,17 +173,13 @@
           <div
             v-for="(request, index) in friendRequests"
             :key="request.id"
-            :class="`p-6 rounded-xl ${
-              theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-            }`"
+            class="p-6 rounded-xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800"
             :style="{ transitionDelay: `${index * 50}ms` }"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <!-- Avatar -->
-                <div :class="`w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden ${
-                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-                }`">
+                <div class="w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                   <img
                     v-if="request.requester.avatar_url"
                     :src="request.requester.avatar_url"
@@ -230,13 +188,9 @@
                   />
                   <div
                     v-else
-                    :class="`w-full h-full flex items-center justify-center ${
-                      theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                    }`"
+                    class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
                   >
-                    <span :class="`text-sm font-bold ${
-                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                    }`">
+                    <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
                       {{ (request.requester.name || 'U').charAt(0).toUpperCase() }}
                     </span>
                   </div>
@@ -247,7 +201,7 @@
                   <h3 class="font-medium text-foreground">
                     {{ request.requester.name }}
                   </h3>
-                  <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+                  <p class="text-sm text-stone-600 dark:text-zinc-400">
                     @{{ request.requester.username }}
                   </p>
                 </div>
@@ -273,8 +227,8 @@
         </TransitionGroup>
         
         <div v-else class="text-center py-12">
-          <Bell :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-          <p :class="`text-lg ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+          <Bell class="w-16 h-16 mx-auto mb-4 text-stone-400 dark:text-zinc-600" />
+          <p class="text-lg text-stone-600 dark:text-zinc-400">
             No pending friend requests.
           </p>
         </div>
@@ -291,17 +245,13 @@
           <div
             v-for="(request, index) in sentRequests"
             :key="request.id"
-            :class="`p-6 rounded-xl ${
-              theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-            }`"
+            class="p-6 rounded-xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800"
             :style="{ transitionDelay: `${index * 50}ms` }"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <!-- Avatar -->
-                <div :class="`w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden ${
-                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-                }`">
+                <div class="w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                   <img
                     v-if="request.receiver.avatar_url"
                     :src="request.receiver.avatar_url"
@@ -310,13 +260,9 @@
                   />
                   <div
                     v-else
-                    :class="`w-full h-full flex items-center justify-center ${
-                      theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                    }`"
+                    class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
                   >
-                    <span :class="`text-sm font-bold ${
-                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                    }`">
+                    <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
                       {{ (request.receiver.name || 'U').charAt(0).toUpperCase() }}
                     </span>
                   </div>
@@ -324,13 +270,13 @@
                 
                 <!-- Request Info -->
                 <div class="text-left">
-                  <h3 :class="`font-medium ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
+                  <h3 class="font-medium text-black dark:text-white">
                     {{ request.receiver.name }}
                   </h3>
-                  <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+                  <p class="text-sm text-stone-600 dark:text-zinc-400">
                     @{{ request.receiver.username }}
                   </p>
-                  <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
+                  <p class="text-xs text-stone-500 dark:text-zinc-500">
                     Sent {{ formatDate(request.created_at) }}
                   </p>
                 </div>
@@ -350,8 +296,8 @@
         </TransitionGroup>
         
         <div v-else class="text-center py-12">
-          <UserPlus :class="`w-16 h-16 mx-auto mb-4 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-          <p :class="`text-lg ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+          <UserPlus class="w-16 h-16 mx-auto mb-4 text-stone-400 dark:text-zinc-600" />
+          <p class="text-lg text-stone-600 dark:text-zinc-400">
             No sent friend requests.
           </p>
         </div>
@@ -364,33 +310,23 @@
         @click="showAddFriendModal = false"
       >
         <div
-          :class="`w-full max-w-md rounded-xl p-6 ${
-            theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
-          }`"
+          class="w-full max-w-md rounded-xl p-6 bg-white dark:bg-zinc-900"
           @click.stop
         >
-          <h3 :class="`text-xl font-bold mb-4 ${
-            theme.value === 'dark' ? 'text-white' : 'text-black'
-          }`">
+          <h3 class="text-xl font-bold mb-4 text-black dark:text-white">
             Add Friend
           </h3>
           
           <div class="space-y-4">
             <div>
-              <label :class="`block text-sm font-medium mb-2 ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
+              <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
                 Search by username
               </label>
               <input
                 v-model="addFriendSearch"
                 type="text"
                 placeholder="Enter at least 3 characters (username only)"
-                :class="`w-full px-3 py-2 rounded-lg border ${
-                  theme.value === 'dark'
-                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                    : 'bg-white border-stone-300 text-black placeholder-stone-500'
-                }`"
+                class="w-full px-3 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
                 @keyup.enter="addFriendSearch.trim().length >= 3 && searchAndAddFriend()"
               />
             </div>
@@ -399,14 +335,10 @@
               <div
                 v-for="user in addFriendResults"
                 :key="user.id"
-                :class="`flex items-center justify-between p-3 rounded-lg ${
-                  theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-                }`"
+                class="flex items-center justify-between p-3 rounded-lg bg-stone-100 dark:bg-zinc-800"
               >
                 <div class="flex items-center gap-3">
-                  <div :class="`w-8 h-8 rounded-full overflow-hidden ${
-                    theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                  }`">
+                  <div class="w-8 h-8 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
                     <img
                       v-if="user.avatar_url"
                       :src="user.avatar_url"
@@ -415,22 +347,18 @@
                     />
                     <div
                       v-else
-                      :class="`w-full h-full flex items-center justify-center ${
-                        theme.value === 'dark' ? 'bg-zinc-600' : 'bg-stone-300'
-                      }`"
+                      class="w-full h-full flex items-center justify-center bg-stone-300 dark:bg-zinc-600"
                     >
-                      <span :class="`text-xs font-bold ${
-                        theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                      }`">
+                      <span class="text-xs font-bold text-stone-500 dark:text-zinc-400">
                         {{ (user.name || 'U').charAt(0).toUpperCase() }}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <p :class="`font-medium text-sm ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
+                    <p class="font-medium text-sm text-black dark:text-white">
                       {{ user.name }}
                     </p>
-                    <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+                    <p class="text-xs text-stone-600 dark:text-zinc-400">
                       @{{ user.username }}
                     </p>
                   </div>
@@ -453,11 +381,7 @@
           <div class="flex gap-3 mt-6">
             <button
               @click="showAddFriendModal = false"
-              :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`"
+              class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
               Cancel
             </button>
@@ -467,9 +391,7 @@
               :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 addFriendSearch.trim().length < 3
                   ? 'bg-zinc-600 text-zinc-300 cursor-not-allowed'
-                  : theme.value === 'dark'
-                    ? 'bg-white text-black hover:bg-zinc-200'
-                    : 'bg-black text-white hover:bg-zinc-800'
+                  : 'bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'
               }`"
             >
               Search
@@ -486,8 +408,8 @@
         :key="t.id"
         :class="`flex items-start gap-3 px-4 py-3 rounded-lg shadow-md text-sm ${
           t.type === 'success'
-            ? (theme.value === 'dark' ? 'bg-green-600 text-white' : 'bg-green-500 text-white')
-            : (theme.value === 'dark' ? 'bg-red-600 text-white' : 'bg-red-500 text-white')
+            ? 'bg-green-500 text-white dark:bg-green-600'
+            : 'bg-red-500 text-white dark:bg-red-600'
         }`"
       >
         <component :is="t.type === 'success' ? CheckCircle : XCircle" class="w-5 h-5 mt-0.5" />

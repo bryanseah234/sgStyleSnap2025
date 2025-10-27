@@ -18,11 +18,8 @@
   <!-- Theme toggle button with dynamic styling and icon -->
   <button
     @click="toggleTheme"
-    :class="`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
-      theme.value === 'dark'
-        ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-    }`"
+    :class="`p-2 rounded-lg transition-all duration-200 hover:scale-105 bg-stone-100 text-stone-700 hover:bg-stone-200
+    dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
     :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
   >
     <!-- Sun icon for dark mode (clicking will switch to light) -->

@@ -17,9 +17,7 @@
 -->
 <template>
   <!-- Loading state with modern animated spinner -->
-  <div v-if="loading" :class="`min-h-screen flex items-center justify-center ${
-    theme.value === 'dark' ? 'bg-black' : 'bg-stone-50'
-  }`">
+  <div v-if="loading" :class="`min-h-screen flex items-center justify-center bg-stone-50`">
     <div class="spinner-modern mx-auto" />
   </div>
 
@@ -37,10 +35,8 @@
       <!-- Logo with liquid reveal -->
       <div class="mb-12 text-center md:text-left liquid-reveal">
         <div class="flex items-center gap-3">
-          <div :class="`w-8 h-8 rounded-lg flex items-center justify-center ${
-            theme.value === 'dark' ? 'bg-white' : 'bg-black'
-          }`">
-            <Shirt :class="`w-5 h-5 ${theme.value === 'dark' ? 'text-black' : 'text-white'}`" />
+          <div :class="`w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white`">
+            <Shirt :class="`w-5 h-5 text-white dark:text-black`"/>
           </div>
           <h1 class="text-2xl font-bold tracking-tight text-foreground">
             StyleSnap
@@ -100,13 +96,12 @@
           @mouseup="logoutPressOut"
           @mouseleave="logoutPressOut"
           :disabled="loading"
-          :class="`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press ${
-            loading
-              ? 'opacity-50 cursor-not-allowed text-muted-foreground'
-              : theme.value === 'dark'
-                ? 'bg-red-900/20 hover:bg-red-900/30 text-red-400 hover:text-red-300'
-                : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700'
-          }`"
+          :class="[
+            'w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300',
+            {
+              'opacity-50 cursor-not-allowed text-muted-foreground': loading,
+            }
+          ]"
         >
           <LogOut v-if="!loading" class="w-5 h-5" />
           <div v-else class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />

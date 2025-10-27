@@ -128,9 +128,7 @@ const getConfirmButtonClass = () => {
     case 'warning':
       return 'bg-yellow-500 text-white hover:bg-yellow-600'
     default:
-      return theme.value === 'dark' 
-        ? 'bg-white text-black hover:bg-zinc-100' 
-        : 'bg-black text-white hover:bg-stone-900'
+      return 'bg-black text-white hover:bg-stone-900 dark:bg-white dark:text-black dark:hover:bg-zinc-100'
   }
 }
 </script>
