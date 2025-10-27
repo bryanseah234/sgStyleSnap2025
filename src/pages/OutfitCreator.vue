@@ -9,13 +9,7 @@
             <h1 class="text-4xl font-bold mb-2 text-foreground">
               {{ subRouteTitle }}
             </h1>
-<<<<<<< HEAD
             <p class="text-lg text-stone-600 dark:text-zinc-400">
-=======
-            <p :class="`text-lg ${
-              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-            }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
               {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
                  currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
                  currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
@@ -31,13 +25,7 @@
             :disabled="!canUndo"
             :class="`p-3 rounded-lg transition-all duration-200 ${
               canUndo
-<<<<<<< HEAD
                 ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                ? theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 : 'opacity-50 cursor-not-allowed'
             }`"
             title="Undo"
@@ -50,13 +38,7 @@
             :disabled="!canRedo"
             :class="`p-3 rounded-lg transition-all duration-200 ${
               canRedo
-<<<<<<< HEAD
                 ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                ? theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 : 'opacity-50 cursor-not-allowed'
             }`"
             title="Redo"
@@ -68,17 +50,8 @@
             @click="toggleGrid"
             :class="`p-3 rounded-lg transition-all duration-200 ${
               showGrid
-<<<<<<< HEAD
                 ? 'bg-black text-white dark:bg-white dark:text-black'
                 : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
             }`"
             title="Toggle Grid"
           >
@@ -90,13 +63,7 @@
             :disabled="canvasItems.length === 0"
             :class="`p-3 rounded-lg transition-all duration-200 flex items-center gap-2 ${
               canvasItems.length > 0
-<<<<<<< HEAD
                 ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                ? theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 : 'opacity-50 cursor-not-allowed'
             }`"
             title="Clear Canvas"
@@ -111,13 +78,7 @@
             :disabled="canvasItems.length < 2 || savingOutfit"
             :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
               canvasItems.length >= 2 && !savingOutfit
-<<<<<<< HEAD
                 ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                ? theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 : 'opacity-50 cursor-not-allowed'
             }`"
           >
@@ -129,43 +90,13 @@
           <button
             v-if="currentSubRoute === 'suggested'"
             @click="generateAISuggestion"
-<<<<<<< HEAD
             class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
-=======
-            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-              theme.value === 'dark'
-                ? 'bg-purple-600 text-white hover:bg-purple-500'
-                : 'bg-purple-500 text-white hover:bg-purple-600'
-            }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
             title="Generate New AI Suggestion"
           >
             <Sparkles class="w-5 h-5" />
             <span class="hidden sm:inline">Regenerate</span>
           </button>
           
-<<<<<<< HEAD
-=======
-          <!-- AI Score button - shown when there are items on canvas -->
-          <button
-            v-if="canvasItems.length >= 2"
-            @click="scoreOutfitAI"
-            :disabled="scoringOutfit"
-            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-              !scoringOutfit
-                ? theme.value === 'dark'
-                  ? 'bg-blue-600 text-white hover:bg-blue-500'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'opacity-50 cursor-not-allowed'
-            }`"
-            title="Get AI Compatibility Score"
-          >
-            <Sparkles v-if="!scoringOutfit" class="w-5 h-5" />
-            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span class="hidden sm:inline">{{ scoringOutfit ? 'Scoring...' : 'AI Score' }}</span>
-          </button>
-          
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
         </div>
         </div>
 
@@ -174,13 +105,7 @@
           <h1 class="text-3xl font-bold mb-2 text-foreground">
             {{ subRouteTitle }}
           </h1>
-<<<<<<< HEAD
           <p class="text-base mb-4 text-stone-600 dark:text-zinc-400">
-=======
-          <p :class="`text-base mb-4 ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
             {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
                currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
                currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
@@ -195,13 +120,7 @@
               :disabled="!canUndo"
               :class="`p-2 rounded-lg transition-all duration-200 ${
                 canUndo
-<<<<<<< HEAD
                   ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                  ? theme.value === 'dark'
-                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   : 'opacity-50 cursor-not-allowed'
               }`"
               title="Undo"
@@ -214,13 +133,7 @@
               :disabled="!canRedo"
               :class="`p-2 rounded-lg transition-all duration-200 ${
                 canRedo
-<<<<<<< HEAD
                   ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                  ? theme.value === 'dark'
-                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   : 'opacity-50 cursor-not-allowed'
               }`"
               title="Redo"
@@ -232,17 +145,8 @@
               @click="toggleGrid"
               :class="`p-2 rounded-lg transition-all duration-200 ${
                 showGrid
-<<<<<<< HEAD
                   ? 'bg-black text-white dark:bg-white dark:text-black'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                  ? theme.value === 'dark'
-                    ? 'bg-white text-black'
-                    : 'bg-black text-white'
-                  : theme.value === 'dark'
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
               }`"
               title="Toggle Grid"
             >
@@ -254,13 +158,7 @@
               :disabled="canvasItems.length === 0"
               :class="`p-2 rounded-lg transition-all duration-200 flex items-center gap-1 ${
                 canvasItems.length > 0
-<<<<<<< HEAD
                   ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                  ? theme.value === 'dark'
-                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   : 'opacity-50 cursor-not-allowed'
               }`"
               title="Clear Canvas"
@@ -273,55 +171,19 @@
             <button
               v-if="currentSubRoute === 'suggested'"
               @click="generateAISuggestion"
-<<<<<<< HEAD
               class="px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
-=======
-              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
-                theme.value === 'dark'
-                  ? 'bg-purple-600 text-white hover:bg-purple-500'
-                  : 'bg-purple-500 text-white hover:bg-purple-600'
-              }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
               title="Generate New AI Suggestion"
             >
               <Sparkles class="w-4 h-4" />
               <span class="text-xs">Regenerate</span>
             </button>
             
-<<<<<<< HEAD
-=======
-            <!-- AI Score button - mobile -->
-            <button
-              v-if="canvasItems.length >= 2"
-              @click="scoreOutfitAI"
-              :disabled="scoringOutfit"
-              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
-                !scoringOutfit
-                  ? theme.value === 'dark'
-                    ? 'bg-blue-600 text-white hover:bg-blue-500'
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'opacity-50 cursor-not-allowed'
-              }`"
-              title="Get AI Compatibility Score"
-            >
-              <Sparkles v-if="!scoringOutfit" class="w-4 h-4" />
-              <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span class="text-xs">{{ scoringOutfit ? 'Scoring...' : 'AI Score' }}</span>
-            </button>
-            
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
             <button
               @click="saveOutfit"
               :disabled="canvasItems.length < 2 || savingOutfit"
               :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
                 canvasItems.length >= 2 && !savingOutfit
-<<<<<<< HEAD
                   ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-=======
-                  ? theme.value === 'dark'
-                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   : 'opacity-50 cursor-not-allowed'
               }`"
             >
@@ -379,74 +241,34 @@
           v-for="friend in friendsList"
           :key="friend.id"
           @click="selectFriend(friend)"
-<<<<<<< HEAD
           :class="`group p-6 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700`"
         >
           <div class="flex items-center gap-4">
             <!-- Friend Avatar -->
             <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-stone-100 dark:bg-zinc-800">
-=======
-          :class="`group p-6 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-            theme.value === 'dark'
-              ? 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700'
-              : 'bg-white border border-stone-200 hover:border-stone-300'
-          }`"
-        >
-          <div class="flex items-center gap-4">
-            <!-- Friend Avatar -->
-            <div :class="`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 ${
-              theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-            }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
               <img
                 v-if="friend.avatar_url"
                 :src="friend.avatar_url"
                 :alt="friend.username"
                 class="w-full h-full object-cover"
               />
-<<<<<<< HEAD
               <div class="w-full h-full flex items-center justify-center text-stone-400 dark:text-zinc-500">
-=======
-              <div
-                v-else
-                :class="`w-full h-full flex items-center justify-center ${
-                  theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'
-                }`"
-              >
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 <User class="w-8 h-8" />
               </div>
             </div>
             
             <!-- Friend Info -->
             <div class="flex-1 min-w-0">
-<<<<<<< HEAD
               <p class="text-lg font-semibold mb-1 text-black dark:text-white">
                 {{ friend.name || friend.username }}
               </p>
               <p class="text-sm text-stone-600 dark:text-zinc-400">
-=======
-              <p :class="`text-lg font-semibold mb-1 ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">
-                {{ friend.name || friend.username }}
-              </p>
-              <p :class="`text-sm ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 @{{ friend.username }}
               </p>
             </div>
             
             <!-- Arrow Icon -->
-<<<<<<< HEAD
             <div class="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400 dark:text-zinc-400">
-=======
-            <div :class="`opacity-0 group-hover:opacity-100 transition-opacity ${
-              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
-            }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
               →
             </div>
           </div>
@@ -454,7 +276,6 @@
         
         <!-- Empty State -->
         <div v-if="friendsList.length === 0" class="col-span-full text-center py-12">
-<<<<<<< HEAD
           <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
             <Users class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
           </div>
@@ -462,36 +283,13 @@
             No friends yet
           </p>
           <p class="text-sm mb-4 text-stone-500 dark:text-zinc-500">
-=======
-          <div :class="`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
-            theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-          }`">
-            <Users :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-          </div>
-          <p :class="`text-lg font-medium mb-2 ${
-            theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-          }`">
-            No friends yet
-          </p>
-          <p :class="`text-sm mb-4 ${
-            theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-          }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
             Add friends to create outfit suggestions for them
           </p>
           
           <!-- Add Friend Button -->
           <button
             @click="showAddFriendModal = true"
-<<<<<<< HEAD
             class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-=======
-            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto ${
-              theme.value === 'dark'
-                ? 'bg-white text-black hover:bg-zinc-200'
-                : 'bg-black text-white hover:bg-zinc-800'
-            }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
           >
             <Plus class="w-5 h-5" />
             Add Friend
@@ -505,41 +303,18 @@
         <div class="lg:col-span-1">
 
           <!-- Items Section -->
-<<<<<<< HEAD
           <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-bold text-black dark:text-white">
                 {{ itemsSectionTitle }}
               </h3>
               <span class="text-sm px-2 py-1 rounded-full bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400">
-=======
-          <div :class="`rounded-xl p-6 ${
-            theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-          }`">
-            <div class="flex items-center justify-between mb-4">
-              <h3 :class="`text-lg font-bold ${
-                theme.value === 'dark' ? 'text-white' : 'text-black'
-              }`">
-                {{ itemsSectionTitle }}
-              </h3>
-              <span :class="`text-sm px-2 py-1 rounded-full ${
-                theme.value === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-stone-100 text-stone-600'
-              }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 {{ filteredItems.length }}
               </span>
             </div>
             
             <!-- AI Mode Info Banner -->
-<<<<<<< HEAD
             <div v-if="currentSubRoute === 'suggested'" class="mb-4 p-3 rounded-lg text-xs bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-300">
-=======
-            <div v-if="currentSubRoute === 'suggested'" :class="`mb-4 p-3 rounded-lg text-xs ${
-              theme.value === 'dark' 
-                ? 'bg-purple-900/30 border border-purple-800 text-purple-300' 
-                : 'bg-purple-50 border border-purple-200 text-purple-700'
-            }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
               <div class="flex items-start gap-2">
                 <Sparkles class="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>AI has placed items on the canvas. You can still add more items manually or regenerate the suggestion.</span>
@@ -554,17 +329,8 @@
                 @click="activeCategory = category"
                 :class="`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                   activeCategory === category
-<<<<<<< HEAD
                     ? 'bg-black text-white dark:bg-white dark:text-black'
                     : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-800 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200'
-=======
-                    ? theme.value === 'dark'
-                      ? 'bg-white text-black'
-                      : 'bg-black text-white'
-                    : theme.value === 'dark'
-                    ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-800'
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 }`"
               >
                 {{ category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1) }}
@@ -577,75 +343,34 @@
                 v-for="item in filteredItems"
                 :key="item.id"
                 @click="addItemToCanvas(item)"
-<<<<<<< HEAD
                 class="group p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600"
               >
                 <div class="flex items-center gap-3">
                   <!-- Item Image -->
                   <div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-sm bg-white dark:bg-zinc-900">
-=======
-                :class="`group p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-                  theme.value === 'dark' 
-                    ? 'bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600' 
-                    : 'bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300'
-                }`"
-              >
-                <div class="flex items-center gap-3">
-                  <!-- Item Image -->
-                  <div :class="`w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-sm ${
-                    theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
-                  }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     <img
                       v-if="item.image_url"
                       :src="item.image_url"
                       :alt="item.name"
                       class="w-full h-full object-cover"
                     />
-<<<<<<< HEAD
                     <div class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
                       <Shirt class="w-6 h-6 text-stone-400 dark:text-zinc-500" />
-=======
-                    <div
-                      v-else
-                      :class="`w-full h-full flex items-center justify-center ${
-                        theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-                      }`"
-                    >
-                      <Shirt :class="`w-6 h-6 ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'}`" />
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     </div>
                   </div>
                   
                   <!-- Item Info -->
                   <div class="flex-1 min-w-0">
-<<<<<<< HEAD
                     <p class="text-sm font-medium truncate mb-1 text-black dark:text-white">
                       {{ item.name }}
                     </p>
                     <p class="text-xs truncate capitalize text-stone-500 dark:text-zinc-400">
-=======
-                    <p :class="`text-sm font-medium truncate mb-1 ${
-                      theme.value === 'dark' ? 'text-white' : 'text-black'
-                    }`">
-                      {{ item.name }}
-                    </p>
-                    <p :class="`text-xs truncate capitalize ${
-                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                    }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                       {{ item.category }}
                     </p>
                   </div>
                   
                   <!-- Add Icon -->
-<<<<<<< HEAD
                   <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-zinc-400">
-=======
-                  <div :class="`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${
-                    theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                  }`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     <Plus class="w-5 h-5" />
                   </div>
                 </div>
@@ -654,32 +379,17 @@
             
             <!-- Empty State -->
             <div v-if="filteredItems.length === 0" class="text-center py-12">
-<<<<<<< HEAD
               <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
                 <Shirt v-if="itemsSource === 'my-cabinet'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
                 <Users v-else-if="itemsSource === 'friends'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
                 <Sparkles v-else class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
               </div>
               <p class="text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
-=======
-              <div :class="`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`">
-                <Shirt v-if="itemsSource === 'my-cabinet'" :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-                <Users v-else-if="itemsSource === 'friends'" :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-                <Sparkles v-else :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
-              </div>
-              <p :class="`text-sm font-medium mb-1 ${theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'}`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 {{ itemsSource === 'my-cabinet' ? 'No items in your closet' : 
                    itemsSource === 'friends' ? "No friend's items available" :
                    'No AI suggestions available' }}
               </p>
-<<<<<<< HEAD
               <p class="text-xs text-stone-500 dark:text-zinc-500">
-=======
-              <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                 {{ itemsSource === 'my-cabinet' ? 'Add items to your closet to get started' : 
                    itemsSource === 'friends' ? 'Connect with friends to access their items' :
                    'AI suggestions are coming soon!' }}
@@ -690,23 +400,11 @@
 
         <!-- Right Area - Outfit Canvas -->
         <div class="lg:col-span-3">
-<<<<<<< HEAD
           <div class="rounded-xl overflow-hidden bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
             <!-- Canvas Area -->
             <div
               ref="canvasContainer"
               class="relative w-full rounded-lg overflow-hidden bg-stone-50 dark:bg-zinc-800"
-=======
-          <div :class="`rounded-xl overflow-hidden ${
-            theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-          }`">
-            <!-- Canvas Area -->
-            <div
-              ref="canvasContainer"
-              :class="`relative w-full rounded-lg overflow-hidden ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-50'
-              }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
               style="height: 600px;"
               @drop="handleDrop"
               @dragover.prevent
@@ -745,11 +443,7 @@
                   'ring-4 ring-blue-500 ring-offset-2': selectedItemId === item.id
                 }"
               >
-<<<<<<< HEAD
                 <div class="w-32 h-32 rounded-xl overflow-hidden shadow-2xl bg-white p-2 dark:bg-zinc-700">
-=======
-                <div class="w-32 h-32 rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-zinc-700 p-2">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   <img
                     v-if="item.image_url"
                     :src="item.image_url"
@@ -757,44 +451,22 @@
                     class="w-full h-full object-contain"
                     draggable="false"
                   />
-<<<<<<< HEAD
                   <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700">
                     <Shirt class="w-12 h-12 text-stone-500 dark:text-zinc-400" />
-=======
-                  <div
-                    v-else
-                    :class="`w-full h-full flex items-center justify-center ${
-                      theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                    }`"
-                  >
-                    <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   </div>
                 </div>
 
                 <!-- Toolkit (shown when selected) -->
                 <div
                   v-if="selectedItemId === item.id"
-<<<<<<< HEAD
                   class="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-stone-200 dark:bg-zinc-800/95 dark:border-zinc-700"
-=======
-                  :class="`absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm ${
-                    theme.value === 'dark' ? 'bg-zinc-800/95 border border-zinc-700' : 'bg-white/95 border border-stone-200'
-                  }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   @mousedown.stop
                   @click.stop
                 >
                   <!-- Zoom Out -->
                   <button
                     @click.stop="scaleSelectedItem(-0.1)"
-<<<<<<< HEAD
                     class="rounded h-7 w-7 transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700"
-=======
-                    :class="`rounded h-7 w-7 transition-colors ${
-                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
-                    }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     title="Zoom Out"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
@@ -807,13 +479,7 @@
                   <!-- Zoom In -->
                   <button
                     @click.stop="scaleSelectedItem(0.1)"
-<<<<<<< HEAD
                     class="rounded h-7 w-7 transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700"
-=======
-                    :class="`rounded h-7 w-7 transition-colors ${
-                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
-                    }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     title="Zoom In"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
@@ -827,13 +493,7 @@
                   <!-- Rotate Left -->
                   <button
                     @click.stop="rotateSelectedItem(-15)"
-<<<<<<< HEAD
                     class="rounded h-7 w-7 transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700"
-=======
-                    :class="`rounded h-7 w-7 transition-colors ${
-                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
-                    }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     title="Rotate Left"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
@@ -844,13 +504,7 @@
                   <!-- Rotate Right -->
                   <button
                     @click.stop="rotateSelectedItem(15)"
-<<<<<<< HEAD
                     class="rounded h-7 w-7 transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700"
-=======
-                    :class="`rounded h-7 w-7 transition-colors ${
-                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
-                    }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     title="Rotate Right"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
@@ -861,13 +515,7 @@
                   <!-- Move Forward -->
                   <button
                     @click.stop="moveSelectedItemForward"
-<<<<<<< HEAD
                     class="rounded h-7 w-7 transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700"
-=======
-                    :class="`rounded h-7 w-7 transition-colors ${
-                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
-                    }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     title="Move Forward"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
@@ -878,13 +526,7 @@
                   <!-- Move Backward -->
                   <button
                     @click.stop="moveSelectedItemBackward"
-<<<<<<< HEAD
                     class="rounded h-7 w-7 transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700"
-=======
-                    :class="`rounded h-7 w-7 transition-colors ${
-                      theme.value === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-stone-100'
-                    }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     title="Move Backward"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
@@ -895,13 +537,7 @@
                   <!-- Delete -->
                   <button
                     @click.stop="deleteSelectedItem"
-<<<<<<< HEAD
                     class="rounded h-7 w-7 transition-colors hover:bg-red-200 text-red-600 dark:hover:bg-red-900/50 dark:text-red-400"
-=======
-                    :class="`rounded h-7 w-7 transition-colors ${
-                      theme.value === 'dark' ? 'hover:bg-red-900/50 text-red-400' : 'hover:bg-red-200 text-red-600'
-                    }`"
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                     title="Delete"
                   >
                     <Trash2 class="w-3.5 h-3.5 mx-auto" />
@@ -914,7 +550,6 @@
                 v-if="canvasItems.length === 0"
                 class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
               >
-<<<<<<< HEAD
                 <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-stone-200 dark:bg-zinc-700">
                   <Sparkles class="w-12 h-12 text-orange-500" />
                 </div>
@@ -922,17 +557,6 @@
                   {{ currentSubRoute === 'friend' ? "Start Creating Friend's Outfit" : "Start Creating Your Outfit" }}
                 </p>
                 <p class="text-sm text-stone-500 dark:text-zinc-500">
-=======
-                <div :class="`w-24 h-24 rounded-full flex items-center justify-center mb-6 ${
-                  theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                }`">
-                  <Sparkles :class="`w-12 h-12 text-orange-500`" />
-                </div>
-                <p :class="`text-xl font-medium mb-2 ${theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'}`">
-                  {{ currentSubRoute === 'friend' ? "Start Creating Friend's Outfit" : "Start Creating Your Outfit" }}
-                </p>
-                <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
                   Click on items from the left to add them to the canvas
                 </p>
               </div>
@@ -1023,11 +647,8 @@ const canvasItems = ref([])
 const selectedItemId = ref(null)
 const showGrid = ref(false)
 const savingOutfit = ref(false)
-<<<<<<< HEAD
-=======
 const scoringOutfit = ref(false)
 const outfitScore = ref(null)
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
 const canvasContainer = ref(null)
 
 // State for friend data
@@ -1290,13 +911,8 @@ const generateAISuggestion = async () => {
       return
     }
     
-<<<<<<< HEAD
-    // TODO: Replace with actual AI backend call
-    // For now, use mock logic to select items from different categories
-=======
     // Import fashion transformer service
     const { scoreOutfit, validateOutfitItems } = await import('@/services/fashion-transformer-service')
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
     
     const categories = {
       top: wardrobeItems.value.filter(item => {
@@ -1384,8 +1000,6 @@ const generateAISuggestion = async () => {
   }
 }
 
-<<<<<<< HEAD
-=======
 const scoreOutfitAI = async () => {
   try {
     console.log('OutfitCreator: Scoring outfit with AI...')
@@ -1463,7 +1077,6 @@ const scoreOutfitAI = async () => {
   }
 }
 
->>>>>>> b048935128ec854d2585d87f49dcf3643b180afc
 const addItemToCanvas = (item) => {
   // Validate: Maximum 10 items on canvas
   if (canvasItems.value.length >= 10) {
