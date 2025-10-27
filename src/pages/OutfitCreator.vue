@@ -97,6 +97,22 @@
             <span class="hidden sm:inline">Regenerate</span>
           </button>
           
+          <!-- Get AI Recommendations button -->
+          <button
+            @click="getAIRecommendations"
+            :disabled="recommendingOutfits || wardrobeItems.length < 2"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              !recommendingOutfits && wardrobeItems.length >= 2
+                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                : 'opacity-50 cursor-not-allowed'
+            }`"
+            title="Get AI Outfit Recommendations"
+          >
+            <Sparkles v-if="!recommendingOutfits" class="w-5 h-5" />
+            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span class="hidden sm:inline">{{ recommendingOutfits ? 'Analyzing...' : 'Get AI Recommendations' }}</span>
+          </button>
+          
         </div>
         </div>
 
@@ -573,6 +589,109 @@
       @close="showAddFriendModal = false"
       @friendRequestSent="handleFriendRequestSent"
     />
+    
+    <!-- Recommendations Modal -->
+    <div
+      v-if="showRecommendationsModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      @click.self="showRecommendationsModal = false"
+    >
+      <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-stone-200 dark:border-zinc-800">
+          <div>
+            <h2 class="text-2xl font-bold text-black dark:text-white flex items-center gap-2">
+              <Sparkles class="w-6 h-6 text-purple-500" />
+              AI Outfit Recommendations
+            </h2>
+            <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">
+              Based on your closet items
+            </p>
+          </div>
+          <button
+            @click="showRecommendationsModal = false"
+            class="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <X class="w-5 h-5 text-stone-600 dark:text-zinc-400" />
+          </button>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <div v-if="recommendations.length === 0 && !recommendingOutfits" class="text-center py-12">
+            <Sparkles class="w-16 h-16 mx-auto mb-4 text-stone-300 dark:text-zinc-700" />
+            <p class="text-stone-600 dark:text-zinc-400">No recommendations found</p>
+          </div>
+          
+          <div v-else-if="recommendingOutfits" class="text-center py-12">
+            <div class="w-16 h-16 mx-auto mb-4 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-stone-600 dark:text-zinc-400">Analyzing your closet...</p>
+          </div>
+          
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              v-for="rec in recommendations"
+              :key="rec.id"
+              class="border border-stone-200 dark:border-zinc-800 rounded-xl p-4 hover:border-purple-300 dark:hover:border-purple-700 transition-colors bg-white dark:bg-zinc-900"
+            >
+              <!-- Score Badge -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                    #{{ rec.rank }}
+                  </span>
+                  <span class="text-sm font-medium text-stone-600 dark:text-zinc-400">
+                    {{ Math.round(rec.score * 100) }}% Match
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Items Grid -->
+              <div class="grid grid-cols-2 gap-2 mb-3">
+                <div
+                  v-for="item in rec.items"
+                  :key="item.id"
+                  class="aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-800"
+                >
+                  <img
+                    :src="item.image_url || item.thumbnail_url"
+                    :alt="item.name"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              
+              <!-- Item Names -->
+              <div class="space-y-1 mb-3">
+                <p
+                  v-for="item in rec.items"
+                  :key="item.id"
+                  class="text-xs text-stone-600 dark:text-zinc-400 truncate"
+                >
+                  {{ item.name }}
+                </p>
+              </div>
+              
+              <!-- Load Button -->
+              <button
+                @click="loadRecommendation(rec)"
+                class="w-full py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              >
+                <Check class="w-4 h-4" />
+                Load to Canvas
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-4 border-t border-stone-200 dark:border-zinc-800 text-center">
+          <p class="text-xs text-stone-500 dark:text-zinc-500">
+            Recommendations are powered by AI and may take a few moments to generate
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -587,6 +706,7 @@ import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
+import { generateRecommendations, getCategoryDisplayName } from '@/services/recommendation-service.js'
 import { 
   Undo, 
   Redo, 
@@ -597,7 +717,9 @@ import {
   Shirt, 
   Sparkles,
   Plus,
-  Users
+  Users,
+  X,
+  Check
 } from 'lucide-vue-next'
 import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
 
@@ -650,6 +772,12 @@ const savingOutfit = ref(false)
 const scoringOutfit = ref(false)
 const outfitScore = ref(null)
 const canvasContainer = ref(null)
+
+// State for recommendations
+const recommendingOutfits = ref(false)
+const showRecommendationsModal = ref(false)
+const recommendations = ref([])
+const selectedRecommendation = ref(null)
 
 // State for friend data
 const friendProfile = ref(null)
@@ -997,6 +1125,77 @@ const generateAISuggestion = async () => {
     
   } catch (error) {
     console.error('OutfitCreator: Error generating AI suggestion:', error)
+  }
+}
+
+// ============================================
+// Recommendation Functions
+// ============================================
+
+const getAIRecommendations = async () => {
+  try {
+    console.log('OutfitCreator: Getting AI recommendations...')
+    
+    if (wardrobeItems.value.length < 2) {
+      showWarning('You need at least 2 items in your closet for recommendations')
+      return
+    }
+    
+    recommendingOutfits.value = true
+    showRecommendationsModal.value = true
+    
+    // Generate recommendations
+    const recs = await generateRecommendations(wardrobeItems.value, {
+      maxRecommendations: 10,
+      maxCombinations: 50
+    })
+    
+    recommendations.value = recs
+    recommendingOutfits.value = false
+    
+    if (recs.length === 0) {
+      showWarning('No recommendations found. Try adding more items to your closet.')
+    } else {
+      showSuccess(`Generated ${recs.length} outfit recommendations`)
+    }
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error getting recommendations:', error)
+    recommendingOutfits.value = false
+    showError('Failed to generate recommendations. Please try again.')
+  }
+}
+
+const loadRecommendation = (rec) => {
+  try {
+    console.log('OutfitCreator: Loading recommendation:', rec)
+    
+    // Clear current canvas
+    canvasItems.value = []
+    
+    // Add recommendation items to canvas
+    const items = rec.items.map((item, index) => ({
+      ...item,
+      originalId: item.id,
+      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      x: 150 + (index * 20),
+      y: 100 + (index * 50),
+      scale: 1,
+      rotation: 0,
+      zIndex: index + 1
+    }))
+    
+    canvasItems.value = items
+    saveToHistory()
+    
+    // Close modal
+    showRecommendationsModal.value = false
+    
+    showSuccess('Outfit loaded to canvas!')
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error loading recommendation:', error)
+    showError('Failed to load outfit. Please try again.')
   }
 }
 
