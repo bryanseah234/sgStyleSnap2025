@@ -4,7 +4,7 @@
       <!-- Loading -->
       <div v-if="isLoading" class="flex flex-col items-center py-16">
         <div class="spinner-modern mb-6"></div>
-        <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">Loading profile...</p>
+        <p class="text-stone-600 dark:text-zinc-400">Loading profile...</p>
       </div>
 
       <!-- Error -->
@@ -12,7 +12,7 @@
         <p class="text-red-500 mb-4">{{ errorMessage }}</p>
         <button
           @click="goBack"
-          :class="`px-4 py-2 rounded-lg font-medium ${theme.value === 'dark' ? 'bg-white text-black' : 'bg-black text-white'}`">
+          class="px-4 py-2 rounded-lg font-medium bg-black text-white dark:bg-white dark:text-black">
           Go Back
         </button>
       </div>
@@ -20,26 +20,26 @@
       <!-- Content -->
       <div v-else>
         <!-- Header -->
-        <div :class="`p-6 rounded-xl mb-6 ${theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'}`">
+        <div class="p-6 rounded-xl mb-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
           <!-- Desktop Layout -->
           <div class="hidden md:flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-              <div :class="`w-16 h-16 rounded-full overflow-hidden ${theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'}`">
+              <div class="w-16 h-16 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                 <img v-if="friend?.avatar_url" :src="friend.avatar_url" :alt="friend?.name" class="w-full h-full object-cover" />
-                <div v-else :class="`w-full h-full flex items-center justify-center ${theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'}`">
-                  <span :class="`text-xl font-bold ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">{{ initial }}</span>
+                <div v-else class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700">
+                  <span class="text-xl font-bold text-stone-500 dark:text-zinc-400">{{ initial }}</span>
                 </div>
               </div>
               <div>
-                <h1 :class="`text-2xl font-bold ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ friend?.name || 'Friend' }}</h1>
-                <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">@{{ friend?.username }}</p>
+                <h1 class="text-2xl font-bold text-black dark:text-white">{{ friend?.name || 'Friend' }}</h1>
+                <p class="text-sm text-stone-600 dark:text-zinc-400">@{{ friend?.username }}</p>
               </div>
             </div>
 
             <div class="flex gap-2">
               <button
                 @click="goCreateOutfitForFriend"
-                :class="`px-4 py-2 rounded-lg font-medium ${theme.value === 'dark' ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-stone-900'}`">
+                class="px-4 py-2 rounded-lg font-medium bg-black text-white hover:bg-stone-900 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
                 Create Outfit
               </button>
               <button
@@ -52,22 +52,22 @@
 
           <!-- Mobile Layout - Centered -->
           <div class="md:hidden flex flex-col items-center text-center space-y-4">
-            <div :class="`w-20 h-20 rounded-full overflow-hidden ${theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'}`">
+            <div class="w-20 h-20 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
               <img v-if="friend?.avatar_url" :src="friend.avatar_url" :alt="friend?.name" class="w-full h-full object-cover" />
-              <div v-else :class="`w-full h-full flex items-center justify-center ${theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'}`">
-                <span :class="`text-2xl font-bold ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">{{ initial }}</span>
+              <div v-else class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700">
+                <span class="text-2xl font-bold text-stone-500 dark:text-zinc-400">{{ initial }}</span>
               </div>
             </div>
             
             <div>
-              <h1 :class="`text-2xl font-bold ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ friend?.name || 'Friend' }}</h1>
-              <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">@{{ friend?.username }}</p>
+              <h1 class="text-2xl font-bold text-black dark:text-white">{{ friend?.name || 'Friend' }}</h1>
+              <p class="text-sm text-stone-600 dark:text-zinc-400">@{{ friend?.username }}</p>
             </div>
 
             <div class="flex gap-2">
               <button
                 @click="goCreateOutfitForFriend"
-                :class="`px-4 py-2 rounded-lg font-medium ${theme.value === 'dark' ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-stone-900'}`">
+                class="px-4 py-2 rounded-lg font-medium bg-black text-white hover:bg-stone-900 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
                 Create Outfit
               </button>
               <button
@@ -80,15 +80,23 @@
         </div>
 
         <!-- Tabs -->
-        <div :class="`flex gap-2 mb-6 ${theme.value === 'dark' ? '' : ''}`">
+        <div class="flex gap-2 mb-6">
           <button
             @click="activeTab = 'closet'"
-            :class="`px-4 py-2 rounded-lg font-medium ${activeTab === 'closet' ? (theme.value === 'dark' ? 'bg-white text-black' : 'bg-black text-white') : (theme.value === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-stone-100 text-stone-700 hover:bg-stone-200')}`">
+            :class="`px-4 py-2 rounded-lg font-medium ${
+              activeTab === 'closet'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`">
             Closet
           </button>
           <button
             @click="activeTab = 'outfits'"
-            :class="`px-4 py-2 rounded-lg font-medium ${activeTab === 'outfits' ? (theme.value === 'dark' ? 'bg-white text-black' : 'bg-black text-white') : (theme.value === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-stone-100 text-stone-700 hover:bg-stone-200')}`">
+            :class="`px-4 py-2 rounded-lg font-medium ${
+              activeTab === 'outfits'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`">
             Outfits
           </button>
         </div>
@@ -96,20 +104,20 @@
         <!-- Closet Grid -->
         <div v-if="activeTab === 'closet'">
           <div v-if="publicItems.length === 0" class="text-center py-12">
-            <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">No public items shared.</p>
+            <p class="text-stone-600 dark:text-zinc-400">No public items shared.</p>
           </div>
           <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div 
               v-for="item in publicItems" 
               :key="item.id" 
               @click="openItemDetails(item)"
-              :class="`rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:scale-105 ${theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'}`">
+              class="rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:scale-105 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
               <div class="aspect-square bg-stone-100 dark:bg-zinc-800 overflow-hidden">
                 <img :src="item.image_url || item.thumbnail_url" :alt="item.name" class="w-full h-full object-cover" />
               </div>
               <div class="p-3">
-                <p :class="`text-sm font-medium truncate ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ item.name }}</p>
-                <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">{{ item.category }}</p>
+                <p class="text-sm font-medium truncate text-black dark:text-white">{{ item.name }}</p>
+                <p class="text-xs text-stone-600 dark:text-zinc-400">{{ item.category }}</p>
               </div>
             </div>
           </div>
@@ -118,14 +126,14 @@
         <!-- Outfits Grid -->
         <div v-else>
           <div v-if="publicOutfits.length === 0" class="text-center py-12">
-            <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">No public outfits.</p>
+            <p class="text-stone-600 dark:text-zinc-400">No public outfits.</p>
           </div>
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div 
               v-for="outfit in publicOutfits" 
               :key="outfit.id" 
               @click="openOutfitDetails(outfit)"
-              :class="`rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:scale-105 ${theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'}`">
+              class="rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:scale-105 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
               <!-- Outfit Canvas -->
               <div class="aspect-video bg-stone-100 dark:bg-zinc-800 relative">
                 <OutfitCanvasMiniature 
@@ -133,12 +141,12 @@
                   :items="outfit.outfit_items" 
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">
-                  <span :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'}`">No items</span>
+                  <span class="text-sm text-stone-400 dark:text-zinc-500">No items</span>
                 </div>
               </div>
               <div class="p-4">
-                <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ outfit.outfit_name || 'Outfit' }}</p>
-                <p :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">{{ new Date(outfit.created_at).toLocaleDateString() }}</p>
+                <p class="text-sm font-medium text-black dark:text-white">{{ outfit.outfit_name || 'Outfit' }}</p>
+                <p class="text-xs text-stone-600 dark:text-zinc-400">{{ new Date(outfit.created_at).toLocaleDateString() }}</p>
               </div>
             </div>
           </div>
@@ -146,21 +154,17 @@
 
         <!-- Friend Item Details Modal -->
         <div v-if="showItemDetails" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="closeItemDetails">
-          <div :class="`w-full max-w-md rounded-xl p-6 relative ${theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'}`" @click.stop>
+          <div class="w-full max-w-md rounded-xl p-6 relative bg-white dark:bg-zinc-900" @click.stop>
             <!-- Close Button -->
             <button
               @click="closeItemDetails"
-              :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
-                theme.value === 'dark'
-                  ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
-                  : 'hover:bg-stone-100 text-stone-500 hover:text-black'
-              }`"
+              class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
             >
               <X class="w-5 h-5" />
             </button>
 
             <div class="pr-8">
-              <h3 :class="`text-xl font-bold mb-4 ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
+              <h3 class="text-xl font-bold mb-4 text-black dark:text-white">
                 {{ selectedItem?.name || 'Item Details' }}
               </h3>
               
@@ -170,23 +174,23 @@
                 </div>
                 
                 <div v-if="selectedItem?.category">
-                  <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">Category</p>
-                  <p :class="`text-base ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ selectedItem.category }}</p>
+                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Category</p>
+                  <p class="text-base text-black dark:text-white">{{ selectedItem.category }}</p>
                 </div>
 
                 <div v-if="selectedItem?.brand">
-                  <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">Brand</p>
-                  <p :class="`text-base ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ selectedItem.brand }}</p>
+                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Brand</p>
+                  <p class="text-base text-black dark:text-white">{{ selectedItem.brand }}</p>
                 </div>
 
                 <div v-if="selectedItem?.color">
-                  <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">Color</p>
-                  <p :class="`text-base ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ selectedItem.color }}</p>
+                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Color</p>
+                  <p class="text-base text-black dark:text-white">{{ selectedItem.color }}</p>
                 </div>
 
                 <div v-if="selectedItem?.size">
-                  <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">Size</p>
-                  <p :class="`text-base ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ selectedItem.size }}</p>
+                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Size</p>
+                  <p class="text-base text-black dark:text-white">{{ selectedItem.size }}</p>
                 </div>
               </div>
             </div>
@@ -195,21 +199,17 @@
 
         <!-- Friend Outfit Details Modal -->
         <div v-if="showOutfitDetails" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="closeOutfitDetails">
-          <div :class="`w-full max-w-2xl rounded-xl p-6 relative ${theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'}`" @click.stop>
+          <div class="w-full max-w-2xl rounded-xl p-6 relative bg-white dark:bg-zinc-900" @click.stop>
             <!-- Close Button -->
             <button
               @click="closeOutfitDetails"
-              :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
-                theme.value === 'dark'
-                  ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
-                  : 'hover:bg-stone-100 text-stone-500 hover:text-black'
-              }`"
+              class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
             >
               <X class="w-5 h-5" />
             </button>
 
             <div class="pr-8">
-              <h3 :class="`text-xl font-bold mb-4 ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">
+              <h3 class="text-xl font-bold mb-4 text-black dark:text-white">
                 {{ selectedOutfit?.outfit_name || 'Outfit Details' }}
               </h3>
               
@@ -221,23 +221,23 @@
                     :items="selectedOutfit.outfit_items" 
                   />
                   <div v-else class="w-full h-full flex items-center justify-center">
-                    <span :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'}`">No items</span>
+                    <span class="text-sm text-stone-400 dark:text-zinc-500">No items</span>
                   </div>
                 </div>
 
                 <div v-if="selectedOutfit?.description">
-                  <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">Description</p>
-                  <p :class="`text-base ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ selectedOutfit.description }}</p>
+                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Description</p>
+                  <p class="text-base text-black dark:text-white">{{ selectedOutfit.description }}</p>
                 </div>
 
                 <div v-if="selectedOutfit?.occasion">
-                  <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">Occasion</p>
-                  <p :class="`text-base ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ selectedOutfit.occasion }}</p>
+                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Occasion</p>
+                  <p class="text-base text-black dark:text-white">{{ selectedOutfit.occasion }}</p>
                 </div>
 
                 <div v-if="selectedOutfit?.created_at">
-                  <p :class="`text-sm font-medium ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">Created</p>
-                  <p :class="`text-base ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">{{ new Date(selectedOutfit.created_at).toLocaleDateString() }}</p>
+                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Created</p>
+                  <p class="text-base text-black dark:text-white">{{ new Date(selectedOutfit.created_at).toLocaleDateString() }}</p>
                 </div>
               </div>
             </div>
@@ -246,11 +246,11 @@
 
         <!-- Unfriend Modal -->
         <div v-if="showUnfriend" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="showUnfriend = false">
-          <div :class="`w-full max-w-md rounded-xl p-6 ${theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'}`" @click.stop>
-            <h3 :class="`text-xl font-bold mb-2 ${theme.value === 'dark' ? 'text-white' : 'text-black'}`">Unfriend {{ friend?.name }}?</h3>
-            <p :class="`text-sm mb-4 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">This will remove them from your friends list.</p>
+          <div class="w-full max-w-md rounded-xl p-6 bg-white dark:bg-zinc-900" @click.stop>
+            <h3 class="text-xl font-bold mb-2 text-black dark:text-white">Unfriend {{ friend?.name }}?</h3>
+            <p class="text-sm mb-4 text-stone-600 dark:text-zinc-400">This will remove them from your friends list.</p>
             <div class="flex gap-2 justify-end">
-              <button @click="showUnfriend = false" :class="`px-4 py-2 rounded-lg ${theme.value === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}`">Cancel</button>
+              <button class="px-4 py-2 rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">Cancel</button>
               <button @click="confirmUnfriend" class="px-4 py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600">Unfriend</button>
             </div>
           </div>

@@ -12,24 +12,19 @@
         <!-- Loading state -->
         <div v-if="authStore.loading" class="flex flex-col items-center py-8">
           <div class="spinner-modern mb-4" />
-          <p :class="`text-sm ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+          <p class="text-sm text-stone-600 dark:text-zinc-400">
             Loading profile...
           </p>
         </div>
         
         <!-- Profile content - Grid layout for large screens, stacked on mobile -->
         <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- User Account Card -->
-        <div :class="`rounded-xl p-6 ${
-          theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-        }`">
-            
+          <!-- User Account Card -->
+          <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
             <div class="space-y-6">
               <!-- Profile Photo -->
               <div class="text-center">
-                <div :class="`w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 border-2 ${
-                  theme.value === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'
-                }`">
+                <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 border-2 bg-stone-100 border-stone-300 dark:bg-zinc-800 dark:border-zinc-700">
                   <img
                     v-if="avatarUrl"
                     :src="avatarUrl"
@@ -40,20 +35,14 @@
                   />
                   <div
                     v-else
-                    :class="`w-full h-full flex items-center justify-center ${
-                      theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-                    }`"
+                    class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
                   >
-                    <span :class="`text-3xl font-bold ${
-                      theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                    }`">
+                    <span class="text-3xl font-bold text-stone-500 dark:text-zinc-400">
                       {{ (user?.name || user?.user_metadata?.name || user?.email || 'U').charAt(0).toUpperCase() }}
                     </span>
                   </div>
                 </div>
-                <p :class="`text-sm ${
-                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-                }`">
+                <p class="text-sm text-stone-600 dark:text-zinc-400">
                   Profile photo from Google account
                 </p>
               </div>
@@ -61,46 +50,28 @@
               <!-- Read-only User Info -->
               <div class="space-y-4">
                 <div>
-                  <label :class="`block text-sm font-medium mb-2 ${
-                    theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-                  }`">
+                  <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
                     Full Name
                   </label>
-                  <div :class="`w-full px-3 py-2 rounded-lg border ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
-                      : 'bg-stone-100 border-stone-300 text-stone-600'
-                  }`">
+                  <div class="w-full px-3 py-2 rounded-lg border bg-stone-100 border-stone-300 text-stone-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300">
                     {{ user?.name || user?.user_metadata?.name || 'Not provided' }}
                   </div>
                 </div>
                 
                 <div>
-                  <label :class="`block text-sm font-medium mb-2 ${
-                    theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-                  }`">
+                  <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
                     Email
                   </label>
-                  <div :class="`w-full px-3 py-2 rounded-lg border ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
-                      : 'bg-stone-100 border-stone-300 text-stone-600'
-                  }`">
+                  <div class="w-full px-3 py-2 rounded-lg border bg-stone-100 border-stone-300 text-stone-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300">
                     {{ user?.email || 'Not provided' }}
                   </div>
                 </div>
                 
                 <div>
-                  <label :class="`block text-sm font-medium mb-2 ${
-                    theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-                  }`">
+                  <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
                     Username
                   </label>
-                  <div :class="`w-full px-3 py-2 rounded-lg border ${
-                    theme.value === 'dark'
-                      ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
-                      : 'bg-stone-100 border-stone-300 text-stone-600'
-                  }`">
+                  <div class="w-full px-3 py-2 rounded-lg border bg-stone-100 border-stone-300 text-stone-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300">
                     @{{ getUsername() }}
                   </div>
                 </div>
@@ -108,9 +79,7 @@
 
               <!-- Additional Info -->
               <div class="text-center">
-                <p :class="`text-sm ${
-                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-                }`">
+                <p class="text-sm text-stone-600 dark:text-zinc-400">
                   Profile information is managed through your Google account.
                   <br>
                   To update your name or email, please visit your Google account settings.
@@ -118,56 +87,44 @@
               </div>
 
             </div>
-        </div>
-
-        <!-- Account Actions Section -->
-        <div :class="`rounded-xl p-6 ${
-          theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-        }`">
-          <h3 :class="`text-lg font-semibold mb-4 ${
-            theme.value === 'dark' ? 'text-zinc-200' : 'text-stone-800'
-          }`">
-            Account Actions
-          </h3>
-          
-          <div class="space-y-3">
-            <!-- Theme Toggle Button -->
-            <button
-              @click="handleThemeToggle"
-              :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
-                  : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
-              }`"
-              :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-            >
-         <!-- Sun icon for dark mode (action: switch to light) -->
-         <Sun v-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5" />
-         <!-- Moon icon for light mode (action: switch to dark) -->
-         <Moon v-else class="w-4 h-4 md:w-5 md:h-5" />
-              <span class="font-medium text-sm md:text-base">
-              Toggle Theme
-              </span>
-            </button>
-
-            <!-- Logout Button -->
-            <button
-              @click="handleLogout"
-              :disabled="loading"
-              :class="`w-full flex items-center justify-start gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
-                loading
-                  ? 'opacity-50 cursor-not-allowed text-muted-foreground'
-                  : theme.value === 'dark'
-                    ? 'bg-red-900/20 hover:bg-red-900/30 text-red-400 hover:text-red-300'
-                    : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700'
-              }`"
-            >
-              <LogOut v-if="!loading" class="w-4 h-4 md:w-5 md:h-5" />
-              <div v-else class="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              <span class="font-medium text-sm md:text-base">{{ loading ? 'Logging out...' : 'Logout' }}</span>
-            </button>
           </div>
-        </div>
+
+          <!-- Account Actions Section -->
+          <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
+            <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
+              Account Actions
+            </h3>
+          
+            <div class="space-y-3">
+              <!-- Theme Toggle Button -->
+              <button
+                @click="handleThemeToggle"
+                :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
+                :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+              >
+                <Sun v-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5" />
+                <Moon v-else class="w-4 h-4 md:w-5 md:h-5" />
+                <span class="font-medium text-sm md:text-base">
+                  Toggle Theme
+                </span>
+              </button>
+
+              <!-- Logout Button -->
+              <button
+                @click="handleLogout"
+                :disabled="loading"
+                :class="`w-full flex items-center justify-start gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+                  loading
+                    ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+                    : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:hover:text-red-300'
+                }`"
+              >
+                <LogOut v-if="!loading" class="w-4 h-4 md:w-5 md:h-5" />
+                <div v-else class="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <span class="font-medium text-sm md:text-base">{{ loading ? 'Logging out...' : 'Logout' }}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

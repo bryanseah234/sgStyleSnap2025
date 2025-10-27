@@ -5,19 +5,13 @@
     @click="$emit('close')"
   >
     <div
-      :class="`w-full max-w-md rounded-xl p-6 relative ${
-        theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
-      }`"
+      class="w-full max-w-md rounded-xl p-6 relative bg-white dark:bg-zinc-900"
       @click.stop
     >
       <!-- Close Button -->
       <button
         @click="$emit('close')"
-        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
-          theme.value === 'dark'
-            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
-            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
-        }`"
+        class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
       >
         <X class="w-5 h-5" />
       </button>
@@ -28,20 +22,14 @@
       
       <div class="space-y-4">
         <div>
-          <label :class="`block text-sm font-medium mb-2 ${
-            theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-          }`">
+          <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
             Search by username or email
           </label>
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Enter username or email..."
-            :class="`w-full px-3 py-2 rounded-lg border ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                : 'bg-white border-stone-300 text-black placeholder-stone-500'
-            }`"
+            class="w-full px-3 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
             @keyup.enter="searchUsers"
           />
         </div>
@@ -50,14 +38,10 @@
           <div
             v-for="user in searchResults"
             :key="user.id"
-            :class="`flex items-center justify-between p-3 rounded-lg ${
-              theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-            }`"
+            class="flex items-center justify-between p-3 rounded-lg bg-stone-100 dark:bg-zinc-800"
           >
             <div class="flex items-center gap-3">
-              <div :class="`w-8 h-8 rounded-full overflow-hidden ${
-                theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-200'
-              }`">
+              <div class="w-8 h-8 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
                 <img
                   v-if="user.avatar_url"
                   :src="user.avatar_url"
@@ -66,13 +50,9 @@
                 />
                 <div
                   v-else
-                  :class="`w-full h-full flex items-center justify-center ${
-                    theme.value === 'dark' ? 'bg-zinc-600' : 'bg-stone-300'
-                  }`"
+                  class="w-full h-full flex items-center justify-center bg-stone-300 dark:bg-zinc-600"
                 >
-                  <span :class="`text-xs font-bold ${
-                    theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'
-                  }`">
+                  <span class="text-xs font-bold text-stone-500 dark:text-zinc-400">
                     {{ (user.name || 'U').charAt(0).toUpperCase() }}
                   </span>
                 </div>
@@ -81,9 +61,7 @@
                 <p class="font-medium text-foreground">
                   {{ user.name || user.username }}
                 </p>
-                <p :class="`text-xs ${
-                  theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-                }`">
+                <p class="text-xs text-stone-600 dark:text-zinc-400">
                   @{{ user.username }}
                 </p>
               </div>
@@ -94,9 +72,7 @@
               :class="`px-3 py-1 rounded text-sm font-medium transition-all duration-200 ${
                 sendingRequest === user.id
                   ? 'bg-zinc-600 text-zinc-400 cursor-not-allowed'
-                  : theme.value === 'dark'
-                  ? 'bg-white text-black hover:bg-zinc-200'
-                  : 'bg-black text-white hover:bg-zinc-800'
+                  : 'bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'
               }`"
             >
               {{ sendingRequest === user.id ? 'Sending...' : 'Add' }}
@@ -105,17 +81,13 @@
         </div>
         
         <div v-if="searchQuery && searchResults.length === 0 && !searching" class="text-center py-4">
-          <p :class="`text-sm ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <p class="text-sm text-stone-600 dark:text-zinc-400">
             No users found matching "{{ searchQuery }}"
           </p>
         </div>
         
         <div v-if="searching" class="text-center py-4">
-          <p :class="`text-sm ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <p class="text-sm text-stone-600 dark:text-zinc-400">
             Searching...
           </p>
         </div>
@@ -124,11 +96,7 @@
       <div class="flex gap-3 mt-6">
         <button
           @click="$emit('close')"
-          :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-            theme.value === 'dark'
-              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-          }`"
+          class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
         >
           Cancel
         </button>

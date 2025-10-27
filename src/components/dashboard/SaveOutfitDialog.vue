@@ -5,45 +5,31 @@
     @click="$emit('close')"
   >
     <div
-      :class="`w-full max-w-md rounded-xl p-6 relative ${
-        theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-      }`"
+      class="w-full max-w-md rounded-xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800"
       @click.stop
     >
       <!-- Close Button -->
       <button
         @click="$emit('close')"
-        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
-          theme.value === 'dark'
-            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
-            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
-        }`"
+        class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
       >
         <X class="w-5 h-5" />
       </button>
 
-      <h3 :class="`text-2xl font-bold mb-4 pr-8 ${
-        theme.value === 'dark' ? 'text-white' : 'text-black'
-      }`">
+      <h3 :class="`text-2xl font-bold mb-4 pr-8 text-black dark:text-white`">
         Save Outfit
       </h3>
 
       <div class="space-y-4">
         <div>
-          <label :class="`block text-base mb-2 ${
-            theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-          }`">
+          <label :class="`block text-base mb-2 text-stone-700 dark:text-zinc-300`">
             Outfit Name
           </label>
           <input
             v-model="outfitName"
             type="text"
             placeholder="e.g., Summer Casual"
-            :class="`w-full h-12 px-3 rounded-xl border ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                : 'bg-stone-50 border-stone-200 text-black placeholder-stone-500'
-            }`"
+            class="w-full h-12 px-3 rounded-xl border bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400"
             @keydown.enter="handleSave"
           />
         </div>
@@ -51,11 +37,8 @@
         <div class="flex gap-3">
           <button
             @click="$emit('close')"
-            :class="`flex-1 h-12 rounded-xl font-medium transition-all duration-200 ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-            }`"
+            :class="`flex-1 h-12 rounded-xl font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200
+              dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
           >
             Cancel
           </button>
@@ -65,9 +48,7 @@
             :class="`flex-1 h-12 rounded-xl font-medium transition-all duration-200 ${
               !outfitName.trim() || saving
                 ? 'bg-zinc-600 text-zinc-400 cursor-not-allowed'
-                : theme.value === 'dark'
-                ? 'bg-white text-black hover:bg-zinc-100'
-                : 'bg-black text-white hover:bg-stone-900'
+                : 'bg-black dark:bg-white text-white dark:text-black hover:bg-stone-900 dark:hover:bg-zinc-100'
             }`"
           >
             {{ saving ? 'Saving...' : 'Save Outfit' }}
@@ -80,7 +61,6 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useTheme } from '@/composables/useTheme'
 import { X } from 'lucide-vue-next'
 
 // Props
@@ -98,8 +78,7 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close', 'save'])
 
-// Theme
-const { theme } = useTheme()
+// No theme needed
 
 // State
 const outfitName = ref('')

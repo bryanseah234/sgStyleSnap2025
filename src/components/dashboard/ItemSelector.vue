@@ -1,12 +1,6 @@
 <template>
-  <div :class="`rounded-3xl p-6 ${
-    theme.value === 'dark'
-      ? 'bg-zinc-900 border border-zinc-800'
-      : 'bg-white border border-stone-200'
-  }`">
-    <h3 :class="`text-xl font-bold mb-4 ${
-      theme.value === 'dark' ? 'text-white' : 'text-black'
-    }`">
+  <div :class="`rounded-3xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+    <h3 :class="`text-xl font-bold mb-4 text-black dark:text-white`">
       Your Items
     </h3>
 
@@ -18,12 +12,8 @@
         @click="filter = category"
         :class="`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
           filter === category
-            ? theme.value === 'dark'
-              ? 'bg-white text-black'
-              : 'bg-black text-white'
-            : theme.value === 'dark'
-            ? 'bg-zinc-800 text-zinc-400 hover:text-white'
-            : 'bg-stone-100 text-stone-600 hover:text-black'
+            ? 'bg-black text-white dark:bg-white dark:text-black bg-stone-100 text-stone-600 hover:text-black'
+            : 'bg-stone-100 text-stone-600 hover:text-black dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'
         }`"
       >
         {{ category }}
@@ -32,9 +22,7 @@
 
     <!-- Items List -->
     <div class="space-y-3 max-h-[600px] overflow-y-auto">
-      <div v-if="filteredItems.length === 0" :class="`text-center py-8 ${
-        theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'
-      }`">
+      <div v-if="filteredItems.length === 0" :class="`text-center py-8 text-stone-400 dark:text-zinc-500`">
         No items in this category
       </div>
       
@@ -42,16 +30,11 @@
         v-for="item in filteredItems"
         :key="item.id"
         @click="$emit('selectItem', item)"
-        :class="`group relative p-3 rounded-xl cursor-pointer transition-all duration-300 hover:scale-105 ${
-          theme.value === 'dark'
-            ? 'bg-zinc-800 hover:bg-zinc-700'
-            : 'bg-stone-100 hover:bg-stone-200'
-        }`"
+        :class="`group relative p-3 rounded-xl cursor-pointer transition-all duration-300 hover:scale-105 bg-stone-100 hover:bg-stone-200
+          dark:bg-zinc-800 dark:hover:bg-zinc-700`"
       >
         <div class="flex items-center gap-3">
-          <div :class="`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 ${
-            theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
-          }`">
+          <div :class="`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-900`">
             <img
               v-if="item.image_url"
               :src="item.image_url"
@@ -60,28 +43,20 @@
             />
             <div
               v-else
-              :class="`w-full h-full flex items-center justify-center ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`"
+              :class="`w-full h-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800`"
             >
-              <Shirt :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+              <Shirt :class="`w-8 h-8 text-stone-500 dark:text-zinc-400`" />
             </div>
           </div>
           <div class="flex-1 min-w-0">
-            <h4 :class="`font-medium truncate ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h4 :class="`font-medium truncate text-black dark:text-white`">
               {{ item.name }}
             </h4>
-            <p :class="`text-sm truncate ${
-              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-            }`">
+            <p :class="`text-sm truncate text-stone-600 dark:text-zinc-400`">
               {{ item.category }}
             </p>
           </div>
-          <Plus :class="`w-5 h-5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`" />
+          <Plus :class="`w-5 h-5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-stone-600 dark:text-zinc-400`" />
         </div>
       </div>
     </div>

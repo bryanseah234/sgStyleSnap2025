@@ -1,7 +1,5 @@
 <template>
-  <h3 :class="`text-2xl font-bold ${
-    theme.value === 'dark' ? 'text-white' : 'text-black'
-  }`">
+  <h3 :class="`text-2xl font-bold text-black dark:text-white`">
     <slot />
   </h3>
 </template>
