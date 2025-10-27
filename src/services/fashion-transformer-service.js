@@ -4,11 +4,11 @@
  * Service to use the fashion-transformer API for AI-powered outfit scoring
  * and complementary item recommendations.
  *
- * API URL: https://ftransformer-api-244539109907.us-central1.run.app
+ * API URL: https://ftransformer.onrender.com
  */
 
 // API Base URL
-const API_BASE_URL = 'https://ftransformer-api-244539109907.us-central1.run.app'
+const API_BASE_URL = 'https://ftransformer.onrender.com'
 
 /**
  * Score an outfit for compatibility
