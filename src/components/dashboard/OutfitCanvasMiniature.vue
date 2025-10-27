@@ -14,16 +14,12 @@
   @version 1.0.0
 -->
 <template>
-  <div 
-    :class="`relative w-full h-full rounded-lg overflow-hidden ${
-      theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-50'
-    }`"
-  >
+  <div class="relative w-full h-full rounded-lg overflow-hidden bg-stone-50 dark:bg-zinc-800">
     <!-- Canvas Background with subtle grid -->
     <div class="absolute inset-0 bg-gradient-to-br from-stone-50/50 to-stone-100/50 dark:from-zinc-800/50 dark:to-zinc-900/50">
       <div 
         class="absolute inset-0 opacity-10" 
-        :class="theme.value === 'dark' ? 'bg-zinc-700' : 'bg-stone-300'" 
+        :class="'bg-stone-300 dark:bg-zinc-700'" 
         style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 15px 15px;"
       />
     </div>
@@ -33,7 +29,7 @@
       v-if="!items || items.length === 0"
       class="absolute inset-0 flex items-center justify-center"
     >
-      <Shirt :class="`w-8 h-8 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+      <Shirt class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
     </div>
 
     <!-- Outfit Items (scaled down) -->
@@ -69,10 +65,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useTheme } from '@/composables/useTheme'
 import { Shirt } from 'lucide-vue-next'
-
-const { theme } = useTheme()
 
 const props = defineProps({
   items: {

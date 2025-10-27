@@ -1,17 +1,11 @@
 <template>
   <div>
     <!-- Upload Form -->
-    <div :class="`rounded-2xl border p-8 ${
-      theme.value === 'dark'
-        ? 'bg-zinc-900 border-zinc-800'
-        : 'bg-white border-stone-200'
-    }`">
+    <div :class="`rounded-2xl border p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
       <div class="space-y-6">
         <!-- Image Upload -->
         <div>
-          <label :class="`text-base mb-3 block ${
-            theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-          }`">
+          <label :class="`text-base mb-3 block text-stone-700 dark:text-zinc-300`">
             Item Image *
           </label>
           
@@ -19,9 +13,7 @@
             <img
               :src="previewUrl"
               alt="Preview"
-              :class="`w-full h-80 object-contain rounded-2xl ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`"
+              :class="`w-full h-80 object-contain rounded-2xl bg-stone-100 dark:bg-zinc-800`"
             />
             <button
               @click="clearImage"
@@ -32,25 +24,16 @@
           </div>
           <label
             v-else
-            :class="`flex flex-col items-center justify-center w-full h-80 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 ${
-              theme.value === 'dark'
-                ? 'border-zinc-700 hover:border-zinc-600 bg-zinc-800 hover:bg-zinc-750'
-                : 'border-stone-300 hover:border-stone-400 bg-stone-50 hover:bg-stone-100'
-            }`"
+            :class="`flex flex-col items-center justify-center w-full h-80 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 
+            border-stone-300 hover:border-stone-400 bg-stone-50 hover:bg-stone-100 dark:border-zinc-700 dark:hover:border-zinc-600 dark:bg-zinc-800 dark:hover:bg-zinc-750`"
           >
             <div v-if="uploading" class="spinner-modern" />
             <template v-else>
-              <Upload :class="`w-16 h-16 mb-4 ${
-                theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-400'
-              }`" />
-              <p :class="`text-xl font-medium ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">
+              <Upload :class="`w-16 h-16 mb-4 text-stone-400 dark:text-zinc-500`"/>
+              <p :class="`text-xl font-medium text-stone-600 dark:text-zinc-400`">
                 Click to upload or drag and drop
               </p>
-              <p :class="`text-sm mt-2 ${
-                theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-              }`">
+              <p :class="`text-sm mt-2 text-stone-500 dark:text-zinc-500`">
                 PNG, JPG or JPEG (max 10MB)
               </p>
             </template>
@@ -67,40 +50,28 @@
         <!-- Form Fields -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label :class="`text-base mb-2 block ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
+            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Item Name *
             </label>
             <input
               v-model="formData.name"
               placeholder="e.g., Black T-Shirt"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white border'
-                  : 'bg-stone-50 border-stone-200 text-black border'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
-              }`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
+                dark:bg-zinc-800 dark:border-zinc-700 dark:text-white 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
             />
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
+            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Category *
             </label>
             <select
               v-model="formData.category"
               @change="onCategoryChange"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white border'
-                  : 'bg-stone-50 border-stone-200 text-black border'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
-              }`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border 
+                dark:bg-zinc-800 dark:border-zinc-700 dark:text-white 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
             >
               <option value="">Select category</option>
               <option value="top">Tops</option>
@@ -112,20 +83,14 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
+            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Color
             </label>
             <select
               v-model="formData.color"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white border'
-                  : 'bg-stone-50 border-stone-200 text-black border'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
-              }`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
+              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
             >
               <option value="">Select color (optional)</option>
               <option value="black">Black</option>
@@ -150,46 +115,28 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
+            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Brand
             </label>
             <input
               v-model="formData.brand"
               placeholder="e.g., Nike"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white border'
-                  : 'bg-stone-50 border-stone-200 text-black border'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
-              }`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
+              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
             />
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
+            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Type
             </label>
             <select
               v-model="formData.type"
               :disabled="!formData.category"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white border'
-                  : 'bg-stone-50 border-stone-200 text-black border'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
-              } ${
-                !formData.category 
-                  ? theme.value === 'dark' 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'opacity-50 cursor-not-allowed'
-                  : ''
-              }`"
+              :class="[
+                'w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border border-stone-200 text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:focus:ring-white',
+                !formData.category ? 'opacity-50 cursor-not-allowed' : ''
+              ]"
             >
               <option value="">Select type</option>
               <option 
@@ -203,20 +150,13 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
+            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Privacy *
             </label>
             <select
               v-model="formData.privacy"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white border'
-                  : 'bg-stone-50 border-stone-200 text-black border'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                theme.value === 'dark' ? 'focus:ring-white' : 'focus:ring-black'
-              }`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
+              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
             >
               <option value="private">Private (Only Me)</option>
               <option value="friends">Friends</option>
@@ -229,11 +169,8 @@
         <div class="flex gap-3 pt-4">
           <button
             @click="$router.push('/closet')"
-            :class="`flex-1 h-12 rounded-xl font-medium transition-colors ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200'
-            }`"
+            :class="`flex-1 h-12 rounded-xl font-medium transition-colors bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200
+              dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:border-zinc-700`"
           >
             Cancel
           </button>
@@ -242,9 +179,7 @@
             :disabled="!canSubmit || isSubmitting"
             :class="`flex-1 h-12 rounded-xl font-medium transition-all ${
               canSubmit && !isSubmitting
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black hover:bg-zinc-100'
-                  : 'bg-black text-white hover:bg-stone-900'
+                ? 'bg-black text-white hover:bg-stone-900 dark:bg-white dark:text-black dark:hover:bg-zinc-100'
                 : 'bg-zinc-600 text-zinc-400 cursor-not-allowed'
             }`"
           >

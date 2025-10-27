@@ -16,11 +16,7 @@
           <!-- Toggle button for add item dropdown menu -->
           <button
             @click="showAddMenu = !showAddMenu"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
-              theme.value === 'dark'
-                ? 'bg-white text-black hover:bg-zinc-200'
-                : 'bg-black text-white hover:bg-zinc-800'
-            }`"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800`"
           >
             <Plus class="w-5 h-5" />
             Add Item
@@ -33,25 +29,19 @@
           <!-- Dropdown Menu with Add Item Options -->
           <div
             v-if="showAddMenu"
-            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 ${
-              theme.value === 'dark'
-                ? 'bg-zinc-900 border-zinc-800'
-                : 'bg-white border-stone-200'
-            }`"
+            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 bg-white border-stone-200
+              dark:bg-zinc-900 dark:border-zinc-800`"
           >
             <!-- Manual Upload Option -->
             <button
               @click="navigateToManual"
-              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
-                theme.value === 'dark'
-                  ? 'hover:bg-zinc-800 text-white'
-                  : 'hover:bg-stone-50 text-black'
-              }`"
+              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 text-black
+                dark:hover:bg-zinc-800 dark:text-white`"
             >
               <Plus class="w-5 h-5" />
               <div>
                 <div class="font-medium">Manual Upload</div>
-                <div :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">
                   Upload your own clothing items
                 </div>
               </div>
@@ -60,16 +50,13 @@
             <!-- Catalogue Browse Option -->
             <button
               @click="navigateToCatalogue"
-              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
-                theme.value === 'dark'
-                  ? 'hover:bg-zinc-800 text-white'
-                  : 'hover:bg-stone-50 text-black'
-              }`"
+              :class="`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 text-black
+                dark:hover:bg-zinc-800 dark:text-white`"
             >
               <Shirt class="w-5 h-5" />
               <div>
                 <div class="font-medium">Add from Catalogue</div>
-                <div :class="`text-xs ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`">
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">
                   Browse pre-populated items
                 </div>
               </div>
@@ -85,12 +72,8 @@
             @click="$router.push('/closet/add/manual')"
             :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
               currentSubRoute === 'manual'
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
           >
             <Plus class="w-4 h-4" />
@@ -100,12 +83,8 @@
             @click="$router.push('/closet/add/catalogue')"
             :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
               currentSubRoute === 'catalogue'
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
           >
             <Shirt class="w-4 h-4" />
@@ -143,12 +122,8 @@
             @click="activeCategory = category"
             :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
               activeCategory === category
-                ? theme.value === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
           >
             {{ getCategoryLabel(category) }}
@@ -159,12 +134,8 @@
             @click="showFavoritesOnly = !showFavoritesOnly"
             :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
               showFavoritesOnly
-                ? theme.value === 'dark'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-red-500 text-white'
-                : theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                ? 'bg-red-500 text-white dark:bg-red-600'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
           >
             <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
@@ -176,18 +147,13 @@
       <!-- Search Bar (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
         <div class="relative">
-          <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-400'
-          }`" />
+          <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
           <input
             v-model="searchTerm"
             type="text"
             placeholder="Search your closet..."
-            :class="`w-full pl-10 pr-4 py-3 rounded-lg border ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400'
-                : 'bg-stone-100 border-stone-300 text-black placeholder-stone-500'
-            }`"
+            :class="`w-full pl-10 pr-4 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500
+              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
             @input="handleSearch"
           />
         </div>
@@ -199,23 +165,19 @@
       <!-- Loading state -->
       <div v-if="loading" class="flex flex-col items-center py-16">
         <div class="spinner-modern mb-6"></div>
-        <p :class="theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'">
+        <p :class="'text-stone-600 dark:text-zinc-400'">
           Loading your closet...
         </p>
       </div>
 
       <div v-else-if="filteredItems.length === 0" class="text-center py-12">
-        <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center ${
-          theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-        }`">
-          <Shirt :class="`w-12 h-12 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-500'}`" />
+        <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800`">
+          <Shirt :class="`w-12 h-12 text-stone-500 dark:text-zinc-400`" />
         </div>
         <h3 class="text-xl font-semibold mb-2 text-foreground">
           {{ searchTerm ? 'No items found matching your search.' : 'No items found' }}
         </h3>
-        <p :class="`text-lg mb-4 ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
+        <p :class="`text-lg mb-4 text-stone-600 dark:text-zinc-400`">
           {{ searchTerm ? 'Try adjusting your search terms.' : 'Start building your wardrobe by adding your first item!' }}
         </p>
         
@@ -223,31 +185,21 @@
         <div v-if="!searchTerm && authStore.isAuthenticated && currentUser?.id">
           <button
             @click="$router.push('/closet/add/manual')"
-            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto ${
-              theme.value === 'dark'
-                ? 'bg-white text-black hover:bg-zinc-200'
-                : 'bg-black text-white hover:bg-zinc-800'
-            }`"
+            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto               dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             <Plus class="w-5 h-5" />
             Add Item
           </button>
         </div>
         
-        <div v-if="!authStore.isAuthenticated" :class="`mt-4 p-4 rounded-lg ${
-          theme.value === 'dark' 
-            ? 'bg-yellow-900/20 border border-yellow-800 text-yellow-300' 
-            : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
-        }`">
+        <div v-if="!authStore.isAuthenticated" :class="`mt-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700
+          dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300`">
           <p class="text-sm">
             You need to be logged in to see your items. Please <router-link to="/login" class="underline hover:no-underline">sign in</router-link> to access your closet.
           </p>
         </div>
-        <div v-else-if="!currentUser?.id" :class="`mt-4 p-4 rounded-lg ${
-          theme.value === 'dark' 
-            ? 'bg-yellow-900/20 border border-yellow-800 text-yellow-300' 
-            : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
-        }`">
+        <div v-else-if="!currentUser?.id" :class="`mt-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700
+          dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300`">
           <p class="text-sm">
             User data is loading. If you have items in Supabase but they're not showing, check the browser console for debugging information.
           </p>

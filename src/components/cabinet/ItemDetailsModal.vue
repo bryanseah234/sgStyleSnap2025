@@ -10,9 +10,8 @@
       <Transition name="modal" appear>
         <div
           v-if="isOpen"
-          :class="`liquid-modal-card relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
-            theme.value === 'dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-stone-200'
-          }`"
+          :class="`liquid-modal-card relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden bg-white border border-stone-200
+          dark:bg-zinc-900 dark:border border-zinc-800`"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -21,11 +20,8 @@
             @mousedown="handleClosePress"
             @mouseup="handleCloseRelease"
             @mouseleave="handleCloseRelease"
-            :class="`liquid-close-btn absolute top-4 right-4 z-10 p-2 rounded-lg ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700'
-                : 'bg-white/80 text-stone-700 hover:bg-stone-100'
-            }`"
+            :class="`liquid-close-btn absolute top-4 right-4 z-10 p-2 rounded-lg bg-white/80 text-stone-700 hover:bg-stone-100
+            dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-700`"
           >
             <X class="w-5 h-5" />
       </button>
@@ -43,7 +39,7 @@
             v-else
             class="w-full h-full flex items-center justify-center"
           >
-            <Shirt :class="`w-16 h-16 ${theme.value === 'dark' ? 'text-zinc-600' : 'text-stone-400'}`" />
+            <Shirt :class="`w-16 h-16 text-stone-400 dark:text-zinc-600`" />
           </div>
         </div>
 
@@ -54,11 +50,8 @@
             <h2 class="text-2xl font-bold mb-2 text-foreground">
               {{ item?.name || 'Untitled Item' }}
             </h2>
-            <span :class="`inline-block px-3 py-1 text-sm rounded-full ${
-              theme.value === 'dark'
-                ? 'bg-zinc-800 text-zinc-300'
-                : 'bg-stone-100 text-stone-700'
-            }`">
+            <span :class="`inline-block px-3 py-1 text-sm rounded-full bg-stone-100 text-stone-700
+            dark:bg-zinc-800 dark:text-zinc-300`">
               {{ item?.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Uncategorized' }}
             </span>
           </div>
@@ -66,49 +59,36 @@
           <!-- Item Details -->
           <div class="space-y-3">
             <div v-if="item?.brand">
-              <p :class="`text-sm font-medium ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">Brand</p>
+              <p :class="`text-sm font-medium text-stone-600 dark:text-zinc-400`">Brand</p>
               <p class="text-base text-foreground">{{ item.brand }}</p>
             </div>
 
             <div v-if="item?.color">
-              <p :class="`text-sm font-medium ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">Color</p>
+              <p :class="`text-sm font-medium text-stone-600 dark:text-zinc-400`">Color</p>
               <p class="text-base text-foreground">{{ item.color }}</p>
             </div>
 
             <div v-if="item?.size">
-              <p :class="`text-sm font-medium ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">Size</p>
+              <p :class="`text-sm font-medium text-stone-600 dark:text-zinc-400`">Size</p>
               <p class="text-base text-foreground">{{ item.size }}</p>
             </div>
 
             <div v-if="item?.season">
-              <p :class="`text-sm font-medium ${
-                theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-              }`">Season</p>
+              <p :class="`text-sm font-medium text-stone-600 dark:text-zinc-400`">Season</p>
               <p class="text-base text-foreground">{{ item.season.charAt(0).toUpperCase() + item.season.slice(1) }}</p>
             </div>
           </div>
 
           <!-- Privacy Setting -->
           <div>
-            <label :class="`block text-sm font-medium mb-2 ${
-              theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-            }`">
+            <label :class="`block text-sm font-medium mb-2 text-stone-600 dark:text-zinc-400`">
               Privacy
             </label>
             <select
               v-model="localPrivacy"
               @change="updatePrivacy"
-              :class="`w-full px-4 py-2 rounded-lg border transition-colors ${
-                theme.value === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-white'
-                  : 'bg-white border-stone-300 text-black'
-              }`"
+              :class="`w-full px-4 py-2 rounded-lg border transition-colors bg-white border-stone-300 text-black
+              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white`"
             >
               <option value="private">Private (Only Me)</option>
               <option value="friends">Friends</option>
@@ -133,11 +113,8 @@
           </div>
 
           <!-- Meta Info -->
-          <div :class="`pt-4 border-t text-xs ${
-            theme.value === 'dark'
-              ? 'border-zinc-800 text-zinc-500'
-              : 'border-stone-200 text-stone-500'
-          }`">
+          <div :class="`pt-4 border-t text-xs border-stone-200 text-stone-500
+          dark:border-zinc-800 dark:text-zinc-500`">
             <p>Added {{ formatDate(item?.created_at) }}</p>
             <p v-if="item?.updated_at && item.updated_at !== item.created_at">
               Updated {{ formatDate(item.updated_at) }}

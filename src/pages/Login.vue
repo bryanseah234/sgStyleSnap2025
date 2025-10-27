@@ -22,11 +22,7 @@
   <div class="min-h-screen flex items-center justify-center p-4 relative max-w-full overflow-x-hidden">
     <!-- Theme Toggle (Top Right) - Works without authentication -->
     <div class="absolute top-4 right-4 z-10">
-      <div :class="`p-2 rounded-lg backdrop-blur-sm ${
-        theme.value === 'dark' 
-          ? 'bg-zinc-900/80 border border-zinc-800' 
-          : 'bg-white/80 border border-stone-200'
-      }`">
+      <div class="p-2 rounded-lg backdrop-blur-sm bg-white/80 border border-stone-200 dark:bg-zinc-900/80 dark:border-zinc-800">
         <ThemeToggle />
       </div>
     </div>
@@ -35,36 +31,26 @@
 
       <!-- Logo and Title -->
       <div class="text-center mb-8">
-        <div :class="`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-          theme.value === 'dark' ? 'bg-white' : 'bg-black'
-        }`">
-          <Shirt :class="`w-10 h-10 ${theme.value === 'dark' ? 'text-black' : 'text-white'}`" />
+        <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-black dark:bg-white">
+          <Shirt class="w-10 h-10 text-white dark:text-black" />
         </div>
         <h1 class="text-4xl font-bold mb-2 text-foreground">
           StyleSnap
         </h1>
-        <p :class="`text-lg ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
+        <p class="text-lg text-stone-600 dark:text-zinc-400">
           Your digital wardrobe awaits
         </p>
       </div>
 
       <!-- Login Card -->
-      <div :class="`rounded-3xl p-8 ${
-        theme.value === 'dark' 
-          ? 'bg-zinc-900 border border-zinc-800' 
-          : 'bg-white border border-stone-200'
-      } shadow-2xl`">
+      <div class="rounded-3xl p-8 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 shadow-2xl">
         
         <!-- Welcome Message -->
         <div class="text-center mb-8">
           <h2 class="text-2xl font-bold mb-2 text-foreground">
             Welcome back
           </h2>
-          <p :class="`text-lg ${
-            theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-          }`">
+          <p class="text-lg text-stone-600 dark:text-zinc-400">
             Sign in to access your digital closet
           </p>
         </div>
@@ -73,11 +59,7 @@
         <button
           @click="handleGoogleSignIn"
           :disabled="loading"
-          :class="`w-full flex items-center justify-center gap-3 px-4 py-3 md:px-6 md:py-4 rounded-xl font-medium transition-all duration-200 hover:scale-105 ${
-            theme.value === 'dark'
-              ? 'bg-white text-black hover:bg-zinc-200'
-              : 'bg-black text-white hover:bg-zinc-800'
-          } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`"
+          :class="`w-full flex items-center justify-center gap-3 px-4 py-3 md:px-6 md:py-4 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`"
         >
           <div v-if="loading" class="w-5 h-5 relative">
             <div class="absolute inset-0 rounded-full border-2 border-current opacity-25"></div>
@@ -97,49 +79,35 @@
         <!-- Features Preview -->
         <div class="mt-8 space-y-4">
           <div class="text-center">
-            <p :class="`text-sm font-medium mb-4 ${
-              theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-            }`">
+            <p class="text-sm font-medium mb-4 text-stone-700 dark:text-zinc-300">
               What you'll get:
             </p>
           </div>
           
           <div class="space-y-3">
             <div class="flex items-center gap-3">
-              <div :class="`w-8 h-8 rounded-lg flex items-center justify-center ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`">
-                <Shirt :class="`w-4 h-4 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`" />
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+                <Shirt class="w-4 h-4 text-stone-600 dark:text-zinc-400" />
               </div>
-              <span :class="`text-sm ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
+              <span class="text-sm text-stone-700 dark:text-zinc-300">
                 Digital closet management
               </span>
             </div>
             
             <div class="flex items-center gap-3">
-              <div :class="`w-8 h-8 rounded-lg flex items-center justify-center ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`">
-                <Palette :class="`w-4 h-4 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`" />
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+                <Palette class="w-4 h-4 text-stone-600 dark:text-zinc-400" />
               </div>
-              <span :class="`text-sm ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
+              <span class="text-sm text-stone-700 dark:text-zinc-300">
                 AI-powered outfit suggestions
               </span>
             </div>
             
             <div class="flex items-center gap-3">
-              <div :class="`w-8 h-8 rounded-lg flex items-center justify-center ${
-                theme.value === 'dark' ? 'bg-zinc-800' : 'bg-stone-100'
-              }`">
-                <Users :class="`w-4 h-4 ${theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`" />
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+                <Users class="w-4 h-4 text-stone-600 dark:text-zinc-400" />
               </div>
-              <span :class="`text-sm ${
-                theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-              }`">
+              <span class="text-sm text-stone-700 dark:text-zinc-300">
                 Social fashion network
               </span>
             </div>
@@ -147,11 +115,7 @@
         </div>
 
         <!-- Error Message -->
-        <div v-if="error" :class="`mt-6 p-4 rounded-lg ${
-          theme.value === 'dark' 
-            ? 'bg-red-900/20 border border-red-800 text-red-300' 
-            : 'bg-red-50 border border-red-200 text-red-700'
-        }`">
+        <div v-if="error" class="mt-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
           <div class="flex items-center gap-2">
             <AlertCircle class="w-4 h-4" />
             <div>
@@ -166,24 +130,18 @@
 
       <!-- Footer -->
       <div class="text-center mt-8">
-        <p :class="`text-sm ${
-          theme.value === 'dark' ? 'text-zinc-500' : 'text-stone-500'
-        }`">
+        <p class="text-sm text-stone-500 dark:text-zinc-500">
           By signing in, you agree to our 
           <button
             @click="showTerms = true"
-            :class="`underline hover:no-underline transition-all ${
-              theme.value === 'dark' ? 'text-zinc-400 hover:text-white' : 'text-stone-600 hover:text-black'
-            }`"
+            class="underline hover:no-underline transition-all text-stone-600 hover:text-black dark:text-zinc-400 dark:hover:text-white"
           >
             Terms of Service
           </button>
           and 
           <button
             @click="showPrivacy = true"
-            :class="`underline hover:no-underline transition-all ${
-              theme.value === 'dark' ? 'text-zinc-400 hover:text-white' : 'text-stone-600 hover:text-black'
-            }`"
+            class="underline hover:no-underline transition-all text-stone-600 hover:text-black dark:text-zinc-400 dark:hover:text-white"
           >
             Privacy Policy
           </button>

@@ -5,45 +5,31 @@
     @click="close"
   >
     <div
-      :class="`relative w-full max-w-3xl max-h-[90vh] rounded-2xl p-8 overflow-y-auto ${
-        theme.value === 'dark' ? 'bg-zinc-900' : 'bg-white'
-      }`"
+      :class="`relative w-full max-w-3xl max-h-[90vh] rounded-2xl p-8 overflow-y-auto bg-white dark:bg-zinc-900`"
       @click.stop
     >
       <!-- Close Button -->
       <button
         @click="close"
-        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
-          theme.value === 'dark'
-            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
-            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
-        }`"
+        :class="'absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'"
       >
         <X class="w-5 h-5" />
       </button>
 
       <!-- Content -->
       <div class="pr-4">
-        <h1 :class="`text-3xl font-bold mb-2 ${
-          theme.value === 'dark' ? 'text-white' : 'text-black'
-        }`">
+        <h1 :class="`text-3xl font-bold mb-2 text-black dark:text-white`">
           Privacy Policy
         </h1>
         
-        <p :class="`text-sm mb-6 ${
-          theme.value === 'dark' ? 'text-zinc-400' : 'text-stone-600'
-        }`">
+        <p :class="`text-sm mb-6 text-stone-600 dark:text-zinc-400`">
           Last Updated: January 2025
         </p>
 
-        <div :class="`space-y-6 text-sm ${
-          theme.value === 'dark' ? 'text-zinc-300' : 'text-stone-700'
-        }`">
+        <div :class="`space-y-6 text-sm text-stone-700 dark:text-zinc-300`">
           <!-- Introduction -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               1. Introduction
             </h2>
             <p class="mb-2">
@@ -58,9 +44,7 @@
 
           <!-- Information We Collect -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               2. Information We Collect
             </h2>
             
@@ -89,9 +73,7 @@
 
           <!-- How We Use Your Information -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               3. How We Use Your Information
             </h2>
             <p class="mb-2">We use your information to:</p>
@@ -110,9 +92,7 @@
 
           <!-- AI and Machine Learning -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               4. AI and Machine Learning
             </h2>
             <p class="mb-2">
@@ -132,9 +112,7 @@
 
           <!-- Data Sharing -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               5. How We Share Your Information
             </h2>
             <p class="mb-2">We may share your information in the following circumstances:</p>
@@ -170,9 +148,7 @@
 
           <!-- Data Security -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               6. Data Security
             </h2>
             <p class="mb-2">
@@ -196,9 +172,7 @@
 
           <!-- Data Retention -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               7. Data Retention
             </h2>
             <p class="mb-2">
@@ -219,9 +193,7 @@
 
           <!-- Your Rights -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               8. Your Privacy Rights
             </h2>
             <p class="mb-2">You have the right to:</p>
@@ -240,9 +212,7 @@
 
           <!-- Children's Privacy -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               9. Children's Privacy
             </h2>
             <p class="mb-2">
@@ -257,9 +227,7 @@
 
           <!-- Cookies -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               10. Cookies and Tracking Technologies
             </h2>
             <p class="mb-2">
@@ -281,9 +249,7 @@
 
           <!-- International Users -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               11. International Data Transfers
             </h2>
             <p>
@@ -294,9 +260,7 @@
 
           <!-- Changes to Policy -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               12. Changes to This Privacy Policy
             </h2>
             <p>
@@ -307,9 +271,7 @@
 
           <!-- Contact -->
           <section>
-            <h2 :class="`text-xl font-semibold mb-3 ${
-              theme.value === 'dark' ? 'text-white' : 'text-black'
-            }`">
+            <h2 :class="`text-xl font-semibold mb-3 text-black dark:text-white`">
               13. Contact Us
             </h2>
             <p class="mb-2">
@@ -325,14 +287,11 @@
         </div>
 
         <!-- Accept Button -->
-        <div class="mt-8 pt-6 border-t" :class="theme.value === 'dark' ? 'border-zinc-800' : 'border-stone-200'">
+        <div class="mt-8 pt-6 border-t border-stone-200 dark:border-zinc-800">
           <button
             @click="close"
-            :class="`w-full px-6 py-3 rounded-xl font-medium transition-all ${
-              theme.value === 'dark'
-                ? 'bg-white text-black hover:bg-zinc-200'
-                : 'bg-black text-white hover:bg-zinc-800'
-            }`"
+            :class="`w-full px-6 py-3 rounded-xl font-medium transition-all bg-black text-white hover:bg-zinc-800
+              dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             I Understand
           </button>
