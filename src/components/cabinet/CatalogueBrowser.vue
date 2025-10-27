@@ -141,7 +141,7 @@
               'disabled:opacity-50', 'disabled:cursor-not-allowed',
               addedItems.has(item.id)
                 ? ('bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300')
-                : ('bg-black text-white hover:bg-stone-900 dark:bg-white text-black dark:hover:bg-zinc-100')
+                : ('bg-black text-white hover:bg-stone-900 dark:bg-white dark:text-black dark:hover:bg-zinc-100')
             ]"
           >
             <template v-if="addingItemId === item.id">
