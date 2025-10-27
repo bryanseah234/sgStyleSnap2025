@@ -16,7 +16,7 @@
           <!-- Toggle button for add item dropdown menu -->
           <button
             @click="showAddMenu = !showAddMenu"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800`"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             <Plus class="w-5 h-5" />
             Add Item
@@ -29,7 +29,7 @@
           <!-- Dropdown Menu with Add Item Options -->
           <div
             v-if="showAddMenu"
-            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 bg-white border-stone-200
+            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl dark:shadow-black/20 border overflow-hidden z-50 bg-white border-stone-200
               dark:bg-zinc-900 dark:border-zinc-800`"
           >
             <!-- Manual Upload Option -->
@@ -165,7 +165,7 @@
       <!-- Loading state -->
       <div v-if="loading" class="flex flex-col items-center py-16">
         <div class="spinner-modern mb-6"></div>
-        <p :class="'text-stone-600 dark:text-zinc-400'">
+        <p :class="'text-stone-600 dark:text-zinc-300'">
           Loading your closet...
         </p>
       </div>
@@ -185,7 +185,7 @@
         <div v-if="!searchTerm && authStore.isAuthenticated && currentUser?.id">
           <button
             @click="$router.push('/closet/add/manual')"
-            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto               dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
+            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             <Plus class="w-5 h-5" />
             Add Item
@@ -219,7 +219,7 @@
           @mouseenter="handleItemHover($event, index)"
           @mouseleave="handleItemLeave($event, index)"
           @mousemove="handleItemMouseMove($event, index)"
-          class="liquid-item-card group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          class="liquid-item-card group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 dark:bg-zinc-700 dark:border-zinc-800 dark:hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
           :style="{ transitionDelay: `${index * 50}ms` }"
         >
           <div class="aspect-square relative overflow-hidden">
@@ -231,9 +231,9 @@
             />
             <div
               v-else
-              class="w-full h-full flex items-center justify-center bg-stone-100"
+              class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-zinc-500"
             >
-              <Shirt class="w-12 h-12 text-stone-500" />
+              <Shirt class="w-12 h-12 text-stone-500 dark:text-white" />
             </div>
             
             <button
@@ -242,8 +242,8 @@
               @mouseup="handleFavoriteRelease($event, item)"
               :class="`liquid-favorite-btn absolute top-2 right-2 p-2 rounded-full ${
                 item.is_favorite
-                  ? 'bg-red-500 text-white'
-                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90'
+                  ? 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600'
+                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'
               }`"
             >
               <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current' : ''}`" />
@@ -251,13 +251,13 @@
           </div>
           
           <div class="p-4">
-            <h3 class="liquid-item-title font-semibold mb-1 text-black">
+            <h3 class="liquid-item-title font-semibold mb-1 text-black dark:text-white">
               {{ item.name }}
             </h3>
-            <p class="liquid-item-category text-sm text-stone-600">
+            <p class="liquid-item-category text-sm text-stone-600 dark:text-stone-100">
               {{ item.brand || 'No brand' }}
             </p>
-            <span class="inline-block px-2 py-1 mt-2 text-xs rounded-full bg-stone-100 text-stone-700">
+            <span class="inline-block px-2 py-1 mt-2 text-xs rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-200 dark:text-zinc-900">
               {{ item.category }}
             </span>
           </div>
