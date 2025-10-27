@@ -61,6 +61,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useTheme } from '@/composables/useTheme'
 import { X } from 'lucide-vue-next'
 
 // Props
@@ -78,7 +79,8 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close', 'save'])
 
-// No theme needed
+// Theme
+const { theme } = useTheme()
 
 // State
 const outfitName = ref('')

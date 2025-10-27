@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import { useTheme } from '@/composables/useTheme'
 import { X } from 'lucide-vue-next'
 
 // Props
@@ -36,4 +37,7 @@ defineProps({
 
 // Emits
 defineEmits(['close'])
+
+// Theme
+const { theme } = useTheme()
 </script>

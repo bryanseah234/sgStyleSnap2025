@@ -96,6 +96,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { friendSuggestionsService } from '@/services/friendSuggestionsService'
 import { Check, X, Shirt } from 'lucide-vue-next'
@@ -111,7 +112,8 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['suggestionProcessed'])
 
-// Popup composable
+// Theme and popup composables
+const { theme } = useTheme()
 const { showSuccess, showError } = usePopup()
 
 // State

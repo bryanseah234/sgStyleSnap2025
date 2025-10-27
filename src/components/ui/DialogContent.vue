@@ -5,5 +5,8 @@
 </template>
 
 <script setup>
-// No props or theme needed
+import { useTheme } from '@/composables/useTheme'
+
+// Theme
+const { theme } = useTheme()
 </script>

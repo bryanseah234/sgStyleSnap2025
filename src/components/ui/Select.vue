@@ -11,6 +11,8 @@
 </template>
 
 <script setup>
+import { useTheme } from '@/composables/useTheme'
+
 // Props
 defineProps({
   modelValue: {
@@ -21,4 +23,7 @@ defineProps({
 
 // Emits
 defineEmits(['update:modelValue'])
+
+// Theme
+const { theme } = useTheme()
 </script>

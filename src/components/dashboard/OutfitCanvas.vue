@@ -124,10 +124,11 @@
  */
 
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useTheme } from '@/composables/useTheme'
 import { Trash2, ArrowUp, ArrowDown, Shirt, Palette } from 'lucide-vue-next'
 
 // Theme composable for styling
-// No theme needed - using Tailwind dark: classes
+const { theme } = useTheme()
 
 /**
  * Component Props
