@@ -108,29 +108,207 @@ export const useAuthStore = defineStore('auth', {
      * Initialize auth state from existing session
      */
     async initializeAuth() {
-      this.isLoading = true
+      console.log('🔄 AuthStore: Initializing auth...')
+      this.loading = true
+      this.error = null
       try {
-        // MOCK USER FOR LOCAL DEV
-        this.user = {
-          id: 'mock-user-123',
-          name: 'Test User',
-          email: 'testuser@example.com',
-          avatar_url: 'https://i.pravatar.cc/150?img=3'
+        // Check if Supabase is configured first
+        if (!authService.isSupabaseConfigured) {
+          console.log('🎭 AuthStore: Supabase not configured, skipping auth initialization')
+          this.clearUser()
+          return
         }
-        this.isAuthenticated = true
 
-        // If you want, skip calling authService entirely
-        // const session = await authService.getSession()
-        // if (session) {
-        //   this.user = session.user
-        //   this.isAuthenticated = true
-        // }
+        // Check URL parameters for special cases
+        const urlParams = new URLSearchParams(window.location.search)
+        const hasAuthCode = urlParams.has('code') || urlParams.has('access_token')
+        const isLogoutRedirect = urlParams.has('logout')
+        const isCallbackRoute = window.location.pathname === '/auth/callback'
+
+        // If this is a logout redirect, clear everything and don't auto-login
+        if (isLogoutRedirect) {
+          console.log('🚪 AuthStore: Logout redirect detected, clearing all sessions')
+          clearActiveSession()
+          this.clearUser()
+          // Clean up URL parameters
+          window.history.replaceState({}, document.title, '/login')
+          return
+        }
+
+        // If this is an OAuth callback route, handle it specially
+        if (isCallbackRoute) {
+          console.log('🔄 AuthStore: =============== OAuth Callback Route Detected ===============')
+          console.log('🔄 AuthStore: Current URL:', window.location.href)
+          console.log('🔄 AuthStore: URL search params:', window.location.search)
+          console.log('🔄 AuthStore: URL hash:', window.location.hash)
+
+          // Wait longer for Supabase to process the OAuth callback
+          console.log('🔄 AuthStore: Waiting 3 seconds for Supabase to process OAuth callback...')
+          await new Promise(resolve => setTimeout(resolve, 3000))
+
+          // Try to get the session directly from Supabase
+          let session = null
+          let user = null
+          let attempts = 0
+          const maxAttempts = 8
+
+          while (!session && attempts < maxAttempts) {
+            try {
+              console.log(`🔄 AuthStore: ========== Session Attempt ${attempts + 1}/${maxAttempts} ==========`)
+
+              // Get session directly from Supabase
+              const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
+
+              console.log(`🔄 AuthStore: Session data:`, currentSession ? {
+                user_id: currentSession.user?.id,
+                user_email: currentSession.user?.email,
+                access_token: currentSession.access_token ? 'present' : 'missing',
+                refresh_token: currentSession.refresh_token ? 'present' : 'missing',
+                expires_at: currentSession.expires_at
+              } : 'null')
+
+              if (sessionError) {
+                console.log(`🔄 AuthStore: Session error on attempt ${attempts + 1}:`, {
+                  message: sessionError.message,
+                  status: sessionError.status,
+                  name: sessionError.name
+                })
+              } else if (currentSession?.user) {
+                session = currentSession
+                user = currentSession.user
+                console.log('✅ AuthStore: Session found!')
+                console.log('✅ AuthStore: User authenticated:', {
+                  id: user.id,
+                  email: user.email,
+                  provider: user.app_metadata?.provider,
+                  created_at: user.created_at
+                })
+                console.log('✅ AuthStore: User metadata:', user.user_metadata)
+                console.log('✅ AuthStore: App metadata:', user.app_metadata)
+                break
+              } else {
+                console.log(`🔄 AuthStore: No session found on attempt ${attempts + 1}`)
+                console.log(`🔄 AuthStore: Session is null or missing user`)
+              }
+            } catch (error) {
+              console.log(`🔄 AuthStore: Attempt ${attempts + 1} failed:`, {
+                message: error.message,
+                name: error.name,
+                stack: error.stack
+              })
+            }
+
+            attempts++
+            if (attempts < maxAttempts) {
+              console.log(`🔄 AuthStore: Waiting 1 second before next attempt...`)
+              await new Promise(resolve => setTimeout(resolve, 1000))
+            }
+          }
+
+            // If still no session, try to refresh the page to complete OAuth
+          if (!user && attempts >= maxAttempts) {
+            console.log('🔄 AuthStore: No session found, trying to refresh page to complete OAuth...')
+            if (typeof window !== 'undefined') {
+              window.location.reload()
+            }
+            return
+          }
+
+          if (user) {
+            console.log('✅ AuthStore: OAuth callback successful, setting user:', user.email)
+            this.setUser(user)
+
+            // Try to fetch/create profile in the background
+            console.log('✅ AuthStore: Attempting to fetch or create user profile...')
+            try {
+              // Import authService and Edge Function sync service
+              const { authService } = await import('@/services/authService')
+              const { edgeFunctionSyncService } = await import('@/services/edgeFunctionSyncService')
+
+              // First, try to get the profile
+              let profile = await authService.getCurrentProfile()
+
+              if (profile) {
+                console.log('✅ AuthStore: Profile fetched successfully:', profile.email)
+                this.profile = profile
+              } else {
+                console.log('🔄 AuthStore: Profile not found, waiting for Edge Function to create it...')
+
+                // Wait for Edge Function to create the profile
+                const syncStatus = await edgeFunctionSyncService.waitForUserSync(user.id, 15000)
+
+                if (syncStatus.success && syncStatus.synced) {
+                  console.log('✅ AuthStore: Profile created by Edge Function:', syncStatus.user.email)
+                  this.profile = syncStatus.user
+                } else {
+                  console.warn('⚠️ AuthStore: Edge Function did not create profile within timeout')
+                  // Fallback: try to create profile manually
+                  profile = await authService.createUserProfile(user)
+                  if (profile) {
+                    this.profile = profile
+                  }
+                }
+              }
+            } catch (profileError) {
+              console.error('❌ AuthStore: Error fetching/creating profile:', profileError)
+              // Don't fail authentication if profile fetch fails
+              console.log('⚠️ AuthStore: Profile will be created on next page load')
+            }
+
+            console.log('✅ AuthStore: OAuth callback complete, user authenticated')
+
+            return
+          } else {
+            console.log('❌ AuthStore: OAuth callback failed after all attempts, no session found')
+            this.clearUser()
+            return
+          }
+        }
+
+        if (hasAuthCode && !isCallbackRoute) {
+          console.log('🔄 AuthStore: OAuth callback detected on non-callback route, waiting for session...')
+          // Wait a bit longer for OAuth session to be established
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+
+        // Use the existing AuthService to get current user
+        // This method already handles "Auth session missing" gracefully
+        const user = await authService.getCurrentUser()
+        console.log('📦 AuthStore: User retrieved:', user ? 'Found' : 'Not found')
+
+        if (user) {
+          console.log('✅ AuthStore: Setting user from session:', user.email)
+          this.setUser(user)
+
+          // Fetch/create profile in background (don't block auth initialization)
+          console.log('✅ AuthStore: Fetching user profile in background...')
+          authService.getCurrentProfile().then(profile => {
+            if (profile) {
+              console.log('✅ AuthStore: Profile loaded successfully:', profile.email)
+              this.profile = profile
+            } else {
+              console.warn('⚠️ AuthStore: Profile fetch returned null, will retry on next page')
+            }
+          }).catch(profileError => {
+            console.warn('⚠️ AuthStore: Could not fetch user profile:', profileError.message)
+            console.warn('⚠️ AuthStore: Profile will be created on next page load or interaction')
+          })
+        } else {
+          console.log('ℹ️ AuthStore: No valid session found, user not authenticated')
+          this.clearUser()
+        }
       } catch (error) {
-        console.error('Failed to initialize auth:', error)
-        this.user = null
-        this.isAuthenticated = false
+        console.error('❌ AuthStore: Failed to initialize auth:', error)
+
+        // Handle all auth-related errors gracefully
+        console.log('ℹ️ AuthStore: Auth initialization failed, user not authenticated')
+        this.clearUser()
       } finally {
-        this.isLoading = false
+        this.loading = false
+        console.log(
+          '✅ AuthStore: Auth initialization complete. Authenticated:',
+          this.isAuthenticated
+        )
       }
     },
 
