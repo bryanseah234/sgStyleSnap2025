@@ -53,6 +53,41 @@ if (isSupabaseConfigured) {
 export { supabase }
 
 /**
+ * Clears all Supabase session data from localStorage
+ * 
+ * This is useful when dealing with invalid or corrupted session data,
+ * such as expired refresh tokens that cause authentication errors.
+ * 
+ * @example
+ * clearSupabaseSession() // Clear all session data and redirect to login
+ */
+export function clearSupabaseSession() {
+  console.log('🧹 Clearing invalid Supabase session data...')
+  
+  // Clear all Supabase-related items from localStorage
+  const keysToRemove = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key && key.startsWith('sb-')) {
+      keysToRemove.push(key)
+    }
+  }
+  
+  keysToRemove.forEach(key => {
+    console.log(`🧹 Removing localStorage key: ${key}`)
+    localStorage.removeItem(key)
+  })
+  
+  console.log('✅ Session data cleared')
+  
+  // Redirect to login page if not already there
+  if (window.location.pathname !== '/login') {
+    console.log('🔄 Redirecting to login page...')
+    window.location.href = '/login'
+  }
+}
+
+/**
  * Handles Supabase errors with user-friendly messages
  * 
  * Converts Supabase error codes and messages into user-friendly error messages
@@ -72,6 +107,14 @@ export { supabase }
  */
 export function handleSupabaseError(error, operation = 'operation') {
   console.error(`Supabase ${operation} error:`, error)
+  
+  // Handle refresh token errors
+  if (error.message?.toLowerCase().includes('refresh token') || 
+      error.message?.toLowerCase().includes('refresh_token')) {
+    console.error('❌ Invalid or expired refresh token detected')
+    clearSupabaseSession()
+    return // clearSupabaseSession will redirect, so we don't throw
+  }
   
   // Handle specific Supabase error codes
   if (error.code === 'PGRST116') {

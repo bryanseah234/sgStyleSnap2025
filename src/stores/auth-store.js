@@ -300,6 +300,19 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('❌ AuthStore: Failed to initialize auth:', error)
         
+        const errorMessage = error?.message || String(error || '')
+        
+        // Check if it's a refresh token error
+        if (errorMessage.toLowerCase().includes('refresh token') ||
+            errorMessage.toLowerCase().includes('refresh_token')) {
+          console.error('❌ AuthStore: Refresh token error detected, clearing invalid session...')
+          
+          // Clear the invalid session and redirect to login
+          const { clearSupabaseSession } = await import('@/lib/supabase')
+          clearSupabaseSession()
+          return // Exit early as we're redirecting
+        }
+        
         // Handle all auth-related errors gracefully
         console.log('ℹ️ AuthStore: Auth initialization failed, user not authenticated')
         this.clearUser()

@@ -349,6 +349,24 @@ router.afterEach((to, from) => {
   themeStore.refreshTheme()
 })
 
+// Router error handler for refresh token and other errors
+router.onError((error) => {
+  console.error('❌ Router error:', error)
+  
+  const errorMessage = error?.message || String(error || '')
+  
+  // Check if it's a refresh token error
+  if (errorMessage.toLowerCase().includes('refresh token') ||
+      errorMessage.toLowerCase().includes('refresh_token')) {
+    console.error('❌ Refresh token error in router, clearing session...')
+    
+    // Clear the invalid session and redirect to login
+    import('./lib/supabase').then(({ clearSupabaseSession }) => {
+      clearSupabaseSession()
+    })
+  }
+})
+
 /**
  * Initialize theme system
  * 
@@ -506,8 +524,23 @@ window.onerror = function(message, source, lineno, colno, error) {
 // and refreshTheme() is called on route changes (router.afterEach)
 // No need for additional setTimeout calls
 
-// Global error handler for browser extension errors
+// Global error handler for browser extension errors and auth errors
 window.addEventListener('unhandledrejection', (event) => {
+  const errorMessage = event.reason?.message || String(event.reason || '')
+  
+  // Check if it's a refresh token error
+  if (errorMessage.toLowerCase().includes('refresh token') ||
+      errorMessage.toLowerCase().includes('refresh_token')) {
+    console.error('❌ Refresh token error detected:', errorMessage)
+    event.preventDefault()
+    
+    // Clear the invalid session and redirect to login
+    import('./lib/supabase').then(({ clearSupabaseSession }) => {
+      clearSupabaseSession()
+    })
+    return
+  }
+  
   // Check if it's a browser extension error
   if (event.reason && event.reason.message && 
       (event.reason.message.includes('message channel closed') ||

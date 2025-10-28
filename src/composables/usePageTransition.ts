@@ -51,6 +51,7 @@ const transitionState = ref<TransitionState>('idle')
 const transitionDuration = ref(900) // Default duration
 const skipNextTransition = ref(false)
 const transitionInProgress = ref<Promise<void> | null>(null)
+const prefersReducedMotion = ref(false) // Reduced motion preference
 
 // Route-specific configuration
 const routeTransitionConfig = new Map<string, Partial<TransitionConfig>>()
@@ -61,9 +62,6 @@ const routeTransitionConfig = new Map<string, Partial<TransitionConfig>>()
 
 export function usePageTransition(): PageTransitionReturn {
   const router = useRouter()
-  
-  // Check for reduced motion preference
-  const prefersReducedMotion = ref(false)
   
   /**
    * Check user's motion preference
@@ -232,6 +230,16 @@ export function setupPageTransition(
   // Set default options
   if (options.duration) {
     transitionDuration.value = options.duration
+  }
+  
+  // Initialize motion preference check
+  if (typeof window !== 'undefined') {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    prefersReducedMotion.value = mediaQuery.matches
+    
+    mediaQuery.addEventListener('change', (e) => {
+      prefersReducedMotion.value = e.matches
+    })
   }
   
   // Track if we're on initial load

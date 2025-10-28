@@ -18,7 +18,7 @@
   <router-view v-else />
   
   <!-- Custom Blob Cursor (Desktop Only) -->
-  <BlobCursor />
+  <!-- <BlobCursor /> -->
   
   <!-- Page Transition Curtain Effect -->
   <PageTransition :bar-count="10" :duration="900" />
@@ -54,7 +54,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Layout from './components/Layout.vue'
 import FPSCounter from './components/FPSCounter.vue'
-import BlobCursor from './components/BlobCursor.vue'
+// import BlobCursor from './components/BlobCursor.vue'
 import PageTransition from './components/PageTransition.vue'
 import DebugOverlay from './components/DebugOverlay.vue'
 import { useDebugMode } from '@/composables/useDebugMode'
