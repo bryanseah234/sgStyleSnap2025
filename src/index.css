@@ -837,8 +837,8 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   transition: all var(--duration-normal) var(--ease-liquid);
   transform: translateZ(0);
   /* PERFORMANCE: Removed backdrop-filter */
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   contain: layout style paint;
 }
 
@@ -1062,8 +1062,8 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   transition: all var(--duration-fast) var(--ease-liquid);
   transform: translateZ(0);
   /* PERFORMANCE: Removed backdrop-filter */
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   contain: layout style paint;
 }
 
