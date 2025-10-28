@@ -94,22 +94,30 @@
     <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 
+            ref="carouselHeadingRef" 
+            class="text-3xl md:text-4xl font-bold text-foreground mb-4 scroll-animate"
+          >
             Meet Your Digital Self
           </h2>
-          <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p 
+            ref="carouselDescriptionRef" 
+            class="text-lg text-muted-foreground max-w-2xl mx-auto scroll-animate"
+          >
             Your personal style journey starts here.
           </p>
         </div>
         
         <!-- Avatar 3D Carousel -->
-        <Avatar3DCarousel
-          :avatar-urls="avatarUrls"
-          :show-info="true"
-          @avatar-change="handleAvatarChange"
-          @avatar-loaded="handleAvatarLoaded"
-          @loading-error="handleLoadingError"
-        />
+        <div ref="carouselSectionRef" class="scroll-animate">
+          <Avatar3DCarousel
+            :avatar-urls="avatarUrls"
+            :show-info="true"
+            @avatar-change="handleAvatarChange"
+            @avatar-loaded="handleAvatarLoaded"
+            @loading-error="handleLoadingError"
+          />
+        </div>
         
       </div>
     </section>
@@ -266,7 +274,7 @@
     </section>
     
     <!-- CTA Section -->
-    <section class="py-16 md:py-24">
+    <section ref="ctaSectionRef" class="py-16 md:py-24 scroll-animate">
       <div class="max-w-4xl mx-auto text-center px-6">
         <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-6">
           Ready to Transform Your Style?
@@ -314,9 +322,10 @@
  * @version 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, provide } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useSmoothScroll } from '@/composables/useSmoothScroll'
 import { 
   Shirt, 
   Palette, 
@@ -333,10 +342,22 @@ import Avatar3DCarousel from '@/components/Avatar3DCarousel.vue'
 const router = useRouter()
 const { theme, toggleTheme } = useTheme()
 
+// Initialize smooth scroll with external RAF control (Three.js will handle the RAF loop)
+const { scrollY, lenis, scrollTo } = useSmoothScroll({ autoRaf: false })
+
+// Provide Lenis instance to child components (for Three.js integration)
+provide('lenis', lenis)
+
 // Reactive references
 const featuresSection = ref(null)
 const isHeroHovered = ref(false)
 const hoveredCard = ref(null)
+
+// Scroll animation refs
+const carouselSectionRef = ref<HTMLElement | null>(null)
+const carouselHeadingRef = ref<HTMLElement | null>(null)
+const carouselDescriptionRef = ref<HTMLElement | null>(null)
+const ctaSectionRef = ref<HTMLElement | null>(null)
 
 // Avatar carousel data
 const avatarUrls = ref([
@@ -392,14 +413,13 @@ const navigateToSignIn = () => {
 /**
  * Scrolls to the features section smoothly
  * 
- * Provides smooth scrolling to the features section when
- * the "Learn More" button is clicked.
+ * Uses Lenis smooth scroll if available, falls back to native scroll
  */
 const scrollToFeatures = () => {
   if (featuresSection.value) {
-    featuresSection.value.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start'
+    scrollTo(featuresSection.value, {
+      offset: 0,
+      duration: 1.2
     })
   }
 }
@@ -448,6 +468,79 @@ const handleAvatarLoaded = (index) => {
 const handleLoadingError = ({ index, error }) => {
   console.error(`❌ Failed to load avatar ${index + 1}:`, error)
 }
+
+/**
+ * Setup scroll-triggered animations using Intersection Observer
+ * 
+ * Animates elements as they enter the viewport:
+ * - Avatar carousel section (fade in + translateY)
+ * - Heading (100ms delay)
+ * - CTA button (200ms delay)
+ */
+const setupScrollAnimations = () => {
+  // Check if user prefers reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  
+  if (prefersReducedMotion) {
+    console.log('🎯 Landing: Reduced motion detected, skipping scroll animations')
+    return
+  }
+  
+  // Intersection Observer options
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+  }
+  
+  // Callback for intersection
+  const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const target = entry.target as HTMLElement
+        const delay = target.dataset.animationDelay || '0'
+        
+        // Add animation class with delay
+        setTimeout(() => {
+          target.classList.add('animate-in')
+        }, parseInt(delay))
+        
+        // Unobserve after animation
+        observer.unobserve(target)
+      }
+    })
+  }
+  
+  // Create observer
+  const observer = new IntersectionObserver(handleIntersection, observerOptions)
+  
+  // Observe carousel section elements
+  if (carouselSectionRef.value) {
+    carouselSectionRef.value.dataset.animationDelay = '0'
+    observer.observe(carouselSectionRef.value)
+  }
+  
+  if (carouselHeadingRef.value) {
+    carouselHeadingRef.value.dataset.animationDelay = '100'
+    observer.observe(carouselHeadingRef.value)
+  }
+  
+  if (carouselDescriptionRef.value) {
+    carouselDescriptionRef.value.dataset.animationDelay = '200'
+    observer.observe(carouselDescriptionRef.value)
+  }
+  
+  if (ctaSectionRef.value) {
+    ctaSectionRef.value.dataset.animationDelay = '0'
+    observer.observe(ctaSectionRef.value)
+  }
+  
+  console.log('✅ Landing: Scroll animations initialized')
+}
+
+// Initialize scroll animations on mount
+onMounted(() => {
+  setupScrollAnimations()
+})
 </script>
 
 <style scoped>
@@ -777,6 +870,32 @@ button {
 }
 
 /* ============================================
+   Scroll-Triggered Animations (Intersection Observer)
+   ============================================ */
+
+/* Initial state for scroll-triggered elements */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity, transform;
+}
+
+/* Active state when element enters viewport */
+.scroll-animate.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+  will-change: auto;
+}
+
+/* Remove will-change after animation completes */
+.scroll-animate.animate-in {
+  transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ============================================
    Accessibility
    ============================================ */
 
@@ -788,6 +907,13 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  
+  /* Disable scroll animations for reduced motion */
+  .scroll-animate {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 </style>

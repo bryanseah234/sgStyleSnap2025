@@ -57,13 +57,16 @@
  * and carousel animations. Optimized for mobile performance.
  */
 
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, inject } from 'vue'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 // ============================================
 // PROPS & EMITS
 // ============================================
+
+// Inject Lenis instance from parent (if available)
+const lenisInstance = inject<any>('lenis', null)
 
 const props = defineProps({
   avatarUrls: {
@@ -142,8 +145,8 @@ const initThreeJS = () => {
   // Camera
   const aspect = canvasRef.value.clientWidth / canvasRef.value.clientHeight
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000)
-  camera.position.set(0, 0.8, 3)
-  camera.lookAt(0, 0.5, 0)
+  camera.position.set(0, 0.3, 3)
+  camera.lookAt(0, 0.1, 0)
 
   // Renderer
   renderer = new THREE.WebGLRenderer({
@@ -212,6 +215,7 @@ const loadAvatars = async () => {
       loadSingleAvatar(url, index)
     )
 
+    // Wait for ALL avatars to load before showing anything
     await Promise.all(loadPromises)
     
     // Position avatars in a row
@@ -220,9 +224,14 @@ const loadAvatars = async () => {
     // Update visibility states
     updateAvatarStates()
     
+    // Start animation loop BEFORE hiding loading
+    // This ensures the first frame is ready
+    renderer.render(scene, camera)
+    
+    // Hide loading spinner only after everything is ready
     isLoading.value = false
     
-    // Start animation loop
+    // Start continuous animation loop
     animate()
   } catch (error) {
     console.error('Failed to load avatars:', error)
@@ -328,9 +337,21 @@ const updateAvatarStates = () => {
 
 /**
  * Main animation loop
+ * Integrated with Lenis smooth scroll RAF for optimal performance
  */
-const animate = () => {
+const animate = (time) => {
+  // Don't render if still loading
+  if (isLoading.value) {
+    return
+  }
+  
   animationFrameId = requestAnimationFrame(animate)
+
+  // Update Lenis smooth scroll (if available)
+  // This ensures Lenis and Three.js share the same animation loop
+  if (lenisInstance && time !== undefined) {
+    lenisInstance.raf(time)
+  }
 
   // Smooth camera movement (lerp)
   const lerpFactor = 0.1
@@ -762,7 +783,7 @@ watch(currentIndex, () => {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: hsl(var(--background) / 0.95);
+  background: hsl(var(--background));
   backdrop-filter: blur(4px);
   z-index: 10;
 }
