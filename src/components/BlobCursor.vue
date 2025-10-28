@@ -277,8 +277,10 @@ onMounted(() => {
     return
   }
   
-  // Check for reduced motion preference
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // Check for reduced motion preference (safe window access)
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false
   if (prefersReducedMotion) {
     console.log('🎯 BlobCursor: Reduced motion detected, cursor disabled')
     return
