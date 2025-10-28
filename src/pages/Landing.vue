@@ -18,6 +18,9 @@
 -->
 <template>
   <div class="min-h-screen bg-background max-w-full overflow-x-hidden overflow-y-auto">
+    <!-- Blob Cursor (Landing page only) -->
+    <BlobCursor />
+    
     <!-- Hero Section -->
     <section class="relative overflow-hidden min-h-screen flex flex-col">
       <!-- Background gradient -->
@@ -55,11 +58,11 @@
           <!-- Main Headline with Kinetic Typography -->
           <h1 
             ref="mainHeadingRef"
-            class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight kinetic-heading"
+            class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight kinetic-heading jumpy-heading"
             :class="{ 'is-animating': isHeadingAnimating }"
           >
             Your Digital
-            <span class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent gradient-shift">
+            <span class="wardrobe-sparkle">
               Wardrobe
             </span>
             Awaits
@@ -75,17 +78,17 @@
           <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center hero-fade-in-delay-2">
             <button
               @click="navigateToSignIn"
-              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-foreground bg-background rounded-xl font-semibold text-base sm:text-lg hover:bg-muted transition-all duration-300 hover:scale-105 shadow-lg relative overflow-hidden"
+              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 relative overflow-hidden"
             >
               <span class="relative z-10">Get Started</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </button>
             <button
               @click="scrollToFeatures"
-              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 relative overflow-hidden"
+              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-foreground bg-background rounded-xl font-semibold text-base sm:text-lg hover:bg-muted transition-all duration-300 hover:scale-105 shadow-lg relative overflow-hidden"
             >
               <span class="relative z-10">Learn More</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </button>
           </div>
         </div>
@@ -93,9 +96,9 @@
     </section>
     
     <!-- Avatar Carousel Section with Lazy Loading -->
-    <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
+    <section class="py-12 md:py-16 bg-gradient-to-b from-background to-muted/30">
         <div class="max-w-7xl mx-auto px-6">
-          <div class="text-center mb-12">
+          <div class="text-center mb-8">
             <h2 
               ref="carouselHeadingRef" 
               class="text-3xl md:text-4xl font-bold text-foreground mb-4 scroll-animate"
@@ -113,7 +116,7 @@
           <!-- Lazy-loaded Avatar Carousel -->
           <div 
             ref="carouselSectionRef" 
-            class="scroll-animate min-h-[400px] flex items-center justify-center"
+            class="scroll-animate flex items-center justify-center"
             @click="handleCarouselClick"
           >
             <!-- Loading Placeholder -->
@@ -351,10 +354,11 @@
  * @version 1.0.0
  */
 
-import { ref, onMounted, provide } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
-import { useSmoothScroll } from '@/composables/useSmoothScroll'
+// COMMENTED OUT: Smooth scroll disabled to allow normal scrolling
+// import { useSmoothScroll } from '@/composables/useSmoothScroll'
 import { useTextAnimation } from '@/composables/useTextAnimation'
 import { useKonamiCode } from '@/composables/useKonamiCode'
 import { useTripleClick } from '@/composables/useTripleClick'
@@ -377,16 +381,25 @@ const Avatar3DCarousel = defineAsyncComponent(() =>
   import('@/components/Avatar3DCarousel.vue')
 )
 import ScrollHint from '@/components/ScrollHint.vue'
+import BlobCursor from '@/components/BlobCursor.vue'
 
 // Composables
 const router = useRouter()
 const { theme, toggleTheme } = useTheme()
 
+// COMMENTED OUT: Smooth scroll disabled to allow normal scrolling
 // Initialize smooth scroll with external RAF control (Three.js will handle the RAF loop)
-const { scrollY, lenis, scrollTo } = useSmoothScroll({ autoRaf: false })
+// const { scrollY, lenis, scrollTo } = useSmoothScroll({ autoRaf: false })
 
 // Provide Lenis instance to child components (for Three.js integration)
-provide('lenis', lenis)
+// provide('lenis', lenis)
+
+// Fallback scrollTo function for native scroll
+const scrollTo = (target, options = {}) => {
+  if (target instanceof HTMLElement) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
 
 // Reactive references
 const featuresSection = ref(null)
@@ -426,16 +439,16 @@ const allAvatarUrls = [
 ]
 
 /**
- * Randomly select 2 avatars from the full list
- * This improves loading performance by reducing 3D model count from 11 to 2
+ * Randomly select 1 avatar from the full list
+ * This improves loading performance by showing a single avatar
  */
-const getRandomAvatars = (count = 2) => {
-  const shuffled = [...allAvatarUrls].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
+const getRandomAvatar = () => {
+  const randomIndex = Math.floor(Math.random() * allAvatarUrls.length)
+  return [allAvatarUrls[randomIndex]]
 }
 
-// Only load 2 random avatars for better performance
-const avatarUrls = ref(getRandomAvatars(2))
+// Only load 1 random avatar for better performance
+const avatarUrls = ref(getRandomAvatar())
 
 const currentAvatarIndex = ref(0)
 const loadedAvatarsCount = ref(0)
@@ -810,6 +823,15 @@ onMounted(async () => {
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  cursor: pointer;
+  padding: 0 2px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+/* Character hover state */
+.kinetic-heading .char-animate:hover {
+  background-color: hsl(var(--primary) / 0.1);
 }
 
 /* CSS containment for layout optimization */
@@ -839,6 +861,137 @@ onMounted(async () => {
   }
   50% {
     background-position: 100% 50%;
+  }
+}
+
+/* Jumpy heading animation */
+.jumpy-heading {
+  animation: jumpyText 3s ease-in-out infinite;
+}
+
+@keyframes jumpyText {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  10% {
+    transform: translateY(-8px);
+  }
+  20% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-5px);
+  }
+  40% {
+    transform: translateY(0);
+  }
+}
+
+/* Wardrobe sparkle effect */
+.wardrobe-sparkle {
+  position: relative;
+  display: inline-block;
+  color: #9ca3af; /* Gray color */
+  text-shadow: 
+    0 0 10px rgba(156, 163, 175, 0.5),
+    0 0 20px rgba(156, 163, 175, 0.3),
+    0 0 30px rgba(156, 163, 175, 0.2);
+  animation: sparkleGlow 2s ease-in-out infinite;
+}
+
+.wardrobe-sparkle::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  border-radius: 8px;
+  opacity: 0.6;
+  animation: sparkleBorder 3s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.wardrobe-sparkle::after {
+  content: '✨';
+  position: absolute;
+  font-size: 0.4em;
+  opacity: 0;
+  animation: sparkleParticle 2s ease-in-out infinite;
+}
+
+@keyframes sparkleGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(156, 163, 175, 0.5),
+      0 0 20px rgba(156, 163, 175, 0.3),
+      0 0 30px rgba(156, 163, 175, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 20px rgba(156, 163, 175, 0.8),
+      0 0 30px rgba(156, 163, 175, 0.5),
+      0 0 40px rgba(156, 163, 175, 0.3),
+      0 0 50px rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes sparkleBorder {
+  0% {
+    background-position: 0% 0%;
+    opacity: 0.3;
+  }
+  50% {
+    background-position: 100% 100%;
+    opacity: 0.8;
+  }
+  100% {
+    background-position: 200% 200%;
+    opacity: 0.3;
+  }
+}
+
+@keyframes sparkleParticle {
+  0% {
+    top: 50%;
+    left: 0%;
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
+  }
+  40% {
+    top: 0%;
+    left: 100%;
+    opacity: 0;
+    transform: scale(0) rotate(360deg);
+  }
+  60% {
+    top: 100%;
+    left: 100%;
+    opacity: 1;
+    transform: scale(1) rotate(540deg);
+  }
+  80% {
+    top: 100%;
+    left: 0%;
+    opacity: 0;
+    transform: scale(0) rotate(720deg);
+  }
+  100% {
+    top: 50%;
+    left: 0%;
+    opacity: 0;
   }
 }
 
@@ -1271,6 +1424,28 @@ button {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+    cursor: default !important;
+    padding: 0 !important;
+  }
+  
+  .kinetic-heading .char-animate:hover {
+    background-color: transparent !important;
+  }
+  
+  /* Disable jumpy heading animation */
+  .jumpy-heading {
+    animation: none !important;
+  }
+  
+  /* Disable sparkle effects */
+  .wardrobe-sparkle {
+    animation: none !important;
+    text-shadow: none !important;
+  }
+  
+  .wardrobe-sparkle::before,
+  .wardrobe-sparkle::after {
+    display: none !important;
   }
   
   /* Disable easter egg animations */

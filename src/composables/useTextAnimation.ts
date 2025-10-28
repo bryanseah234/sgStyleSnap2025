@@ -233,48 +233,72 @@ export function useTextAnimation(
     setTimeout(() => {
       isAnimating.value = false
       hasPlayed.value = true
+      
+      // Setup individual character hover listeners after entry animation
+      setupCharacterHoverListeners()
+      
       console.log('✅ useTextAnimation: Entry animation complete')
     }, totalDuration)
   }
   
   /**
-   * Handle hover interaction
-   * Characters jump randomly on Y-axis with spring easing
+   * Handle individual character hover interaction
+   * Each character jumps independently when hovered
    */
-  const handleHover = () => {
+  const handleCharacterHover = (char: HTMLSpanElement) => {
     if (prefersReducedMotion || isTouchDevice || !enableHover || isAnimating.value) {
       return
     }
     
-    // Clear existing hover timeouts
-    hoverTimeouts.forEach(id => clearTimeout(id))
-    hoverTimeouts.length = 0
+    const randomHeight = -15 - Math.random() * 15 // -15px to -30px jump height
     
-    // Animate each character with random delays and heights
+    // Add will-change for performance
+    char.style.willChange = 'transform'
+    
+    // Jump up with spring easing
+    char.style.transition = `transform ${timing.hoverDuration}s cubic-bezier(0.34, 1.56, 0.64, 1)`
+    char.style.transform = `translateY(${randomHeight}px) rotateX(0deg) scale(1.1)`
+    
+    // Return to normal position
+    setTimeout(() => {
+      char.style.transform = 'translateY(0) rotateX(0deg) scale(1)'
+      
+      // Remove will-change after animation
+      setTimeout(() => {
+        char.style.willChange = 'auto'
+      }, timing.hoverDuration * 1000)
+    }, timing.hoverDuration * 400)
+  }
+  
+  /**
+   * Setup hover listeners for each character
+   */
+  const setupCharacterHoverListeners = () => {
+    if (prefersReducedMotion || isTouchDevice || !enableHover) {
+      return
+    }
+    
     characters.forEach((char) => {
-      const randomDelay = Math.random() * 200 // 0-200ms random delay
-      const randomHeight = -10 - Math.random() * 20 // -10px to -30px jump height
+      // Add mouseenter event to each character
+      const handleMouseEnter = () => handleCharacterHover(char)
       
-      const timeoutId = window.setTimeout(() => {
-        // Add will-change for performance
-        char.style.willChange = 'transform'
-        
-        // Jump up with spring easing
-        char.style.transition = `transform ${timing.hoverDuration}s cubic-bezier(0.34, 1.56, 0.64, 1)`
-        char.style.transform = `translateY(${randomHeight}px) rotateX(0deg)`
-        
-        // Return to normal position
-        setTimeout(() => {
-          char.style.transform = 'translateY(0) rotateX(0deg)'
-          
-          // Remove will-change after animation
-          setTimeout(() => {
-            char.style.willChange = 'auto'
-          }, timing.hoverDuration * 1000)
-        }, timing.hoverDuration * 500)
-      }, randomDelay)
+      char.addEventListener('mouseenter', handleMouseEnter)
       
-      hoverTimeouts.push(timeoutId)
+      // Store event listener for cleanup
+      ;(char as any)._hoverListener = handleMouseEnter
+    })
+  }
+  
+  /**
+   * Remove hover listeners from all characters
+   */
+  const removeCharacterHoverListeners = () => {
+    characters.forEach((char) => {
+      const listener = (char as any)._hoverListener
+      if (listener) {
+        char.removeEventListener('mouseenter', listener)
+        delete (char as any)._hoverListener
+      }
     })
   }
   
@@ -323,10 +347,8 @@ export function useTextAnimation(
       observer = null
     }
     
-    // Remove hover listener
-    if (elementRef.value) {
-      elementRef.value.removeEventListener('mouseenter', handleHover)
-    }
+    // Remove individual character hover listeners
+    removeCharacterHoverListeners()
     
     // Restore original text
     restoreText()
@@ -350,10 +372,8 @@ export function useTextAnimation(
     // Setup Intersection Observer
     setupObserver()
     
-    // Add hover listener (desktop only)
-    if (enableHover && !isTouchDevice) {
-      elementRef.value.addEventListener('mouseenter', handleHover)
-    }
+    // Note: Individual character hover listeners are set up after entry animation completes
+    // This is done in the triggerAnimation() function
     
     // Add ARIA label for accessibility
     elementRef.value.setAttribute('aria-label', elementRef.value.textContent || '')

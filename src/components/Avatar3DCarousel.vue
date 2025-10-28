@@ -84,7 +84,8 @@ const loadThreeJS = async () => {
 // PROPS & EMITS
 // ============================================
 
-const lenisInstance = inject('lenis', null)
+// COMMENTED OUT: Smooth scroll disabled
+// const lenisInstance = inject('lenis', null)
 
 const props = defineProps({
   avatarUrls: {
@@ -180,8 +181,9 @@ let hasMovedSignificantly = false
 
 // Auto-rotation
 const ROTATION_SPEED = 0.005
-const ROTATIONS_PER_AVATAR = 3
+const ROTATIONS_BEFORE_REVERSE = 3
 let rotationCount = 0
+let rotationDirection = 1 // 1 for forward, -1 for reverse
 
 // Momentum physics
 let dragStartTime = 0
@@ -259,11 +261,11 @@ const loadSingleAvatar = async (url, index) => {
       (gltf) => {
         const avatar = gltf.scene
         
-        // Scale avatar
+        // Scale avatar (20% smaller than before)
         const box = new THREE.Box3().setFromObject(avatar)
         const size = box.getSize(new THREE.Vector3())
         const maxDim = Math.max(size.x, size.y, size.z)
-        const scale = 2.2 / maxDim
+        const scale = 1.76 / maxDim // Reduced from 2.2 to 1.76 (80% of original)
         avatar.scale.setScalar(scale)
 
         // Center avatar
@@ -508,10 +510,11 @@ const animate = (time) => {
   
   animationFrameId = requestAnimationFrame(animate)
 
+  // COMMENTED OUT: Smooth scroll disabled
   // Update Lenis
-  if (lenisInstance && time !== undefined) {
-    lenisInstance.raf(time)
-  }
+  // if (lenisInstance && time !== undefined) {
+  //   lenisInstance.raf(time)
+  // }
 
   // Parallax
   if (PARALLAX_CONFIG.enabled && !isTouchDevice() && !isDraggingActive) {
@@ -544,28 +547,26 @@ const animate = (time) => {
     needsRender = true
   }
 
-  // Auto-rotate
+  // Auto-rotate with direction reversal every 3 rounds
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !isDraggingActive && !momentumAnimationId) {
     const activeAvatar = avatars[currentIndex.value]
     if (activeAvatar && activeAvatar.userData.model) {
       const previousRotation = activeAvatar.userData.model.rotation.y
-      activeAvatar.userData.model.rotation.y += ROTATION_SPEED
+      activeAvatar.userData.model.rotation.y += ROTATION_SPEED * rotationDirection
       needsRender = true
       
-      if (Math.floor(previousRotation / (Math.PI * 2)) < Math.floor(activeAvatar.userData.model.rotation.y / (Math.PI * 2))) {
+      // Count full rotations (in either direction)
+      const currentFullRotations = Math.floor(Math.abs(activeAvatar.userData.model.rotation.y) / (Math.PI * 2))
+      const previousFullRotations = Math.floor(Math.abs(previousRotation) / (Math.PI * 2))
+      
+      if (currentFullRotations > previousFullRotations) {
         rotationCount++
+        console.log(`🔄 Rotation count: ${rotationCount} / ${ROTATIONS_BEFORE_REVERSE}`)
         
-        if (rotationCount >= ROTATIONS_PER_AVATAR) {
+        if (rotationCount >= ROTATIONS_BEFORE_REVERSE) {
           rotationCount = 0
-          
-          if (currentIndex.value < props.avatarUrls.length - 1) {
-            currentIndex.value++
-          } else {
-            currentIndex.value = 0
-          }
-          
-          jumpToAvatar(currentIndex.value)
-          emit('avatar-change', currentIndex.value)
+          rotationDirection *= -1 // Reverse direction
+          console.log(`↔️ Reversing rotation direction: ${rotationDirection === 1 ? 'forward' : 'reverse'}`)
         }
       }
     }
@@ -1214,16 +1215,16 @@ watch(currentIndex, () => {
 .avatar-carousel-container {
   position: relative;
   width: 100%;
-  height: 100vh;
-  min-height: 500px;
+  height: 400px;
+  min-height: 400px;
   overflow: hidden;
   border-radius: 1rem;
 }
 
 @media (min-width: 768px) {
   .avatar-carousel-container {
-    height: 100vh;
-    min-height: 700px;
+    height: 500px;
+    min-height: 500px;
   }
 }
 

@@ -83,14 +83,14 @@ const isMouseInViewport = ref(true)
 // CONFIGURATION
 // ============================================
 
-// Lerp factor (lower = more lag, smoother) - Increased for better responsiveness
-const LERP_FACTOR = 0.28
+// Lerp factor (lower = more lag, smoother) - Increased for better responsiveness (30% more responsive)
+const LERP_FACTOR = 0.40
 
 // Blob morph animation speed
 const MORPH_SPEED = 0.02
 
 // Idle timeout for performance optimization
-const IDLE_TIMEOUT = 150 // ms
+const IDLE_TIMEOUT = 100 // ms (reduced for better responsiveness)
 
 // ============================================
 // COMPUTED STYLES
@@ -145,9 +145,9 @@ const animate = () => {
   const deltaX = mouseX.value - prevMouseX
   const deltaY = mouseY.value - prevMouseY
   
-  // Smooth velocity with lerp - Increased for better responsiveness
-  dragVelocityX.value = lerp(dragVelocityX.value, deltaX, 0.35)
-  dragVelocityY.value = lerp(dragVelocityY.value, deltaY, 0.35)
+  // Smooth velocity with lerp - Increased for better responsiveness (30% more responsive)
+  dragVelocityX.value = lerp(dragVelocityX.value, deltaX, 0.50)
+  dragVelocityY.value = lerp(dragVelocityY.value, deltaY, 0.50)
   
   prevMouseX = mouseX.value
   prevMouseY = mouseY.value
@@ -339,13 +339,13 @@ onUnmounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 36px;
-  height: 36px;
+  width: 25px; /* 30% smaller: 36 * 0.7 = 25.2 */
+  height: 25px;
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: difference;
-  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: width 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .blob-inner {
@@ -362,10 +362,10 @@ onUnmounted(() => {
    CURSOR STATES
    ============================================ */
 
-/* Default State - Small circular blob (10% smaller) */
+/* Default State - Small circular blob (30% smaller) */
 .blob-cursor.default {
-  width: 36px;
-  height: 36px;
+  width: 25px; /* 36 * 0.7 = 25.2 */
+  height: 25px;
   transform-origin: center;
 }
 
@@ -374,10 +374,10 @@ onUnmounted(() => {
   background: hsl(var(--foreground));
 }
 
-/* Avatar Hover State - Large blob (10% smaller) */
+/* Avatar Hover State - Large blob (30% smaller) */
 .blob-cursor.avatar-hover {
-  width: 90px;
-  height: 90px;
+  width: 63px; /* 90 * 0.7 = 63 */
+  height: 63px;
 }
 
 .blob-cursor.avatar-hover .blob-inner {
@@ -385,24 +385,24 @@ onUnmounted(() => {
   animation: blob-morph-large 6s ease-in-out infinite;
 }
 
-/* Button Hover State - Ring/donut shape (10% smaller) */
+/* Button Hover State - Ring/donut shape (30% smaller) */
 .blob-cursor.button-hover {
-  width: 54px;
-  height: 54px;
+  width: 38px; /* 54 * 0.7 = 37.8 */
+  height: 38px;
 }
 
 .blob-cursor.button-hover .blob-inner {
   background: transparent;
-  border: 3px solid hsl(var(--foreground));
+  border: 2px solid hsl(var(--foreground)); /* 3 * 0.7 = 2.1 */
   border-radius: 50%;
   animation: blob-ring-pulse 2s ease-in-out infinite;
 }
 
-/* Dragging State - Stretched ellipse (10% smaller) */
+/* Dragging State - Stretched ellipse (30% smaller) */
 .blob-cursor.dragging {
-  width: 54px;
-  height: 40px;
-  transition: width 0.2s ease, height 0.2s ease;
+  width: 38px; /* 54 * 0.7 = 37.8 */
+  height: 28px; /* 40 * 0.7 = 28 */
+  transition: width 0.15s ease, height 0.15s ease;
 }
 
 .blob-cursor.dragging .blob-inner {
