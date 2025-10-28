@@ -92,9 +92,8 @@
       </div>
     </section>
     
-    <!-- Avatar Carousel Section -->
-    <!-- TEMPORARILY DISABLED - Loading 11 3D models was blocking page render -->
-    <!-- <SectionTransition type="circle" :duration="1200" :threshold="0.25">
+    <!-- Avatar Carousel Section with Lazy Loading -->
+    <SectionTransition type="circle" :duration="1200" :threshold="0.25">
       <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
         <div class="max-w-7xl mx-auto px-6">
           <div class="text-center mb-12">
@@ -112,18 +111,36 @@
             </p>
           </div>
           
+          <!-- Lazy-loaded Avatar Carousel -->
           <div 
             ref="carouselSectionRef" 
-            class="scroll-animate"
+            class="scroll-animate min-h-[400px] flex items-center justify-center"
             @click="handleCarouselClick"
           >
-            <Avatar3DCarousel
-              :avatar-urls="avatarUrls"
-              :show-info="true"
-              @avatar-change="handleAvatarChange"
-              @avatar-loaded="handleAvatarLoaded"
-              @loading-error="handleLoadingError"
-            />
+            <!-- Loading Placeholder -->
+            <div v-if="!shouldLoadAvatars" class="text-center">
+              <div class="inline-block w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p class="text-muted-foreground">Preparing 3D avatars...</p>
+            </div>
+            
+            <!-- Lazy Load Avatar Component -->
+            <Suspense v-else>
+              <template #default>
+                <Avatar3DCarousel
+                  :avatar-urls="avatarUrls"
+                  :show-info="true"
+                  @avatar-change="handleAvatarChange"
+                  @avatar-loaded="handleAvatarLoaded"
+                  @loading-error="handleLoadingError"
+                />
+              </template>
+              <template #fallback>
+                <div class="text-center">
+                  <div class="inline-block w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p class="text-muted-foreground">Loading 3D avatars...</p>
+                </div>
+              </template>
+            </Suspense>
           </div>
           
           <div v-if="showTripleClickHint" class="triple-click-hint">
@@ -134,7 +151,7 @@
           
         </div>
       </section>
-    </SectionTransition> -->
+    </SectionTransition>
     
     <!-- Features Section - Bento Grid -->
     <SectionTransition type="liquid" :duration="1400" :threshold="0.2" :delay="100">
@@ -360,8 +377,11 @@ import {
   Sun,
   Moon
 } from 'lucide-vue-next'
-// TEMPORARILY DISABLED - Avatar3DCarousel was blocking page render
-// import Avatar3DCarousel from '@/components/Avatar3DCarousel.vue'
+// Lazy load Avatar3DCarousel component
+import { defineAsyncComponent } from 'vue'
+const Avatar3DCarousel = defineAsyncComponent(() => 
+  import('@/components/Avatar3DCarousel.vue')
+)
 import SectionTransition from '@/components/SectionTransition.vue'
 import ScrollHint from '@/components/ScrollHint.vue'
 
@@ -397,8 +417,8 @@ const { isAnimating: isHeadingAnimating } = useTextAnimation(mainHeadingRef, {
   threshold: 0.5
 })
 
-// Avatar carousel data
-const avatarUrls = ref([
+// Avatar carousel data - Full list to randomly choose from
+const allAvatarUrls = [
   'https://models.readyplayer.me/690030c2657a118475704718.glb',
   'https://models.readyplayer.me/690030eb16afa77eb4fbeb91.glb',
   'https://models.readyplayer.me/6900316350f0151f18f12166.glb',
@@ -410,10 +430,25 @@ const avatarUrls = ref([
   'https://models.readyplayer.me/6900333003a04907a7369c05.glb',
   'https://models.readyplayer.me/69003054afd9f514ac528c56.glb',
   'https://models.readyplayer.me/690026ea4e683ec207c58310.glb'
-])
+]
+
+/**
+ * Randomly select 2 avatars from the full list
+ * This improves loading performance by reducing 3D model count from 11 to 2
+ */
+const getRandomAvatars = (count = 2) => {
+  const shuffled = [...allAvatarUrls].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+
+// Only load 2 random avatars for better performance
+const avatarUrls = ref(getRandomAvatars(2))
 
 const currentAvatarIndex = ref(0)
 const loadedAvatarsCount = ref(0)
+
+// Lazy loading state for avatars
+const shouldLoadAvatars = ref(false)
 
 // Easter egg states
 const showTripleClickHint = ref(false)
@@ -482,35 +517,61 @@ const handleThemeToggle = async () => {
   }
 }
 
-// TEMPORARILY DISABLED - Avatar carousel functions not needed
 /**
  * Handle avatar carousel change event
  * 
  * Updates the current avatar index
  */
-// const handleAvatarChange = (index) => {
-//   console.log('🎭 Avatar changed to:', index + 1)
-//   currentAvatarIndex.value = index
-// }
+const handleAvatarChange = (index) => {
+  console.log('🎭 Avatar changed to:', index + 1)
+  currentAvatarIndex.value = index
+}
 
 /**
  * Handle avatar loaded event
  * 
  * Tracks loading progress
  */
-// const handleAvatarLoaded = (index) => {
-//   loadedAvatarsCount.value++
-//   console.log(`✅ Avatar ${index + 1} loaded (${loadedAvatarsCount.value}/${avatarUrls.value.length})`)
-// }
+const handleAvatarLoaded = (index) => {
+  loadedAvatarsCount.value++
+  console.log(`✅ Avatar ${index + 1} loaded (${loadedAvatarsCount.value}/${avatarUrls.value.length})`)
+}
 
 /**
  * Handle loading error event
  * 
  * Logs errors for debugging
  */
-// const handleLoadingError = ({ index, error }) => {
-//   console.error(`❌ Failed to load avatar ${index + 1}:`, error)
-// }
+const handleLoadingError = ({ index, error }) => {
+  console.error(`❌ Failed to load avatar ${index + 1}:`, error)
+}
+
+/**
+ * Setup lazy loading for avatar carousel
+ * 
+ * Uses IntersectionObserver to load avatars only when section is visible
+ */
+const setupAvatarLazyLoading = () => {
+  if (!carouselSectionRef.value) return
+  
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          console.log('🎯 Landing: Avatar section is visible, triggering lazy load')
+          shouldLoadAvatars.value = true
+          observer.disconnect() // Only load once
+        }
+      })
+    },
+    {
+      threshold: 0.1,
+      rootMargin: '100px' // Start loading 100px before section is visible
+    }
+  )
+  
+  observer.observe(carouselSectionRef.value)
+}
 
 /**
  * Setup scroll-triggered animations using Intersection Observer
@@ -611,31 +672,30 @@ const handleKonamiCode = () => {
 // Setup Konami code detection
 useKonamiCode(handleKonamiCode)
 
-// TEMPORARILY DISABLED - Avatar carousel easter eggs not needed
 /**
  * Triple-click on avatar easter egg
  */
-// const handleCarouselClick = () => {
-//   // Track clicks for triple-click detection
-//   // This is handled by the useTripleClick composable below
-// }
+const handleCarouselClick = () => {
+  // Track clicks for triple-click detection
+  // This is handled by the useTripleClick composable below
+}
 
 // Setup triple-click detection on carousel
-// useTripleClick(carouselSectionRef, () => {
-//   displayAchievement(
-//     'Secret Avatar Dance! 💃',
-//     'You discovered the hidden avatar animation! Keep exploring for more secrets.'
-//   )
+useTripleClick(carouselSectionRef, () => {
+  displayAchievement(
+    'Secret Avatar Dance! 💃',
+    'You discovered the hidden avatar animation! Keep exploring for more secrets.'
+  )
   
-//   // Trigger special avatar animation
-//   const carousel = carouselSectionRef.value
-//   if (carousel) {
-//     carousel.classList.add('avatar-dance')
-//     setTimeout(() => {
-//       carousel.classList.remove('avatar-dance')
-//     }, 2000)
-//   }
-// }, { timeWindow: 800 })
+  // Trigger special avatar animation
+  const carousel = carouselSectionRef.value
+  if (carousel) {
+    carousel.classList.add('avatar-dance')
+    setTimeout(() => {
+      carousel.classList.remove('avatar-dance')
+    }, 2000)
+  }
+}, { timeWindow: 800 })
 
 /**
  * Create confetti effect for Konami code
@@ -661,6 +721,9 @@ const createConfettiEffect = () => {
 // Show triple-click hint after a delay
 onMounted(async () => {
   setupScrollAnimations()
+  
+  // Setup lazy loading for avatars
+  setupAvatarLazyLoading()
   
   // Show hint after 5 seconds if user hasn't found it
   setTimeout(() => {
