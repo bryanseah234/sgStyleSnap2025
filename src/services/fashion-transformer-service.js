@@ -7,8 +7,8 @@
  * API URL: https://ftransformer.onrender.com
  */
 
-// API Base URL
-const API_BASE_URL = 'https://ftransformer.onrender.com'
+// API Base URL - Use our backend proxy to avoid CORS issues
+const API_BASE_URL = '/api/proxy-transformer'
 
 /**
  * Score an outfit for compatibility
@@ -31,13 +31,13 @@ export async function scoreOutfit(outfitItems) {
       image_url: item.image_url || item.imageUrl || null
     }))
 
-    console.log('📤 Fashion Transformer: Sending items with image_url:', formattedItems)
+    console.log('📤 Fashion Transformer: Sending', formattedItems.length, 'items through proxy')
 
-    // Call the JSON API endpoint
+    // Call our backend proxy (no CORS issues!)
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
 
-    const response = await fetch(`${API_BASE_URL}/recommendation/score-json`, {
+    const response = await fetch(API_BASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -48,20 +48,17 @@ export async function scoreOutfit(outfitItems) {
 
     clearTimeout(timeoutId)
 
-    console.log('📥 Fashion Transformer: Response status:', response.status)
+    console.log('📥 Proxy response status:', response.status)
 
     if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`API error: ${response.status} ${errorText}`)
+      const errorData = await response.json().catch(() => ({}))
+      console.error('❌ Proxy error:', errorData)
+      throw new Error(`Proxy returned ${response.status}`)
     }
 
     const result = await response.json()
 
-    if (result.error) {
-      throw new Error(`Transformer API error: ${result.error}`)
-    }
-
-    console.log('✅ Fashion Transformer: Outfit scored:', result.score)
+    console.log('✅ Fashion Transformer: Score received:', result.score)
 
     return {
       success: true,
