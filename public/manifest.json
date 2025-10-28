@@ -1,0 +1,47 @@
+{
+  "name": "StyleSnap - Your Digital Wardrobe",
+  "short_name": "StyleSnap",
+  "description": "Organize your clothes, create stunning outfits, and discover your personal style with StyleSnap.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-16x16.svg",
+      "sizes": "16x16",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon-32x32.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["lifestyle", "shopping"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "View Closet",
+      "short_name": "Closet",
+      "description": "View your digital closet",
+      "url": "/closet",
+      "icons": []
+    },
+    {
+      "name": "Create Outfit",
+      "short_name": "Outfit",
+      "description": "Create a new outfit",
+      "url": "/outfits/add/personal",
+      "icons": []
+    }
+  ]
+}
+

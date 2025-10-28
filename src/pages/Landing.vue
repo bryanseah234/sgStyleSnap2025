@@ -48,6 +48,9 @@
       
       <!-- Hero Content - Vertically Centered -->
       <div class="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
+        <!-- Scroll Hint -->
+        <ScrollHint text="Scroll to explore" />
+        
         <div class="max-w-7xl mx-auto text-center">
           <!-- Main Headline with Kinetic Typography -->
           <h1 
@@ -109,7 +112,11 @@
           </div>
           
           <!-- Avatar 3D Carousel -->
-          <div ref="carouselSectionRef" class="scroll-animate">
+          <div 
+            ref="carouselSectionRef" 
+            class="scroll-animate"
+            @click="handleCarouselClick"
+          >
             <Avatar3DCarousel
               :avatar-urls="avatarUrls"
               :show-info="true"
@@ -117,6 +124,13 @@
               @avatar-loaded="handleAvatarLoaded"
               @loading-error="handleLoadingError"
             />
+          </div>
+          
+          <!-- Subtle hint for triple-click easter egg -->
+          <div v-if="showTripleClickHint" class="triple-click-hint">
+            <p class="text-xs text-muted-foreground italic">
+              💡 Psst... try triple-clicking the avatar
+            </p>
           </div>
           
         </div>
@@ -332,6 +346,9 @@ import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useSmoothScroll } from '@/composables/useSmoothScroll'
 import { useTextAnimation } from '@/composables/useTextAnimation'
+import { useKonamiCode } from '@/composables/useKonamiCode'
+import { useTripleClick } from '@/composables/useTripleClick'
+import { displayAchievement } from '@/utils/console-art'
 import { 
   Shirt, 
   Palette, 
@@ -344,6 +361,7 @@ import {
 } from 'lucide-vue-next'
 import Avatar3DCarousel from '@/components/Avatar3DCarousel.vue'
 import SectionTransition from '@/components/SectionTransition.vue'
+import ScrollHint from '@/components/ScrollHint.vue'
 
 // Composables
 const router = useRouter()
@@ -394,6 +412,10 @@ const avatarUrls = ref([
 
 const currentAvatarIndex = ref(0)
 const loadedAvatarsCount = ref(0)
+
+// Easter egg states
+const showTripleClickHint = ref(false)
+const konamiActivated = ref(false)
 
 // Custom directive for scroll reveal animations
 const vScrollReveal = {
@@ -555,9 +577,97 @@ const setupScrollAnimations = () => {
   console.log('✅ Landing: Scroll animations initialized')
 }
 
-// Initialize scroll animations on mount
+/**
+ * Konami code easter egg
+ */
+const handleKonamiCode = () => {
+  if (konamiActivated.value) return
+  
+  konamiActivated.value = true
+  
+  // Show achievement in console
+  displayAchievement(
+    'Konami Code Master! 🎮',
+    'You found the legendary code! Here\'s a secret: we built this with love and countless cups of coffee ☕'
+  )
+  
+  // Trigger special animation on the page
+  document.body.classList.add('konami-activated')
+  
+  // Create confetti effect
+  createConfettiEffect()
+  
+  // Remove after animation
+  setTimeout(() => {
+    document.body.classList.remove('konami-activated')
+  }, 3000)
+}
+
+// Setup Konami code detection
+useKonamiCode(handleKonamiCode)
+
+/**
+ * Triple-click on avatar easter egg
+ */
+const handleCarouselClick = () => {
+  // Track clicks for triple-click detection
+  // This is handled by the useTripleClick composable below
+}
+
+// Setup triple-click detection on carousel
+useTripleClick(carouselSectionRef, () => {
+  displayAchievement(
+    'Secret Avatar Dance! 💃',
+    'You discovered the hidden avatar animation! Keep exploring for more secrets.'
+  )
+  
+  // Trigger special avatar animation
+  const carousel = carouselSectionRef.value
+  if (carousel) {
+    carousel.classList.add('avatar-dance')
+    setTimeout(() => {
+      carousel.classList.remove('avatar-dance')
+    }, 2000)
+  }
+}, { timeWindow: 800 })
+
+/**
+ * Create confetti effect for Konami code
+ */
+const createConfettiEffect = () => {
+  const colors = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6']
+  const confettiCount = 50
+  
+  for (let i = 0; i < confettiCount; i++) {
+    setTimeout(() => {
+      const confetti = document.createElement('div')
+      confetti.className = 'confetti'
+      confetti.style.left = Math.random() * 100 + '%'
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
+      confetti.style.animationDelay = Math.random() * 0.5 + 's'
+      document.body.appendChild(confetti)
+      
+      setTimeout(() => confetti.remove(), 3000)
+    }, i * 30)
+  }
+}
+
+// Show triple-click hint after a delay
 onMounted(() => {
   setupScrollAnimations()
+  
+  // Show hint after 5 seconds if user hasn't found it
+  setTimeout(() => {
+    if (!sessionStorage.getItem('stylesnap-triple-click-shown')) {
+      showTripleClickHint.value = true
+      
+      // Hide hint after 10 seconds
+      setTimeout(() => {
+        showTripleClickHint.value = false
+        sessionStorage.setItem('stylesnap-triple-click-shown', 'true')
+      }, 10000)
+    }
+  }, 5000)
 })
 </script>
 
@@ -945,6 +1055,101 @@ button {
 }
 
 /* ============================================
+   Easter Egg Animations
+   ============================================ */
+
+/* Triple-click hint */
+.triple-click-hint {
+  margin-top: 16px;
+  text-align: center;
+  animation: fadeInBounce 0.5s ease-out;
+}
+
+@keyframes fadeInBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Avatar dance animation */
+.avatar-dance {
+  animation: avatarDance 2s ease-in-out;
+}
+
+@keyframes avatarDance {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  10% {
+    transform: rotate(-5deg) scale(1.05);
+  }
+  20% {
+    transform: rotate(5deg) scale(1.1);
+  }
+  30% {
+    transform: rotate(-5deg) scale(1.05);
+  }
+  40% {
+    transform: rotate(5deg) scale(1);
+  }
+  50% {
+    transform: rotate(0deg) scale(1.1);
+  }
+  60% {
+    transform: rotate(-10deg) scale(1);
+  }
+  70% {
+    transform: rotate(10deg) scale(1.05);
+  }
+  80% {
+    transform: rotate(-5deg) scale(1);
+  }
+  90% {
+    transform: rotate(5deg) scale(1);
+  }
+}
+
+/* Confetti for Konami code */
+:global(.confetti) {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  z-index: 9999;
+  animation: confettiFall 3s ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes confettiFall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Konami activation effect */
+:global(body.konami-activated) {
+  animation: konamiFlash 0.5s ease-in-out 3;
+}
+
+@keyframes konamiFlash {
+  0%, 100% {
+    filter: none;
+  }
+  50% {
+    filter: hue-rotate(90deg) saturate(1.5);
+  }
+}
+
+/* ============================================
    Accessibility
    ============================================ */
 
@@ -970,6 +1175,19 @@ button {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+  
+  /* Disable easter egg animations */
+  .avatar-dance {
+    animation: none !important;
+  }
+  
+  :global(.confetti) {
+    display: none !important;
+  }
+  
+  :global(body.konami-activated) {
+    animation: none !important;
   }
 }
 </style>

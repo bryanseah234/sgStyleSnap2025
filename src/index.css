@@ -97,6 +97,101 @@
   height: 8px;
 }
 
+/* ============================================
+   ENHANCED BUTTON MICRO-INTERACTIONS
+   ============================================ */
+
+/* Enhanced buttons with satisfying micro-interactions */
+button:not(.no-enhance) {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              background-color 0.2s ease;
+}
+
+button:not(.no-enhance):hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+button:not(.no-enhance):active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* Button ripple effect on click */
+button:not(.no-enhance)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease, opacity 0.6s ease;
+  opacity: 0;
+}
+
+button:not(.no-enhance):active::after {
+  width: 300px;
+  height: 300px;
+  opacity: 1;
+  transition: width 0s, height 0s, opacity 0.3s;
+}
+
+/* Focus states for keyboard navigation */
+button:not(.no-enhance):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Shimmer effect for primary buttons */
+.btn-primary,
+button[class*="bg-primary"]:not(.no-enhance) {
+  background-size: 200% 100%;
+  background-image: linear-gradient(
+    90deg,
+    currentColor 0%,
+    currentColor 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    currentColor 50%,
+    currentColor 100%
+  );
+  transition: background-position 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover,
+button[class*="bg-primary"]:not(.no-enhance):hover {
+  background-position: -100% 0;
+}
+
+/* Accessibility: Remove animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  button:not(.no-enhance) {
+    transition: none !important;
+  }
+  
+  button:not(.no-enhance):hover {
+    transform: none !important;
+  }
+  
+  button:not(.no-enhance):active {
+    transform: none !important;
+  }
+  
+  button:not(.no-enhance)::after {
+    display: none !important;
+  }
+  
+  .btn-primary,
+  button[class*="bg-primary"]:not(.no-enhance) {
+    background-image: none !important;
+    transition: none !important;
+  }
+}
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
@@ -207,6 +302,7 @@
   color: rgba(0, 0, 0, 0.6);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   pointer-events: none;
+  -webkit-user-select: none;
   user-select: none;
   transition: all 0.2s ease;
 }
@@ -610,8 +706,8 @@
 .navbar-glass {
   /* PERFORMANCE: Removed expensive backdrop-filter - using solid background instead */
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: background-color var(--duration-normal) var(--ease-liquid);
   contain: layout style paint;
@@ -659,8 +755,8 @@
 .nav-item-liquid:hover {
   transform: translateX(4px) translateZ(5px);
   /* PERFORMANCE: Removed backdrop-filter */
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .nav-item-liquid::before {
@@ -749,8 +845,8 @@
 .liquid-card:hover {
   transform: translateY(-8px) translateZ(15px);
   /* PERFORMANCE: Removed backdrop-filter, simplified shadow */
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
   will-change: transform;
 }
@@ -801,8 +897,8 @@
 @media (max-width: 768px) {
   .liquid-card:hover {
     transform: translateY(-4px);
-    backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
   }
   
@@ -846,8 +942,8 @@
 .liquid-item-card:hover {
   transform: translateY(-6px) translateZ(12px);
   /* PERFORMANCE: Removed backdrop-filter, simplified shadow */
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
   will-change: transform;
 }
@@ -923,8 +1019,8 @@
 @media (max-width: 768px) {
   .liquid-item-card:hover {
     transform: translateY(-3px);
-    backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   }
   

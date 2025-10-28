@@ -25,6 +25,9 @@
   
   <!-- Performance Monitor (Development Only) -->
   <FPSCounter v-if="isDevelopment" />
+  
+  <!-- Debug Overlay (Hidden by default, toggle with "debug" keyword) -->
+  <DebugOverlay :visible="isDebugMode" @close="disableDebugMode" />
 </template>
 
 <script setup>
@@ -53,9 +56,14 @@ import Layout from './components/Layout.vue'
 import FPSCounter from './components/FPSCounter.vue'
 import BlobCursor from './components/BlobCursor.vue'
 import PageTransition from './components/PageTransition.vue'
+import DebugOverlay from './components/DebugOverlay.vue'
+import { useDebugMode } from '@/composables/useDebugMode'
 
 // Get current route
 const route = useRoute()
+
+// Debug mode
+const { isDebugMode, disableDebugMode } = useDebugMode()
 
 /**
  * Determines whether to show the main layout
