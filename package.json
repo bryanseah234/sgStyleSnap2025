@@ -16,6 +16,7 @@
     "cloudinary-cleanup": "echo 'Cloudinary cleanup script not implemented yet' && exit 0"
   },
   "dependencies": {
+    "@studio-freight/lenis": "^1.0.42",
     "@supabase/supabase-js": "^2.38.4",
     "@vueuse/core": "^10.7.0",
     "class-variance-authority": "^0.7.0",
@@ -29,6 +30,7 @@
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
+    "@types/node": "^20.10.6",
     "@vitejs/plugin-vue": "^4.5.2",
     "@vue/tsconfig": "^0.5.1",
     "autoprefixer": "^10.4.16",

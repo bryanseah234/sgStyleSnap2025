@@ -32,8 +32,8 @@
 .navbar-glass {
   /* PERFORMANCE: Removed backdrop-filter - using solid background with higher opacity instead */
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: none; /* Explicitly disable expensive filter */
   -webkit-backdrop-filter: none;
+  backdrop-filter: none; /* Explicitly disable expensive filter */
   transition: background-color var(--duration-normal) var(--ease-liquid);
   contain: layout style paint; /* PERFORMANCE: Prevent recalculation cascade */
 }
@@ -143,8 +143,8 @@
 /* AFTER: */
 .liquid-button {
   /* PERFORMANCE: No backdrop-filter on buttons */
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   contain: layout style paint;
 }
 
@@ -189,8 +189,8 @@
 .liquid-modal-backdrop {
   /* PERFORMANCE: Removed backdrop-filter - use solid background */
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   contain: layout style paint;
 }
 
@@ -203,8 +203,8 @@
 .liquid-modal-card {
   /* PERFORMANCE: Solid background instead of backdrop-filter */
   background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   contain: layout style paint size;
 }
 
@@ -225,8 +225,8 @@
 /* Dialog cards - same optimization */
 .liquid-dialog-backdrop,
 .liquid-dialog-card {
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .liquid-dialog-backdrop {
