@@ -20,11 +20,11 @@
     @click="toggleTheme"
     :class="`p-2 rounded-lg transition-all duration-200 hover:scale-105 bg-stone-100 text-stone-700 hover:bg-stone-200
     dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
-    :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+    :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
   >
-    <!-- Sun icon for dark mode (clicking will switch to light) -->
-    <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
-    <!-- Moon icon for light mode (clicking will switch to dark) -->
+    <!-- Sun icon for light mode (clicking will switch to dark) -->
+    <Sun v-if="theme.value === 'light'" class="w-5 h-5" />
+    <!-- Moon icon for dark mode (clicking will switch to light) -->
     <Moon v-else class="w-5 h-5" />
   </button>
 </template>

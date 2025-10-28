@@ -78,11 +78,11 @@
           @mouseup="themePressOut"
           @mouseleave="themePressOut"
           class="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
-          :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
         >
-         <!-- Sun icon for dark mode (action: switch to light) -->
-         <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
-         <!-- Moon icon for light mode (action: switch to dark) -->
+         <!-- Sun icon for light mode (action: switch to dark) -->
+         <Sun v-if="theme.value === 'light'" class="w-5 h-5" />
+         <!-- Moon icon for dark mode (action: switch to light) -->
          <Moon v-else class="w-5 h-5" />
           <span class="font-medium text-secondary-foreground">
             Toggle Theme

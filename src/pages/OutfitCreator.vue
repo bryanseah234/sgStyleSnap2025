@@ -103,7 +103,7 @@
             :disabled="recommendingOutfits || wardrobeItems.length < 2"
             :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
               !recommendingOutfits && wardrobeItems.length >= 2
-                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500'
                 : 'opacity-50 cursor-not-allowed'
             }`"
             title="Get AI Outfit Recommendations"
