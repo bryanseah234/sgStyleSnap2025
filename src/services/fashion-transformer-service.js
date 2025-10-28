@@ -7,8 +7,8 @@
  * API URL: https://ftransformer.onrender.com
  */
 
-// API Base URL
-const API_BASE_URL = 'https://ftransformer.onrender.com'
+// API Base URL - Use our backend proxy to avoid CORS issues
+const API_BASE_URL = '/api/proxy-transformer'
 
 /**
  * Score an outfit for compatibility
@@ -23,50 +23,42 @@ export async function scoreOutfit(outfitItems) {
       throw new Error('No outfit items provided')
     }
 
-    // Prepare form data
-    const formData = new FormData()
-    
-    // Add metadata JSON
-    const metadata = outfitItems.map(item => ({
+    // Format items for JSON API with image_url
+    const formattedItems = outfitItems.map((item, index) => ({
+      id: item.id || `item_${Date.now()}_${index}`,
+      category: item.category || 'unknown',
       description: item.description || item.name || `${item.category} item`,
-      category: item.category || 'unknown'
+      image_url: item.image_url || item.imageUrl || null
     }))
-    formData.append('item_metadata', JSON.stringify(metadata))
-    
-    // Add image files
-    for (const item of outfitItems) {
-      if (!item.image_url && !item.image_file) {
-        throw new Error('Items must have image_url or image_file')
-      }
-      
-      // Fetch image if we have a URL
-      if (item.image_url) {
-        const imageResponse = await fetch(item.image_url)
-        const blob = await imageResponse.blob()
-        formData.append('files', blob, `${item.id || 'item'}.jpg`)
-      } else if (item.image_file) {
-        formData.append('files', item.image_file)
-      }
-    }
 
-    // Call the API
-    const response = await fetch(`${API_BASE_URL}/recommendation/score`, {
+    console.log('📤 Fashion Transformer: Sending', formattedItems.length, 'items through proxy')
+
+    // Call our backend proxy (no CORS issues!)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
+
+    const response = await fetch(API_BASE_URL, {
       method: 'POST',
-      body: formData
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ items: formattedItems }),
+      signal: controller.signal
     })
 
+    clearTimeout(timeoutId)
+
+    console.log('📥 Proxy response status:', response.status)
+
     if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`API error: ${response.status} ${errorText}`)
+      const errorData = await response.json().catch(() => ({}))
+      console.error('❌ Proxy error:', errorData)
+      throw new Error(`Proxy returned ${response.status}`)
     }
 
     const result = await response.json()
 
-    if (result.error) {
-      throw new Error(`Transformer API error: ${result.error}`)
-    }
-
-    console.log('✅ Fashion Transformer: Outfit scored:', result.score)
+    console.log('✅ Fashion Transformer: Score received:', result.score)
 
     return {
       success: true,
@@ -74,13 +66,16 @@ export async function scoreOutfit(outfitItems) {
       confidence: result.score
     }
   } catch (error) {
-    // CORS errors are expected - the backend API doesn't allow cross-origin requests
-    // The app gracefully falls back to color-based scoring
-    if (error.message?.includes('CORS') || error.message?.includes('Failed to fetch')) {
-      console.log('ℹ️ Fashion Transformer: API unavailable (CORS), using fallback scoring')
-    } else {
-      console.error('❌ Fashion Transformer: Outfit scoring failed:', error.message)
+    console.error('❌ Fashion Transformer: Outfit scoring failed:', error)
+    
+    if (error.name === 'AbortError') {
+      console.error('❌ Request timeout after 30s')
+    } else if (error.message.includes('503')) {
+      console.error('❌ Service unavailable - API may be cold starting')
+    } else if (error.message.includes('CORS')) {
+      console.error('❌ CORS error - check API configuration')
     }
+    
     return {
       success: false,
       error: error.message,
