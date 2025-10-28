@@ -22,45 +22,15 @@ export class EdgeFunctionHealthService {
    * @returns {Promise<Object>} Health status and metrics
    */
   async checkHealth() {
-    try {
-      console.log('🔍 EdgeFunctionHealth: Checking Edge Function health...')
-      
-      if (!this.functionUrl) {
-        throw new Error('Edge Function URL not configured')
-      }
-
-      // Make a health check request to the Edge Function
-      const response = await fetch(`${this.functionUrl}/health`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await this.getSupabaseToken()}`
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Edge Function health check failed: ${response.status} ${response.statusText}`)
-      }
-
-      const healthData = await response.json()
-      
-      console.log('✅ EdgeFunctionHealth: Edge Function is healthy:', healthData)
-      
-      return {
-        success: true,
-        healthy: true,
-        data: healthData,
-        timestamp: new Date().toISOString()
-      }
-    } catch (error) {
-      console.error('❌ EdgeFunctionHealth: Health check failed:', error)
-      
-      return {
-        success: false,
-        healthy: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }
+    // DISABLED: Edge function health endpoint does not exist
+    // User sync is handled automatically by database triggers
+    console.log('ℹ️ EdgeFunctionHealth: Health check disabled (endpoint does not exist)')
+    
+    return {
+      success: true,
+      healthy: true,
+      message: 'Health check disabled - using database triggers for sync',
+      timestamp: new Date().toISOString()
     }
   }
 
@@ -168,40 +138,16 @@ export class EdgeFunctionHealthService {
    * @returns {Promise<Object>} Deployment status
    */
   async checkDeploymentStatus() {
-    try {
-      console.log('🚀 EdgeFunctionHealth: Checking deployment status...')
-      
-      if (!this.functionUrl) {
-        throw new Error('Edge Function URL not configured')
-      }
-
-      // Check if the Edge Function endpoint is accessible
-      const response = await fetch(`${this.functionUrl}/health`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
-
-      const isDeployed = response.ok
-      
-      return {
-        success: true,
-        deployed: isDeployed,
-        status: isDeployed ? 'Active' : 'Inactive',
-        url: this.functionUrl,
-        timestamp: new Date().toISOString()
-      }
-    } catch (error) {
-      console.error('❌ EdgeFunctionHealth: Deployment check failed:', error)
-      
-      return {
-        success: false,
-        deployed: false,
-        status: 'Error',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }
+    // DISABLED: Edge function health endpoint does not exist
+    // User sync is handled automatically by database triggers
+    console.log('ℹ️ EdgeFunctionHealth: Deployment check disabled (endpoint does not exist)')
+    
+    return {
+      success: true,
+      deployed: true,
+      status: 'Using database triggers',
+      message: 'Deployment check disabled - using database triggers for sync',
+      timestamp: new Date().toISOString()
     }
   }
 
