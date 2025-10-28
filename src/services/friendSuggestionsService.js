@@ -53,8 +53,57 @@ export class FriendSuggestionsService {
         throw error
       }
 
-      console.log('FriendSuggestionsService: Fetched', data?.length || 0, 'suggestions')
-      return data || []
+      // Enrich outfit items with clothing details if missing image_url
+      const enrichedData = await Promise.all((data || []).map(async (suggestion) => {
+        if (!suggestion.outfit_items || !Array.isArray(suggestion.outfit_items)) {
+          return suggestion
+        }
+
+        // Check if any items are missing image_url or name
+        const needsEnrichment = suggestion.outfit_items.some(item => !item.image_url || !item.name)
+        
+        if (needsEnrichment) {
+          // Fetch clothing items details for items missing data
+          const clothesIds = suggestion.outfit_items
+            .filter(item => !item.image_url || !item.name)
+            .map(item => item.clothes_id || item.clothing_item_id)
+            .filter(Boolean)
+
+          if (clothesIds.length > 0) {
+            console.log('FriendSuggestionsService: Enriching items with clothing details:', clothesIds)
+            
+            const { data: clothesData } = await supabase
+              .from('clothes')
+              .select('id, name, category, image_url')
+              .in('id', clothesIds)
+
+            // Create a map of clothing item details
+            const clothesMap = new Map((clothesData || []).map(item => [item.id, item]))
+
+            // Enrich outfit items with clothing details
+            suggestion.outfit_items = suggestion.outfit_items.map(item => {
+              const clothesId = item.clothes_id || item.clothing_item_id
+              const clothesDetails = clothesMap.get(clothesId)
+              
+              if (clothesDetails) {
+                return {
+                  ...item,
+                  name: item.name || clothesDetails.name,
+                  category: item.category || clothesDetails.category,
+                  image_url: item.image_url || clothesDetails.image_url,
+                  clothes_id: clothesId
+                }
+              }
+              return item
+            })
+          }
+        }
+
+        return suggestion
+      }))
+
+      console.log('FriendSuggestionsService: Fetched', enrichedData?.length || 0, 'suggestions')
+      return enrichedData || []
 
     } catch (error) {
       console.error('FriendSuggestionsService: Error in getReceivedSuggestions:', error)

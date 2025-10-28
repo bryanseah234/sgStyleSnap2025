@@ -161,35 +161,63 @@ export function useLiquidHover() {
 
       // Return to rest state with spring physics
       if (animate && spring && typeof animate === 'function' && typeof spring === 'function') {
-        animate(
-          elementRef.value,
-          {
-            scale: 1,                       // Return to original scale
-            rotateX: 0,                      // Reset X rotation
-            rotateY: 0,                      // Reset Y rotation
-            translateZ: 0,                   // Return to original Z position
-            filter: 'blur(0px) brightness(1)' // Reset brightness
-          },
-          {
-            duration: 0.4,                   // Slightly longer for smooth return
-            easing: spring({ 
-              stiffness: 200,                // Lower stiffness for gentler return
-              damping: 25                    // Higher damping for smooth settling
-            })
+        try {
+          const springEasing = spring({ 
+            stiffness: 200,                // Lower stiffness for gentler return
+            damping: 25                    // Higher damping for smooth settling
+          })
+          
+          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+            animate(
+              elementRef.value,
+              {
+                scale: 1,                       // Return to original scale
+                rotateX: 0,                      // Reset X rotation
+                rotateY: 0,                      // Reset Y rotation
+                translateZ: 0,                   // Return to original Z position
+                filter: 'blur(0px) brightness(1)' // Reset brightness
+              },
+              {
+                duration: 0.4,                   // Slightly longer for smooth return
+                easing: springEasing[0]          // Use first element if it's an array
+              }
+            )
+          } else if (springEasing && typeof springEasing === 'function') {
+            // If spring returns a function directly
+            animate(
+              elementRef.value,
+              {
+                scale: 1,
+                rotateX: 0,
+                rotateY: 0,
+                translateZ: 0,
+                filter: 'blur(0px) brightness(1)'
+              },
+              {
+                duration: 0.4,
+                easing: springEasing
+              }
+            )
+          } else {
+            // If spring return is invalid, use fallback
+            throw new Error('Invalid spring easing return value')
           }
-        )
+        } catch (springError) {
+          // If spring function fails, use CSS fallback
+          throw new Error(`Spring easing failed: ${springError?.message || 'unknown error'}`)
+        }
       } else {
         // Fallback CSS animation when Motion library unavailable
-        elementRef.value.style.transform = 'scale(1) translateZ(0px)'
-        elementRef.value.style.filter = 'brightness(1)'
-        elementRef.value.style.transition = 'all 0.4s ease-out'
+        throw new Error('Motion library not available')
       }
     } catch (error) {
       console.warn('⚠️ Error in hoverOut animation, using fallback:', error)
       // Fallback CSS animation on error
-      elementRef.value.style.transform = 'scale(1) translateZ(0px)'
-      elementRef.value.style.filter = 'brightness(1)'
-      elementRef.value.style.transition = 'all 0.4s ease-out'
+      if (elementRef.value) {
+        elementRef.value.style.transform = 'scale(1) translateZ(0px)'
+        elementRef.value.style.filter = 'brightness(1)'
+        elementRef.value.style.transition = 'all 0.4s ease-out'
+      }
     }
 
     isAnimating.value = false

@@ -9,9 +9,8 @@
             <h1 class="text-4xl font-bold mb-2 text-foreground">
               {{ subRouteTitle }}
             </h1>
-            <p class="text-lg text-stone-600 dark:text-zinc-400">
-              {{ currentSubRoute === 'suggested' ? 'AI has generated an outfit for you. Edit it or generate a new one based on outfit score.' : 
-                 currentSubRoute === 'personal' ? '' :
+            <p v-if="currentSubRoute !== 'suggested'" class="text-lg text-stone-600 dark:text-zinc-400">
+              {{ currentSubRoute === 'personal' ? '' :
                  currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
                  currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
                  '' }}
@@ -111,9 +110,8 @@
           <h1 class="text-3xl font-bold mb-2 text-foreground">
             {{ subRouteTitle }}
           </h1>
-          <p class="text-base mb-4 text-stone-600 dark:text-zinc-400">
-            {{ currentSubRoute === 'suggested' ? 'AI has generated an outfit for you. Edit it or generate a new one based on outfit score.' : 
-               currentSubRoute === 'personal' ? '' :
+          <p v-if="currentSubRoute !== 'suggested'" class="text-base mb-4 text-stone-600 dark:text-zinc-400">
+            {{ currentSubRoute === 'personal' ? '' :
                currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
                currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
                '' }}
@@ -1593,9 +1591,12 @@ const shareOutfitWithFriend = async () => {
     // Prompt for a message
     const message = prompt(`Add a message for ${friendProfile.value.username} (optional):`, `I created this outfit for you using items from your closet!`)
     
-    // Extract original clothing item IDs from canvas items
+    // Extract original clothing item IDs and details from canvas items
     const outfitItemsData = canvasItems.value.map(item => ({
-      clothing_item_id: item.originalId || item.id, // Use stored original ID
+      clothes_id: item.originalId || item.id, // Use stored original ID
+      name: item.name || 'Unnamed Item', // Include item name
+      category: item.category || 'top', // Include category
+      image_url: item.image_url || '', // Include image URL
       x_position: item.x,
       y_position: item.y,
       z_index: item.z_index || 1,

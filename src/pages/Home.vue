@@ -68,14 +68,21 @@
           <button
             v-if="unreadCount > 0"
             @click="markAllAsRead"
-            class="text-sm px-4 py-2 rounded-lg transition-all duration-200 text-stone-600 hover:text-black hover:bg-stone-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
+            class="p-2 rounded-lg transition-all duration-200 text-stone-600 hover:text-black hover:bg-stone-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
+            title="Mark all as read"
           >
-            Mark all as read
+            <CheckCheck class="w-5 h-5" />
           </button>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="loadingNotifications" class="flex flex-col items-center justify-center py-12">
+          <div class="w-12 h-12 spinner-modern mb-4"></div>
+          <p class="text-sm text-stone-600 dark:text-zinc-400">Loading notifications...</p>
+        </div>
+
         <!-- Notifications List -->
-        <div v-if="notifications.length > 0" class="space-y-3">
+        <div v-else-if="notifications.length > 0" class="space-y-3">
           <div
             v-for="(notification, index) in notifications"
             :key="notification.id"
@@ -119,7 +126,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="text-center py-12">
+        <div v-else-if="!loadingNotifications" class="text-center py-12">
           <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
             <Bell class="w-8 h-8 text-stone-500 dark:text-zinc-400" />
           </div>
@@ -183,7 +190,7 @@ import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
 import { vScrollAnimate } from '@/composables/useScrollAnimation'
 import { useLiquidReveal, useLiquidHover } from '@/composables/useLiquidGlass'
-import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check } from 'lucide-vue-next'
+import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck } from 'lucide-vue-next'
 
 // Theme and auth composables
 const { theme } = useTheme()
@@ -250,6 +257,7 @@ const friends = ref([])
 const notifications = ref([])
 const unreadCount = ref(0)
 const totalItemsCount = ref(0) // Total count of all items in closet
+const loadingNotifications = ref(false) // Loading state for notifications
 
 /**
  * Computed statistics for the dashboard cards
@@ -368,6 +376,7 @@ const loadFriends = async () => {
 const loadNotifications = async () => {
   try {
     console.log('🏠 Home: Loading notifications...')
+    loadingNotifications.value = true
     if (user.value?.id) {
       const [notificationsData, count] = await Promise.all([
         notificationsService.getNotifications({ limit: 5 }),
@@ -386,6 +395,8 @@ const loadNotifications = async () => {
     console.error('❌ Home: Error loading notifications:', error)
     notifications.value = []
     unreadCount.value = 0
+  } finally {
+    loadingNotifications.value = false
   }
 }
 
@@ -442,7 +453,7 @@ const handleNotificationClick = async (notification) => {
       break
     case 'friend_outfit_suggestion':
       // Navigate to outfit suggestions page
-      router.push('/outfits?filter=suggestions')
+      router.push('/outfits/suggested')
       break
     case 'outfit_like':
       // Navigate to outfits page

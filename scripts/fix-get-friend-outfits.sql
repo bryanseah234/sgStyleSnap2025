@@ -1,14 +1,5 @@
--- ============================================
--- Add get_friend_outfits RPC Function
--- ============================================
--- This function allows friends to view each other's outfits
--- that are marked for friends privacy level.
-
-BEGIN;
-
--- ============================================
--- 1. CREATE get_friend_outfits FUNCTION
--- ============================================
+-- Fix get_friend_outfits function to handle VARCHAR/TEXT type mismatch
+-- Run this in your Supabase SQL Editor
 
 CREATE OR REPLACE FUNCTION get_friend_outfits(
   friend_id UUID,
@@ -75,35 +66,6 @@ BEGIN
 END;
 $$;
 
--- ============================================
--- 2. GRANT EXECUTE PERMISSION
--- ============================================
-
 -- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION get_friend_outfits(UUID, UUID, INTEGER) TO authenticated;
 
--- ============================================
--- 3. VERIFY FUNCTION WAS CREATED
--- ============================================
-
--- Check that the function was created successfully
-SELECT 
-  routine_name,
-  routine_type,
-  data_type,
-  routine_definition
-FROM information_schema.routines 
-WHERE routine_name = 'get_friend_outfits'
-  AND routine_schema = 'public';
-
-COMMIT;
-
--- ============================================
--- VERIFICATION
--- ============================================
-
--- After running this migration, test with:
--- SELECT * FROM get_friend_outfits('friend-uuid', 'viewer-uuid', 10);
-
--- Note: This function will only return outfits if the users are friends
--- and the outfits are either public or friends-level privacy.

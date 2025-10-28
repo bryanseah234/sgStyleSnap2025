@@ -30,10 +30,10 @@
             <div v-if="uploading" class="spinner-modern" />
             <template v-else>
               <Upload :class="`w-16 h-16 mb-4 text-stone-400 dark:text-zinc-500`"/>
-              <p :class="`text-xl font-medium text-stone-600 dark:text-zinc-400`">
+              <p :class="`text-xl font-medium text-stone-600 dark:text-zinc-400 text-center`">
                 Click to upload or drag and drop
               </p>
-              <p :class="`text-sm mt-2 text-stone-500 dark:text-zinc-500`">
+              <p :class="`text-sm mt-2 text-stone-500 dark:text-zinc-500 text-center`">
                 PNG, JPG or JPEG (max 10MB)
               </p>
             </template>

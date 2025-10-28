@@ -201,8 +201,8 @@
               @click.stop="toggleFavorite(outfit)"
               :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
                 outfit.is_favorite
-                  ? 'bg-red-500 text-white'
-                  : 'bg-white/80 dark:bg-zinc-800/80 text-stone-500 dark:text-zinc-400 hover:bg-stone-100/80 dark:hover:bg-zinc-700/80'
+                  ? 'bg-red-500 text-white dark:bg-red-600'
+                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'
               }`"
             >
               <Heart :class="`w-4 h-4 ${outfit.is_favorite ? 'fill-current' : ''}`" />
@@ -374,15 +374,19 @@
         <!-- Modal Footer with Actions -->
         <div class="p-6 border-t flex items-center justify-end gap-3 border-stone-200 dark:border-zinc-800">
           <button
-            @click="closeOutfitDetail"
-            :class="`px-6 py-3 rounded-xl font-medium transition-all bg-stone-100 text-stone-700 hover:bg-stone-200
-              dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
+            @click="toggleFavorite(selectedOutfit)"
+            :class="`p-3 rounded-xl transition-all duration-200 ${
+              selectedOutfit.is_favorite
+                ? 'bg-red-500 text-white dark:bg-red-600'
+                : 'bg-stone-100 text-stone-500 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
+            title="Toggle Favorite"
           >
-            Close
+            <Heart :class="`w-5 h-5 ${selectedOutfit.is_favorite ? 'fill-current' : ''}`" />
           </button>
           <button
             @click="editOutfit(selectedOutfit)"
-            :class="`px-6 py-3 rounded-xl font-medium transition-all dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
+            :class="`px-6 py-3 rounded-xl font-medium transition-all bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             Edit Outfit
           </button>
@@ -395,7 +399,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
@@ -434,8 +438,8 @@ const searchInputRef = ref(null)
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
 
-// Initialize activeFilter from URL parameter
-if (route.query.filter === 'suggestions') {
+// Initialize activeFilter from URL parameter or route
+if (route.query.filter === 'suggestions' || route.meta.subRoute === 'suggestions') {
   activeFilter.value = 'suggestions'
 }
 
@@ -656,8 +660,18 @@ const handleSuggestionProcessed = ({ action, suggestionId }) => {
   }
 }
 
+// Handle Esc key to close modal
+const handleEscKey = (event) => {
+  if (event.key === 'Escape' && showOutfitDetail.value) {
+    closeOutfitDetail()
+  }
+}
+
 onMounted(async () => {
   console.log('Outfits: Component mounted, initializing...')
+  
+  // Add event listener for Esc key
+  window.addEventListener('keydown', handleEscKey)
   
   // Detect Mac OS
   isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
@@ -691,6 +705,11 @@ watch(activeFilter, (newFilter) => {
   if (newFilter === 'suggestions' && suggestions.value.length === 0 && !suggestionsLoading.value) {
     loadSuggestions()
   }
+})
+
+onUnmounted(() => {
+  // Remove event listener for Esc key
+  window.removeEventListener('keydown', handleEscKey)
 })
 </script>
 

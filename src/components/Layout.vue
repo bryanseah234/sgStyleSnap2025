@@ -56,10 +56,7 @@
         >
           <div 
             :class="`nav-item-liquid flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative ${
-              $route.path === item.path || 
-              ($route.path.startsWith('/outfits/add') && item.path === '/outfits') || 
-              ($route.path.startsWith('/outfits/edit') && item.path === '/outfits') ||
-              ($route.path.startsWith('/closet/') && item.path === '/closet')
+              isActiveRoute(item.path)
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
             }`"
@@ -150,20 +147,14 @@
         >
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
-              $route.path === item.path || 
-              ($route.path.startsWith('/outfits/add') && item.path === '/outfits') || 
-              ($route.path.startsWith('/outfits/edit') && item.path === '/outfits') ||
-              ($route.path.startsWith('/closet/') && item.path === '/closet')
+              isActiveRoute(item.path)
                 ? 'bg-black scale-110 -translate-y-0.5'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
-                  $route.path === item.path || 
-                  ($route.path.startsWith('/outfits/add') && item.path === '/outfits') || 
-                  ($route.path.startsWith('/outfits/edit') && item.path === '/outfits') ||
-                  ($route.path.startsWith('/closet/') && item.path === '/closet')
+                  isActiveRoute(item.path)
                     ? 'text-white'
                     : 'text-black'
                 }`"
@@ -171,10 +162,7 @@
             </div>
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
-              $route.path === item.path || 
-              ($route.path.startsWith('/outfits/add') && item.path === '/outfits') || 
-              ($route.path.startsWith('/outfits/edit') && item.path === '/outfits') ||
-              ($route.path.startsWith('/closet/') && item.path === '/closet')
+              isActiveRoute(item.path)
                 ? 'text-black opacity-100 scale-100'
                 : 'text-black opacity-60 scale-90'
             }`">
@@ -183,10 +171,7 @@
 
             <!-- Active indicator -->
             <div
-              v-if="$route.path === item.path || 
-                    ($route.path.startsWith('/outfits/add') && item.path === '/outfits') || 
-                    ($route.path.startsWith('/outfits/edit') && item.path === '/outfits') ||
-                    ($route.path.startsWith('/closet/') && item.path === '/closet')"
+              v-if="isActiveRoute(item.path)"
               class="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-black"
             />
           </div>
@@ -261,6 +246,15 @@ const { registerSearchInput } = useKeyboardShortcuts()
 
 // Computed property to check if current route is landing page
 const isLandingPage = computed(() => route.path === '/')
+
+// Helper function to check if a navigation item is active (memoized for performance)
+const isActiveRoute = (itemPath) => {
+  const currentPath = route.path
+  return currentPath === itemPath || 
+         (currentPath.startsWith('/outfits/add') && itemPath === '/outfits') || 
+         (currentPath.startsWith('/outfits/edit') && itemPath === '/outfits') ||
+         (currentPath.startsWith('/closet/') && itemPath === '/closet')
+}
 
 // Service instances for data prefetching
 const clothesService = new ClothesService()

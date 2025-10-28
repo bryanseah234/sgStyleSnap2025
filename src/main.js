@@ -44,6 +44,7 @@ const routes = [
   { path: '/home', component: Home, meta: { requiresAuth: true } },
   { path: '/closet', component: Cabinet, meta: { requiresAuth: true } },
   { path: '/outfits', component: Outfits, meta: { requiresAuth: true } },
+  { path: '/outfits/suggested', component: Outfits, meta: { requiresAuth: true, subRoute: 'suggestions' } },
   { path: '/friends', component: Friends, meta: { requiresAuth: true, subRoute: 'friends' } },
   { path: '/friends/requests/received', component: Friends, meta: { requiresAuth: true, subRoute: 'requests' } },
   { path: '/friends/requests/sent', component: Friends, meta: { requiresAuth: true, subRoute: 'sent' } },

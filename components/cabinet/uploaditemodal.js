@@ -132,12 +132,12 @@ export default function UploadItemModal({ open, onClose }) {
                     <Upload className={`w-12 h-12 mb-4 ${
                       theme === "dark" ? "text-zinc-500" : "text-stone-400"
                     }`} />
-                    <p className={`text-lg font-medium ${
+                    <p className={`text-lg font-medium text-center ${
                       theme === "dark" ? "text-zinc-400" : "text-stone-600"
                     }`}>
                       Click to upload or drag and drop
                     </p>
-                    <p className={`text-sm mt-2 ${
+                    <p className={`text-sm mt-2 text-center ${
                       theme === "dark" ? "text-zinc-500" : "text-stone-500"
                     }`}>
                       PNG, JPG or JPEG
