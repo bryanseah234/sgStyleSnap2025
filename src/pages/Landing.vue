@@ -58,7 +58,7 @@
           <!-- Main Headline with Kinetic Typography -->
           <h1 
             ref="mainHeadingRef"
-            class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight kinetic-heading jumpy-heading"
+            class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight kinetic-heading"
             :class="{ 'is-animating': isHeadingAnimating }"
           >
             Your Digital
@@ -78,10 +78,10 @@
           <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center hero-fade-in-delay-2">
             <button
               @click="navigateToSignIn"
-              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 relative overflow-hidden"
+              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold text-base sm:text-lg hover:bg-black/90 dark:hover:bg-white/90 transition-all duration-300 hover:scale-105 relative overflow-hidden"
             >
               <span class="relative z-10">Get Started</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-black/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </button>
             <button
               @click="scrollToFeatures"
@@ -96,9 +96,9 @@
     </section>
     
     <!-- Avatar Carousel Section with Lazy Loading -->
-    <section class="py-12 md:py-16 bg-gradient-to-b from-background to-muted/30">
+    <section class="py-8 md:py-12 bg-gradient-to-b from-background to-muted/30">
         <div class="max-w-7xl mx-auto px-6">
-          <div class="text-center mb-8">
+          <div class="text-center mb-6">
             <h2 
               ref="carouselHeadingRef" 
               class="text-3xl md:text-4xl font-bold text-foreground mb-4 scroll-animate"
@@ -864,7 +864,7 @@ onMounted(async () => {
   }
 }
 
-/* Jumpy heading animation */
+/* REMOVED: Jumpy heading animation - no longer needed
 .jumpy-heading {
   animation: jumpyText 3s ease-in-out infinite;
 }
@@ -886,6 +886,7 @@ onMounted(async () => {
     transform: translateY(0);
   }
 }
+*/
 
 /* Wardrobe sparkle effect */
 .wardrobe-sparkle {
@@ -920,6 +921,7 @@ onMounted(async () => {
   z-index: -1;
 }
 
+/* REMOVED: Flying star emoji
 .wardrobe-sparkle::after {
   content: '✨';
   position: absolute;
@@ -927,6 +929,7 @@ onMounted(async () => {
   opacity: 0;
   animation: sparkleParticle 2s ease-in-out infinite;
 }
+*/
 
 @keyframes sparkleGlow {
   0%, 100% {
@@ -959,6 +962,7 @@ onMounted(async () => {
   }
 }
 
+/* REMOVED: Sparkle particle animation - no longer needed
 @keyframes sparkleParticle {
   0% {
     top: 50%;
@@ -994,6 +998,7 @@ onMounted(async () => {
     opacity: 0;
   }
 }
+*/
 
 /* Shimmer effect on hero hover */
 .animate-shimmer {
@@ -1432,19 +1437,13 @@ button {
     background-color: transparent !important;
   }
   
-  /* Disable jumpy heading animation */
-  .jumpy-heading {
-    animation: none !important;
-  }
-  
   /* Disable sparkle effects */
   .wardrobe-sparkle {
     animation: none !important;
     text-shadow: none !important;
   }
   
-  .wardrobe-sparkle::before,
-  .wardrobe-sparkle::after {
+  .wardrobe-sparkle::before {
     display: none !important;
   }
   

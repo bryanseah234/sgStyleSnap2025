@@ -150,7 +150,7 @@ let mouseX = 0
 let mouseY = 0
 let targetMouseX = 0
 let targetMouseY = 0
-let baseCameraPosition = { x: 0, y: 0.3, z: 3 }
+let baseCameraPosition = { x: 0, y: 0.1, z: 3 } // Updated to match new camera position
 let baseCameraRotation = { x: 0, y: 0, z: 0 }
 
 const PARALLAX_CONFIG = {
@@ -401,8 +401,8 @@ const initThreeJS = async () => {
   // Camera
   const aspect = canvasRef.value.clientWidth / canvasRef.value.clientHeight
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000)
-  camera.position.set(0, 0.3, 3)
-  camera.lookAt(0, 0.1, 0)
+  camera.position.set(0, 0.1, 3) // Reduced Y from 0.3 to 0.1 to reduce space above avatar
+  camera.lookAt(0, 0, 0) // Adjusted lookAt to center avatar better
 
   // Renderer with optimized settings
   renderer = new THREE.WebGLRenderer({
@@ -1215,16 +1215,19 @@ watch(currentIndex, () => {
 .avatar-carousel-container {
   position: relative;
   width: 100%;
-  height: 400px;
-  min-height: 400px;
+  max-width: 400px; /* Limit width to avatar size */
+  margin: 0 auto; /* Center the container */
+  height: 350px; /* Reduced height */
+  min-height: 350px;
   overflow: hidden;
   border-radius: 1rem;
 }
 
 @media (min-width: 768px) {
   .avatar-carousel-container {
-    height: 500px;
-    min-height: 500px;
+    max-width: 450px; /* Slightly larger on desktop */
+    height: 400px; /* Reduced from 500px */
+    min-height: 400px;
   }
 }
 
