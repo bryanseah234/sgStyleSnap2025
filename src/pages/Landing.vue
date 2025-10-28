@@ -519,8 +519,10 @@ const handleLoadingError = ({ index, error }) => {
  * - CTA button (200ms delay)
  */
 const setupScrollAnimations = () => {
-  // Check if user prefers reduced motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // Check if user prefers reduced motion (safe window access)
+  const prefersReducedMotion = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false
   
   if (prefersReducedMotion) {
     console.log('🎯 Landing: Reduced motion detected, skipping scroll animations')
