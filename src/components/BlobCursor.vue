@@ -210,36 +210,56 @@ const handleMouseLeave = () => {
 /**
  * Update cursor state based on hover target
  */
-const updateCursorState = (target) => {
-  if (!target) return
-  
-  // Check if hovering over 3D avatar canvas
-  if (target.classList.contains('avatar-canvas') || target.closest('.avatar-carousel-container')) {
-    cursorState.value = 'avatar-hover'
-    return
+
+function getEffectiveBg(el){
+  // climb until a non-transparent bg or <body>
+  let cur = el
+  while (cur && cur !== document.body){
+    const cs = getComputedStyle(cur)
+    const bg = cs.backgroundColor
+    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return bg
+    cur = cur.parentElement
   }
-  
-  // Check if hovering over buttons or interactive elements
-  if (
-    target.tagName === 'BUTTON' ||
-    target.tagName === 'A' ||
-    target.classList.contains('btn') ||
-    target.classList.contains('liquid-button') ||
-    target.closest('button') ||
-    target.closest('a')
-  ) {
+  return getComputedStyle(document.body).backgroundColor || 'rgb(255,255,255)'
+}
+
+function luminance(rgb){
+  const m = rgb.match(/\d+(\.\d+)?/g) || [255,255,255]
+  const [r,g,b] = m.map(Number).slice(0,3).map(v=>{
+    v/=255; return v<=0.03928? v/12.92 : Math.pow((v+0.055)/1.055,2.4)
+  })
+  return 0.2126*r + 0.7152*g + 0.0722*b
+}
+
+let activeBtn = null
+
+function updateCursorState(target){
+  if (!target){ cursorState.value='default'; return }
+  const btn = target.closest?.('button, a, .btn')
+  if (btn){
     cursorState.value = 'button-hover'
+    // compute contrast color once per button
+    if (activeBtn !== btn){
+      activeBtn = btn
+      const bg = getEffectiveBg(btn)
+      const L = luminance(bg)
+      const contrast = L > 0.5 ? '#000' : '#fff'   // light bg -> black blob, dark bg -> white blob
+      // push to the blob element as a CSS var
+      if (blobRef.value){
+        blobRef.value.style.setProperty('--hover-blob', contrast)
+      }
+    }
     return
   }
-  
-  // Check if dragging carousel
-  if (target.classList.contains('is-dragging') || target.closest('.is-dragging')) {
-    cursorState.value = 'dragging'
-    return
+  activeBtn = null
+  // ... your existing checks for avatar/dragging ...
+  if (target.classList?.contains('avatar-canvas') || target.closest?.('.avatar-carousel-container')){
+    cursorState.value='avatar-hover'; return
   }
-  
-  // Default state
-  cursorState.value = 'default'
+  if (target.classList?.contains('is-dragging') || target.closest?.('.is-dragging')){
+    cursorState.value='dragging'; return
+  }
+  cursorState.value='default'
 }
 
 /**
@@ -363,8 +383,9 @@ onUnmounted(() => {
 
 .blob-cursor.button-hover { width: 38px; height: 38px; }
 .blob-cursor.button-hover .blob-inner {
+  mix-blend-mode: normal;
   background: transparent;
-  border: 2px solid var(--blob-ring);
+  border: 2px solid var(--hover-blob, var(--blob));
   border-radius: 50%;
   animation: blob-ring-pulse 2s ease-in-out infinite;
 }
