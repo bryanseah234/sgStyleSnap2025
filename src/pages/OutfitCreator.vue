@@ -708,6 +708,7 @@ import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
 import { generateRecommendations, getCategoryDisplayName } from '@/services/recommendation-service.js'
+import { getFirstName } from '@/utils'
 import { 
   Undo, 
   Redo, 
@@ -1386,12 +1387,6 @@ const clearCanvas = () => {
 
 const toggleGrid = () => {
   showGrid.value = !showGrid.value
-}
-
-// Helper function to get first name from full name
-const getFirstName = (fullName) => {
-  if (!fullName) return ''
-  return fullName.split(' ')[0]
 }
 
 const scaleSelectedItem = (delta) => {

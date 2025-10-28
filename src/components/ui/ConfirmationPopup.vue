@@ -1,7 +1,7 @@
 <template>
   <!-- Confirmation Popup -->
   <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="handleBackdropClick">
-    <div :class="`w-full max-w-md rounded-xl p-6 ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white'}`" @click.stop>
+    <div :class="`relative w-full max-w-md rounded-xl p-6 ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white'}`" @click.stop>
       <!-- Close Button -->
       <button
         @click="$emit('close')"

@@ -23,7 +23,7 @@
       <!-- Friend Info -->
       <div class="flex-1">
         <h3 class="font-semibold text-foreground">
-          {{ suggestion.suggester?.name || suggestion.suggester?.username || 'Unknown Friend' }}
+          {{ getFirstName(suggestion.suggester?.name) || suggestion.suggester?.username || 'Unknown Friend' }}
         </h3>
         <p :class="`text-sm text-stone-600 dark:text-zinc-400}`">
           Suggested an outfit
@@ -99,6 +99,7 @@ import { ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { friendSuggestionsService } from '@/services/friendSuggestionsService'
+import { getFirstName } from '@/utils'
 import { Check, X, Shirt } from 'lucide-vue-next'
 
 // Props

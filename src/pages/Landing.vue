@@ -75,17 +75,17 @@
           <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center hero-fade-in-delay-2">
             <button
               @click="navigateToSignIn"
-              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg relative overflow-hidden"
+              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-foreground bg-background rounded-xl font-semibold text-base sm:text-lg hover:bg-muted transition-all duration-300 hover:scale-105 shadow-lg relative overflow-hidden"
             >
               <span class="relative z-10">Get Started</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </button>
             <button
               @click="scrollToFeatures"
-              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-primary rounded-xl font-semibold text-base sm:text-lg hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-105 relative overflow-hidden"
+              class="group w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 relative overflow-hidden"
             >
               <span class="relative z-10">Learn More</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </button>
           </div>
         </div>
@@ -93,8 +93,7 @@
     </section>
     
     <!-- Avatar Carousel Section with Lazy Loading -->
-    <SectionTransition type="circle" :duration="1200" :threshold="0.25">
-      <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
+    <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
         <div class="max-w-7xl mx-auto px-6">
           <div class="text-center mb-12">
             <h2 
@@ -151,22 +150,20 @@
           
         </div>
       </section>
-    </SectionTransition>
     
     <!-- Features Section - Bento Grid -->
-    <SectionTransition type="liquid" :duration="1400" :threshold="0.2" :delay="100">
-      <section ref="featuresSection" class="py-16 md:py-24">
-        <div class="max-w-7xl mx-auto px-6">
-          <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need for Your Style Journey
-            </h2>
-            <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From organizing your closet to creating perfect outfits, StyleSnap has all the tools you need.
-            </p>
-          </div>
-          
-          <!-- Bento Grid Layout -->
+    <section ref="featuresSection" class="py-16 md:py-24">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Everything You Need for Your Style Journey
+          </h2>
+          <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+            From organizing your closet to creating perfect outfits, StyleSnap has all the tools you need.
+          </p>
+        </div>
+        
+        <!-- Bento Grid Layout -->
         <div class="bento-grid">
           <!-- Feature 1: Digital Closet - Top Left -->
           <div 
@@ -304,11 +301,9 @@
         </div>
       </div>
     </section>
-    </SectionTransition>
     
     <!-- CTA Section -->
-    <SectionTransition type="wave" :duration="1300" :threshold="0.3">
-      <section ref="ctaSectionRef" class="py-16 md:py-24 scroll-animate">
+    <section ref="ctaSectionRef" class="py-16 md:py-24 scroll-animate">
       <div class="max-w-4xl mx-auto text-center px-6">
         <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-6">
           Ready to Transform Your Style?
@@ -319,13 +314,12 @@
         </p>
         <button
           @click="navigateToSignIn"
-          class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
+          class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 border-2 border-primary text-foreground bg-background rounded-xl font-semibold text-base sm:text-lg hover:bg-muted transition-all duration-200 hover:scale-105 shadow-lg"
         >
           Get Started Now
         </button>
       </div>
     </section>
-    </SectionTransition>
     
     <!-- Footer -->
     <footer class="bg-muted/50 py-8">
@@ -338,7 +332,7 @@
             <span class="text-lg font-semibold text-foreground">StyleSnap</span>
           </div>
           <p class="text-sm text-muted-foreground">
-            © 2024 StyleSnap. All rights reserved.
+            © 2025 StyleSnap. All rights reserved.
           </p>
         </div>
       </div>
@@ -382,7 +376,6 @@ import { defineAsyncComponent } from 'vue'
 const Avatar3DCarousel = defineAsyncComponent(() => 
   import('@/components/Avatar3DCarousel.vue')
 )
-import SectionTransition from '@/components/SectionTransition.vue'
 import ScrollHint from '@/components/ScrollHint.vue'
 
 // Composables

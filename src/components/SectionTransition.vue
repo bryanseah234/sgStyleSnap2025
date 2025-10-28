@@ -122,7 +122,8 @@ const uniqueId = ref(`section-${Math.random().toString(36).substr(2, 9)}`)
 
 // Animation state for masks
 const circleRadius = ref(0)
-const liquidPath = ref('M 0.5,0.5 m -0,0 a 0,0 0 1,0 0,0 a 0,0 0 1,0 -0,0')
+// Use minimum scale of 0.01 to avoid invalid SVG arc with 0 radius
+const liquidPath = ref('M 0.5,0.5 m -0.005,0 a 0.005,0.0055 0 1,0 0.01,0 a 0.005,0.0055 0 1,0 -0.01,0')
 const wavePath = ref('M 0,0 L 0,0 L 0,1 L 0,1 Z')
 
 // Feature detection
@@ -250,7 +251,8 @@ const animateLiquid = () => {
     const easedProgress = easeOutQuart(progress)
     
     // Interpolate path (simplified - uses scaling)
-    const scale = easedProgress
+    // Use minimum scale of 0.01 to avoid invalid SVG arc with 0 radius
+    const scale = Math.max(0.01, easedProgress)
     liquidPath.value = `M 0.5,0.5 m -${0.50 * scale},0 a ${0.50 * scale},${0.55 * scale} 0 1,0 ${1.00 * scale},0 a ${0.50 * scale},${0.55 * scale} 0 1,0 -${1.00 * scale},0`
     
     if (progress < 1) {

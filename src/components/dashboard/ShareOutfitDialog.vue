@@ -17,7 +17,7 @@
       </button>
 
       <h3 :class="`text-2xl font-bold mb-4 pr-8 text-black dark:text-white`">
-        Share Outfit with {{ friendName }}
+        Share Outfit with {{ getFirstName(friendName) }}
       </h3>
 
       <div class="space-y-4">
@@ -74,6 +74,7 @@
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { useSanitize } from '@/composables/useSanitize'
+import { getFirstName } from '@/utils'
 import { X } from 'lucide-vue-next'
 
 // Props
