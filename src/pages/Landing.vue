@@ -98,7 +98,7 @@
             Meet Your Digital Self
           </h2>
           <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Swipe to explore stunning 3D avatars. Your personal style journey starts here.
+            Your personal style journey starts here.
           </p>
         </div>
         
@@ -111,23 +111,11 @@
           @loading-error="handleLoadingError"
         />
         
-        <!-- CTA Below Carousel -->
-        <div class="text-center mt-8">
-          <p class="text-base text-muted-foreground mb-4">
-            {{ carouselSubtext }}
-          </p>
-          <button
-            @click="navigateToSignIn"
-            class="px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
-          >
-            Create Your Avatar
-          </button>
-        </div>
       </div>
     </section>
     
     <!-- Features Section - Bento Grid -->
-    <section ref="featuresSection" class="py-16 md:py-24 bg-muted/30">
+    <section ref="featuresSection" class="py-16 md:py-24">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
           <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -148,7 +136,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -170,7 +158,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-white via-white to-primary/5 rounded-3xl p-8 md:p-12 shadow-xl transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden flex flex-col items-center justify-center text-center">
+            <div class="relative h-full bg-gradient-to-br from-white via-white to-primary/5 rounded-3xl p-8 md:p-12 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden flex flex-col items-center justify-center text-center">
               <div class="shimmer-overlay-large"></div>
               <div class="relative z-10 w-full">
                 <div class="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-6 mx-auto group-hover:bg-primary/20 transition-colors duration-300 group-hover:rotate-6">
@@ -194,7 +182,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -216,7 +204,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -238,7 +226,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -260,7 +248,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-white rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -367,7 +355,6 @@ const avatarUrls = ref([
 
 const currentAvatarIndex = ref(0)
 const loadedAvatarsCount = ref(0)
-const carouselSubtext = ref('Use arrow keys or swipe to navigate')
 
 // Custom directive for scroll reveal animations
 const vScrollReveal = {
@@ -436,28 +423,11 @@ const handleThemeToggle = async () => {
 /**
  * Handle avatar carousel change event
  * 
- * Updates the current avatar index and can update UI accordingly
+ * Updates the current avatar index
  */
 const handleAvatarChange = (index) => {
   console.log('🎭 Avatar changed to:', index + 1)
   currentAvatarIndex.value = index
-  
-  // Optional: Update subtext based on avatar (example)
-  const avatarNames = [
-    'The Explorer',
-    'The Artist',
-    'The Innovator',
-    'The Trendsetter',
-    'The Classic',
-    'The Bold',
-    'The Minimalist',
-    'The Maximalist',
-    'The Unique',
-    'The Timeless',
-    'The Original'
-  ]
-  
-  carouselSubtext.value = avatarNames[index] || 'Use arrow keys or swipe to navigate'
 }
 
 /**

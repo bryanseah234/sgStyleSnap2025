@@ -46,25 +46,6 @@
       aria-label="3D Avatar Carousel"
     ></canvas>
 
-    <!-- Navigation Dots -->
-    <div class="navigation-dots" role="navigation" aria-label="Avatar navigation">
-      <button
-        v-for="(url, index) in avatarUrls"
-        :key="index"
-        @click="jumpToAvatar(index)"
-        class="nav-dot"
-        :class="{ 'nav-dot-active': currentIndex === index }"
-        :aria-label="`Go to avatar ${index + 1}`"
-        :aria-current="currentIndex === index ? 'true' : 'false'"
-      >
-        <span class="sr-only">Avatar {{ index + 1 }}</span>
-      </button>
-    </div>
-
-    <!-- Avatar Info (Optional) -->
-    <div class="avatar-info" v-if="showInfo">
-      <p class="avatar-number">{{ currentIndex + 1 }} / {{ avatarUrls.length }}</p>
-    </div>
   </div>
 </template>
 
@@ -139,6 +120,11 @@ let dragStartOffset = 0
 // Swipe threshold (px)
 const SWIPE_THRESHOLD = 50
 
+// Auto-scroll variables
+let rotationCount = 0
+const ROTATIONS_PER_AVATAR = 3
+const ROTATION_SPEED = 0.015 // Faster rotation speed
+
 // ============================================
 // THREE.JS SCENE SETUP
 // ============================================
@@ -156,7 +142,7 @@ const initThreeJS = () => {
   // Camera
   const aspect = canvasRef.value.clientWidth / canvasRef.value.clientHeight
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000)
-  camera.position.set(0, 0.8, 4)
+  camera.position.set(0, 0.8, 3)
   camera.lookAt(0, 0.5, 0)
 
   // Renderer
@@ -256,11 +242,11 @@ const loadSingleAvatar = (url, index) => {
       (gltf) => {
         const avatar = gltf.scene
         
-        // Scale avatar appropriately
+        // Scale avatar appropriately (larger for full screen display)
         const box = new THREE.Box3().setFromObject(avatar)
         const size = box.getSize(new THREE.Vector3())
         const maxDim = Math.max(size.x, size.y, size.z)
-        const scale = 1.5 / maxDim // Scale to fit nicely
+        const scale = 2.2 / maxDim // Larger scale for full viewport
         avatar.scale.setScalar(scale)
 
         // Center avatar
@@ -354,11 +340,33 @@ const animate = () => {
   const targetX = currentIndex.value * AVATAR_SPACING
   camera.position.x += (targetX - currentOffset - camera.position.x) * lerpFactor
 
-  // Subtle rotation for active avatar (if reduced motion is not preferred)
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  // Auto-rotate and advance carousel (if reduced motion is not preferred)
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !isDraggingActive) {
     const activeAvatar = avatars[currentIndex.value]
     if (activeAvatar && activeAvatar.userData.model) {
-      activeAvatar.userData.model.rotation.y += 0.002
+      const previousRotation = activeAvatar.userData.model.rotation.y
+      activeAvatar.userData.model.rotation.y += ROTATION_SPEED
+      
+      // Check if we've completed a full rotation (2π radians)
+      if (Math.floor(previousRotation / (Math.PI * 2)) < Math.floor(activeAvatar.userData.model.rotation.y / (Math.PI * 2))) {
+        rotationCount++
+        
+        // After 3 rotations, move to next avatar
+        if (rotationCount >= ROTATIONS_PER_AVATAR) {
+          rotationCount = 0
+          
+          // Move to next avatar with looping
+          if (currentIndex.value < props.avatarUrls.length - 1) {
+            currentIndex.value++
+          } else {
+            // Loop back to first avatar
+            currentIndex.value = 0
+          }
+          
+          snapToAvatar(currentIndex.value)
+          emit('avatar-change', currentIndex.value)
+        }
+      }
     }
   }
 
@@ -702,16 +710,16 @@ watch(currentIndex, () => {
 .avatar-carousel-container {
   position: relative;
   width: 100%;
-  height: 70vh;
-  min-height: 400px;
+  height: 100vh;
+  min-height: 500px;
   overflow: hidden;
   border-radius: 1rem;
 }
 
 @media (min-width: 768px) {
   .avatar-carousel-container {
-    height: 80vh;
-    min-height: 600px;
+    height: 100vh;
+    min-height: 700px;
   }
 }
 
@@ -810,102 +818,6 @@ watch(currentIndex, () => {
   transform: scale(0.98);
 }
 
-/* ============================================
-   NAVIGATION DOTS
-   ============================================ */
-
-.navigation-dots {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 0.75rem;
-  z-index: 5;
-  padding: 0.5rem;
-  background: hsl(var(--background) / 0.6);
-  backdrop-filter: blur(8px);
-  border-radius: 2rem;
-  border: 1px solid hsl(var(--border) / 0.5);
-}
-
-.nav-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: hsl(var(--muted-foreground) / 0.3);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  padding: 0.5rem; /* Larger touch target */
-  margin: -0.5rem; /* Compensate for padding */
-  position: relative;
-}
-
-.nav-dot::before {
-  content: '';
-  position: absolute;
-  inset: 0.5rem;
-  border-radius: 50%;
-  background: hsl(var(--muted-foreground) / 0.3);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.nav-dot:hover::before {
-  background: hsl(var(--muted-foreground) / 0.6);
-  transform: scale(1.2);
-}
-
-.nav-dot:focus {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
-}
-
-.nav-dot-active::before {
-  background: hsl(var(--primary));
-  transform: scale(1.4);
-}
-
-.nav-dot-active:hover::before {
-  transform: scale(1.5);
-}
-
-/* Screen reader only text */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-/* ============================================
-   AVATAR INFO
-   ============================================ */
-
-.avatar-info {
-  position: absolute;
-  top: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0.5rem 1rem;
-  background: hsl(var(--background) / 0.6);
-  backdrop-filter: blur(8px);
-  border-radius: 0.5rem;
-  border: 1px solid hsl(var(--border) / 0.5);
-  z-index: 5;
-}
-
-.avatar-number {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: hsl(var(--foreground));
-  margin: 0;
-}
 
 /* ============================================
    ACCESSIBILITY
