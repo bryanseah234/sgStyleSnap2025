@@ -128,8 +128,10 @@ export async function classifyClothingItem(image) {
     // Call your Hugging Face FashionRNN API
     const response = await fetch('https://canken-is216.hf.space/run/predict', {
       method: 'POST',
+      mode: 'cors', // Explicitly set CORS mode
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         data: [`data:image/jpeg;base64,${imageData}`],

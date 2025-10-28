@@ -83,9 +83,13 @@ export function useTextAnimation(
   
   const timing = timingConfig[headingLevel]
   
-  // Check for accessibility preferences
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  // Check for accessibility preferences (with window check)
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false
+  const isTouchDevice = typeof window !== 'undefined' 
+    ? ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+    : false
   
   // Intersection Observer
   let observer: IntersectionObserver | null = null

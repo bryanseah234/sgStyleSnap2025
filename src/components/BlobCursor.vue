@@ -83,8 +83,8 @@ const isMouseInViewport = ref(true)
 // CONFIGURATION
 // ============================================
 
-// Lerp factor (lower = more lag, smoother)
-const LERP_FACTOR = 0.15
+// Lerp factor (lower = more lag, smoother) - Increased for better responsiveness
+const LERP_FACTOR = 0.28
 
 // Blob morph animation speed
 const MORPH_SPEED = 0.02
@@ -145,9 +145,9 @@ const animate = () => {
   const deltaX = mouseX.value - prevMouseX
   const deltaY = mouseY.value - prevMouseY
   
-  // Smooth velocity with lerp
-  dragVelocityX.value = lerp(dragVelocityX.value, deltaX, 0.2)
-  dragVelocityY.value = lerp(dragVelocityY.value, deltaY, 0.2)
+  // Smooth velocity with lerp - Increased for better responsiveness
+  dragVelocityX.value = lerp(dragVelocityX.value, deltaX, 0.35)
+  dragVelocityY.value = lerp(dragVelocityY.value, deltaY, 0.35)
   
   prevMouseX = mouseX.value
   prevMouseY = mouseY.value
@@ -337,8 +337,8 @@ onUnmounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: difference;
@@ -349,7 +349,7 @@ onUnmounted(() => {
 .blob-inner {
   width: 100%;
   height: 100%;
-  background: hsl(var(--primary));
+  background: hsl(var(--foreground));
   border-radius: 50%;
   animation: blob-morph 8s ease-in-out infinite;
   transition: border-radius 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -360,51 +360,51 @@ onUnmounted(() => {
    CURSOR STATES
    ============================================ */
 
-/* Default State - Small circular blob */
+/* Default State - Small circular blob (10% smaller) */
 .blob-cursor.default {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   transform-origin: center;
 }
 
 .blob-cursor.default .blob-inner {
   border-radius: 50%;
-  background: hsl(var(--primary));
+  background: hsl(var(--foreground));
 }
 
-/* Avatar Hover State - Large blob */
+/* Avatar Hover State - Large blob (10% smaller) */
 .blob-cursor.avatar-hover {
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
 }
 
 .blob-cursor.avatar-hover .blob-inner {
-  background: hsl(var(--primary) / 0.8);
+  background: hsl(var(--foreground) / 0.8);
   animation: blob-morph-large 6s ease-in-out infinite;
 }
 
-/* Button Hover State - Ring/donut shape */
+/* Button Hover State - Ring/donut shape (10% smaller) */
 .blob-cursor.button-hover {
-  width: 60px;
-  height: 60px;
+  width: 54px;
+  height: 54px;
 }
 
 .blob-cursor.button-hover .blob-inner {
   background: transparent;
-  border: 3px solid hsl(var(--primary));
+  border: 3px solid hsl(var(--foreground));
   border-radius: 50%;
   animation: blob-ring-pulse 2s ease-in-out infinite;
 }
 
-/* Dragging State - Stretched ellipse */
+/* Dragging State - Stretched ellipse (10% smaller) */
 .blob-cursor.dragging {
-  width: 60px;
-  height: 45px;
+  width: 54px;
+  height: 40px;
   transition: width 0.2s ease, height 0.2s ease;
 }
 
 .blob-cursor.dragging .blob-inner {
-  background: hsl(var(--primary) / 0.9);
+  background: hsl(var(--foreground) / 0.9);
   border-radius: 45% 55% 60% 40% / 50% 50% 50% 50%;
   animation: blob-drag-stretch 0.4s ease-in-out infinite;
 }
@@ -475,13 +475,9 @@ onUnmounted(() => {
    DARK MODE ADJUSTMENTS
    ============================================ */
 
-.dark .blob-cursor .blob-inner {
-  background: hsl(var(--primary));
-}
-
-.dark .blob-cursor.button-hover .blob-inner {
-  border-color: hsl(var(--primary));
-}
+/* Colors now automatically adapt via --foreground variable */
+/* Dark mode: --foreground is white/light */
+/* Light mode: --foreground is black/dark */
 
 /* ============================================
    PERFORMANCE OPTIMIZATIONS

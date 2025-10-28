@@ -16,7 +16,7 @@ import './index.css'
 import { useTheme } from './composables/useTheme'
 import { useThemeStore } from './stores/theme-store'
 import { setupPageTransition, setupFocusManagement } from '@/composables/usePageTransition'
-import { displayConsoleArt } from '@/utils/console-art'
+// import { displayConsoleArt } from '@/utils/console-art' // Disabled for cleaner console
 
 // Import page components
 import Landing from './pages/Landing.vue'
@@ -376,8 +376,8 @@ function initializeThemeSystem() {
 // Initialize theme system once
 initializeThemeSystem()
 
-// Display console art and messages
-displayConsoleArt()
+// Display console art and messages (disabled for cleaner console)
+// displayConsoleArt()
 
 const authInitPromise = authStore.initializeAuth().then(async () => {
   console.log('✅ Auth store initialized successfully')

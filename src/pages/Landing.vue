@@ -349,6 +349,7 @@ import { useTextAnimation } from '@/composables/useTextAnimation'
 import { useKonamiCode } from '@/composables/useKonamiCode'
 import { useTripleClick } from '@/composables/useTripleClick'
 import { displayAchievement } from '@/utils/console-art'
+import { registerAvatarCacheWorker, prefetchAvatars, preloadCriticalAvatars } from '@/utils/avatar-cache'
 import { 
   Shirt, 
   Palette, 
@@ -653,7 +654,7 @@ const createConfettiEffect = () => {
 }
 
 // Show triple-click hint after a delay
-onMounted(() => {
+onMounted(async () => {
   setupScrollAnimations()
   
   // Show hint after 5 seconds if user hasn't found it
@@ -668,6 +669,40 @@ onMounted(() => {
       }, 10000)
     }
   }, 5000)
+  
+  // Initialize avatar caching system
+  try {
+    console.log('🚀 Landing: Initializing avatar cache...')
+    
+    // Register service worker for caching
+    const swRegistered = await registerAvatarCacheWorker()
+    
+    if (swRegistered) {
+      // Preload critical avatars (first 3) using link prefetch
+      preloadCriticalAvatars(avatarUrls.value)
+      
+      // Prefetch remaining avatars in background after page is idle
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          console.log('💾 Landing: Prefetching avatars in background...')
+          prefetchAvatars(avatarUrls.value.slice(3)) // Prefetch remaining avatars
+        }, { timeout: 5000 })
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(() => {
+          console.log('💾 Landing: Prefetching avatars in background...')
+          prefetchAvatars(avatarUrls.value.slice(3))
+        }, 3000)
+      }
+      
+      console.log('✅ Landing: Avatar cache initialized')
+    } else {
+      console.warn('⚠️ Landing: Avatar caching not available, using direct loading')
+    }
+  } catch (error) {
+    console.error('❌ Landing: Failed to initialize avatar cache:', error)
+    // Continue without caching - avatars will still load normally
+  }
 })
 </script>
 
