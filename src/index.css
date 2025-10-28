@@ -606,30 +606,47 @@
    NAVBAR LIQUID GLASS EFFECTS
    ============================================ */
 
-/* Navbar container with liquid glass */
+/* PERFORMANCE: Navbar with solid backgrounds instead of backdrop-filter */
 .navbar-glass {
-  -webkit-backdrop-filter: blur(var(--blur-medium));
-  backdrop-filter: blur(var(--blur-medium));
-  background: rgba(255, 255, 255, 0.2);
+  /* PERFORMANCE: Removed expensive backdrop-filter - using solid background instead */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: all var(--duration-normal) var(--ease-liquid);
+  transition: background-color var(--duration-normal) var(--ease-liquid);
+  contain: layout style paint;
 }
 
 .navbar-glass:hover {
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
-  background: rgba(255, 255, 255, 0.25);
+  /* PERFORMANCE: Only adjust opacity, not blur */
+  background: rgba(255, 255, 255, 0.95);
   transform: translateY(-1px);
+  will-change: transform;
+}
+
+.navbar-glass:not(:hover) {
+  will-change: auto;
 }
 
 /* Dark mode navbar */
 .dark .navbar-glass {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .dark .navbar-glass:hover {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.95);
+}
+
+/* Mobile: Solid backgrounds */
+@media (max-width: 768px) {
+  .navbar-glass {
+    background: rgba(255, 谈到, 255, 0.95);
+  }
+  
+  .dark .navbar-glass {
+    background: rgba(0, 0, 0, 0.95);
+  }
 }
 
 /* Navigation item liquid effects */
@@ -641,8 +658,9 @@
 
 .nav-item-liquid:hover {
   transform: translateX(4px) translateZ(5px);
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
+  /* PERFORMANCE: Removed backdrop-filter */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .nav-item-liquid::before {
@@ -717,20 +735,28 @@
   backdrop-filter: blur(var(--blur-light));
 }
 
-/* Stats cards with liquid glass hover */
+/* PERFORMANCE: Stats cards - removed backdrop-filter, simplified shadows */
 .liquid-card {
   position: relative;
   transition: all var(--duration-normal) var(--ease-liquid);
   transform: translateZ(0);
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
+  /* PERFORMANCE: Removed backdrop-filter */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  contain: layout style paint;
 }
 
 .liquid-card:hover {
   transform: translateY(-8px) translateZ(15px);
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  /* PERFORMANCE: Removed backdrop-filter, simplified shadow */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  will-change: transform;
+}
+
+.liquid-card:not(:hover) {
+  will-change: auto;
 }
 
 .liquid-card::before {
@@ -771,12 +797,13 @@
 /* Dark mode adjustments */
 /* Stats cards remain theme-neutral - no dark mode overrides */
 
-/* Mobile fallback */
+/* PERFORMANCE: Mobile fallback - minimal shadows */
 @media (max-width: 768px) {
   .liquid-card:hover {
     transform: translateY(-4px);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
   }
   
   .liquid-card::before {
@@ -805,20 +832,28 @@
    CARDS/ITEMS GRID LIQUID GLASS EFFECTS
    ============================================ */
 
-/* Item cards with liquid glass hover */
+/* PERFORMANCE: Item cards - removed backdrop-filter, simplified shadows */
 .liquid-item-card {
   position: relative;
   transition: all var(--duration-normal) var(--ease-liquid);
   transform: translateZ(0);
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
+  /* PERFORMANCE: Removed backdrop-filter */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  contain: layout style paint;
 }
 
 .liquid-item-card:hover {
   transform: translateY(-6px) translateZ(12px);
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  /* PERFORMANCE: Removed backdrop-filter, simplified shadow */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+  will-change: transform;
+}
+
+.liquid-item-card:not(:hover) {
+  will-change: auto;
 }
 
 .liquid-item-card::before {
@@ -884,12 +919,13 @@
 /* Dark mode adjustments */
 /* Clothing item cards remain theme-neutral - no dark mode overrides */
 
-/* Mobile fallback */
+/* PERFORMANCE: Mobile - minimal shadows, no backdrop-filter */
 @media (max-width: 768px) {
   .liquid-item-card:hover {
     transform: translateY(-3px);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   }
   
   .liquid-item-card::before {
@@ -923,20 +959,27 @@
    BUTTONS LIQUID GLASS RIPPLE EFFECTS
    ============================================ */
 
-/* Base liquid button */
+/* PERFORMANCE: Base liquid button - removed backdrop-filter */
 .liquid-button {
   position: relative;
   overflow: hidden;
   transition: all var(--duration-fast) var(--ease-liquid);
   transform: translateZ(0);
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
+  /* PERFORMANCE: Removed backdrop-filter */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  contain: layout style paint;
 }
 
 .liquid-button:hover {
   transform: translateY(-1px) translateZ(2px);
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  will-change: transform;
+}
+
+.liquid-button:not(:hover) {
+  will-change: auto;
 }
 
 .liquid-button:active {
@@ -987,47 +1030,47 @@
   backdrop-filter: blur(var(--blur-heavy));
 }
 
-/* Dark mode adjustments */
+/* PERFORMANCE: Dark mode - no backdrop-filter */
 .dark .liquid-button {
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .dark .liquid-button:hover {
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .dark .liquid-ripple {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Button variants with liquid glass */
+/* PERFORMANCE: Button variants - simplified shadows */
 .liquid-button[data-variant="default"]:hover {
   background: linear-gradient(135deg, var(--primary), var(--primary-foreground));
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .liquid-button[data-variant="destructive"]:hover {
   background: linear-gradient(135deg, var(--destructive), var(--destructive-foreground));
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .liquid-button[data-variant="outline"]:hover {
   border-color: var(--accent);
   background: var(--accent);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .liquid-button[data-variant="secondary"]:hover {
   background: linear-gradient(135deg, var(--secondary), var(--secondary-foreground));
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
 .liquid-button[data-variant="ghost"]:hover {
   background: var(--accent);
   transform: translateY(-2px) translateZ(3px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Mobile fallback */
@@ -1068,35 +1111,41 @@
    MODALS/PANELS FLUID EXPANSION EFFECTS
    ============================================ */
 
-/* Modal backdrop with liquid glass */
+/* PERFORMANCE: Modal backdrop - removed backdrop-filter */
 .liquid-modal-backdrop {
-  background: rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: blur(var(--blur-medium));
-  backdrop-filter: blur(var(--blur-medium));
-  transition: all var(--duration-normal) var(--ease-liquid);
+  background: rgba(0, 0, 0, 0.6);
+  /* PERFORMANCE: Removed expensive backdrop-filter */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: background-color var(--duration-normal) var(--ease-liquid);
+  contain: layout style paint;
 }
 
 .liquid-modal-backdrop:hover {
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
 }
 
-/* Modal card with fluid expansion */
+/* PERFORMANCE: Modal card - removed backdrop-filter, simplified shadows */
 .liquid-modal-card {
   position: relative;
   transition: all var(--duration-slow) var(--ease-spring-gentle);
   transform: translateZ(0);
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
-  background: rgba(255, 255, 255, 0.95);
+  /* PERFORMANCE: Removed backdrop-filter */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.98);
+  contain: layout style paint size;
 }
 
 .liquid-modal-card:hover {
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
+  /* PERFORMANCE: Simplified shadow */
   transform: translateY(-2px) translateZ(5px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  will-change: transform;
+}
+
+.liquid-modal-card:not(:hover) {
+  will-change: auto;
 }
 
 .liquid-modal-card::before {
@@ -1148,28 +1197,38 @@
   transform: scale(1.05) translateZ(3px);
 }
 
-/* Dialog with liquid glass */
+/* PERFORMANCE: Dialog backdrop - removed backdrop-filter */
 .liquid-dialog-backdrop {
-  background: rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: blur(var(--blur-medium));
-  backdrop-filter: blur(var(--blur-medium));
-  transition: all var(--duration-normal) var(--ease-liquid);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: background-color var(--duration-normal) var(--ease-liquid);
+  contain: layout style paint;
 }
 
+.liquid-dialog-backdrop:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* PERFORMANCE: Dialog card - removed backdrop-filter */
 .liquid-dialog-card {
   position: relative;
   transition: all var(--duration-slow) var(--ease-spring-gentle);
   transform: translateZ(0);
-  -webkit-backdrop-filter: blur(var(--blur-light));
-  backdrop-filter: blur(var(--blur-light));
-  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.98);
+  contain: layout style paint size;
 }
 
 .liquid-dialog-card:hover {
-  -webkit-backdrop-filter: blur(var(--blur-dynamic));
-  backdrop-filter: blur(var(--blur-dynamic));
   transform: translateY(-1px) translateZ(3px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  will-change: transform;
+}
+
+.liquid-dialog-card:not(:hover) {
+  will-change: auto;
 }
 
 .liquid-dialog-content {

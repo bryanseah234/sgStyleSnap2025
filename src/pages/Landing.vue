@@ -90,6 +90,42 @@
       </div>
     </section>
     
+    <!-- Avatar Carousel Section -->
+    <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Meet Your Digital Self
+          </h2>
+          <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Swipe to explore stunning 3D avatars. Your personal style journey starts here.
+          </p>
+        </div>
+        
+        <!-- Avatar 3D Carousel -->
+        <Avatar3DCarousel
+          :avatar-urls="avatarUrls"
+          :show-info="true"
+          @avatar-change="handleAvatarChange"
+          @avatar-loaded="handleAvatarLoaded"
+          @loading-error="handleLoadingError"
+        />
+        
+        <!-- CTA Below Carousel -->
+        <div class="text-center mt-8">
+          <p class="text-base text-muted-foreground mb-4">
+            {{ carouselSubtext }}
+          </p>
+          <button
+            @click="navigateToSignIn"
+            class="px-6 py-3 sm:px-8 sm:py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-lg"
+          >
+            Create Your Avatar
+          </button>
+        </div>
+      </div>
+    </section>
+    
     <!-- Features Section - Bento Grid -->
     <section ref="featuresSection" class="py-16 md:py-24 bg-muted/30">
       <div class="max-w-7xl mx-auto px-6">
@@ -303,6 +339,7 @@ import {
   Sun,
   Moon
 } from 'lucide-vue-next'
+import Avatar3DCarousel from '@/components/Avatar3DCarousel.vue'
 
 // Composables
 const router = useRouter()
@@ -312,6 +349,25 @@ const { theme, toggleTheme } = useTheme()
 const featuresSection = ref(null)
 const isHeroHovered = ref(false)
 const hoveredCard = ref(null)
+
+// Avatar carousel data
+const avatarUrls = ref([
+  'https://models.readyplayer.me/690030c2657a118475704718.glb',
+  'https://models.readyplayer.me/690030eb16afa77eb4fbeb91.glb',
+  'https://models.readyplayer.me/6900316350f0151f18f12166.glb',
+  'https://models.readyplayer.me/690031b503a04907a7367d03.glb',
+  'https://models.readyplayer.me/6900321e03a04907a73686be.glb',
+  'https://models.readyplayer.me/6900328321aeaea077d3f32e.glb',
+  'https://models.readyplayer.me/690032b5cc76da0daf9b671c.glb',
+  'https://models.readyplayer.me/690032ff08032bae29097e9b.glb',
+  'https://models.readyplayer.me/6900333003a04907a7369c05.glb',
+  'https://models.readyplayer.me/69003054afd9f514ac528c56.glb',
+  'https://models.readyplayer.me/690026ea4e683ec207c58310.glb'
+])
+
+const currentAvatarIndex = ref(0)
+const loadedAvatarsCount = ref(0)
+const carouselSubtext = ref('Use arrow keys or swipe to navigate')
 
 // Custom directive for scroll reveal animations
 const vScrollReveal = {
@@ -375,6 +431,52 @@ const handleThemeToggle = async () => {
   } catch (error) {
     console.error('❌ Landing: Theme toggle error:', error)
   }
+}
+
+/**
+ * Handle avatar carousel change event
+ * 
+ * Updates the current avatar index and can update UI accordingly
+ */
+const handleAvatarChange = (index) => {
+  console.log('🎭 Avatar changed to:', index + 1)
+  currentAvatarIndex.value = index
+  
+  // Optional: Update subtext based on avatar (example)
+  const avatarNames = [
+    'The Explorer',
+    'The Artist',
+    'The Innovator',
+    'The Trendsetter',
+    'The Classic',
+    'The Bold',
+    'The Minimalist',
+    'The Maximalist',
+    'The Unique',
+    'The Timeless',
+    'The Original'
+  ]
+  
+  carouselSubtext.value = avatarNames[index] || 'Use arrow keys or swipe to navigate'
+}
+
+/**
+ * Handle avatar loaded event
+ * 
+ * Tracks loading progress
+ */
+const handleAvatarLoaded = (index) => {
+  loadedAvatarsCount.value++
+  console.log(`✅ Avatar ${index + 1} loaded (${loadedAvatarsCount.value}/${avatarUrls.value.length})`)
+}
+
+/**
+ * Handle loading error event
+ * 
+ * Logs errors for debugging
+ */
+const handleLoadingError = ({ index, error }) => {
+  console.error(`❌ Failed to load avatar ${index + 1}:`, error)
 }
 </script>
 
@@ -527,10 +629,11 @@ const handleThemeToggle = async () => {
    Shimmer Overlay Effects
    ============================================ */
 
+/* PERFORMANCE: Converted 'left' property to transform for GPU acceleration */
 .shimmer-overlay {
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
   background: linear-gradient(
@@ -540,17 +643,21 @@ const handleThemeToggle = async () => {
     transparent 100%
   );
   z-index: 1;
-  transition: left 0.8s ease-in-out;
+  /* PERFORMANCE: Using transform instead of left property for GPU acceleration */
+  transform: translateX(-100%);
+  transition: transform 0.8s ease-in-out;
+  will-change: transform;
 }
 
 .group:hover .shimmer-overlay {
-  left: 100%;
+  /* PERFORMANCE: Transform instead of layout-affecting property */
+  transform: translateX(100%);
 }
 
 .shimmer-overlay-large {
   position: absolute;
   top: -50%;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 200%;
   background: linear-gradient(
@@ -560,11 +667,21 @@ const handleThemeToggle = async () => {
     transparent 100%
   );
   z-index: 1;
-  transition: left 1s ease-in-out;
+  /* PERFORMANCE: Using transform instead of left property */
+  transform: translateX(-100%);
+  transition: transform 1s ease-in-out;
+  will-change: transform;
 }
 
 .group:hover .shimmer-overlay-large {
-  left: 100%;
+  /* PERFORMANCE: Transform instead of layout-affecting property */
+  transform: translateX(100%);
+}
+
+/* PERFORMANCE: Clean up will-change after animation */
+.group:not(:hover) .shimmer-overlay,
+.group:not(:hover) .shimmer-overlay-large {
+  will-change: auto;
 }
 
 /* ============================================
@@ -668,14 +785,25 @@ button {
    Performance Optimizations
    ============================================ */
 
-.bento-grid,
+/* PERFORMANCE: CSS containment for grid layout stability */
+.bento-grid {
+  contain: layout style paint;
+}
+
+/* PERFORMANCE: Only add will-change on hover, remove after */
 .bento-item,
 .group {
-  will-change: transform;
+  /* No will-change by default - only add during animation */
 }
 
 .group:hover {
-  will-change: transform, box-shadow;
+  will-change: transform;
+}
+
+/* PERFORMANCE: Remove will-change when not hovering */
+.bento-item:not(:hover),
+.group:not(:hover) {
+  will-change: auto;
 }
 
 /* ============================================

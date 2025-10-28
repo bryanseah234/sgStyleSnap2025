@@ -30,6 +30,7 @@
                     :src="avatarUrl"
                     :alt="user.name || user.user_metadata?.name || 'User'"
                     class="w-full h-full object-cover"
+                    crossorigin="anonymous"
                     @error="handleImageError"
                     @load="handleImageLoad"
                   />

@@ -25,7 +25,7 @@
           <div class="hidden md:flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="w-16 h-16 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
-                <img v-if="friend?.avatar_url" :src="friend.avatar_url" :alt="friend?.name" class="w-full h-full object-cover" />
+                <img v-if="friend?.avatar_url" :src="friend.avatar_url" :alt="friend?.name" class="w-full h-full object-cover" crossorigin="anonymous" @error="handleImageError" />
                 <div v-else class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700">
                   <span class="text-xl font-bold text-stone-500 dark:text-zinc-400">{{ initial }}</span>
                 </div>
@@ -53,7 +53,7 @@
           <!-- Mobile Layout - Centered -->
           <div class="md:hidden flex flex-col items-center text-center space-y-4">
             <div class="w-20 h-20 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
-              <img v-if="friend?.avatar_url" :src="friend.avatar_url" :alt="friend?.name" class="w-full h-full object-cover" />
+              <img v-if="friend?.avatar_url" :src="friend.avatar_url" :alt="friend?.name" class="w-full h-full object-cover" crossorigin="anonymous" @error="handleImageError" />
               <div v-else class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700">
                 <span class="text-2xl font-bold text-stone-500 dark:text-zinc-400">{{ initial }}</span>
               </div>
@@ -300,6 +300,12 @@ const initial = computed(() => {
   const n = friend.value?.name || friend.value?.username || 'F'
   return n.charAt(0).toUpperCase()
 })
+
+const handleImageError = (event) => {
+  console.log('❌ FriendProfile: Avatar image failed to load:', event.target.src)
+  // Hide the broken image and show the fallback (initial letter)
+  event.target.style.display = 'none'
+}
 
 onMounted(async () => {
   await loadProfile()

@@ -583,6 +583,14 @@
       @friendRequestSent="handleFriendRequestSent"
     />
     
+    <!-- Share Outfit Dialog -->
+    <ShareOutfitDialog
+      :isOpen="showShareOutfitDialog"
+      :friendName="friendProfile?.name || friendProfile?.username || 'Friend'"
+      @close="showShareOutfitDialog = false"
+      @save="handleShareOutfit"
+    />
+    
     <!-- Recommendations Modal -->
     <div
       v-if="showRecommendationsModal"
@@ -715,9 +723,10 @@ import {
   Check
 } from 'lucide-vue-next'
 import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
+import ShareOutfitDialog from '@/components/dashboard/ShareOutfitDialog.vue'
 
 const { theme } = useTheme()
-const { showError, showSuccess, showWarning, showInfo } = usePopup()
+const { showError, showSuccess, showWarning, showInfo, showPrompt } = usePopup()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
@@ -778,6 +787,7 @@ const friendUsername = computed(() => route.params.username)
 const friendsList = ref([]) // List of friends for selection
 const loadingFriends = ref(false) // Loading state for friends list
 const showAddFriendModal = ref(false) // Modal state for adding friends
+const showShareOutfitDialog = ref(false) // Modal state for sharing outfit with friend
 
 // State for edit mode
 const currentOutfitId = ref(null)
@@ -1524,58 +1534,79 @@ const saveOwnOutfit = async () => {
       ? currentOutfitName.value 
       : `Outfit ${new Date().toLocaleDateString()}`
     
-    const outfitName = prompt('Enter a name for your outfit:', defaultName)
-    if (!outfitName) {
-      console.log('OutfitCreator: Save cancelled by user')
-      return
-    }
-    
-    const outfitData = {
-      outfit_name: outfitName,
-      description: 'Created in Outfit Creator',
-      occasion: null,
-      weather_condition: null,
-      items: canvasItems.value.map(item => ({
-        clothing_item_id: item.originalId || item.id, // Use stored original ID
-        x_position: item.x,
-        y_position: item.y,
-        z_index: item.z_index || 1,
-        rotation: item.rotation || 0,
-        scale: item.scale || 1
-      }))
-    }
-    
-    let result
-    if (isEditing) {
-      // Update existing outfit
-      console.log('OutfitCreator: Updating outfit:', currentOutfitId.value, outfitData)
-      result = await outfitsService.updateOutfit(currentOutfitId.value, outfitData)
-      
-      if (result && result.id) {
-        console.log('OutfitCreator: Outfit updated successfully:', result.id)
-        showSuccess('Outfit updated successfully!')
-        // Navigate back to outfits gallery
-        router.push('/outfits')
-      } else {
-        throw new Error('Failed to update outfit')
+    // Show input popup instead of browser prompt
+    showPrompt({
+      title: 'Save Outfit',
+      message: 'Enter a name for your outfit:',
+      defaultValue: defaultName,
+      placeholder: 'Outfit name',
+      confirmText: 'Save',
+      cancelText: 'Cancel',
+      onConfirm: async (outfitName) => {
+        if (!outfitName || !outfitName.trim()) {
+          console.log('OutfitCreator: Save cancelled - empty name')
+          return
+        }
+        
+        try {
+          savingOutfit.value = true
+          
+          const outfitData = {
+            outfit_name: outfitName.trim(),
+            description: 'Created in Outfit Creator',
+            occasion: null,
+            weather_condition: null,
+            items: canvasItems.value.map(item => ({
+              clothing_item_id: item.originalId || item.id, // Use stored original ID
+              x_position: item.x,
+              y_position: item.y,
+              z_index: item.z_index || 1,
+              rotation: item.rotation || 0,
+              scale: item.scale || 1
+            }))
+          }
+          
+          let result
+          if (isEditing) {
+            // Update existing outfit
+            console.log('OutfitCreator: Updating outfit:', currentOutfitId.value, outfitData)
+            result = await outfitsService.updateOutfit(currentOutfitId.value, outfitData)
+            
+            if (result && result.id) {
+              console.log('OutfitCreator: Outfit updated successfully:', result.id)
+              showSuccess('Outfit updated successfully!')
+              // Navigate back to outfits gallery
+              router.push('/outfits')
+            } else {
+              throw new Error('Failed to update outfit')
+            }
+          } else {
+            // Create new outfit
+            console.log('OutfitCreator: Creating outfit:', outfitData)
+            result = await outfitsService.createOutfit(outfitData)
+            
+            if (result && result.id) {
+              console.log('OutfitCreator: Outfit created successfully:', result.id)
+              showSuccess('Outfit saved successfully!')
+              // Navigate back to outfits gallery
+              router.push('/outfits')
+            } else {
+              throw new Error('Failed to create outfit')
+            }
+          }
+        } catch (error) {
+          console.error('OutfitCreator: Error saving own outfit:', error)
+          showError('Failed to save outfit. Please try again.')
+        } finally {
+          savingOutfit.value = false
+        }
+      },
+      onCancel: () => {
+        console.log('OutfitCreator: Save cancelled by user')
       }
-    } else {
-      // Create new outfit
-      console.log('OutfitCreator: Creating outfit:', outfitData)
-      result = await outfitsService.createOutfit(outfitData)
-      
-      if (result && result.id) {
-        console.log('OutfitCreator: Outfit created successfully:', result.id)
-        showSuccess('Outfit saved successfully!')
-        // Navigate back to outfits gallery
-        router.push('/outfits')
-      } else {
-        throw new Error('Failed to create outfit')
-      }
-    }
+    })
   } catch (error) {
-    console.error('OutfitCreator: Error saving own outfit:', error)
-    throw error
+    console.error('OutfitCreator: Error in saveOwnOutfit:', error)
   }
 }
 
@@ -1586,10 +1617,31 @@ const shareOutfitWithFriend = async () => {
       return
     }
     
-    console.log('OutfitCreator: Sharing outfit with friend:', friendProfile.value.username)
+    console.log('OutfitCreator: Showing share outfit dialog for friend:', friendProfile.value.username)
     
-    // Prompt for a message
-    const message = prompt(`Add a message for ${friendProfile.value.username} (optional):`, `I created this outfit for you using items from your closet!`)
+    // Show the dialog to get outfit name
+    showShareOutfitDialog.value = true
+  } catch (error) {
+    console.error('OutfitCreator: Error showing share outfit dialog:', error)
+    showError('Failed to share outfit. Please try again.')
+  }
+}
+
+const handleShareOutfit = async (outfitName) => {
+  try {
+    if (!friendProfile.value) {
+      showError('Friend profile not loaded. Please try again.')
+      return
+    }
+    
+    // Validate outfit name is provided
+    if (!outfitName || !outfitName.trim()) {
+      showError('Please provide an outfit name.')
+      return
+    }
+    
+    console.log('OutfitCreator: Sharing outfit with friend:', friendProfile.value.username)
+    console.log('OutfitCreator: Outfit name:', outfitName)
     
     // Extract original clothing item IDs and details from canvas items
     const outfitItemsData = canvasItems.value.map(item => ({
@@ -1608,15 +1660,18 @@ const shareOutfitWithFriend = async () => {
     
     // Create friend outfit suggestion via NotificationsService
     // This will create a notification for the friend
+    // Pass the outfit name as the message to display to the friend
     const result = await notificationsService.createFriendOutfitSuggestion(
       friendProfile.value.id,
       outfitItemsData,
-      message || undefined
+      outfitName // Outfit name is now the message to the friend
     )
     
     if (result && result.success) {
       console.log('OutfitCreator: Friend outfit suggestion created successfully')
-      showSuccess(`Outfit shared with ${friendProfile.value.username}! They will receive a notification.`)
+      showSuccess(`Outfit "${outfitName}" shared with ${friendProfile.value.username}! They will receive a notification.`)
+      // Close the dialog
+      showShareOutfitDialog.value = false
       // Navigate back to outfits gallery
       router.push('/outfits')
     } else {
@@ -1624,6 +1679,7 @@ const shareOutfitWithFriend = async () => {
     }
   } catch (error) {
     console.error('OutfitCreator: Error sharing outfit with friend:', error)
+    showError('Failed to share outfit. Please try again.')
     throw error
   }
 }
