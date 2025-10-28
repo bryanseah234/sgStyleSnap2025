@@ -17,6 +17,28 @@
   @version 1.0.0
 -->
 <template>
+  <!-- Navigation Header -->
+  <nav class="sticky top-0 z-50 px-6 py-4 bg-background/80 backdrop-blur border-b border-border">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <Shirt class="w-5 h-5 text-primary-foreground" />
+        </div>
+        <span class="text-2xl font-bold text-foreground">StyleSnap</span>
+      </div>
+      
+      <!-- Theme Toggle -->
+      <button
+        @click="handleThemeToggle"
+        class="p-2 rounded-lg bg-secondary hover:bg-accent transition-colors duration-200"
+        :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
+        <Moon v-else class="w-5 h-5" />
+      </button>
+    </div>
+  </nav>
   <div class="min-h-screen bg-background max-w-full overflow-x-hidden overflow-y-auto">
     <!-- Blob Cursor (Landing page only) -->
     <BlobCursor />
@@ -25,29 +47,6 @@
     <section class="relative overflow-hidden min-h-screen flex flex-col">
       <!-- Background gradient -->
       <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5"></div>
-      
-      <!-- Navigation Header -->
-      <nav class="relative z-10 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-          <!-- Logo -->
-          <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Shirt class="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span class="text-2xl font-bold text-foreground">StyleSnap</span>
-          </div>
-          
-          <!-- Theme Toggle -->
-          <button
-            @click="handleThemeToggle"
-            class="p-2 rounded-lg bg-secondary hover:bg-accent transition-colors duration-200"
-            :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-          >
-            <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
-            <Moon v-else class="w-5 h-5" />
-          </button>
-        </div>
-      </nav>
       
       <!-- Hero Content - Vertically Centered -->
       <div class="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
@@ -61,11 +60,11 @@
             class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight kinetic-heading"
             :class="{ 'is-animating': isHeadingAnimating }"
           >
-            Your Digital
+            <div>Your Digital</div>
             <span class="wardrobe-sparkle">
-              Wardrobe
+              <div>Wardrobe</div>
             </span>
-            Awaits
+            <div>Awaits</div>
           </h1>
           
           <!-- Subtitle -->
@@ -178,7 +177,10 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full m-1 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden
+                bg-gradient-to-br from-zinc-100 via-white to-zinc-200
+                dark:from-card dark:via-card dark:to-primary/5
+                border border-zinc-200/80 dark:border-border shadow-sm">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -200,7 +202,11 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-12 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div
+              class="relative h-full m-1 rounded-3xl p-6 md:p-12 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden
+                    bg-gradient-to-br from-zinc-100 via-white to-zinc-200
+                    dark:from-card dark:via-card dark:to-primary/5
+                    border border-zinc-200/80 dark:border-border shadow-sm">
               <div class="shimmer-overlay-large"></div>
               <div class="relative z-10">
                 <div class="w-12 md:w-20 h-12 md:h-20 bg-primary/10 rounded-2xl md:rounded-3xl flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary/20 transition-colors duration-300 md:group-hover:rotate-6">
@@ -224,7 +230,11 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div
+              class="relative h-full m-1 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden
+                    bg-gradient-to-br from-zinc-100 via-white to-zinc-200
+                    dark:from-card dark:via-card dark:to-primary/5
+                    border border-zinc-200/80 dark:border-border shadow-sm">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -246,7 +256,11 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div
+              class="relative h-full m-1 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden
+                    bg-gradient-to-br from-zinc-100 via-white to-zinc-200
+                    dark:from-card dark:via-card dark:to-primary/5
+                    border border-zinc-200/80 dark:border-border shadow-sm">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -268,7 +282,11 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div
+              class="relative h-full m-1 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden
+                    bg-gradient-to-br from-zinc-100 via-white to-zinc-200
+                    dark:from-card dark:via-card dark:to-primary/5
+                    border border-zinc-200/80 dark:border-border shadow-sm">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -290,7 +308,11 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div
+              class="relative h-full m-1 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden
+                    bg-gradient-to-br from-zinc-100 via-white to-zinc-200
+                    dark:from-card dark:via-card dark:to-primary/5
+                    border border-zinc-200/80 dark:border-border shadow-sm">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -1072,6 +1094,7 @@ onMounted(async () => {
   grid-template-columns: repeat(1, 1fr);
   gap: 1rem;
   width: 100%;
+  padding: 0.5rem;
 }
 
 /* Mobile: Stack vertically */

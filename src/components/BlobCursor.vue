@@ -165,8 +165,8 @@ const animate = () => {
  */
 const handleMouseMove = (event) => {
   // Update mouse position
-  mouseX.value = event.clientX
-  mouseY.value = event.clientY
+  mouseX.value = event.clientX - 16
+  mouseY.value = event.clientY - 16
   
   // Mark as moving
   isMoving.value = true
@@ -287,8 +287,7 @@ onMounted(() => {
   }
   
   // Hide default cursor
-  document.body.style.cursor = 'none'
-  
+  document.body.classList.add('no-cursor')
   // Add event listeners
   document.addEventListener('mousemove', handleMouseMove)
   document.addEventListener('mouseenter', handleMouseEnter)
@@ -307,8 +306,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   // Restore default cursor
-  document.body.style.cursor = 'auto'
-  
+  document.body.classList.remove('no-cursor')
   // Remove touch device class
   document.body.classList.remove('touch-device')
   
@@ -331,227 +329,97 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ============================================
-   BLOB CURSOR BASE STYLES
-   ============================================ */
+/* theme tokens */
+:global(html){ --blob:#000; --blob-soft:rgba(0,0,0,.9); --blob-ring:#000; }
+:global(html.dark){ --blob:#fff; --blob-soft:rgba(255,255,255,.9); --blob-ring:#fff; }
 
+/* base */
 .blob-cursor {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 25px; /* 30% smaller: 36 * 0.7 = 25.2 */
-  height: 25px;
+  top: 0; left: 0;
+  width: 25px; height: 25px;
   pointer-events: none;
   z-index: 9999;
-  transition: width 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-              height 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: width .2s cubic-bezier(.34,1.56,.64,1),
+              height .2s cubic-bezier(.34,1.56,.64,1);
 }
-
 .blob-inner {
-  width: 100%;
-  height: 100%;
-  background: black; /* Black in light mode */
+  width: 100%; height: 100%;
+  background: var(--blob);
   border-radius: 50%;
   animation: blob-morph 8s ease-in-out infinite;
-  transition: border-radius 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background 0.2s ease;
+  transition: border-radius .3s cubic-bezier(.34,1.56,.64,1), background .2s ease;
 }
 
-/* White in dark mode */
-:global(.dark) .blob-inner {
-  background: white;
-}
+/* states */
+.blob-cursor.default { width: 25px; height: 25px; transform-origin: center; }
+.blob-cursor.default .blob-inner { background: var(--blob); }
 
-/* ============================================
-   CURSOR STATES
-   ============================================ */
-
-/* Default State - Small circular blob (30% smaller) */
-.blob-cursor.default {
-  width: 25px; /* 36 * 0.7 = 25.2 */
-  height: 25px;
-  transform-origin: center;
-}
-
-.blob-cursor.default .blob-inner {
-  border-radius: 50%;
-  background: black;
-}
-
-:global(.dark) .blob-cursor.default .blob-inner {
-  background: white;
-}
-
-/* Avatar Hover State - Large blob (30% smaller) */
-.blob-cursor.avatar-hover {
-  width: 63px; /* 90 * 0.7 = 63 */
-  height: 63px;
-}
-
+.blob-cursor.avatar-hover { width: 63px; height: 63px; }
 .blob-cursor.avatar-hover .blob-inner {
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--blob-soft);
   animation: blob-morph-large 6s ease-in-out infinite;
 }
 
-:global(.dark) .blob-cursor.avatar-hover .blob-inner {
-  background: rgba(255, 255, 255, 0.8);
-}
-
-/* Button Hover State - Ring/donut shape (30% smaller) */
-.blob-cursor.button-hover {
-  width: 38px; /* 54 * 0.7 = 37.8 */
-  height: 38px;
-}
-
+.blob-cursor.button-hover { width: 38px; height: 38px; }
 .blob-cursor.button-hover .blob-inner {
   background: transparent;
-  border: 2px solid black; /* 3 * 0.7 = 2.1 */
+  border: 2px solid var(--blob-ring);
   border-radius: 50%;
   animation: blob-ring-pulse 2s ease-in-out infinite;
 }
 
-:global(.dark) .blob-cursor.button-hover .blob-inner {
-  border-color: white;
-}
-
-/* Dragging State - Stretched ellipse (30% smaller) */
-.blob-cursor.dragging {
-  width: 38px; /* 54 * 0.7 = 37.8 */
-  height: 28px; /* 40 * 0.7 = 28 */
-  transition: width 0.15s ease, height 0.15s ease;
-}
-
+.blob-cursor.dragging { width: 38px; height: 28px; transition: width .15s ease, height .15s ease; }
 .blob-cursor.dragging .blob-inner {
-  background: rgba(0, 0, 0, 0.9);
+  background: var(--blob-soft);
   border-radius: 45% 55% 60% 40% / 50% 50% 50% 50%;
-  animation: blob-drag-stretch 0.4s ease-in-out infinite;
+  animation: blob-drag-stretch .4s ease-in-out infinite;
 }
 
-:global(.dark) .blob-cursor.dragging .blob-inner {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-/* ============================================
-   BLOB MORPHING ANIMATIONS
-   ============================================ */
-
-/* Default morph animation - organic shape changes */
+/* animations */
 @keyframes blob-morph {
-  0%, 100% {
-    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
-  }
-  25% {
-    border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
-  }
-  50% {
-    border-radius: 50% 60% 40% 50% / 60% 50% 50% 40%;
-  }
-  75% {
-    border-radius: 40% 50% 60% 50% / 50% 40% 60% 50%;
-  }
+  0%,100% { border-radius: 50% / 50%; }
+  25% { border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%; }
+  50% { border-radius: 50% 60% 40% 50% / 60% 50% 50% 40%; }
+  75% { border-radius: 40% 50% 60% 50% / 50% 40% 60% 50%; }
 }
-
-/* Large blob morph animation - more dramatic */
 @keyframes blob-morph-large {
-  0%, 100% {
-    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
-    transform: rotate(0deg);
-  }
-  25% {
-    border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%;
-    transform: rotate(90deg);
-  }
-  50% {
-    border-radius: 45% 55% 40% 60% / 60% 45% 55% 40%;
-    transform: rotate(180deg);
-  }
-  75% {
-    border-radius: 55% 45% 60% 40% / 40% 55% 45% 60%;
-    transform: rotate(270deg);
-  }
+  0%,100% { border-radius: 50% / 50%; transform: rotate(0); }
+  25% { border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%; transform: rotate(90deg); }
+  50% { border-radius: 45% 55% 40% 60% / 60% 45% 55% 40%; transform: rotate(180deg); }
+  75% { border-radius: 55% 45% 60% 40% / 40% 55% 45% 60%; transform: rotate(270deg); }
 }
-
-/* Ring pulse animation */
 @keyframes blob-ring-pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
+  0%,100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: .8; }
 }
-
-/* Drag stretch animation */
 @keyframes blob-drag-stretch {
-  0%, 100% {
-    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-  }
-  50% {
-    border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%;
-  }
+  0%,100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  50% { border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%; }
 }
 
-/* ============================================
-   DARK MODE ADJUSTMENTS
-   ============================================ */
-
-/* Colors explicitly set for each theme */
-/* Light mode: black cursor */
-/* Dark mode: white cursor */
-
-/* ============================================
-   PERFORMANCE OPTIMIZATIONS
-   ============================================ */
-
-.blob-cursor,
-.blob-inner {
-  will-change: auto; /* Only added dynamically via inline style when moving */
+/* perf */
+.blob-cursor, .blob-inner {
+  will-change: auto;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
-
-/* Disable cursor for users who prefer reduced motion */
+/* a11y */
 @media (prefers-reduced-motion: reduce) {
-  .blob-cursor {
-    display: none;
-  }
-  
-  body {
-    cursor: auto !important;
-  }
+  .blob-cursor { display: none; }
+  body { cursor: auto !important; }
 }
 
-/* ============================================
-   CURSOR HIDING
-   ============================================ */
+/* page-scoped native cursor hiding */
+:global(body.no-cursor:not(.touch-device)) { cursor: none !important; }
+:global(body.no-cursor:not(.touch-device) *) { cursor: none !important; }
+:global(body.no-cursor:not(.touch-device) a),
+:global(body.no-cursor:not(.touch-device) button),
+:global(body.no-cursor:not(.touch-device) input),
+:global(body.no-cursor:not(.touch-device) textarea) { cursor: none !important; }
 
-/* Hide default cursor on interactive elements when blob cursor is active */
-:global(body:not(.touch-device)) {
-  cursor: none !important;
-}
-
-:global(body:not(.touch-device) *) {
-  cursor: none !important;
-}
-
-:global(body:not(.touch-device) a),
-:global(body:not(.touch-device) button),
-:global(body:not(.touch-device) input),
-:global(body:not(.touch-device) textarea) {
-  cursor: none !important;
-}
-
-/* Ensure cursor shows on touch devices */
-:global(body.touch-device),
-:global(body.touch-device *) {
-  cursor: auto !important;
-}
+/* touch devices keep system cursor */
+:global(body.touch-device), :global(body.touch-device *) { cursor: auto !important; }
 </style>
-
