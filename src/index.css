@@ -8,8 +8,9 @@
 @layer base {
   :root {
     /* Light mode - White background, black text, gray subtext */
-    --background: 0 0% 100%;        /* Pure white */
-    --foreground: 0 0% 0%;          /* Pure black */
+    /* Contrast Ratio: 21:1 (AAA compliant - maximum contrast) */
+    --background: 0 0% 100%;        /* Pure white #FFFFFF */
+    --foreground: 0 0% 0%;          /* Pure black #000000 */
     --card: 0 0% 100%;              /* White cards */
     --card-foreground: 0 0% 0%;     /* Black text on cards */
     --popover: 0 0% 100%;           /* White popovers */
@@ -32,8 +33,9 @@
 
   .dark {
     /* Dark mode - Black background, white text, gray subtext */
-    --background: 0 0% 0%;          /* Pure black */
-    --foreground: 0 0% 100%;        /* Pure white */
+    /* Contrast Ratio: 21:1 (AAA compliant - maximum contrast) */
+    --background: 0 0% 0%;          /* Pure black #000000 */
+    --foreground: 0 0% 100%;        /* Pure white #FFFFFF */
     --card: 0 0% 5%;                /* Very dark gray cards */
     --card-foreground: 0 0% 100%;   /* White text on cards */
     --popover: 0 0% 5%;             /* Very dark gray popovers */
@@ -43,7 +45,7 @@
     --secondary: 0 0% 15%;          /* Dark gray secondary */
     --secondary-foreground: 0 0% 100%; /* White text on gray */
     --muted: 0 0% 15%;              /* Dark gray muted */
-    --muted-foreground: 0 0% 65%;   /* Light gray subtext */
+    --muted-foreground: 0 0% 75%;   /* Lighter gray subtext (increased from 65% to 75% for better contrast) */
     --accent: 0 0% 15%;             /* Dark gray accent */
     --accent-foreground: 0 0% 100%; /* White text on accent */
     --destructive: 0 84% 60%;       /* Red for destructive actions */
@@ -64,6 +66,21 @@
   }
   html {
     @apply bg-background;
+  }
+  
+  /* Force proper text contrast in both modes */
+  html, body {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+  }
+  
+  /* Ensure all text elements use semantic colors */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground;
+  }
+  
+  p {
+    @apply text-foreground;
   }
 }
 

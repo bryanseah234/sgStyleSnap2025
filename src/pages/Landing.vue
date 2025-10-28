@@ -93,7 +93,8 @@
     </section>
     
     <!-- Avatar Carousel Section -->
-    <SectionTransition type="circle" :duration="1200" :threshold="0.25">
+    <!-- TEMPORARILY DISABLED - Loading 11 3D models was blocking page render -->
+    <!-- <SectionTransition type="circle" :duration="1200" :threshold="0.25">
       <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
         <div class="max-w-7xl mx-auto px-6">
           <div class="text-center mb-12">
@@ -111,7 +112,6 @@
             </p>
           </div>
           
-          <!-- Avatar 3D Carousel -->
           <div 
             ref="carouselSectionRef" 
             class="scroll-animate"
@@ -126,7 +126,6 @@
             />
           </div>
           
-          <!-- Subtle hint for triple-click easter egg -->
           <div v-if="showTripleClickHint" class="triple-click-hint">
             <p class="text-xs text-muted-foreground italic">
               💡 Psst... try triple-clicking the avatar
@@ -135,7 +134,7 @@
           
         </div>
       </section>
-    </SectionTransition>
+    </SectionTransition> -->
     
     <!-- Features Section - Bento Grid -->
     <SectionTransition type="liquid" :duration="1400" :threshold="0.2" :delay="100">
@@ -349,7 +348,8 @@ import { useTextAnimation } from '@/composables/useTextAnimation'
 import { useKonamiCode } from '@/composables/useKonamiCode'
 import { useTripleClick } from '@/composables/useTripleClick'
 import { displayAchievement } from '@/utils/console-art'
-import { registerAvatarCacheWorker, prefetchAvatars, preloadCriticalAvatars } from '@/utils/avatar-cache'
+// TEMPORARILY DISABLED - Avatar caching not needed without Avatar3DCarousel
+// import { registerAvatarCacheWorker, prefetchAvatars, preloadCriticalAvatars } from '@/utils/avatar-cache'
 import { 
   Shirt, 
   Palette, 
@@ -360,7 +360,8 @@ import {
   Sun,
   Moon
 } from 'lucide-vue-next'
-import Avatar3DCarousel from '@/components/Avatar3DCarousel.vue'
+// TEMPORARILY DISABLED - Avatar3DCarousel was blocking page render
+// import Avatar3DCarousel from '@/components/Avatar3DCarousel.vue'
 import SectionTransition from '@/components/SectionTransition.vue'
 import ScrollHint from '@/components/ScrollHint.vue'
 
@@ -481,34 +482,35 @@ const handleThemeToggle = async () => {
   }
 }
 
+// TEMPORARILY DISABLED - Avatar carousel functions not needed
 /**
  * Handle avatar carousel change event
  * 
  * Updates the current avatar index
  */
-const handleAvatarChange = (index) => {
-  console.log('🎭 Avatar changed to:', index + 1)
-  currentAvatarIndex.value = index
-}
+// const handleAvatarChange = (index) => {
+//   console.log('🎭 Avatar changed to:', index + 1)
+//   currentAvatarIndex.value = index
+// }
 
 /**
  * Handle avatar loaded event
  * 
  * Tracks loading progress
  */
-const handleAvatarLoaded = (index) => {
-  loadedAvatarsCount.value++
-  console.log(`✅ Avatar ${index + 1} loaded (${loadedAvatarsCount.value}/${avatarUrls.value.length})`)
-}
+// const handleAvatarLoaded = (index) => {
+//   loadedAvatarsCount.value++
+//   console.log(`✅ Avatar ${index + 1} loaded (${loadedAvatarsCount.value}/${avatarUrls.value.length})`)
+// }
 
 /**
  * Handle loading error event
  * 
  * Logs errors for debugging
  */
-const handleLoadingError = ({ index, error }) => {
-  console.error(`❌ Failed to load avatar ${index + 1}:`, error)
-}
+// const handleLoadingError = ({ index, error }) => {
+//   console.error(`❌ Failed to load avatar ${index + 1}:`, error)
+// }
 
 /**
  * Setup scroll-triggered animations using Intersection Observer
@@ -609,30 +611,31 @@ const handleKonamiCode = () => {
 // Setup Konami code detection
 useKonamiCode(handleKonamiCode)
 
+// TEMPORARILY DISABLED - Avatar carousel easter eggs not needed
 /**
  * Triple-click on avatar easter egg
  */
-const handleCarouselClick = () => {
-  // Track clicks for triple-click detection
-  // This is handled by the useTripleClick composable below
-}
+// const handleCarouselClick = () => {
+//   // Track clicks for triple-click detection
+//   // This is handled by the useTripleClick composable below
+// }
 
 // Setup triple-click detection on carousel
-useTripleClick(carouselSectionRef, () => {
-  displayAchievement(
-    'Secret Avatar Dance! 💃',
-    'You discovered the hidden avatar animation! Keep exploring for more secrets.'
-  )
+// useTripleClick(carouselSectionRef, () => {
+//   displayAchievement(
+//     'Secret Avatar Dance! 💃',
+//     'You discovered the hidden avatar animation! Keep exploring for more secrets.'
+//   )
   
-  // Trigger special avatar animation
-  const carousel = carouselSectionRef.value
-  if (carousel) {
-    carousel.classList.add('avatar-dance')
-    setTimeout(() => {
-      carousel.classList.remove('avatar-dance')
-    }, 2000)
-  }
-}, { timeWindow: 800 })
+//   // Trigger special avatar animation
+//   const carousel = carouselSectionRef.value
+//   if (carousel) {
+//     carousel.classList.add('avatar-dance')
+//     setTimeout(() => {
+//       carousel.classList.remove('avatar-dance')
+//     }, 2000)
+//   }
+// }, { timeWindow: 800 })
 
 /**
  * Create confetti effect for Konami code
@@ -672,39 +675,39 @@ onMounted(async () => {
     }
   }, 5000)
   
-  // Initialize avatar caching system
-  try {
-    console.log('🚀 Landing: Initializing avatar cache...')
+  // TEMPORARILY DISABLED - Avatar caching not needed without Avatar3DCarousel
+  // try {
+  //   console.log('🚀 Landing: Initializing avatar cache...')
     
-    // Register service worker for caching
-    const swRegistered = await registerAvatarCacheWorker()
+  //   // Register service worker for caching
+  //   const swRegistered = await registerAvatarCacheWorker()
     
-    if (swRegistered) {
-      // Preload critical avatars (first 3) using link prefetch
-      preloadCriticalAvatars(avatarUrls.value)
+  //   if (swRegistered) {
+  //     // Preload critical avatars (first 3) using link prefetch
+  //     preloadCriticalAvatars(avatarUrls.value)
       
-      // Prefetch remaining avatars in background after page is idle
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-          console.log('💾 Landing: Prefetching avatars in background...')
-          prefetchAvatars(avatarUrls.value.slice(3)) // Prefetch remaining avatars
-        }, { timeout: 5000 })
-      } else {
-        // Fallback for browsers without requestIdleCallback
-        setTimeout(() => {
-          console.log('💾 Landing: Prefetching avatars in background...')
-          prefetchAvatars(avatarUrls.value.slice(3))
-        }, 3000)
-      }
+  //     // Prefetch remaining avatars in background after page is idle
+  //     if ('requestIdleCallback' in window) {
+  //       requestIdleCallback(() => {
+  //         console.log('💾 Landing: Prefetching avatars in background...')
+  //         prefetchAvatars(avatarUrls.value.slice(3)) // Prefetch remaining avatars
+  //       }, { timeout: 5000 })
+  //     } else {
+  //       // Fallback for browsers without requestIdleCallback
+  //       setTimeout(() => {
+  //         console.log('💾 Landing: Prefetching avatars in background...')
+  //         prefetchAvatars(avatarUrls.value.slice(3))
+  //       }, 3000)
+  //     }
       
-      console.log('✅ Landing: Avatar cache initialized')
-    } else {
-      console.warn('⚠️ Landing: Avatar caching not available, using direct loading')
-    }
-  } catch (error) {
-    console.error('❌ Landing: Failed to initialize avatar cache:', error)
-    // Continue without caching - avatars will still load normally
-  }
+  //     console.log('✅ Landing: Avatar cache initialized')
+  //   } else {
+  //     console.warn('⚠️ Landing: Avatar caching not available, using direct loading')
+  //   }
+  // } catch (error) {
+  //   console.error('❌ Landing: Failed to initialize avatar cache:', error)
+  //   // Continue without caching - avatars will still load normally
+  // }
 })
 </script>
 
