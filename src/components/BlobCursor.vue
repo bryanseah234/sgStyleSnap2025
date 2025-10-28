@@ -343,7 +343,6 @@ onUnmounted(() => {
   height: 25px;
   pointer-events: none;
   z-index: 9999;
-  mix-blend-mode: difference;
   transition: width 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
               height 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -351,11 +350,16 @@ onUnmounted(() => {
 .blob-inner {
   width: 100%;
   height: 100%;
-  background: hsl(var(--foreground));
+  background: black; /* Black in light mode */
   border-radius: 50%;
   animation: blob-morph 8s ease-in-out infinite;
   transition: border-radius 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
               background 0.2s ease;
+}
+
+/* White in dark mode */
+:global(.dark) .blob-inner {
+  background: white;
 }
 
 /* ============================================
@@ -371,7 +375,11 @@ onUnmounted(() => {
 
 .blob-cursor.default .blob-inner {
   border-radius: 50%;
-  background: hsl(var(--foreground));
+  background: black;
+}
+
+:global(.dark) .blob-cursor.default .blob-inner {
+  background: white;
 }
 
 /* Avatar Hover State - Large blob (30% smaller) */
@@ -381,8 +389,12 @@ onUnmounted(() => {
 }
 
 .blob-cursor.avatar-hover .blob-inner {
-  background: hsl(var(--foreground) / 0.8);
+  background: rgba(0, 0, 0, 0.8);
   animation: blob-morph-large 6s ease-in-out infinite;
+}
+
+:global(.dark) .blob-cursor.avatar-hover .blob-inner {
+  background: rgba(255, 255, 255, 0.8);
 }
 
 /* Button Hover State - Ring/donut shape (30% smaller) */
@@ -393,9 +405,13 @@ onUnmounted(() => {
 
 .blob-cursor.button-hover .blob-inner {
   background: transparent;
-  border: 2px solid hsl(var(--foreground)); /* 3 * 0.7 = 2.1 */
+  border: 2px solid black; /* 3 * 0.7 = 2.1 */
   border-radius: 50%;
   animation: blob-ring-pulse 2s ease-in-out infinite;
+}
+
+:global(.dark) .blob-cursor.button-hover .blob-inner {
+  border-color: white;
 }
 
 /* Dragging State - Stretched ellipse (30% smaller) */
@@ -406,9 +422,13 @@ onUnmounted(() => {
 }
 
 .blob-cursor.dragging .blob-inner {
-  background: hsl(var(--foreground) / 0.9);
+  background: rgba(0, 0, 0, 0.9);
   border-radius: 45% 55% 60% 40% / 50% 50% 50% 50%;
   animation: blob-drag-stretch 0.4s ease-in-out infinite;
+}
+
+:global(.dark) .blob-cursor.dragging .blob-inner {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 /* ============================================
@@ -477,9 +497,9 @@ onUnmounted(() => {
    DARK MODE ADJUSTMENTS
    ============================================ */
 
-/* Colors now automatically adapt via --foreground variable */
-/* Dark mode: --foreground is white/light */
-/* Light mode: --foreground is black/dark */
+/* Colors explicitly set for each theme */
+/* Light mode: black cursor */
+/* Dark mode: white cursor */
 
 /* ============================================
    PERFORMANCE OPTIMIZATIONS

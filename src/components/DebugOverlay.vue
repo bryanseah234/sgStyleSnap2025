@@ -16,10 +16,10 @@
 -->
 <template>
   <Teleport to="body">
+    <!-- Only show on desktop (md and above) -->
     <div
-      v-if="visible"
+      v-if="visible && isDesktop"
       class="debug-overlay"
-      :class="{ 'debug-overlay--minimized': isMinimized }"
     >
       <!-- Header -->
       <div class="debug-header">
@@ -27,26 +27,10 @@
           <span class="debug-icon">🐛</span>
           <span>Debug Mode</span>
         </div>
-        <div class="debug-actions">
-          <button
-            @click="toggleMinimize"
-            class="debug-btn debug-btn--minimize"
-            :title="isMinimized ? 'Expand' : 'Minimize'"
-          >
-            {{ isMinimized ? '▢' : '−' }}
-          </button>
-          <button
-            @click="close"
-            class="debug-btn debug-btn--close"
-            title="Close (or type 'debug' again)"
-          >
-            ×
-          </button>
-        </div>
       </div>
       
       <!-- Content -->
-      <div v-if="!isMinimized" class="debug-content">
+      <div class="debug-content">
         <!-- Performance Stats -->
         <div class="debug-section">
           <div class="debug-section-title">⚡ Performance</div>
@@ -149,8 +133,8 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 // State
-const isMinimized = ref(false)
 const graphCanvas = ref(null)
+const isDesktop = ref(window.innerWidth >= 768) // Only show on desktop (md breakpoint)
 const stats = ref({
   fps: 0,
   avgFps: 0,
@@ -178,17 +162,10 @@ const fpsColorClass = computed(() => {
 })
 
 /**
- * Toggle minimize state
+ * Handle window resize to update isDesktop state
  */
-const toggleMinimize = () => {
-  isMinimized.value = !isMinimized.value
-}
-
-/**
- * Close debug overlay
- */
-const close = () => {
-  emit('close')
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 768
 }
 
 /**
@@ -329,24 +306,15 @@ watch(() => props.visible, (isVisible) => {
   }
 }, { immediate: true })
 
-// Keyboard shortcut (Shift+D)
-const handleKeyDown = (event) => {
-  if (event.shiftKey && event.key === 'D') {
-    if (props.visible) {
-      close()
-    }
-  }
-}
-
 onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown)
-  if (props.visible) {
+  window.addEventListener('resize', handleResize)
+  if (props.visible && isDesktop.value) {
     startMonitoring()
   }
 })
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown)
+  window.removeEventListener('resize', handleResize)
   stopMonitoring()
 })
 </script>
@@ -354,8 +322,9 @@ onUnmounted(() => {
 <style scoped>
 .debug-overlay {
   position: fixed;
-  top: 80px;
-  right: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 99999;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(10px);
@@ -364,34 +333,29 @@ onUnmounted(() => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   color: #fff;
-  min-width: 300px;
-  max-width: 400px;
+  min-width: 600px;
+  max-width: 800px;
   user-select: none;
-  animation: slideInRight 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes slideInRight {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateX(50px);
+    transform: translate(-50%, -50%) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate(-50%, -50%) scale(1);
   }
-}
-
-.debug-overlay--minimized {
-  min-width: auto;
 }
 
 .debug-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 12px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: move;
 }
 
 .debug-title {
@@ -406,42 +370,18 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
-.debug-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.debug-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #fff;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  transition: background 0.2s;
-}
-
-.debug-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.debug-btn--close {
-  font-size: 20px;
-}
-
 .debug-content {
   padding: 16px;
-  max-height: 600px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-height: 500px;
   overflow-y: auto;
 }
 
 .debug-section {
-  margin-bottom: 16px;
+  flex: 1;
+  min-width: 200px;
 }
 
 .debug-section:last-child {
@@ -521,12 +461,13 @@ onUnmounted(() => {
 }
 
 .debug-hints {
-  margin-top: 16px;
+  flex-basis: 100%;
   padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  gap: 16px;
+  justify-content: center;
 }
 
 .debug-hint {
@@ -552,17 +493,6 @@ onUnmounted(() => {
 
 .debug-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  .debug-overlay {
-    top: 60px;
-    right: 10px;
-    left: 10px;
-    min-width: auto;
-    max-width: none;
-  }
 }
 </style>
 

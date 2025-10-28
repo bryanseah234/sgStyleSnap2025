@@ -96,7 +96,7 @@
     </section>
     
     <!-- Avatar Carousel Section with Lazy Loading -->
-    <section class="py-8 md:py-12 bg-gradient-to-b from-background to-muted/30">
+    <section class="min-h-screen flex flex-col justify-center py-16 md:py-12 bg-gradient-to-b from-background to-muted/30">
         <div class="max-w-7xl mx-auto px-6">
           <div class="text-center mb-6">
             <h2 
@@ -129,6 +129,7 @@
             <Suspense v-else>
               <template #default>
                 <Avatar3DCarousel
+                  ref="avatarCarouselRef"
                   :avatar-urls="avatarUrls"
                   :show-info="true"
                   @avatar-change="handleAvatarChange"
@@ -155,7 +156,7 @@
       </section>
     
     <!-- Features Section - Bento Grid -->
-    <section ref="featuresSection" class="py-16 md:py-24">
+    <section ref="featuresSection" class="min-h-screen flex flex-col justify-center py-16 md:py-24">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
           <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -166,8 +167,9 @@
           </p>
         </div>
         
-        <!-- Bento Grid Layout -->
-        <div class="bento-grid">
+        <!-- Bento Grid Layout - Scaled down 40% on desktop -->
+        <div class="bento-grid-wrapper">
+          <div class="bento-grid">
           <!-- Feature 1: Digital Closet - Top Left -->
           <div 
             class="bento-item bento-small group"
@@ -176,7 +178,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -198,16 +200,16 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-8 md:p-12 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden flex flex-col items-center justify-center text-center">
+            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-12 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay-large"></div>
-              <div class="relative z-10 w-full">
-                <div class="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-6 mx-auto group-hover:bg-primary/20 transition-colors duration-300 group-hover:rotate-6">
-                  <Palette class="w-10 h-10 text-primary" />
+              <div class="relative z-10">
+                <div class="w-12 md:w-20 h-12 md:h-20 bg-primary/10 rounded-2xl md:rounded-3xl flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary/20 transition-colors duration-300 md:group-hover:rotate-6">
+                  <Palette class="w-6 md:w-10 h-6 md:h-10 text-primary" />
                 </div>
-                <h3 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                <h3 class="text-xl md:text-3xl lg:text-4xl font-semibold md:font-bold text-foreground mb-3 md:mb-4">
                   Outfit Creator
                 </h3>
-                <p class="text-lg text-muted-foreground leading-relaxed max-w-md mx-auto">
+                <p class="text-muted-foreground text-sm md:text-lg leading-relaxed md:max-w-md">
                   Mix and match your clothes to create stunning outfits and save your favorite combinations.
                 </p>
               </div>
@@ -222,7 +224,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -244,7 +246,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -266,7 +268,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -288,7 +290,7 @@
             @mouseleave="hoveredCard = null"
             v-scroll-reveal
           >
-            <div class="relative h-full bg-card rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
+            <div class="relative h-full bg-gradient-to-br from-card via-card to-primary/5 rounded-3xl p-6 md:p-8 transition-all duration-500 group-hover:scale-[1.02] overflow-hidden">
               <div class="shimmer-overlay"></div>
               <div class="relative z-10">
                 <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -302,17 +304,17 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
     </section>
     
     <!-- CTA Section -->
-    <section ref="ctaSectionRef" class="py-16 md:py-24 scroll-animate">
+    <section ref="ctaSectionRef" class="min-h-screen flex flex-col justify-center py-16 md:py-24 scroll-animate">
       <div class="max-w-4xl mx-auto text-center px-6">
         <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-6">
           Ready to Transform Your Style?
         </h2>
         <p class="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Join thousands of users who have already discovered the joy of organized fashion. 
           Start your style journey today.
         </p>
         <button
@@ -360,7 +362,7 @@ import { useTheme } from '@/composables/useTheme'
 // COMMENTED OUT: Smooth scroll disabled to allow normal scrolling
 // import { useSmoothScroll } from '@/composables/useSmoothScroll'
 import { useTextAnimation } from '@/composables/useTextAnimation'
-import { useKonamiCode } from '@/composables/useKonamiCode'
+// import { useKonamiCode } from '@/composables/useKonamiCode' // Now global in App.vue
 import { useTripleClick } from '@/composables/useTripleClick'
 import { displayAchievement } from '@/utils/console-art'
 // TEMPORARILY DISABLED - Avatar caching not needed without Avatar3DCarousel
@@ -408,6 +410,7 @@ const hoveredCard = ref(null)
 
 // Scroll animation refs
 const carouselSectionRef = ref<HTMLElement | null>(null)
+const avatarCarouselRef = ref<any>(null)
 const carouselHeadingRef = ref<HTMLElement | null>(null)
 const carouselDescriptionRef = ref<HTMLElement | null>(null)
 const ctaSectionRef = ref<HTMLElement | null>(null)
@@ -458,7 +461,7 @@ const shouldLoadAvatars = ref(false)
 
 // Easter egg states
 const showTripleClickHint = ref(false)
-const konamiActivated = ref(false)
+// const konamiActivated = ref(false) // Now global in App.vue
 
 // Custom directive for scroll reveal animations
 const vScrollReveal = {
@@ -650,33 +653,35 @@ const setupScrollAnimations = () => {
 }
 
 /**
- * Konami code easter egg
+ * Konami code easter egg - NOW GLOBAL IN APP.VUE
+ * Available throughout the app, whether logged in or not!
  */
-const handleKonamiCode = () => {
-  if (konamiActivated.value) return
-  
-  konamiActivated.value = true
-  
-  // Show achievement in console
-  displayAchievement(
-    'Konami Code Master! 🎮',
-    'You found the legendary code! Here\'s a secret: we built this with love and countless cups of coffee ☕'
-  )
-  
-  // Trigger special animation on the page
-  document.body.classList.add('konami-activated')
-  
-  // Create confetti effect
-  createConfettiEffect()
-  
-  // Remove after animation
-  setTimeout(() => {
-    document.body.classList.remove('konami-activated')
-  }, 3000)
-}
+// COMMENTED OUT: Konami Code is now global in App.vue
+// const handleKonamiCode = () => {
+//   // Allow multiple activations - no early return
+//   konamiActivated.value = true
+//   
+//   // Show achievement in console
+//   displayAchievement(
+//     'Konami Code Master! 🎮',
+//     'You found the legendary code! Here\'s a secret: we built this with love and countless cups of coffee ☕'
+//   )
+//   
+//   // Trigger special animation on the page
+//   document.body.classList.add('konami-activated')
+//   
+//   // Create confetti effect
+//   createConfettiEffect()
+//   
+//   // Remove after animation and allow it to be triggered again
+//   setTimeout(() => {
+//     document.body.classList.remove('konami-activated')
+//     konamiActivated.value = false // Reset so it can be triggered again
+//   }, 3000)
+// }
 
-// Setup Konami code detection
-useKonamiCode(handleKonamiCode)
+// Setup Konami code detection - NOW GLOBAL IN APP.VUE
+// useKonamiCode(handleKonamiCode)
 
 /**
  * Triple-click on avatar easter egg
@@ -686,43 +691,58 @@ const handleCarouselClick = () => {
   // This is handled by the useTripleClick composable below
 }
 
-// Setup triple-click detection on carousel
+// Animation names for achievement display
+const ANIMATION_NAMES = {
+  wave: 'Wave 👋',
+  jump: 'Jump 🦘',
+  nod: 'Nod 🙂',
+  tpose: 'T-Pose 🤸',
+  bounce: 'Bounce 🎈'
+}
+const ANIMATION_ORDER = ['wave', 'jump', 'nod', 'tpose', 'bounce']
+let nextAnimationIndex = 0
+
+// Setup triple-click detection on carousel - Cycle through animations!
 useTripleClick(carouselSectionRef, () => {
+  // Get the current animation name
+  const currentAnimation = ANIMATION_ORDER[nextAnimationIndex]
+  const animationName = ANIMATION_NAMES[currentAnimation]
+  
   displayAchievement(
-    'Secret Avatar Dance! 💃',
-    'You discovered the hidden avatar animation! Keep exploring for more secrets.'
+    `Avatar Animation: ${animationName}`,
+    'Triple-click again for the next animation! 🎭'
   )
   
-  // Trigger special avatar animation
-  const carousel = carouselSectionRef.value
-  if (carousel) {
-    carousel.classList.add('avatar-dance')
-    setTimeout(() => {
-      carousel.classList.remove('avatar-dance')
-    }, 2000)
+  // Trigger avatar animation through the Avatar3DCarousel component
+  if (avatarCarouselRef.value && avatarCarouselRef.value.startAnimation) {
+    avatarCarouselRef.value.startAnimation()
   }
+  
+  // Update next animation index
+  nextAnimationIndex = (nextAnimationIndex + 1) % ANIMATION_ORDER.length
 }, { timeWindow: 800 })
 
 /**
- * Create confetti effect for Konami code
+ * Create confetti effect for Konami code - NOW GLOBAL IN APP.VUE
  */
-const createConfettiEffect = () => {
-  const colors = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6']
-  const confettiCount = 50
-  
-  for (let i = 0; i < confettiCount; i++) {
-    setTimeout(() => {
-      const confetti = document.createElement('div')
-      confetti.className = 'confetti'
-      confetti.style.left = Math.random() * 100 + '%'
-      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
-      confetti.style.animationDelay = Math.random() * 0.5 + 's'
-      document.body.appendChild(confetti)
-      
-      setTimeout(() => confetti.remove(), 3000)
-    }, i * 30)
-  }
-}
+// COMMENTED OUT: Confetti effect is now global in App.vue
+// const createConfettiEffect = () => {
+//   const colors = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6']
+//   const confettiCount = 50
+//   
+//   for (let i = 0; i < confettiCount; i++) {
+//     setTimeout(() => {
+//       const confetti = document.createElement('div')
+//       confetti.className = 'confetti'
+//       confetti.style.left = Math.random() * 100 + '%'
+//       confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
+//       confetti.style.animationDelay = Math.random() * 0.5 + 's'
+//       document.body.appendChild(confetti)
+//       
+//       setTimeout(() => confetti.remove(), 3000)
+//     }, i * 30)
+//   }
+// }
 
 // Show triple-click hint after a delay
 onMounted(async () => {
@@ -1035,6 +1055,18 @@ onMounted(async () => {
    Bento Grid Layout
    ============================================ */
 
+/* Wrapper to scale down the grid on desktop */
+.bento-grid-wrapper {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .bento-grid-wrapper {
+    width: 60%; /* Scaled down by 40% */
+    margin: 0 auto; /* Center the grid */
+  }
+}
+
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -1054,50 +1086,50 @@ onMounted(async () => {
 @media (min-width: 1024px) {
   .bento-grid {
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(3, minmax(220px, auto));
-    gap: 1.5rem;
+    grid-template-rows: repeat(3, minmax(132px, auto)); /* 220px * 0.6 = 132px */
+    gap: 0.9rem; /* 1.5rem * 0.6 = 0.9rem */
   }
 
   /* Feature 1: Digital Closet - Left side (spans rows 1-2) */
   .bento-small:nth-child(1) {
     grid-column: 1 / 2;
     grid-row: 1 / 3;
-    min-height: 460px;
+    min-height: 276px; /* 460px * 0.6 = 276px */
   }
 
   /* Feature 2: Outfit Creator - Center (2x2 square, spans rows 1-2) */
   .bento-large:nth-child(2) {
     grid-column: 2 / 4;
     grid-row: 1 / 3;
-    min-height: 460px;
+    min-height: 276px; /* 460px * 0.6 = 276px */
   }
 
   /* Feature 3: Social Features - Top right */
   .bento-small:nth-child(3) {
     grid-column: 4 / 5;
     grid-row: 1 / 2;
-    min-height: 220px;
+    min-height: 132px; /* 220px * 0.6 = 132px */
   }
 
   /* Feature 4: Smart Search - Bottom left (2 columns wide) */
   .bento-medium:nth-child(4) {
     grid-column: 1 / 3;
     grid-row: 3 / 4;
-    min-height: 220px;
+    min-height: 132px; /* 220px * 0.6 = 132px */
   }
 
   /* Feature 5: Favorites - Middle right */
   .bento-small:nth-child(5) {
     grid-column: 4 / 5;
     grid-row: 2 / 3;
-    min-height: 220px;
+    min-height: 132px; /* 220px * 0.6 = 132px */
   }
 
   /* Feature 6: Mobile First - Bottom right (2 columns wide) */
   .bento-medium:nth-child(6) {
     grid-column: 3 / 5;
     grid-row: 3 / 4;
-    min-height: 220px;
+    min-height: 132px; /* 220px * 0.6 = 132px */
   }
 }
 
@@ -1152,6 +1184,20 @@ onMounted(async () => {
 .group:hover .shimmer-overlay-large {
   /* PERFORMANCE: Transform instead of layout-affecting property */
   transform: translateX(100%);
+}
+
+/* Mobile: Use regular shimmer on Outfit Creator card */
+@media (max-width: 767px) {
+  .bento-large .shimmer-overlay-large {
+    top: 0;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+  }
 }
 
 /* PERFORMANCE: Clean up will-change after animation */
@@ -1333,75 +1379,9 @@ button {
   }
 }
 
-/* Avatar dance animation */
-.avatar-dance {
-  animation: avatarDance 2s ease-in-out;
-}
+/* Avatar animations now handled in Avatar3DCarousel component */
 
-@keyframes avatarDance {
-  0%, 100% {
-    transform: rotate(0deg) scale(1);
-  }
-  10% {
-    transform: rotate(-5deg) scale(1.05);
-  }
-  20% {
-    transform: rotate(5deg) scale(1.1);
-  }
-  30% {
-    transform: rotate(-5deg) scale(1.05);
-  }
-  40% {
-    transform: rotate(5deg) scale(1);
-  }
-  50% {
-    transform: rotate(0deg) scale(1.1);
-  }
-  60% {
-    transform: rotate(-10deg) scale(1);
-  }
-  70% {
-    transform: rotate(10deg) scale(1.05);
-  }
-  80% {
-    transform: rotate(-5deg) scale(1);
-  }
-  90% {
-    transform: rotate(5deg) scale(1);
-  }
-}
-
-/* Confetti for Konami code */
-:global(.confetti) {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  top: -10px;
-  z-index: 9999;
-  animation: confettiFall 3s ease-in forwards;
-  pointer-events: none;
-}
-
-@keyframes confettiFall {
-  to {
-    transform: translateY(100vh) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-/* Konami activation effect */
-:global(body.konami-activated) {
-  animation: konamiFlash 0.5s ease-in-out 3;
-}
-
-@keyframes konamiFlash {
-  0%, 100% {
-    filter: none;
-  }
-  50% {
-    filter: hue-rotate(90deg) saturate(1.5);
-  }
-}
+/* Confetti and Konami Code CSS moved to global animations.css */
 
 /* ============================================
    Accessibility
@@ -1448,10 +1428,6 @@ button {
   }
   
   /* Disable easter egg animations */
-  .avatar-dance {
-    animation: none !important;
-  }
-  
   :global(.confetti) {
     display: none !important;
   }

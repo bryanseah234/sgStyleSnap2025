@@ -184,6 +184,19 @@ const ROTATION_SPEED = 0.005
 const ROTATIONS_BEFORE_REVERSE = 3
 let rotationCount = 0
 let rotationDirection = 1 // 1 for forward, -1 for reverse
+let isRotationPaused = false
+let rotationResumeTimeout = null
+
+// Avatar Animations (Easter Egg)
+let isAnimating = false
+let currentAnimationType = null
+let animationStartTime = 0
+let animationProgress = 0
+const ANIMATION_TYPES = ['wave', 'jump', 'nod', 'tpose', 'bounce']
+let currentAnimationIndex = 0
+
+// Store original bone positions/rotations
+let originalBoneStates = null
 
 // Momentum physics
 let dragStartTime = 0
@@ -282,8 +295,8 @@ const loadSingleAvatar = async (url, index) => {
           loaded: true
         }
 
-        // Position avatar
-        avatarGroup.position.x = index * AVATAR_SPACING
+        // Position avatar - always centered at origin since we only have 1 avatar
+        avatarGroup.position.x = 0
         avatarGroup.position.y = 0
         avatarGroup.position.z = 0
 
@@ -353,6 +366,329 @@ const disposeMaterial = (material) => {
   material.dispose()
 }
 
+// ============================================
+// AVATAR ANIMATION FUNCTIONS (Easter Egg)
+// ============================================
+
+/**
+ * Find bones in the avatar model
+ */
+const findBones = (model) => {
+  const bones = {
+    leftArm: null,
+    rightArm: null,
+    leftHand: null,
+    rightHand: null,
+    head: null,
+    spine: null,
+    hips: null,
+    leftLeg: null,
+    rightLeg: null,
+  }
+  
+  model.traverse((child) => {
+    if (child.isBone || child.type === 'Bone') {
+      const name = child.name.toLowerCase()
+      
+      // Find arm bones
+      if (name.includes('left') && (name.includes('arm') || name.includes('shoulder') || name.includes('upper'))) {
+        bones.leftArm = child
+      }
+      if (name.includes('right') && (name.includes('arm') || name.includes('shoulder') || name.includes('upper'))) {
+        bones.rightArm = child
+      }
+      
+      // Find hand bones
+      if (name.includes('left') && name.includes('hand')) {
+        bones.leftHand = child
+      }
+      if (name.includes('right') && name.includes('hand')) {
+        bones.rightHand = child
+      }
+      
+      // Find head
+      if (name.includes('head') || name.includes('neck')) {
+        bones.head = child
+      }
+      
+      // Find spine/torso
+      if (name.includes('spine') || name.includes('chest')) {
+        bones.spine = child
+      }
+      
+      // Find hips
+      if (name.includes('hips') || name.includes('pelvis')) {
+        bones.hips = child
+      }
+      
+      // Find legs
+      if (name.includes('left') && (name.includes('leg') || name.includes('thigh'))) {
+        bones.leftLeg = child
+      }
+      if (name.includes('right') && (name.includes('leg') || name.includes('thigh'))) {
+        bones.rightLeg = child
+      }
+    }
+  })
+  
+  return bones
+}
+
+/**
+ * Save original bone states
+ */
+const saveOriginalBoneStates = (model) => {
+  const states = new Map()
+  
+  model.traverse((child) => {
+    if (child.isBone || child.type === 'Bone') {
+      states.set(child, {
+        position: child.position.clone(),
+        rotation: child.rotation.clone(),
+        quaternion: child.quaternion.clone(),
+      })
+    }
+  })
+  
+  return states
+}
+
+/**
+ * Restore original bone states
+ */
+const restoreOriginalBoneStates = (model, states) => {
+  model.traverse((child) => {
+    if (states.has(child)) {
+      const original = states.get(child)
+      child.position.copy(original.position)
+      child.rotation.copy(original.rotation)
+      child.quaternion.copy(original.quaternion)
+    }
+  })
+}
+
+/**
+ * Wave animation - move arm up and down
+ */
+const animateWave = (model, progress) => {
+  const bones = findBones(model)
+  
+  // Wave with right arm
+  if (bones.rightArm) {
+    // Lift arm up and wave
+    const waveAngle = Math.sin(progress * Math.PI * 4) * 0.3 // 4 waves
+    const liftAngle = Math.sin(progress * Math.PI) * 1.0 // Lift to 90 degrees
+    bones.rightArm.rotation.z = -liftAngle - 0.5
+    bones.rightArm.rotation.x = waveAngle
+  }
+  
+  if (bones.rightHand) {
+    const handWave = Math.sin(progress * Math.PI * 4) * 0.5
+    bones.rightHand.rotation.z = handWave
+  }
+}
+
+/**
+ * Jump animation - whole body moves up with crouch
+ */
+const animateJump = (model, progress) => {
+  // Create jump arc (0 -> up -> 0)
+  const jumpHeight = Math.sin(progress * Math.PI) * 0.5
+  model.position.y = jumpHeight
+  
+  // Crouch effect (compress at start/end, extend at peak)
+  const crouchAmount = Math.cos(progress * Math.PI * 2) * 0.1
+  model.scale.y = 1 + crouchAmount
+  model.scale.x = 1 - crouchAmount * 0.5
+  model.scale.z = 1 - crouchAmount * 0.5
+  
+  const bones = findBones(model)
+  
+  // Bend legs during crouch
+  if (bones.leftLeg) {
+    bones.leftLeg.rotation.x = Math.max(0, -crouchAmount * 2)
+  }
+  if (bones.rightLeg) {
+    bones.rightLeg.rotation.x = Math.max(0, -crouchAmount * 2)
+  }
+}
+
+/**
+ * Nod animation - head moves up and down
+ */
+const animateNod = (model, progress) => {
+  const bones = findBones(model)
+  
+  if (bones.head) {
+    // 3 nods during animation
+    const nodAngle = Math.sin(progress * Math.PI * 6) * 0.3
+    bones.head.rotation.x = nodAngle
+  }
+}
+
+/**
+ * T-Pose animation - arms out to sides
+ */
+const animateTPose = (model, progress) => {
+  const bones = findBones(model)
+  
+  // Ease into T-pose and hold
+  const easeProgress = progress < 0.3 ? progress / 0.3 : 
+                       progress > 0.7 ? (1 - progress) / 0.3 : 1
+  
+  if (bones.leftArm) {
+    bones.leftArm.rotation.z = easeProgress * Math.PI / 2 // 90 degrees
+    bones.leftArm.rotation.x = 0
+    bones.leftArm.rotation.y = 0
+  }
+  
+  if (bones.rightArm) {
+    bones.rightArm.rotation.z = -easeProgress * Math.PI / 2 // -90 degrees
+    bones.rightArm.rotation.x = 0
+    bones.rightArm.rotation.y = 0
+  }
+}
+
+/**
+ * Bounce/Idle animation - subtle breathing and swaying
+ */
+const animateBounce = (model, progress) => {
+  const bones = findBones(model)
+  
+  // Breathing effect
+  const breathe = Math.sin(progress * Math.PI * 4) * 0.02
+  if (bones.spine) {
+    bones.spine.scale.y = 1 + breathe
+  }
+  
+  // Gentle sway
+  const sway = Math.sin(progress * Math.PI * 2) * 0.1
+  model.rotation.z = sway * 0.05
+  
+  // Slight up and down bounce
+  const bounce = Math.sin(progress * Math.PI * 4) * 0.05
+  model.position.y = bounce
+}
+
+/**
+ * Execute animation based on type
+ */
+const executeAnimation = (model, animationType, progress) => {
+  switch (animationType) {
+    case 'wave':
+      animateWave(model, progress)
+      break
+    case 'jump':
+      animateJump(model, progress)
+      break
+    case 'nod':
+      animateNod(model, progress)
+      break
+    case 'tpose':
+      animateTPose(model, progress)
+      break
+    case 'bounce':
+      animateBounce(model, progress)
+      break
+  }
+}
+
+/**
+ * Start a new animation (called from triple-click)
+ */
+const startAnimation = () => {
+  const activeAvatar = avatars[currentIndex.value]
+  if (!activeAvatar || !activeAvatar.userData.model) return
+  
+  const model = activeAvatar.userData.model
+  
+  // Save original bone states if not already saved
+  if (!originalBoneStates) {
+    originalBoneStates = saveOriginalBoneStates(model)
+  }
+  
+  // Stop rotation
+  isRotationPaused = true
+  clearTimeout(rotationResumeTimeout)
+  
+  // Cycle to next animation
+  currentAnimationType = ANIMATION_TYPES[currentAnimationIndex]
+  currentAnimationIndex = (currentAnimationIndex + 1) % ANIMATION_TYPES.length
+  
+  // Start animation
+  isAnimating = true
+  animationStartTime = performance.now()
+  animationProgress = 0
+  
+  console.log(`🎭 Starting animation: ${currentAnimationType}`)
+}
+
+/**
+ * Stop animation and restore original state
+ */
+const stopAnimation = () => {
+  const activeAvatar = avatars[currentIndex.value]
+  if (!activeAvatar || !activeAvatar.userData.model) return
+  
+  const model = activeAvatar.userData.model
+  
+  // Restore original bone states
+  if (originalBoneStates) {
+    restoreOriginalBoneStates(model, originalBoneStates)
+  }
+  
+  // Reset model transforms
+  model.position.y = 0
+  model.rotation.z = 0
+  model.scale.set(1, 1, 1)
+  
+  // Reset animation state
+  isAnimating = false
+  currentAnimationType = null
+  animationProgress = 0
+  
+  // Resume rotation after 3 seconds
+  rotationResumeTimeout = setTimeout(() => {
+    isRotationPaused = false
+    console.log('🔄 Rotation resumed')
+  }, 3000)
+  
+  needsRender = true
+}
+
+/**
+ * Update animation (called from render loop)
+ */
+const updateAnimation = (currentTime) => {
+  if (!isAnimating) return
+  
+  const activeAvatar = avatars[currentIndex.value]
+  if (!activeAvatar || !activeAvatar.userData.model) {
+    stopAnimation()
+    return
+  }
+  
+  const model = activeAvatar.userData.model
+  const animationDuration = 2000 // 2 seconds per animation
+  const elapsed = currentTime - animationStartTime
+  animationProgress = Math.min(elapsed / animationDuration, 1)
+  
+  // Execute the current animation
+  executeAnimation(model, currentAnimationType, animationProgress)
+  
+  // Check if animation is complete
+  if (animationProgress >= 1) {
+    stopAnimation()
+  }
+  
+  needsRender = true
+}
+
+// Expose startAnimation to parent component
+defineExpose({
+  startAnimation
+})
+
 /**
  * Update loaded avatars based on current index
  */
@@ -401,8 +737,10 @@ const initThreeJS = async () => {
   // Camera
   const aspect = canvasRef.value.clientWidth / canvasRef.value.clientHeight
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000)
-  camera.position.set(0, 0.1, 3) // Reduced Y from 0.3 to 0.1 to reduce space above avatar
-  camera.lookAt(0, 0, 0) // Adjusted lookAt to center avatar better
+  
+  // Position camera - centered on mobile and desktop
+  camera.position.set(0, 0.1, 3)
+  camera.lookAt(0, 0, 0)
 
   // Renderer with optimized settings
   renderer = new THREE.WebGLRenderer({
@@ -531,10 +869,12 @@ const animate = (time) => {
   const previousOffset = currentOffset
   currentOffset += (targetOffset - currentOffset) * lerpFactor
 
-  // Update camera
+  // Update camera X position (for carousel, but we only have 1 avatar now so keep at 0)
   const targetX = currentIndex.value * AVATAR_SPACING
   const previousCameraX = camera.position.x
-  camera.position.x += (targetX - currentOffset - camera.position.x) * lerpFactor
+  
+  // Always keep camera centered at X = 0 since we only have 1 avatar
+  camera.position.x = 0
   
   // Check if camera moved
   if (Math.abs(previousCameraX - camera.position.x) > 0.001 || Math.abs(previousOffset - currentOffset) > 0.001) {
@@ -547,8 +887,13 @@ const animate = (time) => {
     needsRender = true
   }
 
-  // Auto-rotate with direction reversal every 3 rounds
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !isDraggingActive && !momentumAnimationId) {
+  // Update avatar animations (Easter Egg)
+  if (isAnimating) {
+    updateAnimation(time)
+  }
+
+  // Auto-rotate with direction reversal every 3 rounds (paused during animations)
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !isDraggingActive && !momentumAnimationId && !isRotationPaused) {
     const activeAvatar = avatars[currentIndex.value]
     if (activeAvatar && activeAvatar.userData.model) {
       const previousRotation = activeAvatar.userData.model.rotation.y
