@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <clipPath id="circle-reveal" clipPathUnits="objectBoundingBox">
+      <circle cx="0.5" cy="0.5" r="0" class="circle-reveal-shape">
+        <animate
+          attributeName="r"
+          from="0"
+          to="0.71"
+          dur="1.2s"
+          fill="freeze"
+          calcMode="spline"
+          keySplines="0.4 0.0 0.2 1"
+        />
+      </circle>
+    </clipPath>
+  </defs>
+</svg>

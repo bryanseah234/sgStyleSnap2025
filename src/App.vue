@@ -17,6 +17,12 @@
   <!-- Login page without layout -->
   <router-view v-else />
   
+  <!-- Custom Blob Cursor (Desktop Only) -->
+  <BlobCursor />
+  
+  <!-- Page Transition Curtain Effect -->
+  <PageTransition :bar-count="10" :duration="900" />
+  
   <!-- Performance Monitor (Development Only) -->
   <FPSCounter v-if="isDevelopment" />
 </template>
@@ -45,6 +51,8 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Layout from './components/Layout.vue'
 import FPSCounter from './components/FPSCounter.vue'
+import BlobCursor from './components/BlobCursor.vue'
+import PageTransition from './components/PageTransition.vue'
 
 // Get current route
 const route = useRoute()

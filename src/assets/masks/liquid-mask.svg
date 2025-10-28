@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <clipPath id="liquid-reveal" clipPathUnits="objectBoundingBox">
+      <path class="liquid-reveal-shape" d="M 0.5,0.5 m -0,0 a 0,0 0 1,0 0,0 a 0,0 0 1,0 -0,0">
+        <animate
+          attributeName="d"
+          from="M 0.5,0.5 m -0,0 a 0,0 0 1,0 0,0 a 0,0 0 1,0 -0,0"
+          to="M 0.5,0.5 m -0.45,0 a 0.45,0.50 0 1,0 0.90,0 a 0.45,0.50 0 1,0 -0.90,0"
+          dur="1.4s"
+          fill="freeze"
+          calcMode="spline"
+          keySplines="0.25 0.46 0.45 0.94"
+        />
+      </path>
+    </clipPath>
+  </defs>
+</svg>

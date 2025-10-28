@@ -15,6 +15,7 @@ import App from './App.vue'
 import './index.css'
 import { useTheme } from './composables/useTheme'
 import { useThemeStore } from './stores/theme-store'
+import { setupPageTransition, setupFocusManagement } from '@/composables/usePageTransition'
 
 // Import page components
 import Landing from './pages/Landing.vue'
@@ -81,6 +82,29 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 })
+
+/**
+ * Setup Page Transition System
+ * 
+ * Integrates the curtain-style page transition with Vue Router.
+ * IMPORTANT: Must be called BEFORE the authentication guard below.
+ * The transition system's beforeEach hook will run first to start
+ * the exit animation, then the auth guard will handle navigation logic.
+ * 
+ * The transition works as follows:
+ * 1. User clicks link → transition beforeEach starts curtain slide-down
+ * 2. Auth guard checks permissions (while curtain covers screen)
+ * 3. Navigation completes → transition afterEach triggers curtain slide-up
+ * 4. New content is revealed smoothly
+ */
+setupPageTransition(router, {
+  duration: 900,
+  staggerDelay: 50,
+  barCount: 10
+})
+
+// Setup focus management for accessibility
+setupFocusManagement(router)
 
 /**
  * Route Guard - Authentication Protection

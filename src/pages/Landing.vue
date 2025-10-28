@@ -49,12 +49,11 @@
       <!-- Hero Content - Vertically Centered -->
       <div class="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
         <div class="max-w-7xl mx-auto text-center">
-          <!-- Main Headline -->
+          <!-- Main Headline with Kinetic Typography -->
           <h1 
-            class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight hero-fade-in"
-            :class="{ 'animate-shimmer': isHeroHovered }"
-            @mouseenter="isHeroHovered = true"
-            @mouseleave="isHeroHovered = false"
+            ref="mainHeadingRef"
+            class="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight kinetic-heading"
+            :class="{ 'is-animating': isHeadingAnimating }"
           >
             Your Digital
             <span class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent gradient-shift">
@@ -91,50 +90,53 @@
     </section>
     
     <!-- Avatar Carousel Section -->
-    <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-12">
-          <h2 
-            ref="carouselHeadingRef" 
-            class="text-3xl md:text-4xl font-bold text-foreground mb-4 scroll-animate"
-          >
-            Meet Your Digital Self
-          </h2>
-          <p 
-            ref="carouselDescriptionRef" 
-            class="text-lg text-muted-foreground max-w-2xl mx-auto scroll-animate"
-          >
-            Your personal style journey starts here.
-          </p>
+    <SectionTransition type="circle" :duration="1200" :threshold="0.25">
+      <section class="py-16 md:py-24 bg-gradient-to-b from-background to-muted/30">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="text-center mb-12">
+            <h2 
+              ref="carouselHeadingRef" 
+              class="text-3xl md:text-4xl font-bold text-foreground mb-4 scroll-animate"
+            >
+              Meet Your Digital Self
+            </h2>
+            <p 
+              ref="carouselDescriptionRef" 
+              class="text-lg text-muted-foreground max-w-2xl mx-auto scroll-animate"
+            >
+              Your personal style journey starts here.
+            </p>
+          </div>
+          
+          <!-- Avatar 3D Carousel -->
+          <div ref="carouselSectionRef" class="scroll-animate">
+            <Avatar3DCarousel
+              :avatar-urls="avatarUrls"
+              :show-info="true"
+              @avatar-change="handleAvatarChange"
+              @avatar-loaded="handleAvatarLoaded"
+              @loading-error="handleLoadingError"
+            />
+          </div>
+          
         </div>
-        
-        <!-- Avatar 3D Carousel -->
-        <div ref="carouselSectionRef" class="scroll-animate">
-          <Avatar3DCarousel
-            :avatar-urls="avatarUrls"
-            :show-info="true"
-            @avatar-change="handleAvatarChange"
-            @avatar-loaded="handleAvatarLoaded"
-            @loading-error="handleLoadingError"
-          />
-        </div>
-        
-      </div>
-    </section>
+      </section>
+    </SectionTransition>
     
     <!-- Features Section - Bento Grid -->
-    <section ref="featuresSection" class="py-16 md:py-24">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-16">
-          <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Everything You Need for Your Style Journey
-          </h2>
-          <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-            From organizing your closet to creating perfect outfits, StyleSnap has all the tools you need.
-          </p>
-        </div>
-        
-        <!-- Bento Grid Layout -->
+    <SectionTransition type="liquid" :duration="1400" :threshold="0.2" :delay="100">
+      <section ref="featuresSection" class="py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Everything You Need for Your Style Journey
+            </h2>
+            <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+              From organizing your closet to creating perfect outfits, StyleSnap has all the tools you need.
+            </p>
+          </div>
+          
+          <!-- Bento Grid Layout -->
         <div class="bento-grid">
           <!-- Feature 1: Digital Closet - Top Left -->
           <div 
@@ -272,9 +274,11 @@
         </div>
       </div>
     </section>
+    </SectionTransition>
     
     <!-- CTA Section -->
-    <section ref="ctaSectionRef" class="py-16 md:py-24 scroll-animate">
+    <SectionTransition type="wave" :duration="1300" :threshold="0.3">
+      <section ref="ctaSectionRef" class="py-16 md:py-24 scroll-animate">
       <div class="max-w-4xl mx-auto text-center px-6">
         <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-6">
           Ready to Transform Your Style?
@@ -291,6 +295,7 @@
         </button>
       </div>
     </section>
+    </SectionTransition>
     
     <!-- Footer -->
     <footer class="bg-muted/50 py-8">
@@ -326,6 +331,7 @@ import { ref, onMounted, provide } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useSmoothScroll } from '@/composables/useSmoothScroll'
+import { useTextAnimation } from '@/composables/useTextAnimation'
 import { 
   Shirt, 
   Palette, 
@@ -337,6 +343,7 @@ import {
   Moon
 } from 'lucide-vue-next'
 import Avatar3DCarousel from '@/components/Avatar3DCarousel.vue'
+import SectionTransition from '@/components/SectionTransition.vue'
 
 // Composables
 const router = useRouter()
@@ -358,6 +365,17 @@ const carouselSectionRef = ref<HTMLElement | null>(null)
 const carouselHeadingRef = ref<HTMLElement | null>(null)
 const carouselDescriptionRef = ref<HTMLElement | null>(null)
 const ctaSectionRef = ref<HTMLElement | null>(null)
+
+// Main heading ref for kinetic typography
+const mainHeadingRef = ref<HTMLElement | null>(null)
+
+// Initialize kinetic typography animation for main heading
+const { isAnimating: isHeadingAnimating } = useTextAnimation(mainHeadingRef, {
+  headingLevel: 'h1',
+  enableHover: true,
+  playOnce: true,
+  threshold: 0.5
+})
 
 // Avatar carousel data
 const avatarUrls = ref([
@@ -548,7 +566,7 @@ onMounted(() => {
    Hero Section Animations
    ============================================ */
 
-/* Fade in animations with delays */
+/* Fade in animations with delays for non-kinetic elements */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -560,16 +578,47 @@ onMounted(() => {
   }
 }
 
-.hero-fade-in {
-  animation: fadeInUp 0.8s ease-out 0.2s both;
-}
-
 .hero-fade-in-delay {
   animation: fadeInUp 0.8s ease-out 0.4s both;
 }
 
 .hero-fade-in-delay-2 {
   animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+/* ============================================
+   Kinetic Typography Styles
+   ============================================ */
+
+/* Kinetic heading container */
+.kinetic-heading {
+  /* Preserve existing typography */
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Character spans - performance optimized */
+.kinetic-heading .char-animate {
+  display: inline-block;
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* CSS containment for layout optimization */
+.kinetic-heading.is-animating {
+  contain: layout style paint;
+}
+
+/* Preserve gradient on nested spans */
+.kinetic-heading .gradient-shift .char-animate {
+  background: inherit;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: inherit;
+  background-position: inherit;
 }
 
 /* Gradient text animation */
@@ -914,6 +963,13 @@ button {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+  
+  /* Disable kinetic typography for reduced motion */
+  .kinetic-heading .char-animate {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
 </style>
