@@ -726,7 +726,7 @@ import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
 import ShareOutfitDialog from '@/components/dashboard/ShareOutfitDialog.vue'
 
 const { theme } = useTheme()
-const { showError, showSuccess, showWarning, showInfo } = usePopup()
+const { showError, showSuccess, showWarning, showInfo, showPrompt } = usePopup()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
@@ -1534,58 +1534,79 @@ const saveOwnOutfit = async () => {
       ? currentOutfitName.value 
       : `Outfit ${new Date().toLocaleDateString()}`
     
-    const outfitName = prompt('Enter a name for your outfit:', defaultName)
-    if (!outfitName) {
-      console.log('OutfitCreator: Save cancelled by user')
-      return
-    }
-    
-    const outfitData = {
-      outfit_name: outfitName,
-      description: 'Created in Outfit Creator',
-      occasion: null,
-      weather_condition: null,
-      items: canvasItems.value.map(item => ({
-        clothing_item_id: item.originalId || item.id, // Use stored original ID
-        x_position: item.x,
-        y_position: item.y,
-        z_index: item.z_index || 1,
-        rotation: item.rotation || 0,
-        scale: item.scale || 1
-      }))
-    }
-    
-    let result
-    if (isEditing) {
-      // Update existing outfit
-      console.log('OutfitCreator: Updating outfit:', currentOutfitId.value, outfitData)
-      result = await outfitsService.updateOutfit(currentOutfitId.value, outfitData)
-      
-      if (result && result.id) {
-        console.log('OutfitCreator: Outfit updated successfully:', result.id)
-        showSuccess('Outfit updated successfully!')
-        // Navigate back to outfits gallery
-        router.push('/outfits')
-      } else {
-        throw new Error('Failed to update outfit')
+    // Show input popup instead of browser prompt
+    showPrompt({
+      title: 'Save Outfit',
+      message: 'Enter a name for your outfit:',
+      defaultValue: defaultName,
+      placeholder: 'Outfit name',
+      confirmText: 'Save',
+      cancelText: 'Cancel',
+      onConfirm: async (outfitName) => {
+        if (!outfitName || !outfitName.trim()) {
+          console.log('OutfitCreator: Save cancelled - empty name')
+          return
+        }
+        
+        try {
+          savingOutfit.value = true
+          
+          const outfitData = {
+            outfit_name: outfitName.trim(),
+            description: 'Created in Outfit Creator',
+            occasion: null,
+            weather_condition: null,
+            items: canvasItems.value.map(item => ({
+              clothing_item_id: item.originalId || item.id, // Use stored original ID
+              x_position: item.x,
+              y_position: item.y,
+              z_index: item.z_index || 1,
+              rotation: item.rotation || 0,
+              scale: item.scale || 1
+            }))
+          }
+          
+          let result
+          if (isEditing) {
+            // Update existing outfit
+            console.log('OutfitCreator: Updating outfit:', currentOutfitId.value, outfitData)
+            result = await outfitsService.updateOutfit(currentOutfitId.value, outfitData)
+            
+            if (result && result.id) {
+              console.log('OutfitCreator: Outfit updated successfully:', result.id)
+              showSuccess('Outfit updated successfully!')
+              // Navigate back to outfits gallery
+              router.push('/outfits')
+            } else {
+              throw new Error('Failed to update outfit')
+            }
+          } else {
+            // Create new outfit
+            console.log('OutfitCreator: Creating outfit:', outfitData)
+            result = await outfitsService.createOutfit(outfitData)
+            
+            if (result && result.id) {
+              console.log('OutfitCreator: Outfit created successfully:', result.id)
+              showSuccess('Outfit saved successfully!')
+              // Navigate back to outfits gallery
+              router.push('/outfits')
+            } else {
+              throw new Error('Failed to create outfit')
+            }
+          }
+        } catch (error) {
+          console.error('OutfitCreator: Error saving own outfit:', error)
+          showError('Failed to save outfit. Please try again.')
+        } finally {
+          savingOutfit.value = false
+        }
+      },
+      onCancel: () => {
+        console.log('OutfitCreator: Save cancelled by user')
       }
-    } else {
-      // Create new outfit
-      console.log('OutfitCreator: Creating outfit:', outfitData)
-      result = await outfitsService.createOutfit(outfitData)
-      
-      if (result && result.id) {
-        console.log('OutfitCreator: Outfit created successfully:', result.id)
-        showSuccess('Outfit saved successfully!')
-        // Navigate back to outfits gallery
-        router.push('/outfits')
-      } else {
-        throw new Error('Failed to create outfit')
-      }
-    }
+    })
   } catch (error) {
-    console.error('OutfitCreator: Error saving own outfit:', error)
-    throw error
+    console.error('OutfitCreator: Error in saveOwnOutfit:', error)
   }
 }
 
