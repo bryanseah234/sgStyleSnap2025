@@ -120,7 +120,7 @@
                 }`"
               >
                 <LogOut v-if="!loading" class="w-4 h-4 md:w-5 md:h-5" />
-                <div v-else class="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <div v-else class="w-4 h-4 md:w-5 md:h-5 spinner-modern" />
                 <span class="font-medium text-sm md:text-base">{{ loading ? 'Logging out...' : 'Logout' }}</span>
               </button>
             </div>

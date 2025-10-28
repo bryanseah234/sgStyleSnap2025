@@ -260,7 +260,7 @@ const totalItemsCount = ref(0) // Total count of all items in closet
  * @returns {Array<Object>} Array of stat objects with label, value, icon, and route
  */
 const stats = computed(() => [
-  { label: 'Items', value: totalItemsCount.value, icon: Shirt, route: '/closet' },
+  { label: 'Closet', value: totalItemsCount.value, icon: Shirt, route: '/closet' },
   { label: 'Outfits', value: outfits.value.length, icon: Palette, route: '/outfits' },
   { label: 'Friends', value: friends.value.length, icon: Users, route: '/friends' },
 ])
@@ -429,8 +429,8 @@ const handleNotificationClick = async (notification) => {
   // Navigate based on notification type
   switch (notification.type) {
     case 'friend_request':
-      // Navigate to friends page with requests tab
-      router.push('/friends?tab=requests')
+      // Navigate to friend requests (received) page
+      router.push('/friends/requests/received')
       break
     case 'friend_request_accepted':
       // Navigate to friends page

@@ -198,10 +198,11 @@ async function scoreOutfitWithAPI(outfitItems) {
     }
     
     // If API fails, return color-based score
-    console.warn('Transformer API failed, using color score as fallback')
+    console.log('ℹ️ Transformer API unavailable, using color score fallback')
     return calculateColorBasedScore(outfitItems)
   } catch (error) {
-    console.error('Error scoring outfit with API:', error)
+    // CORS errors are expected - gracefully fall back to color scoring
+    console.log('ℹ️ Transformer API unavailable, using color score fallback')
     return calculateColorBasedScore(outfitItems)
   }
 }

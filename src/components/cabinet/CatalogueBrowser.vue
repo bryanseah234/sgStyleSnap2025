@@ -145,7 +145,7 @@
             ]"
           >
             <template v-if="addingItemId === item.id">
-              <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <div class="w-4 h-4 spinner-modern" />
               Adding...
             </template>
             <template v-else-if="addedItems.has(item.id)">

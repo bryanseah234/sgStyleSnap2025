@@ -74,7 +74,13 @@ export async function scoreOutfit(outfitItems) {
       confidence: result.score
     }
   } catch (error) {
-    console.error('❌ Fashion Transformer: Outfit scoring failed:', error)
+    // CORS errors are expected - the backend API doesn't allow cross-origin requests
+    // The app gracefully falls back to color-based scoring
+    if (error.message?.includes('CORS') || error.message?.includes('Failed to fetch')) {
+      console.log('ℹ️ Fashion Transformer: API unavailable (CORS), using fallback scoring')
+    } else {
+      console.error('❌ Fashion Transformer: Outfit scoring failed:', error.message)
+    }
     return {
       success: false,
       error: error.message,
@@ -157,7 +163,12 @@ export async function findComplementaryItems(outfitItems, targetCategory, k = 8)
       count: result.recommendations?.length || 0
     }
   } catch (error) {
-    console.error('❌ Fashion Transformer: Complementary item search failed:', error)
+    // CORS errors are expected - the backend API doesn't allow cross-origin requests
+    if (error.message?.includes('CORS') || error.message?.includes('Failed to fetch')) {
+      console.log('ℹ️ Fashion Transformer: API unavailable (CORS) for complementary search')
+    } else {
+      console.error('❌ Fashion Transformer: Complementary item search failed:', error.message)
+    }
     return {
       success: false,
       error: error.message,

@@ -109,7 +109,7 @@
             title="Get AI Outfit Recommendations"
           >
             <Sparkles v-if="!recommendingOutfits" class="w-5 h-5" />
-            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div v-else class="w-5 h-5 spinner-modern"></div>
             <span class="hidden sm:inline">{{ recommendingOutfits ? 'Analyzing...' : 'Get AI Recommendations' }}</span>
           </button>
           
@@ -624,7 +624,7 @@
           </div>
           
           <div v-else-if="recommendingOutfits" class="text-center py-12">
-            <div class="w-16 h-16 mx-auto mb-4 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="w-16 h-16 mx-auto mb-4 spinner-modern"></div>
             <p class="text-stone-600 dark:text-zinc-400">Analyzing your closet...</p>
           </div>
           

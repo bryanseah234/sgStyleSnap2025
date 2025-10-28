@@ -90,16 +90,24 @@
 
     <!-- Search Bar -->
     <div class="max-w-6xl mx-auto mb-8">
-      <div class="relative">
+      <div class="relative search-input-group">
         <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
         <input
           ref="searchInputRef"
           v-model="searchTerm"
           type="text"
           placeholder="Search your outfits..."
-          class="w-full pl-10 pr-4 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400"
+          class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
           @input="handleSearch"
+          @focus="handleSearchFocus"
+          @blur="handleSearchBlur"
         />
+        <!-- Raycast-style keyboard hint -->
+        <div class="keyboard-hint">
+          <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+          <span>+</span>
+          <span class="keyboard-hint-key">K</span>
+        </div>
       </div>
     </div>
 
@@ -178,7 +186,7 @@
           v-for="(outfit, index) in filteredOutfits"
           :key="outfit.id"
           class="group cursor-pointer transition-all duration-300 hover:scale-105 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 rounded-xl overflow-hidden"
-          :style="{ transitionDelay: `${index * 50}ms` }"
+          v-memo="[outfit.id, outfit.outfit_name, outfit.preview_url, outfit.is_favorite, activeFilter, searchTerm]"
           @click="viewOutfit(outfit)"
         >
           <div class="aspect-square relative overflow-hidden">
@@ -423,6 +431,9 @@ const selectedOutfit = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
 
+// Detect Mac for keyboard shortcut display
+const isMac = ref(false)
+
 // Initialize activeFilter from URL parameter
 if (route.query.filter === 'suggestions') {
   activeFilter.value = 'suggestions'
@@ -445,7 +456,9 @@ const filteredOutfits = computed(() => {
   // Apply search filter
   if (searchTerm.value) {
     const query = searchTerm.value.toLowerCase()
-    filtered = filtered.filter(outfit => 
+    // Only process up to 50 items for instant results
+    const maxFilter = 50
+    filtered = filtered.slice(0, maxFilter).filter(outfit => 
       outfit.outfit_name?.toLowerCase().includes(query) ||
       outfit.name?.toLowerCase().includes(query) ||
       outfit.description?.toLowerCase().includes(query)
@@ -589,6 +602,15 @@ const handleSearch = () => {
   // Search is handled by computed property
 }
 
+// Search focus handlers
+const handleSearchFocus = (event) => {
+  event.target.classList.add('search-input-focus')
+}
+
+const handleSearchBlur = (event) => {
+  event.target.classList.remove('search-input-focus')
+}
+
 // Load suggestions
 const loadSuggestions = async () => {
   try {
@@ -636,6 +658,14 @@ const handleSuggestionProcessed = ({ action, suggestionId }) => {
 
 onMounted(async () => {
   console.log('Outfits: Component mounted, initializing...')
+  
+  // Detect Mac OS
+  isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  
+  // Register search input for keyboard shortcuts
+  if (searchInputRef.value) {
+    registerSearchInput(searchInputRef.value)
+  }
   
   // Ensure auth store is initialized
   if (!authStore.isAuthenticated) {

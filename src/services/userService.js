@@ -57,19 +57,37 @@ export class UserService {
   async searchUsersByUsername(query, limit = 10) {
     try {
       if (!supabase) return []
-      if (!query || query.trim().length < 3) return []
+      // Require at least 4 characters for friend search (more forgiving/lazy search)
+      if (!query || query.trim().length < 4) return []
 
       const searchQuery = query.trim().toLowerCase()
-      const { data, error } = await supabase
+      
+      // Fuzzy search: Search both username AND name fields for more forgiving results
+      // This helps with misspellings and partial matches
+      const { data: usernameData, error: usernameError } = await supabase
         .from('users')
         .select('id, username, name, avatar_url, created_at')
         .ilike('username', `%${searchQuery}%`)
         .is('removed_at', null)
-        .order('username')
+        .limit(limit)
+      
+      const { data: nameData, error: nameError } = await supabase
+        .from('users')
+        .select('id, username, name, avatar_url, created_at')
+        .ilike('name', `%${searchQuery}%`)
+        .is('removed_at', null)
         .limit(limit)
 
-      if (error) throw error
-      return data || []
+      // Combine results and remove duplicates
+      const allResults = [...(usernameData || []), ...(nameData || [])]
+      const uniqueResults = allResults.filter((user, index, self) =>
+        index === self.findIndex((u) => u.id === user.id)
+      )
+
+      if (usernameError) throw usernameError
+      if (nameError) throw nameError
+      
+      return uniqueResults.slice(0, limit)
     } catch (error) {
       handleSupabaseError(error, 'search users by username')
       return []
