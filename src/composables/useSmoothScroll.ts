@@ -66,11 +66,15 @@ export function useSmoothScroll(options: { autoRaf?: boolean } = {}): SmoothScro
   // RAF (requestAnimationFrame) ID for cleanup
   let rafId: number | null = null
   
-  // Check if user prefers reduced motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // Check if user prefers reduced motion (with window check)
+  const prefersReducedMotion = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false
   
-  // Detect mobile/touch devices
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  // Detect mobile/touch devices (with window check)
+  const isTouchDevice = typeof window !== 'undefined'
+    ? ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+    : false
   
   /**
    * Initialize Lenis smooth scroll
