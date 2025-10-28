@@ -319,6 +319,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 // Composables and stores
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
 import { useLiquidHover, useLiquidPress } from '@/composables/useLiquidGlass'
@@ -333,6 +334,7 @@ import ItemDetailsModal from '@/components/cabinet/ItemDetailsModal.vue'
 
 // Initialize composables and services
 const { theme } = useTheme()                    // Theme management
+const { sanitizeSearch } = useSanitize()        // Input sanitization
 const authStore = useAuthStore()                // Authentication state
 const route = useRoute()                        // Current route information
 const router = useRouter()                      // Router for navigation
@@ -644,7 +646,8 @@ const handleFavoriteRelease = (event, item) => {
 }
 
 const handleSearch = () => {
-  // Search is handled by computed property - no delay caused here
+  // Sanitize search input in real-time
+  searchTerm.value = sanitizeSearch(searchTerm.value)
 }
 
 // Search focus handlers

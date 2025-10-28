@@ -23,15 +23,22 @@
       <div class="space-y-4">
         <div>
           <label :class="`block text-base mb-2 text-stone-700 dark:text-zinc-300`">
-            Outfit Name
+            Outfit Name <span class="text-red-500">*</span>
           </label>
           <input
             v-model="outfitName"
             type="text"
             placeholder="e.g., Summer Casual"
-            class="w-full h-12 px-3 rounded-xl border bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400"
+            maxlength="50"
+            class="w-full h-12 px-3 rounded-xl border bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+            @input="outfitName = sanitizeText(outfitName)"
             @keydown.enter="handleSave"
           />
+          <div class="flex justify-end mt-1">
+            <p :class="`text-sm ${outfitName.length >= 50 ? 'text-red-500' : 'text-stone-400 dark:text-zinc-500'}`">
+              {{ outfitName.length }}/50
+            </p>
+          </div>
         </div>
 
         <div class="flex gap-3">
@@ -62,6 +69,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { X } from 'lucide-vue-next'
 
 // Props
@@ -81,6 +89,7 @@ const emit = defineEmits(['close', 'save'])
 
 // Theme
 const { theme } = useTheme()
+const { sanitizeText } = useSanitize()
 
 // State
 const outfitName = ref('')
@@ -88,11 +97,14 @@ const saving = ref(false)
 
 // Methods
 const handleSave = async () => {
-  if (!outfitName.value.trim() || saving.value) return
+  // Sanitize the outfit name
+  const sanitized = sanitizeText(outfitName.value)
+  
+  if (!sanitized.trim() || saving.value) return
   
   saving.value = true
   try {
-    await emit('save', outfitName.value)
+    await emit('save', sanitized)
     outfitName.value = ''
   } finally {
     saving.value = false

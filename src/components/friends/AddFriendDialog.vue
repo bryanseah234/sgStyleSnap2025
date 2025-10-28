@@ -31,6 +31,7 @@
               type="text"
               placeholder="Enter username or email..."
               class="w-full px-3 pr-28 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 search-input dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
+              @input="searchQuery = sanitizeSearch(searchQuery)"
               @keyup.enter="searchUsers"
             />
             <!-- Small keyboard hint for search suggestions -->
@@ -118,6 +119,7 @@ import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useDebounce } from '@/composables/useDebounce'
+import { useSanitize } from '@/composables/useSanitize'
 import { UserService } from '@/services/userService'
 import { FriendsService } from '@/services/friendsService'
 import { X } from 'lucide-vue-next'
@@ -125,6 +127,9 @@ import { X } from 'lucide-vue-next'
 // Service instances
 const userService = new UserService()
 const friendsService = new FriendsService()
+
+// Sanitization
+const { sanitizeSearch } = useSanitize()
 
 // Props
 const props = defineProps({
@@ -159,7 +164,10 @@ const searchUsers = async () => {
   console.log('🔍 AddFriendDialog: ========== Searching Users ==========')
   console.log('🔍 AddFriendDialog: Search query:', searchQuery.value)
   
-  if (!searchQuery.value.trim()) {
+  // Sanitize search query
+  const sanitized = sanitizeSearch(searchQuery.value)
+  
+  if (!sanitized.trim()) {
     console.log('🔍 AddFriendDialog: Empty search query, clearing results')
     searchResults.value = []
     return
@@ -170,7 +178,7 @@ const searchUsers = async () => {
   
   try {
     console.log('🔍 AddFriendDialog: Calling userService.searchUsers...')
-    const result = await userService.searchUsers(searchQuery.value)
+    const result = await userService.searchUsers(sanitized)
     
     console.log('🔍 AddFriendDialog: Search result:', {
       hasResult: !!result,

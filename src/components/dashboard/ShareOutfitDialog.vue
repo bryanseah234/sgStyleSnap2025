@@ -29,13 +29,20 @@
             v-model="outfitName"
             type="text"
             placeholder="e.g., Summer Casual Look"
+            maxlength="50"
             class="w-full h-12 px-3 rounded-xl border bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+            @input="outfitName = sanitizeText(outfitName)"
             @keydown.enter="handleSave"
             autofocus
           />
-          <p class="text-sm text-stone-500 dark:text-zinc-400 mt-1">
-            Give this outfit a name to share with your friend
-          </p>
+          <div class="flex items-center justify-between mt-1">
+            <p class="text-sm text-stone-500 dark:text-zinc-400">
+              Give this outfit a name to share with your friend
+            </p>
+            <p :class="`text-sm ${outfitName.length >= 50 ? 'text-red-500' : 'text-stone-400 dark:text-zinc-500'}`">
+              {{ outfitName.length }}/50
+            </p>
+          </div>
         </div>
 
         <div class="flex gap-3">
@@ -66,6 +73,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { X } from 'lucide-vue-next'
 
 // Props
@@ -85,6 +93,7 @@ const emit = defineEmits(['close', 'save'])
 
 // Theme
 const { theme } = useTheme()
+const { sanitizeText } = useSanitize()
 
 // State
 const outfitName = ref('')
@@ -92,12 +101,15 @@ const saving = ref(false)
 
 // Methods
 const handleSave = async () => {
+  // Sanitize the outfit name
+  const sanitized = sanitizeText(outfitName.value)
+  
   // Validate that outfit name is provided
-  if (!outfitName.value.trim() || saving.value) return
+  if (!sanitized.trim() || saving.value) return
   
   saving.value = true
   try {
-    await emit('save', outfitName.value)
+    await emit('save', sanitized)
     outfitName.value = ''
   } finally {
     saving.value = false

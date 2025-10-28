@@ -36,6 +36,7 @@
         type="text"
         :placeholder="placeholder"
         maxlength="50"
+        @input="inputValue = sanitizeText(inputValue)"
         @keydown.enter="handleConfirm"
         @keydown.esc="$emit('close')"
         :class="`w-full px-4 py-2 rounded-lg border transition-colors ${
@@ -78,9 +79,11 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { X, Edit } from 'lucide-vue-next'
 
 const { theme } = useTheme()
+const { sanitizeText } = useSanitize()
 
 const props = defineProps({
   show: {
@@ -134,7 +137,9 @@ watch(() => props.show, (newVal) => {
 })
 
 const handleConfirm = () => {
-  emit('confirm', inputValue.value)
+  // Sanitize input before emitting
+  const sanitized = sanitizeText(inputValue.value)
+  emit('confirm', sanitized)
   emit('close')
 }
 

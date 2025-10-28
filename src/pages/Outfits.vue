@@ -402,6 +402,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -412,6 +413,7 @@ import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.
 import FriendSuggestionCard from '@/components/outfits/FriendSuggestionCard.vue'
 
 const { theme } = useTheme()
+const { sanitizeSearch } = useSanitize()
 const { showError, showSuccess, showConfirm } = usePopup()
 const authStore = useAuthStore()
 const router = useRouter()
@@ -603,7 +605,8 @@ const formatDate = (dateString) => {
 }
 
 const handleSearch = () => {
-  // Search is handled by computed property
+  // Sanitize search input in real-time
+  searchTerm.value = sanitizeSearch(searchTerm.value)
 }
 
 // Search focus handlers
