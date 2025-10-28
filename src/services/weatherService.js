@@ -9,11 +9,18 @@ export class WeatherService {
   async getCurrentWeather(location) {
     try {
       if (!this.apiKey) {
+        console.warn('⚠️ Weather API: API key not configured')
         throw new Error('OpenWeather API key not configured')
       }
 
       const response = await fetch(
-        `${this.baseUrl}/weather?q=${encodeURIComponent(location)}&appid=${this.apiKey}&units=metric`
+        `${this.baseUrl}/weather?q=${encodeURIComponent(location)}&appid=${this.apiKey}&units=metric`,
+        {
+          mode: 'cors', // Explicitly set CORS mode
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
       )
 
       if (!response.ok) {
@@ -43,11 +50,18 @@ export class WeatherService {
   async getWeatherForecast(location, days = 5) {
     try {
       if (!this.apiKey) {
+        console.warn('⚠️ Weather API: API key not configured')
         throw new Error('OpenWeather API key not configured')
       }
 
       const response = await fetch(
-        `${this.baseUrl}/forecast?q=${encodeURIComponent(location)}&appid=${this.apiKey}&units=metric&cnt=${days * 8}` // 8 forecasts per day
+        `${this.baseUrl}/forecast?q=${encodeURIComponent(location)}&appid=${this.apiKey}&units=metric&cnt=${days * 8}`, // 8 forecasts per day
+        {
+          mode: 'cors', // Explicitly set CORS mode
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
       )
 
       if (!response.ok) {
