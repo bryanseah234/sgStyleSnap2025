@@ -16,6 +16,9 @@
   
   <!-- Login page without layout -->
   <router-view v-else />
+  
+  <!-- Performance Monitor (Development Only) -->
+  <FPSCounter v-if="isDevelopment" />
 </template>
 
 <script setup>
@@ -41,6 +44,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Layout from './components/Layout.vue'
+import FPSCounter from './components/FPSCounter.vue'
 
 // Get current route
 const route = useRoute()
@@ -57,4 +61,7 @@ const showLayout = computed(() => {
   // Don't show layout for login and logout pages
   return route.path !== '/login' && route.path !== '/logout'
 })
+
+// Check if we're in development mode
+const isDevelopment = computed(() => import.meta.env.DEV)
 </script>

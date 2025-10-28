@@ -155,6 +155,11 @@ export async function classifyClothingItem(image) {
 
     // Parse Hugging Face response format
     // result.data[0] is the prediction string
+    // Add additional safety check before accessing array index
+    if (result.data[0] === undefined || result.data[0] === null) {
+      throw new Error('Invalid API response format - empty data at index 0')
+    }
+    
     const predictionString = result.data[0]
 
     // Check if we have a valid prediction string

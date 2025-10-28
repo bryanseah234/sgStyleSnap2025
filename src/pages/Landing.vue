@@ -527,10 +527,11 @@ const handleThemeToggle = async () => {
    Shimmer Overlay Effects
    ============================================ */
 
+/* PERFORMANCE: Converted 'left' property to transform for GPU acceleration */
 .shimmer-overlay {
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
   background: linear-gradient(
@@ -540,17 +541,21 @@ const handleThemeToggle = async () => {
     transparent 100%
   );
   z-index: 1;
-  transition: left 0.8s ease-in-out;
+  /* PERFORMANCE: Using transform instead of left property for GPU acceleration */
+  transform: translateX(-100%);
+  transition: transform 0.8s ease-in-out;
+  will-change: transform;
 }
 
 .group:hover .shimmer-overlay {
-  left: 100%;
+  /* PERFORMANCE: Transform instead of layout-affecting property */
+  transform: translateX(100%);
 }
 
 .shimmer-overlay-large {
   position: absolute;
   top: -50%;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 200%;
   background: linear-gradient(
@@ -560,11 +565,21 @@ const handleThemeToggle = async () => {
     transparent 100%
   );
   z-index: 1;
-  transition: left 1s ease-in-out;
+  /* PERFORMANCE: Using transform instead of left property */
+  transform: translateX(-100%);
+  transition: transform 1s ease-in-out;
+  will-change: transform;
 }
 
 .group:hover .shimmer-overlay-large {
-  left: 100%;
+  /* PERFORMANCE: Transform instead of layout-affecting property */
+  transform: translateX(100%);
+}
+
+/* PERFORMANCE: Clean up will-change after animation */
+.group:not(:hover) .shimmer-overlay,
+.group:not(:hover) .shimmer-overlay-large {
+  will-change: auto;
 }
 
 /* ============================================
@@ -668,14 +683,25 @@ button {
    Performance Optimizations
    ============================================ */
 
-.bento-grid,
+/* PERFORMANCE: CSS containment for grid layout stability */
+.bento-grid {
+  contain: layout style paint;
+}
+
+/* PERFORMANCE: Only add will-change on hover, remove after */
 .bento-item,
 .group {
-  will-change: transform;
+  /* No will-change by default - only add during animation */
 }
 
 .group:hover {
-  will-change: transform, box-shadow;
+  will-change: transform;
+}
+
+/* PERFORMANCE: Remove will-change when not hovering */
+.bento-item:not(:hover),
+.group:not(:hover) {
+  will-change: auto;
 }
 
 /* ============================================

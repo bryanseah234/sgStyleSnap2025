@@ -167,7 +167,21 @@ export function useLiquidHover() {
             damping: 25                    // Higher damping for smooth settling
           })
           
+          // Extract the easing function with proper error handling
+          let easingFunction = null
+          
           if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+            // Safely access array index
+            easingFunction = springEasing[0]
+          } else if (springEasing && typeof springEasing === 'function') {
+            easingFunction = springEasing
+          } else {
+            // If spring return is invalid, throw to trigger fallback
+            throw new Error('Invalid spring easing return value')
+          }
+          
+          // Only animate if we have a valid easing function
+          if (easingFunction && typeof easingFunction === 'function') {
             animate(
               elementRef.value,
               {
@@ -179,28 +193,11 @@ export function useLiquidHover() {
               },
               {
                 duration: 0.4,                   // Slightly longer for smooth return
-                easing: springEasing[0]          // Use first element if it's an array
-              }
-            )
-          } else if (springEasing && typeof springEasing === 'function') {
-            // If spring returns a function directly
-            animate(
-              elementRef.value,
-              {
-                scale: 1,
-                rotateX: 0,
-                rotateY: 0,
-                translateZ: 0,
-                filter: 'blur(0px) brightness(1)'
-              },
-              {
-                duration: 0.4,
-                easing: springEasing
+                easing: easingFunction
               }
             )
           } else {
-            // If spring return is invalid, use fallback
-            throw new Error('Invalid spring easing return value')
+            throw new Error('Easing function is not valid')
           }
         } catch (springError) {
           // If spring function fails, use CSS fallback
