@@ -2,10 +2,7 @@
   <div>
     <!-- Filters Section -->
     <div :class="`rounded-2xl border p-6 mb-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-foreground">
-          Filter Items
-        </h3>
+      <div class="flex items-center justify-end mb-4">
         <button
           v-if="hasActiveFilters"
           @click="clearFilters"
@@ -16,7 +13,7 @@
         </button>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Category Filter -->
         <div>
           <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
@@ -65,21 +62,6 @@
           </select>
         </div>
 
-        <!-- Season Filter -->
-        <div>
-          <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
-            Season
-          </label>
-          <select
-            v-model="filters.season"
-            :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white border`"
-          >
-            <option :value="null">All Seasons</option>
-            <option v-for="season in seasons" :key="season" :value="season">
-              {{ season.charAt(0).toUpperCase() + season.slice(1).replace('-', ' ') }}
-            </option>
-          </select>
-        </div>
       </div>
     </div>
 
@@ -184,7 +166,6 @@ const catalogItems = ref([])
 const categories = ref([])
 const colors = ref([])
 const brands = ref([])
-const seasons = ref([])
 const loading = ref(true)
 const addedItems = ref(new Set())
 const addingItemId = ref(null)
@@ -193,7 +174,6 @@ const filters = ref({
   category: null,
   color: null,
   brand: null,
-  season: null,
 })
 
 const hasActiveFilters = computed(() => {
@@ -207,7 +187,6 @@ const loadCatalogItems = async () => {
       category: filters.value.category,
       color: filters.value.color,
       brand: filters.value.brand,
-      season: filters.value.season,
       limit: 50,
       offset: 0,
     })
@@ -222,16 +201,14 @@ const loadCatalogItems = async () => {
 
 const loadFilterOptions = async () => {
   try {
-    const [categoriesData, colorsData, brandsData, seasonsData] = await Promise.all([
+    const [categoriesData, colorsData, brandsData] = await Promise.all([
       catalogService.getCategories(),
       catalogService.getColors(),
       catalogService.getBrands(),
-      catalogService.getSeasons(),
     ])
     categories.value = categoriesData
     colors.value = colorsData
     brands.value = brandsData
-    seasons.value = seasonsData
   } catch (error) {
     console.error('CatalogueBrowser: Error loading filter options:', error)
   }
@@ -284,7 +261,6 @@ const clearFilters = () => {
     category: null,
     color: null,
     brand: null,
-    season: null,
   }
 }
 

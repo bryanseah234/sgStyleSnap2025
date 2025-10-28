@@ -10,11 +10,11 @@
               {{ subRouteTitle }}
             </h1>
             <p class="text-lg text-stone-600 dark:text-zinc-400">
-              {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
-                 currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
-                 currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
+              {{ currentSubRoute === 'suggested' ? 'AI has generated an outfit for you. Edit it or generate a new one based on outfit score.' : 
+                 currentSubRoute === 'personal' ? '' :
+                 currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
                  currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
-                 'Create and save your perfect looks' }}
+                 '' }}
             </p>
           </div>
           
@@ -86,19 +86,9 @@
             <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
           </button>
           
-          <!-- Regenerate AI button (only in AI mode) - shown second on mobile, third on desktop -->
+          <!-- Generate AI button (only shown on suggested route) -->
           <button
             v-if="currentSubRoute === 'suggested'"
-            @click="generateAISuggestion"
-            class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
-            title="Generate New AI Suggestion"
-          >
-            <Sparkles class="w-5 h-5" />
-            <span class="hidden sm:inline">Regenerate</span>
-          </button>
-          
-          <!-- Get AI Recommendations button -->
-          <button
             @click="getAIRecommendations"
             :disabled="recommendingOutfits || wardrobeItems.length < 2"
             :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
@@ -106,11 +96,11 @@
                 ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500'
                 : 'opacity-50 cursor-not-allowed'
             }`"
-            title="Get AI Outfit Recommendations"
+            title="Generate AI Outfit Based on Score"
           >
             <Sparkles v-if="!recommendingOutfits" class="w-5 h-5" />
             <div v-else class="w-5 h-5 spinner-modern"></div>
-            <span class="hidden sm:inline">{{ recommendingOutfits ? 'Analyzing...' : 'Get AI Recommendations' }}</span>
+            <span class="hidden sm:inline">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
           </button>
           
         </div>
@@ -122,11 +112,11 @@
             {{ subRouteTitle }}
           </h1>
           <p class="text-base mb-4 text-stone-600 dark:text-zinc-400">
-            {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
-               currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
-               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
+            {{ currentSubRoute === 'suggested' ? 'AI has generated an outfit for you. Edit it or generate a new one based on outfit score.' : 
+               currentSubRoute === 'personal' ? '' :
+               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
                currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
-               'Create and save your perfect looks' }}
+               '' }}
           </p>
           
           <!-- Action Buttons -->
@@ -183,15 +173,21 @@
               <span class="text-xs">Clear</span>
             </button>
             
-            <!-- Regenerate AI button (only in AI mode) -->
+            <!-- Generate AI button (only in AI mode) -->
             <button
               v-if="currentSubRoute === 'suggested'"
-              @click="generateAISuggestion"
-              class="px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
-              title="Generate New AI Suggestion"
+              @click="getAIRecommendations"
+              :disabled="recommendingOutfits || wardrobeItems.length < 2"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+                !recommendingOutfits && wardrobeItems.length >= 2
+                  ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+              title="Generate AI Outfit Based on Score"
             >
-              <Sparkles class="w-4 h-4" />
-              <span class="text-xs">Regenerate</span>
+              <Sparkles v-if="!recommendingOutfits" class="w-4 h-4" />
+              <div v-else class="w-4 h-4 spinner-modern"></div>
+              <span class="text-xs">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
             </button>
             
             <button
@@ -211,48 +207,54 @@
       </div>
       
       <!-- Sub-route Navigation -->
-      <div v-if="currentSubRoute !== 'default'" class="mb-8">
-        <div class="flex space-x-1 p-1 rounded-lg bg-stone-100 dark:bg-zinc-800">
-          <button
-            @click="$router.push('/outfits/add/suggested')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'suggested' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            <Sparkles class="w-4 h-4 inline mr-2" />
-            Suggested
-          </button>
-          <button
-            @click="$router.push('/outfits/add/personal')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'personal' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            <User class="w-4 h-4 inline mr-2" />
-            Personal
-          </button>
-          <button
-            @click="$router.push('/outfits/add/friend')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            <Users class="w-4 h-4 inline mr-2" />
-            Friends
-          </button>
-        </div>
+      <div v-if="currentSubRoute !== 'default'" class="mb-8 flex flex-wrap gap-3">
+        <button
+          @click="$router.push('/outfits/add/suggested')"
+          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            currentSubRoute === 'suggested'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+          }`"
+        >
+          <Sparkles class="w-4 h-4" />
+          Suggested
+        </button>
+        <button
+          @click="$router.push('/outfits/add/personal')"
+          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            currentSubRoute === 'personal'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+          }`"
+        >
+          <User class="w-4 h-4" />
+          Personal
+        </button>
+        <button
+          @click="$router.push('/outfits/add/friend')"
+          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+          }`"
+        >
+          <Users class="w-4 h-4" />
+          Friends
+        </button>
       </div>
       
       <!-- Sub-route Content (removed for cleaner UI) -->
 
       <!-- Friend Selection View (when no username is provided) -->
-      <div v-if="currentSubRoute === 'friendSelect'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-if="currentSubRoute === 'friendSelect'">
+        <!-- Loading State -->
+        <div v-if="loadingFriends" class="flex flex-col items-center justify-center py-24">
+          <div class="w-16 h-16 spinner-modern mb-4"></div>
+          <p class="text-base text-stone-600 dark:text-zinc-400">Loading your friends...</p>
+        </div>
+        
+        <!-- Friends List -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="friend in friendsList"
           :key="friend.id"
@@ -276,7 +278,7 @@
             <!-- Friend Info -->
             <div class="flex-1 min-w-0">
               <p class="text-lg font-semibold mb-1 text-black dark:text-white">
-                {{ friend.name || friend.username }}
+                {{ getFirstName(friend.name) || friend.username }}
               </p>
               <p class="text-sm text-stone-600 dark:text-zinc-400">
                 @{{ friend.username }}
@@ -310,6 +312,7 @@
             <Plus class="w-5 h-5" />
             Add Friend
           </button>
+          </div>
         </div>
       </div>
 
@@ -327,14 +330,6 @@
               <span class="text-sm px-2 py-1 rounded-full bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400">
                 {{ filteredItems.length }}
               </span>
-            </div>
-            
-            <!-- AI Mode Info Banner -->
-            <div v-if="currentSubRoute === 'suggested'" class="mb-4 p-3 rounded-lg text-xs bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-300">
-              <div class="flex items-start gap-2">
-                <Sparkles class="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>AI has placed items on the canvas. You can still add more items manually or regenerate the suggestion.</span>
-              </div>
             </div>
             
             <!-- Category Filters -->
@@ -755,7 +750,7 @@ const subRouteTitle = computed(() => {
     case 'suggested': return 'AI Suggested Outfits'
     case 'personal': return 'Create Your Outfit'
     case 'friendSelect': return 'Select a Friend'
-    case 'friend': return friendProfile.value ? `Create Outfit for ${friendProfile.value.name || friendProfile.value.username}` : `Create with Friend's Items`
+    case 'friend': return friendProfile.value ? `Create Outfit for ${getFirstName(friendProfile.value.name || friendProfile.value.username)}` : `Create with Friend's Items`
     case 'edit': return 'Edit Outfit'
     default: return 'Create Outfit'
   }
@@ -783,6 +778,7 @@ const selectedRecommendation = ref(null)
 const friendProfile = ref(null)
 const friendUsername = computed(() => route.params.username)
 const friendsList = ref([]) // List of friends for selection
+const loadingFriends = ref(false) // Loading state for friends list
 const showAddFriendModal = ref(false) // Modal state for adding friends
 
 // State for edit mode
@@ -843,7 +839,7 @@ const selectedItem = computed(() => {
 
 const itemsSectionTitle = computed(() => {
   if (currentSubRoute.value === 'friend' && friendProfile.value) {
-    return `${friendProfile.value.name || friendProfile.value.username}'s Closet`
+    return `${getFirstName(friendProfile.value.name || friendProfile.value.username)}'s Closet`
   }
   switch (itemsSource.value) {
     case 'my-cabinet': return 'My Closet'
@@ -893,10 +889,12 @@ const loadFriendProfile = async (username) => {
 const loadFriendsList = async () => {
   try {
     console.log('OutfitCreator: Loading friends list...')
+    loadingFriends.value = true
     
     if (!currentUser.value?.id) {
       console.log('OutfitCreator: No user ID, cannot load friends')
       friendsList.value = []
+      loadingFriends.value = false
       return
     }
     
@@ -912,6 +910,8 @@ const loadFriendsList = async () => {
   } catch (error) {
     console.error('OutfitCreator: Error loading friends list:', error)
     friendsList.value = []
+  } finally {
+    loadingFriends.value = false
   }
 }
 
@@ -1380,6 +1380,12 @@ const toggleGrid = () => {
   showGrid.value = !showGrid.value
 }
 
+// Helper function to get first name from full name
+const getFirstName = (fullName) => {
+  if (!fullName) return ''
+  return fullName.split(' ')[0]
+}
+
 const scaleSelectedItem = (delta) => {
   if (!selectedItemId.value) return
   
@@ -1653,6 +1659,54 @@ const redoAction = () => {
   }
 }
 
+// Move item with arrow keys
+const moveItemWithArrows = (direction, amount = 10) => {
+  if (!selectedItemId.value) return
+  
+  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
+  if (!item) return
+  
+  const itemSize = 128
+  
+  switch (direction) {
+    case 'ArrowLeft':
+      item.x = Math.max(0, item.x - amount)
+      break
+    case 'ArrowRight':
+      item.x = Math.min(canvasContainer.value?.clientWidth - itemSize || 400, item.x + amount)
+      break
+    case 'ArrowUp':
+      item.y = Math.max(0, item.y - amount)
+      break
+    case 'ArrowDown':
+      item.y = Math.min(canvasContainer.value?.clientHeight - itemSize || 300, item.y + amount)
+      break
+  }
+  
+  saveToHistory()
+}
+
+// Handle keyboard events
+const handleKeydown = (event) => {
+  // Don't handle keyboard events if user is typing in an input or textarea
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+    return
+  }
+  
+  // Handle Esc to deselect item
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    deselectItem()
+    return
+  }
+  
+  // Handle arrow keys to move selected item
+  if (event.key.startsWith('Arrow')) {
+    event.preventDefault()
+    moveItemWithArrows(event.key, event.shiftKey ? 50 : 10) // Shift + Arrow = move 50px
+  }
+}
+
 // Watch for route changes and update items source
 watch(currentSubRoute, async (newRoute, oldRoute) => {
   console.log('OutfitCreator: Route changed from', oldRoute, 'to', newRoute)
@@ -1730,6 +1784,9 @@ onMounted(async () => {
     // Personal/friend/other modes: Start with empty canvas
     saveToHistory() // Initialize history
   }
+
+  // Setup keyboard event listener for arrow keys and Esc
+  window.addEventListener('keydown', handleKeydown)
 
   // Register canvas items for keyboard navigation
   registerCanvasItems(canvasItems.value)
@@ -1824,6 +1881,10 @@ onMounted(async () => {
 
   // Cleanup on unmount
   onUnmounted(() => {
+    // Remove arrow key and Esc handlers
+    window.removeEventListener('keydown', handleKeydown)
+    
+    // Remove other keyboard event listeners
     window.removeEventListener('keyboard-select-item', handleKeyboardEvent)
     window.removeEventListener('keyboard-move-item', handleKeyboardEvent)
     window.removeEventListener('keyboard-save-outfit', handleKeyboardEvent)
