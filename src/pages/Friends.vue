@@ -418,6 +418,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { useAuthStore } from '@/stores/auth-store'
 import { FriendsService } from '@/services/friendsService'
 import { UserService } from '@/services/userService'
@@ -427,6 +428,7 @@ import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X } from 'lucide-v
 const router = useRouter()
 const route = useRoute()
 const { theme } = useTheme()
+const { sanitizeSearch } = useSanitize()
 const authStore = useAuthStore()
 
 // Initialize services
@@ -491,7 +493,9 @@ const loadFriendsData = async () => {
 }
 
 const handleSearch = () => {
-  // Search is handled by computed property
+  // Sanitize search input in real-time
+  searchTerm.value = sanitizeSearch(searchTerm.value)
+  addFriendSearch.value = sanitizeSearch(addFriendSearch.value)
 }
 
 const searchAndAddFriend = async () => {

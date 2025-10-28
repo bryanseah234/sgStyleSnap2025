@@ -56,9 +56,11 @@
             <input
               v-model="formData.name"
               placeholder="e.g., Black T-Shirt"
+              maxlength="50"
               :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white 
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
+              @input="formData.name = sanitizeText(formData.name)"
             />
           </div>
 
@@ -121,8 +123,10 @@
             <input
               v-model="formData.brand"
               placeholder="e.g., Nike"
+              maxlength="50"
               :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
               dark:bg-zinc-800 dark:border-zinc-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
+              @input="formData.brand = sanitizeText(formData.brand)"
             />
           </div>
 
@@ -195,12 +199,14 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { usePopup } from '@/composables/usePopup'
 import { ClothesService } from '@/services/clothesService'
 import { cloudinary } from '@/lib/cloudinary'
 import { Upload, X } from 'lucide-vue-next'
 
 const { theme } = useTheme()
+const { sanitizeText } = useSanitize()
 const router = useRouter()
 const { showError, showSuccess } = usePopup()
 const clothesService = new ClothesService()
