@@ -26,6 +26,16 @@
             <X class="w-5 h-5" />
       </button>
 
+      <!-- Favorite Button (Heart) -->
+      <button
+        v-if="item"
+        @click="toggleFavorite"
+        :class="`liquid-favorite-btn absolute top-4 right-16 z-10 p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600' : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'}`"
+        title="Favorite"
+      >
+        <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current' : ''}`" />
+      </button>
+
       <div class="grid md:grid-cols-2">
         <!-- Left: Image with Liquid Scale -->
         <div class="liquid-modal-image aspect-square relative overflow-hidden bg-stone-100 dark:bg-zinc-800">
@@ -134,7 +144,7 @@ import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useLiquidPress, useLiquidReveal } from '@/composables/useLiquidGlass'
 import { ClothesService } from '@/services/clothesService'
-import { X, Trash2, Shirt } from 'lucide-vue-next'
+import { X, Trash2, Shirt, Heart } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const { showError, showSuccess, showConfirm } = usePopup()
@@ -250,5 +260,28 @@ watch(() => props.isOpen, (newValue) => {
     }, 100)
   }
 })
+
+const toggleFavorite = async () => {
+  if (!props.item) return
+  try {
+    // Add simple animation feedback
+    const heartBtn = document.querySelector('.liquid-favorite-btn')
+    if (heartBtn) {
+      heartBtn.classList.add('heart-pulse')
+      setTimeout(() => heartBtn.classList.remove('heart-pulse'), 300)
+    }
+    const result = await clothesService.toggleFavorite(props.item.id)
+    if (result.success) {
+      props.item.is_favorite = result.data.is_favorite
+      console.log('Toggled favorite for item:', props.item.name, 'New status:', props.item.is_favorite)
+      emit('item-updated')
+    } else {
+      showError('Failed to update favorite status')
+    }
+  } catch (error) {
+    showError('An error occurred while updating favorite status')
+    console.error('Error toggling favorite:', error)
+  }
+}
 </script>
 

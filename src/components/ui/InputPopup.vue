@@ -35,7 +35,7 @@
         v-model="inputValue"
         type="text"
         :placeholder="placeholder"
-        maxlength="50"
+        maxlength="100"
         @input="inputValue = sanitizeText(inputValue)"
         @keydown.enter="handleConfirm"
         @keydown.esc="$emit('close')"
@@ -48,8 +48,8 @@
       
       <!-- Character Counter -->
       <div class="flex justify-end mb-4">
-        <p :class="`text-sm ${inputValue.length >= 50 ? 'text-red-500' : theme === 'dark' ? 'text-zinc-500' : 'text-stone-400'}`">
-          {{ inputValue.length }}/50
+        <p :class="`text-sm ${inputValue.length >= 100 ? 'text-red-500' : theme === 'dark' ? 'text-zinc-500' : 'text-stone-400'}`">
+          {{ inputValue.length }}/100
         </p>
       </div>
 

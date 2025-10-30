@@ -51,7 +51,7 @@
             Welcome back
           </h2>
           <p class="text-lg text-stone-600 dark:text-zinc-400">
-            Sign in to access your digital closet
+            {{ ctaText }}
           </p>
         </div>
 
@@ -163,7 +163,7 @@
  */
 
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { Shirt, Palette, Users, AlertCircle } from 'lucide-vue-next'
@@ -172,6 +172,7 @@ import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { theme, loadUser } = useTheme()
 const authStore = useAuthStore()
 
@@ -182,6 +183,15 @@ const error = computed(() => authStore.error)
 // Modal state
 const showTerms = ref(false)
 const showPrivacy = ref(false)
+
+// Dynamic CTA text based on landing action
+const ctaText = computed(() => {
+  const mode = String(route.query.mode || '').toLowerCase()
+  if (mode === 'signup') return 'Sign up to access'
+  if (mode === 'login') return 'Log in to access'
+  // Default
+  return 'Sign in to access your digital closet'
+})
 
 const handleGoogleSignIn = async () => {
   console.log('🔑 Login: Button clicked!')

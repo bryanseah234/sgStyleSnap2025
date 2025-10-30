@@ -74,9 +74,9 @@
           :key="filter.value"
           @click="activeFilter = filter.value"
           :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-            activeFilter === filter.value
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
+                    activeFilter === filter.value
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
           }`"
         >
           {{ filter.label }}
@@ -96,7 +96,7 @@
           ref="searchInputRef"
           v-model="searchTerm"
           type="text"
-          placeholder="Search your outfits..."
+          placeholder="Search your outfits (name, occasion, items, colours)..."
           class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
           @input="handleSearch"
           @focus="handleSearchFocus"
@@ -191,12 +191,12 @@
         >
           <div class="aspect-square relative overflow-hidden">
             <!-- Outfit Canvas Miniature (shows items in their positions) -->
-            <OutfitCanvasMiniature 
-              :items="outfit.outfit_items || []"
-              :scale-factor="0.4"
-            />
+              <OutfitCanvasMiniature 
+                :items="outfit.outfit_items || []"
+                :scale-factor="0.4"
+              />
             
-            <!-- Favorite button (top right) -->
+            <!-- Favourite button (top right) -->
             <button
               @click.stop="toggleFavorite(outfit)"
               :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
@@ -380,7 +380,7 @@
                 ? 'bg-red-500 text-white dark:bg-red-600'
                 : 'bg-stone-100 text-stone-500 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
-            title="Toggle Favorite"
+            title="Toggle Favourite"
           >
             <Heart :class="`w-5 h-5 ${selectedOutfit.is_favorite ? 'fill-current' : ''}`" />
           </button>
@@ -452,7 +452,7 @@ const suggestionStats = ref({ pending: 0, approved: 0, rejected: 0, total: 0 })
 
 const filters = [
   { value: 'all', label: 'All Outfits' },
-  { value: 'favorites', label: 'Favorites' },
+  { value: 'favorites', label: 'Favourites' },
   { value: 'suggestions', label: 'Suggestions' }
 ]
 
@@ -464,11 +464,26 @@ const filteredOutfits = computed(() => {
     const query = searchTerm.value.toLowerCase()
     // Only process up to 50 items for instant results
     const maxFilter = 50
-    filtered = filtered.slice(0, maxFilter).filter(outfit => 
-      outfit.outfit_name?.toLowerCase().includes(query) ||
-      outfit.name?.toLowerCase().includes(query) ||
-      outfit.description?.toLowerCase().includes(query)
-    )
+    filtered = filtered.slice(0, maxFilter).filter(outfit => {
+      // search main fields
+      const matchMain = (
+        outfit.outfit_name?.toLowerCase().includes(query) ||
+        outfit.name?.toLowerCase().includes(query) ||
+        outfit.description?.toLowerCase().includes(query) ||
+        outfit.occasion?.toLowerCase().includes(query) ||
+        outfit.weather_condition?.toLowerCase().includes(query) ||
+        (Array.isArray(outfit.tags) && outfit.tags.some(tag => tag?.toLowerCase().includes(query)))
+      );
+      // search inside items
+      const matchItems = Array.isArray(outfit.outfit_items) && outfit.outfit_items.some(item =>
+        item.clothing_item?.name?.toLowerCase().includes(query) ||
+        item.clothing_item?.brand?.toLowerCase().includes(query) ||
+        item.clothing_item?.color?.toLowerCase().includes(query) ||
+        item.clothing_item?.material?.toLowerCase().includes(query) ||
+        item.clothing_item?.category?.toLowerCase().includes(query)
+      );
+      return matchMain || matchItems;
+    })
   }
 
   // Apply favorites filter

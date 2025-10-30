@@ -17,6 +17,14 @@
 -->
 <template>
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
+    <!-- Global Loading Overlay: visible until all sections finish loading -->
+    <div v-if="loadingAll" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-zinc-900">
+      <div class="spinner-modern mb-4"></div>
+      <div class="flex items-center gap-2 text-stone-600 dark:text-zinc-300">
+        <Shirt class="w-5 h-5" />
+        <span>Loading your dashboard…</span>
+      </div>
+    </div>
     <!-- Debug info -->
     <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
       <p class="text-yellow-800">Debug: No user data available</p>
@@ -29,16 +37,30 @@
     <!-- Hero Section with Liquid Glass Reveal -->
     <div 
       ref="heroRef"
-      class="max-w-6xl mx-auto mb-16 liquid-reveal"
+      class="max-w-6xl mx-auto mb-16 liquid-reveal relative"
       v-scroll-animate.up
       @mousemove="handleHeroMouseMove"
       @mouseleave="handleHeroMouseLeave"
     >
       <h1 
-        class="text-5xl md:text-7xl font-bold tracking-tight mb-4 liquid-text text-foreground"
+        class="text-4xl font-bold mb-4 text-foreground"
       >
         Welcome back{{ userName }}
       </h1>
+      <!-- Notifications Badge (top-right) -->
+      <button
+        class="absolute top-0 right-0 inline-flex items-center gap-2 px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white"
+        @click="showNotificationsModal = true"
+        title="View notifications"
+      >
+        <Bell class="w-5 h-5" />
+        <span class="text-sm font-medium">Notifications</span>
+        <span
+          class="ml-1 inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-bold text-white bg-red-500"
+        >
+          {{ unreadCount }}
+        </span>
+      </button>
       <p 
         class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
       >
@@ -46,99 +68,7 @@
       </p>
     </div>
 
-    <!-- Notifications Section - First on mobile -->
-    <div class="max-w-6xl mx-auto mb-16" v-scroll-animate.scale>
-      <div class="p-8 rounded-3xl transition-all duration-300 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center gap-3">
-            <div class="p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
-              <Bell class="w-6 h-6" />
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold text-foreground">
-                Notifications
-              </h2>
-              <p v-if="unreadCount > 0" class="text-sm text-stone-600 dark:text-zinc-400">
-                {{ unreadCount }} unread
-              </p>
-            </div>
-          </div>
-          
-          <button
-            v-if="unreadCount > 0"
-            @click="markAllAsRead"
-            class="p-2 rounded-lg transition-all duration-200 text-stone-600 hover:text-black hover:bg-stone-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
-            title="Mark all as read"
-          >
-            <CheckCheck class="w-5 h-5" />
-          </button>
-        </div>
-
-        <!-- Loading State -->
-        <div v-if="loadingNotifications" class="flex flex-col items-center justify-center py-12">
-          <div class="w-12 h-12 spinner-modern mb-4"></div>
-          <p class="text-sm text-stone-600 dark:text-zinc-400">Loading notifications...</p>
-        </div>
-
-        <!-- Notifications List -->
-        <div v-else-if="notifications.length > 0" class="space-y-3">
-          <div
-            v-for="(notification, index) in notifications"
-            :key="notification.id"
-            @click="handleNotificationClick(notification)"
-            :class="`stagger-item p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-              notification.is_read
-                ? 'bg-stone-50 border border-stone-200 dark:bg-zinc-800/50 dark:border-zinc-800'
-                : 'bg-stone-100 border border-stone-300 dark:bg-zinc-800 dark:border-zinc-700'
-            }`"
-          >
-            <div class="flex items-center gap-4">
-              <!-- Icon -->
-              <div class="p-2 rounded-lg flex-shrink-0 bg-white dark:bg-zinc-700">
-                <component :is="getNotificationIcon(notification.type)" class="w-5 h-5" />
-              </div>
-
-              <!-- Content -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-sm text-foreground">
-                      {{ getNotificationTitle(notification) }}
-                    </h3>
-                  </div>
-                  
-                  <!-- Time and unread indicator -->
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="text-xs text-stone-500 dark:text-zinc-500">
-                      {{ formatTimeAgo(notification.created_at) }}
-                    </span>
-                    <div
-                      v-if="!notification.is_read"
-                      class="w-2 h-2 rounded-full bg-blue-500"
-                      title="Unread"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div v-else-if="!loadingNotifications" class="text-center py-12">
-          <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
-            <Bell class="w-8 h-8 text-stone-500 dark:text-zinc-400" />
-          </div>
-          <p class="text-lg font-medium text-stone-600 dark:text-zinc-400">
-            No notifications yet
-          </p>
-          <p class="text-sm mt-1 text-stone-500 dark:text-zinc-500">
-            We'll notify you when something happens
-          </p>
-        </div>
-      </div>
-    </div>
+    <!-- Notifications Section replaced by badge + modal -->
 
     <!-- Stats Cards with Liquid Glass Hover - Second on mobile -->
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
@@ -168,6 +98,80 @@
     </div>
 
   </div>
+
+  <!-- Notifications Modal -->
+  <div v-if="showNotificationsModal" class="fixed inset-0 z-50 flex items-center justify-center">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40" @click="showNotificationsModal = false" />
+    <!-- Modal Content -->
+    <div class="relative z-10 w-[92%] sm:w-[560px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-zinc-800">
+        <div class="flex items-center gap-2">
+          <Bell class="w-5 h-5" />
+          <h3 class="text-lg font-semibold">Notifications</h3>
+          <span class="ml-1 inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-bold text-white bg-red-500">{{ unreadCount }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            v-if="unreadCount > 0"
+            @click="markAllAsRead"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:text-black hover:bg-stone-100 transition dark:text-zinc-300 dark:hover:text-white dark:hover:bg-zinc-800"
+          >
+            Mark all as read
+          </button>
+          <button
+            class="p-2 rounded-lg text-stone-600 hover:text-black hover:bg-stone-100 transition dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
+            @click="showNotificationsModal = false"
+            aria-label="Close"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Body -->
+      <div class="p-4 overflow-y-auto" style="max-height: calc(80vh - 64px);">
+        <div v-if="loadingNotifications" class="flex flex-col items-center justify-center py-12">
+          <div class="w-12 h-12 spinner-modern mb-4"></div>
+          <p class="text-sm text-stone-600 dark:text-zinc-400">Loading notifications...</p>
+        </div>
+        <div v-else-if="notifications.length > 0" class="space-y-3">
+          <div
+            v-for="notification in notifications"
+            :key="notification.id"
+            @click="handleNotificationClick(notification)"
+            :class="`p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.01] ${
+              notification.is_read
+                ? 'bg-stone-50 border border-stone-200 dark:bg-zinc-800/50 dark:border-zinc-800'
+                : 'bg-stone-100 border border-stone-300 dark:bg-zinc-800 dark:border-zinc-700'
+            }`"
+          >
+            <div class="flex items-center gap-4">
+              <div class="p-2 rounded-lg flex-shrink-0 bg-white dark:bg-zinc-700">
+                <component :is="getNotificationIcon(notification.type)" class="w-5 h-5" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="font-semibold text-sm text-foreground">{{ getNotificationTitle(notification) }}</h4>
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="text-xs text-stone-500 dark:text-zinc-500">{{ formatTimeAgo(notification.created_at) }}</span>
+                    <div v-if="!notification.is_read" class="w-2 h-2 rounded-full bg-blue-500" title="Unread" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="text-center py-12">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+            <Bell class="w-8 h-8 text-stone-500 dark:text-zinc-400" />
+          </div>
+          <p class="text-lg font-medium text-stone-600 dark:text-zinc-400">No notifications yet</p>
+          <p class="text-sm mt-1 text-stone-500 dark:text-zinc-500">We'll notify you when something happens</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -188,6 +192,7 @@ import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
+import { UserService } from '@/services/userService'
 import { vScrollAnimate } from '@/composables/useScrollAnimation'
 import { useLiquidReveal, useLiquidHover } from '@/composables/useLiquidGlass'
 import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck } from 'lucide-vue-next'
@@ -206,6 +211,7 @@ const clothesService = new ClothesService()
 const outfitsService = new OutfitsService()
 const friendsService = new FriendsService()
 const notificationsService = new NotificationsService()
+const userService = new UserService()
 
 // Use computed to get reactive user data from auth store
 const user = computed(() => {
@@ -258,6 +264,8 @@ const notifications = ref([])
 const unreadCount = ref(0)
 const totalItemsCount = ref(0) // Total count of all items in closet
 const loadingNotifications = ref(false) // Loading state for notifications
+const showNotificationsModal = ref(false)
+const loadingAll = ref(true) // Global loading gate for the whole page
 
 /**
  * Computed statistics for the dashboard cards
@@ -383,7 +391,30 @@ const loadNotifications = async () => {
         notificationsService.getUnreadCount()
       ])
       
-      notifications.value = notificationsData || []
+      // Enrich notifications with actor first names for personalisation
+      const base = notificationsData || []
+      const actorIds = Array.from(new Set((base
+        .map(n => n.actor_id)
+        .filter(Boolean)) as string[]))
+
+      let actorMap = new Map()
+      if (actorIds.length > 0) {
+        const profiles = await Promise.all(
+          actorIds.map(async (id) => ({ id, profile: await userService.getUserById(id) }))
+        )
+        profiles.forEach(({ id, profile }) => {
+          if (profile?.name || profile?.username) {
+            const full = profile.name || profile.username
+            const first = String(full).split(' ')[0]
+            actorMap.set(id, first)
+          }
+        })
+      }
+
+      notifications.value = base.map(n => ({
+        ...n,
+        actor_first_name: n.actor_id ? actorMap.get(n.actor_id) : undefined
+      }))
       unreadCount.value = count || 0
       console.log('🏠 Home: Notifications loaded successfully:', notifications.value.length, 'notifications,', unreadCount.value, 'unread')
     } else {
@@ -509,13 +540,15 @@ const getNotificationMessage = (notification) => {
   }
 
   // Generate message based on type
+  const first = notification.actor_first_name
+  const someone = first ? first : 'Someone'
   const messages = {
-    friend_request: 'Someone sent you a friend request',
-    friend_request_accepted: 'Your friend request was accepted',
-    outfit_shared: 'Someone shared an outfit with you',
-    friend_outfit_suggestion: 'Someone created an outfit suggestion using your items',
-    outfit_like: 'Someone liked your outfit',
-    item_like: 'Someone liked your closet item'
+    friend_request: `${someone} sent you a friend request`,
+    friend_request_accepted: `${someone} accepted your friend request`,
+    outfit_shared: `${someone} shared an outfit with you`,
+    friend_outfit_suggestion: `${someone} suggested an outfit using your items`,
+    outfit_like: `${someone} liked your outfit`,
+    item_like: `${someone} liked your closet item`
   }
   return messages[notification.type] || 'You have a new notification'
 }
@@ -566,17 +599,19 @@ onMounted(async () => {
       await authStore.fetchUserProfile()
     }
     
-    console.log('🏠 Home: Loading items...')
-    await loadItems()
-    console.log('🏠 Home: Loading outfits...')
-    await loadOutfits()
-    console.log('🏠 Home: Loading friends...')
-    await loadFriends()
-    console.log('🏠 Home: Loading notifications...')
-    await loadNotifications()
+    console.log('🏠 Home: Loading items/outfits/friends/notifications in parallel...')
+    await Promise.all([
+      loadItems(),
+      loadOutfits(),
+      loadFriends(),
+      loadNotifications()
+    ])
     console.log('🏠 Home: All data loaded successfully')
   } catch (error) {
     console.error('❌ Home: Error loading data:', error)
+  }
+  finally {
+    loadingAll.value = false
   }
 })
 

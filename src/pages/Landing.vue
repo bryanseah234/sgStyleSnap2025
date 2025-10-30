@@ -1,7 +1,10 @@
 <template>
   <div class="min-h-screen bg-white text-gray-900 overflow-hidden landing-page">
     <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 animate-fadeInDown">
+  <nav :class="[
+        'sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 animate-fadeInDown',
+        authStore.isAuthenticated ? 'md:[box-shadow:8px_2px_14px_-6px_rgba(0,0,0,0.15)]' : ''
+      ]">
       <div class="container flex items-center justify-between py-4 sm:py-5">
         <div class="flex items-center gap-2 min-w-0">
           <div class="bg-black rounded-xl p-2 flex items-center justify-center">
@@ -67,11 +70,11 @@
 
       <div class="container grid md:grid-cols-2 gap-6 sm:gap-12 items-center relative z-10">
         <div class="space-y-4 sm:space-y-6">
-          <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold leading-tight">
+          <h1 class="text-4xl font-bold text-foreground">
             Transform Your Fashion Game
           </h1>
             <p class="text-sm sm:text-base md:text-lg text-gray-600">
-            Organize your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
+            Organise your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
           </p>
           <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
@@ -379,7 +382,7 @@
           <div class="aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-2xl">
             <img 
               src="/images/wardrobe-organization.jpg" 
-              alt="Wardrobe organization showcase"
+              alt="Wardrobe organisation showcase"
               class="w-full h-full object-cover"
             />
           </div>
@@ -390,7 +393,7 @@
           <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-lg">
             <img 
               src="/images/wardrobe-organization.jpg" 
-              alt="Wardrobe organization showcase"
+              alt="Wardrobe organisation showcase"
               class="w-full h-full object-cover"
             />
           </div>
@@ -410,8 +413,8 @@
               <h3 class="font-bold text-sm sm:text-base md:text-lg mb-1 group-hover:text-gray-600 transition">{{ item.title }}</h3>
               <p class="text-xs sm:text-sm md:text-base text-gray-600">{{ item.description }}</p>
                 </div>
-              </div>
-            </div>
+          </div>
+        </div>
       </div>
     </section>
     
@@ -436,7 +439,7 @@
       <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">Ready to Transform Your Wardrobe?</h2>
         <p class="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-          Join thousands of fashion enthusiasts who are already organizing their closets and creating stunning outfits with StyleSnap.
+          Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
         <div class="pt-4">
         <button
@@ -462,6 +465,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useAuthStore } from '@/stores/auth-store'
 import { useRouter } from 'vue-router'
 import { 
   Shirt, 
@@ -481,6 +485,7 @@ import '@/assets/css/landing-page-animations.css'
 const router = useRouter()
 
 // Reactive state
+const authStore = useAuthStore()
 const isMenuOpen = ref(false)
 const outfitItems = ref([])
 const selectedItemId = ref(null)
@@ -539,7 +544,7 @@ const features = ref([
     id: 'digital-closet',
     icon: Shirt,
     title: 'Digital Closet',
-    description: 'Organize all your clothing items by category. Track what you own and never lose track of your favorite pieces.',
+    description: 'Organise all your clothing items by category. Track what you own and never lose track of your favourite pieces.',
     flipped: false,
   },
   {
@@ -579,11 +584,11 @@ const whyChooseItems = [
 
 // Auth handlers - Navigate to login page
 const handleLogin = () => {
-  router.push('/login')
+  router.push({ path: '/login', query: { mode: 'login' } })
 }
 
 const handleSignUp = () => {
-  router.push('/login')
+  router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
 const toggleCardFlip = (featureId) => {
@@ -739,9 +744,21 @@ onMounted(() => {
             entry.target.style.animation = 'scaleIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
           }
         } else {
-          // Reset when out of view - but keep them visible once they've been shown
-          if (!entry.target.classList.contains('scroll-visible')) {
-            entry.target.style.animation = 'none'
+          // When user scrolls away from the features section cards, play reverse animation
+          const isFeatureCard = entry.target.closest('#features') && entry.target.classList.contains('flip-card')
+          if (isFeatureCard) {
+            if (entry.target.classList.contains('animate-slideInFromLeft')) {
+              entry.target.style.animation = 'slideInFromLeft 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse forwards'
+            } else if (entry.target.classList.contains('animate-slideInFromRight')) {
+              entry.target.style.animation = 'slideInFromRight 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse forwards'
+            } else if (entry.target.classList.contains('animate-slideInFromBottom')) {
+              entry.target.style.animation = 'slideInFromBottom 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse forwards'
+            }
+          } else {
+            // Reset when out of view - but keep them visible once they've been shown
+            if (!entry.target.classList.contains('scroll-visible')) {
+              entry.target.style.animation = 'none'
+            }
           }
         }
       })

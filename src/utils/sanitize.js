@@ -62,7 +62,30 @@ export function sanitizeAlphanumeric(input) {
  * Useful for names, descriptions, etc.
  */
 export function sanitizeText(input) {
-  return sanitizeInput(input, '.,\'-')
+  if (!input || typeof input !== 'string') {
+    return ''
+  }
+
+  // Remove null bytes
+  let sanitized = input.replace(/\0/g, '')
+
+  // Allow only letters, numbers, spaces, underscore, dash, backslash, forward slash
+  sanitized = sanitized.replace(/[^A-Za-z0-9 _\-\\\/]/g, '')
+
+  // Collapse consecutive whitespace to a single space and trim
+  sanitized = sanitized.replace(/\s+/g, ' ').trim()
+
+  // Convert to Proper Case (capitalize each alphanumeric word, preserve separators)
+  sanitized = sanitized.replace(/[A-Za-z0-9]+/g, (word) =>
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  )
+
+  // Cap at 100 characters
+  if (sanitized.length > 100) {
+    sanitized = sanitized.slice(0, 100)
+  }
+
+  return sanitized
 }
 
 /**

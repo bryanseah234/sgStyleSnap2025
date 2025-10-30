@@ -96,7 +96,8 @@ export class OutfitsService {
           )
         `)
         .eq('owner_id', ownerId)
-        .eq('is_public', false) // Friends-level outfits (not public)
+        // Return all visible outfits for this owner; RLS will limit to
+        // public and friends-visible records for the current viewer
         .is('removed_at', null)
         .order('created_at', { ascending: false })
         .limit(limit)

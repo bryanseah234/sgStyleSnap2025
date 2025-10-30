@@ -45,7 +45,7 @@ This guide will walk you through deploying StyleSnap to Vercel with Supabase bac
    - Go to APIs & Services > Credentials
    - Click "Create Credentials" > "OAuth 2.0 Client ID"
    - Application type: Web application
-   - Add authorized redirect URIs:
+   - Add authorised redirect URIs:
      ```
      https://YOUR-PROJECT-ID.supabase.co/auth/v1/callback
      http://localhost:5173/auth/callback (for development)
@@ -221,22 +221,22 @@ VITE_DEBUG=true
 - Monitor security advisories
 - Regular security audits
 
-## 📈 Performance Optimization
+## 📈 Performance Optimisation
 
 ### Frontend
 - Enable Vercel's edge functions
-- Use image optimization
+- Use image optimisation
 - Implement proper caching
 
 ### Backend
 - Monitor database performance
-- Optimize queries
+- Optimise queries
 - Use Supabase's built-in caching
 
 ### CDN
 - Use Cloudinary's image transformations
 - Implement proper cache headers
-- Optimize image formats
+- Optimise image formats
 
 ## 🎯 Production Checklist
 

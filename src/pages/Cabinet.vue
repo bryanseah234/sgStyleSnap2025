@@ -129,7 +129,7 @@
             {{ getCategoryLabel(category) }}
           </button>
           
-          <!-- Favorites Button - Same size as other filter buttons -->
+          <!-- Favourites Button - Same size as other filter buttons -->
           <button
             @click="showFavoritesOnly = !showFavoritesOnly"
             :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
@@ -139,7 +139,7 @@
             }`"
           >
             <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
-            Favorites
+            Favourites
           </button>
         </div>
       </div>
@@ -439,10 +439,15 @@ const filteredItems = computed(() => {
     // Use faster filtering - only process up to 100 items for instant results
     const maxFilter = 100
     filtered = filtered.slice(0, maxFilter).filter(item => 
-      item.name?.toLowerCase().includes(query) ||
-      item.brand?.toLowerCase().includes(query) ||
-      item.color?.toLowerCase().includes(query) ||
-      item.category?.toLowerCase().includes(query)
+        item.name?.toLowerCase().includes(query) ||
+        item.brand?.toLowerCase().includes(query) ||
+        item.color?.toLowerCase().includes(query) ||
+        item.category?.toLowerCase().includes(query) ||
+        item.material?.toLowerCase().includes(query) ||
+        item.pattern?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        item.notes?.toLowerCase().includes(query) ||
+        (Array.isArray(item.tags) ? item.tags.some(tag => tag?.toLowerCase().includes(query)) : false)
     )
   }
 
@@ -606,7 +611,11 @@ const handleItemHover = (event, index) => {
 }
 
 const handleItemLeave = (event, index) => {
+  // Call the composable's spring hover out
   itemHoverOut(event.target)
+  // Ensure transform and transition are fully reset after direct manipulation
+  event.target.style.transform = ''
+  event.target.style.transition = ''
 }
 
 // Throttle mouse move handler to reduce input delay using requestAnimationFrame
