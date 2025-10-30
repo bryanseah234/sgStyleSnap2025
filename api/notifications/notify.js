@@ -1,6 +1,53 @@
 // api/notifications/notify.js
 import Brevo from '@getbrevo/brevo';
 import { createHash } from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+
+// Optional Supabase server client for status updates and idempotency
+// Reuse public Vite URL if server-side URL not explicitly set
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const hasSupabase = !!(supabaseUrl && supabaseServiceKey);
+const supabase = hasSupabase ? createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } }) : null;
+
+async function getNotificationById(id) {
+  if (!supabase || !id) return null;
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) return null;
+    return data;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function markEmailSent(id) {
+  if (!supabase || !id) return;
+  try {
+    await supabase
+      .from('notifications')
+      .update({ email_status: 'email_sent', email_sent_at: new Date().toISOString() })
+      .eq('id', id);
+  } catch (_) {
+    // ignore
+  }
+}
+
+async function markEmailError(id, errMessage) {
+  if (!supabase || !id) return;
+  try {
+    await supabase
+      .from('notifications')
+      .update({ email_status: 'email_error', email_error: String(errMessage || '').slice(0, 500) })
+      .eq('id', id);
+  } catch (_) {
+    // ignore
+  }
+}
 
 export default async function handler(req, res) {
   // CORS headers
@@ -86,6 +133,14 @@ export default async function handler(req, res) {
       });
     }
 
+    // Idempotency: skip if already sent
+    if (notificationId && hasSupabase) {
+      const existing = await getNotificationById(notificationId);
+      if (existing && existing.email_status === 'email_sent') {
+        return res.status(200).json({ success: true, skipped: true });
+      }
+    }
+
     const transactionalEmailsApi = new Brevo.TransactionalEmailsApi();
     transactionalEmailsApi.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
 
@@ -108,9 +163,18 @@ export default async function handler(req, res) {
 
     await transactionalEmailsApi.sendTransacEmail(email);
 
+    if (notificationId && hasSupabase) {
+      await markEmailSent(notificationId);
+    }
+
     return res.status(200).json({ success: true });
   } catch (err) {
     const message = err?.message || 'Unknown error';
+    const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+    const notificationId = payload?.notification_id || null;
+    if (notificationId && hasSupabase) {
+      await markEmailError(notificationId, message);
+    }
     return res.status(500).json({ error: 'Email dispatch failed', detail: message });
   }
 }

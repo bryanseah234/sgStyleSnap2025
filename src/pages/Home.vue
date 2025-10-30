@@ -402,17 +402,19 @@ const loadNotifications = async () => {
           actorIds.map(async (id) => ({ id, profile: await userService.getUserById(id) }))
         )
         profiles.forEach(({ id, profile }) => {
-          if (profile?.name || profile?.username) {
+          if (profile?.username || profile?.name) {
             const full = profile.name || profile.username
             const first = String(full).split(' ')[0]
-            actorMap.set(id, first)
+            const username = profile.username || undefined
+            actorMap.set(id, { first, username })
           }
         })
       }
 
       notifications.value = base.map(n => ({
         ...n,
-        actor_first_name: n.actor_id ? actorMap.get(n.actor_id) : undefined
+        actor_first_name: n.actor_id ? actorMap.get(n.actor_id)?.first : undefined,
+        actor_username: n.actor_id ? actorMap.get(n.actor_id)?.username : undefined
       }))
       unreadCount.value = count || 0
       console.log('🏠 Home: Notifications loaded successfully:', notifications.value.length, 'notifications,', unreadCount.value, 'unread')
@@ -518,15 +520,16 @@ const getNotificationIcon = (type) => {
  * Gets notification title based on type
  */
 const getNotificationTitle = (notification) => {
+  const user = notification.actor_username ? `@${notification.actor_username}` : null
   const titles = {
-    friend_request: 'New Friend Request',
-    friend_request_accepted: 'Friend Request Accepted',
-    outfit_shared: 'Outfit Shared',
-    friend_outfit_suggestion: 'Outfit Suggestion',
-    outfit_like: 'Outfit Liked',
-    item_like: 'Item Liked'
+    friend_request: user ? `Friend Request from ${user}` : 'New Friend Request',
+    friend_request_accepted: user ? `Request Accepted by ${user}` : 'Friend Request Accepted',
+    outfit_shared: user ? `Outfit Shared by ${user}` : 'Outfit Shared',
+    friend_outfit_suggestion: user ? `Outfit Suggestion from ${user}` : 'Outfit Suggestion',
+    outfit_like: user ? `Outfit Liked by ${user}` : 'Outfit Liked',
+    item_like: user ? `Item Liked by ${user}` : 'Item Liked'
   }
-  return titles[notification.type] || 'Notification'
+  return titles[notification.type] || (user ? `Notification from ${user}` : 'Notification')
 }
 
 /**
