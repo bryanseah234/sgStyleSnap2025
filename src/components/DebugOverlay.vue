@@ -19,7 +19,7 @@
     <!-- Only show on desktop (md and above) -->
     <div
       v-if="visible && isDesktop"
-      class="debug-overlay"
+      :class="['debug-overlay', isDark ? 'debug-overlay--dark' : 'debug-overlay--light']"
     >
       <!-- Header -->
       <div class="debug-header">
@@ -122,6 +122,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useTheme } from '@/composables/useTheme'
 
 const props = defineProps({
   visible: {
@@ -317,26 +318,38 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
   stopMonitoring()
 })
+
+const { theme } = useTheme() // now reactive for theme
+
+const isDark = computed(() => theme.value === 'dark')
 </script>
 
 <style scoped>
+/* Two theme classes for overlay: .debug-overlay--dark, .debug-overlay--light. Default to dark, add --light if not dark */
 .debug-overlay {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 99999;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  color: #fff;
   min-width: 600px;
   max-width: 800px;
   user-select: none;
   animation: fadeIn 0.3s ease-out;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+.debug-overlay--dark {
+  background: rgba(0, 0, 0, 0.95);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.debug-overlay--light {
+  background: rgba(255,255,255,0.97);
+  color: #18181A;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes fadeIn {
@@ -355,7 +368,15 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.debug-header {
+  border-bottom: 1px solid var(--debug-header-border);
+}
+:global(.debug-overlay--dark) .debug-header {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+:global(.debug-overlay--light) .debug-header {
+  border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .debug-title {

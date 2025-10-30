@@ -30,31 +30,30 @@
     <!-- Hero Section with Liquid Glass Reveal -->
     <div 
       ref="heroRef"
-      class="max-w-6xl mx-auto mb-16 liquid-reveal relative"
+      class="max-w-4xl mx-auto mb-12 px-4 md:px-8 liquid-reveal relative"
       v-scroll-animate.up
       @mousemove="handleHeroMouseMove"
       @mouseleave="handleHeroMouseLeave"
     >
-      <h1 
-        class="text-4xl font-bold mb-4 text-foreground"
-      >
-        Welcome back{{ userName }}
-      </h1>
-      <!-- Notifications icon (top-right) -->
-      <button
-        class="absolute top-0 right-0 inline-flex items-center px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="showNotificationsModal = true"
-        :disabled="loadingAll || loadingNotifications"
-        :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
-        title="View notifications"
-      >
-        <div class="relative">
-          <Bell class="w-5 h-5" />
-          <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
-            {{ unreadCount }}
-          </span>
-        </div>
-      </button>
+      <div class="flex items-start gap-4 flex-wrap">
+        <h1 class="text-4xl font-bold mb-4 text-foreground break-words">
+          Welcome back{{ userName }}
+        </h1>
+        <button
+          class="inline-flex items-center px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+          @click="showNotificationsModal = true"
+          :disabled="loadingAll || loadingNotifications"
+          :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
+          title="View notifications"
+        >
+          <div class="relative">
+            <Bell class="w-5 h-5" />
+            <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
+              {{ unreadCount }}
+            </span>
+          </div>
+        </button>
+      </div>
       <p 
         class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
       >
@@ -63,7 +62,7 @@
     </div>
 
     <!-- Main Content Below Hero: Spinner/cards area -->
-    <div class="max-w-6xl mx-auto min-h-[200px]">
+    <div class="max-w-4xl mx-auto min-h-[200px] px-4 md:px-8">
       <div v-if="loadingAll" class="flex justify-center items-center min-h-[200px] py-12">
         <div class="spinner-modern" style="width:64px;height:64px;"></div>
       </div>
@@ -73,7 +72,7 @@
           :key="stat.label"
           :to="stat.route"
           v-scroll-animate.up
-          class="liquid-card p-8 rounded-3xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
+          class="liquid-card p-6 rounded-2xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
           :style="{ transitionDelay: `${index * 100}ms` }"
           @mouseenter="handleCardHover($event, index)"
           @mouseleave="handleCardLeave($event, index)"

@@ -95,13 +95,32 @@ export function useDebugMode() {
   // Setup event listeners
   onMounted(() => {
     window.addEventListener('keypress', handleKeyPress)
+    window.addEventListener('keydown', handleShiftDKeydown)
   })
   
   // Cleanup
   onUnmounted(() => {
     window.removeEventListener('keypress', handleKeyPress)
+    window.removeEventListener('keydown', handleShiftDKeydown)
     clearTimeout(resetTimer)
   })
+
+  /**
+   * Handle Shift+D keydown
+   */
+  const handleShiftDKeydown = (event) => {
+    const target = event.target;
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable
+    ) {
+      return;
+    }
+    if (event.shiftKey && (event.key === 'd' || event.key === 'D')) {
+      toggleDebugMode();
+    }
+  }
   
   return {
     isDebugMode,

@@ -421,13 +421,13 @@
     <!-- CTA Section -->
     <section 
       ref="ctaSectionRef"
-      class="py-16 sm:py-20 md:py-24 bg-black text-white relative overflow-hidden"
+      class="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-gray-100 via-white to-gray-300 text-gray-900 relative overflow-hidden"
       @mousemove="handleCtaMouseMove"
       @mouseleave="handleCtaMouseLeave"
     >
       <!-- Cursor-following light effect -->
       <div 
-        class="absolute w-96 h-96 bg-white rounded-full blur-3xl pointer-events-none transition-opacity duration-300"
+        class="absolute w-96 h-96 bg-gray-300/80 rounded-full blur-3xl pointer-events-none transition-opacity duration-300"
         :style="{
           left: `${cursorLight.x}px`,
           top: `${cursorLight.y}px`,
@@ -435,19 +435,18 @@
           opacity: cursorLight.opacity
         }"
       />
-
       <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">Ready to Transform Your Wardrobe?</h2>
-        <p class="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
+        <p class="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-gray-800/95">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
         <div class="pt-4">
-        <button
+          <button
             @click="handleSignUp"
-            class="inline-flex items-center justify-center gap-2 bg-white text-gray-900 hover:bg-gray-100 px-10 py-5 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
-        >
+            class="inline-flex items-center justify-center gap-2 bg-white text-gray-900 hover:bg-gray-200 px-10 py-5 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+          >
             Sign Up Now!
-        </button>
+          </button>
         </div>
       </div>
     </section>
