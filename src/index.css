@@ -85,20 +85,19 @@
 }
 
 /* Custom Scrollbar Styles */
+/* Progressive enhancement for Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #6b7280 #f3f4f6; /* thumb, track */
+}
+/* Webkit browsers: Chrome, Safari, Edge */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
+  background: #f3f4f6;
 }
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-zinc-600 dark:bg-zinc-700 rounded-full;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-zinc-500 dark:bg-zinc-600;
+  background: #6b7280;
+  border-radius: 6px;
 }
 
 /* Firefox */

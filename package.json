@@ -22,16 +22,17 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "lucide-vue-next": "^0.294.0",
+    "modern-rembg": "^0.1.2",
     "motion": "^12.23.24",
+    "onnxruntime-web": "^1.18.0",
     "pinia": "^2.1.7",
     "tailwind-merge": "^1.14.0",
     "three": "^0.160.0",
     "vue": "^3.4.0",
-    "vue-router": "^4.2.5",
-    "rembg-js": "^0.0.5"
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
+    "@types/node": "^20.19.24",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.5.1",
     "autoprefixer": "^10.4.16",

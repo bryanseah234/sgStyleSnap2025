@@ -115,6 +115,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { Brain, AlertCircle, X } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
+import { removeBackground } from 'modern-rembg'
 // Added prop for owned categories
 const props = defineProps({
   isOpen: {
@@ -164,94 +165,60 @@ const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1)
 
 // Methods
 const handleFileUpload = async (event) => {
-  // Enforce single file selection
-  const file = event.target.files && event.target.files.length > 0 ? event.target.files[0] : null
-  if (!file) return
-  
-  selectedFileName.value = file.name
-  formData.value.image_file = file
-  
-  // Show AI recognition status
-  aiRecognitionStatus.value = {
-    type: 'loading',
-    message: 'Analyzing image with AI...'
-  }
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  selectedFileName.value = file.name;
+  formData.value.image_file = file;
+
+  aiRecognitionStatus.value = { type: 'loading', message: 'Analyzing image with AI...' };
 
   try {
-    // Validate file
-    const validation = validateImageForClassification(file)
+    const validation = validateImageForClassification(file);
     if (!validation.isValid) {
-      aiRecognitionStatus.value = {
-        type: 'error',
-        message: validation.errors.join(', ')
-      }
-      return
+      aiRecognitionStatus.value = { type: 'error', message: validation.errors.join(', ') };
+      return;
     }
-
-    // Background removal step (best-effort). If it fails, fall back to original file.
-    let fileForDetection = file
+    // Use modern-rembg
+    let fileForDetection = file;
     try {
-      // Dynamic import to keep bundle light if not used elsewhere
-      const rembg = await import('rembg-js')
-      if (rembg && typeof rembg.remove === 'function') {
-        const buf = await file.arrayBuffer()
-        const outputPngBytes = await rembg.remove(new Uint8Array(buf))
-        const outputBlob = new Blob([outputPngBytes], { type: 'image/png' })
-        // Preserve original filename base, switch to .png
-        const baseName = file.name.replace(/\.[^.]+$/, '')
-        fileForDetection = new File([outputBlob], `${baseName}-nobg.png`, { type: 'image/png' })
-        // Also update the form image to use background-removed version for upload
-        formData.value.image_file = fileForDetection
-      }
+      // Use the smaller public/u2netp.onnx model (just 4MB)
+      const blob = await removeBackground(file, { model: '/u2netp.onnx' });
+      fileForDetection = new File([blob], file.name.replace(/\.[^.]+$/, '') + '-nobg.png', { type: 'image/png' });
+      formData.value.image_file = fileForDetection;
     } catch (bgErr) {
-      // Non-fatal: proceed with original image if BG removal not available/fails
-      console.warn('Background removal failed or unavailable, proceeding with original image:', bgErr)
-      fileForDetection = file
-      formData.value.image_file = file
+      // Fallback
+      console.warn('modern-rembg background removal failed, proceeding with original image:', bgErr);
+      fileForDetection = file;
+      formData.value.image_file = file;
     }
-
-    // Try AI classification (optional - don't let it break the form)
+    // Try AI classification
     try {
-      const classification = await classifyClothingItem(fileForDetection)
-      
+      const classification = await classifyClothingItem(fileForDetection);
       if (classification.success) {
-        // Auto-fill only category from AI results
-        formData.value.category = classification.styleSnapCategory || formData.value.category
-        
-        // Force Vue to update the form fields
-        await nextTick()
-        
+        formData.value.category = classification.styleSnapCategory || formData.value.category;
+        await nextTick();
         aiRecognitionStatus.value = {
           type: 'success',
           message: `AI detected: ${classification.topPrediction} - Category set to ${classification.styleSnapCategory} (${Math.round(classification.confidence * 100)}% confidence)`
-        }
-        
-        console.log('AI Classification Result:', {
-          prediction: classification.topPrediction,
-          category: classification.styleSnapCategory,
-          confidence: classification.confidence
-        })
+        };
       } else {
         aiRecognitionStatus.value = {
           type: 'warning',
           message: 'AI recognition unavailable, please fill manually'
-        }
+        };
       }
     } catch (aiError) {
-      console.warn('AI recognition failed:', aiError)
       aiRecognitionStatus.value = {
         type: 'warning',
         message: 'AI service temporarily unavailable, please fill manually'
-      }
+      };
     }
   } catch (error) {
-    console.error('Error processing image:', error)
-    aiRecognitionStatus.value = {
-      type: 'error',
-      message: 'Failed to process image. Please try again.'
-    }
+    console.error('Error processing image:', error);
+    aiRecognitionStatus.value = { type: 'error', message: 'Failed to process image. Please try again.' };
   }
-}
+};
 
 
 const handleSubmit = async () => {
