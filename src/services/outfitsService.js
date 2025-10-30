@@ -77,45 +77,42 @@ export class OutfitsService {
 
       console.log('OutfitsService: Getting friend outfits for owner:', ownerId, 'viewer:', user.id)
 
-      // Use RPC function to get outfits that friends can see
-      // This respects privacy settings and friendship status
+      // Query outfits with full outfit_items and clothing_item details
+      // This ensures we can render the outfit thumbnails properly
       const { data, error } = await supabase
-        .rpc('get_friend_outfits', {
-          friend_id: ownerId,
-          viewer_id: user.id,
-          p_limit: limit
-        })
+        .from('outfits')
+        .select(`
+          *,
+          outfit_items (
+            *,
+            clothing_item:outfit_items_clothing_item_id_fkey (
+              id,
+              name,
+              category,
+              brand,
+              image_url,
+              thumbnail_url
+            )
+          )
+        `)
+        .eq('owner_id', ownerId)
+        .eq('is_public', false) // Friends-level outfits (not public)
+        .is('removed_at', null)
+        .order('created_at', { ascending: false })
+        .limit(limit)
 
       if (error) {
-        console.error('OutfitsService: get_friend_outfits error:', error)
+        console.error('OutfitsService: Error fetching friend outfits:', error)
         console.error('OutfitsService: Error details:', {
           message: error.message,
           details: error.details,
           hint: error.hint,
           code: error.code
         })
-        
-        // Fallback to basic query if RPC doesn't exist
-        console.log('OutfitsService: Falling back to basic query...')
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('outfits')
-          .select('*')
-          .eq('owner_id', ownerId)
-          .eq('is_public', false) // Friends-level outfits (not public)
-          .is('removed_at', null)
-          .order('created_at', { ascending: false })
-          .limit(limit)
-
-        if (fallbackError) {
-          console.error('OutfitsService: Fallback query also failed:', fallbackError)
-          throw fallbackError
-        }
-        
-        console.log('OutfitsService: Fallback successful, returning:', fallbackData?.length || 0, 'outfits')
-        return fallbackData || []
+        throw error
       }
 
-      console.log('OutfitsService: RPC successful, returning:', data?.length || 0, 'outfits')
+      console.log('OutfitsService: Successfully fetched', data?.length || 0, 'friend outfits with items')
       return data || []
     } catch (error) {
       console.error('OutfitsService: Error in getFriendsOutfits:', error)
