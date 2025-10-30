@@ -18,9 +18,6 @@
 <template>
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <!-- Right-side Loading Spinner: keeps nav and top content visible -->
-    <div v-if="loadingAll" class="fixed top-0 right-0 h-full w-1/3 md:w-2/5 lg:w-1/3 z-40 flex items-center justify-center pointer-events-none">
-      <div class="spinner-modern"></div>
-    </div>
     <!-- Debug info -->
     <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
       <p class="text-yellow-800">Debug: No user data available</p>
@@ -52,10 +49,10 @@
         title="View notifications"
       >
         <div class="relative">
-        <Bell class="w-5 h-5" />
+          <Bell class="w-5 h-5" />
           <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
-          {{ unreadCount }}
-        </span>
+            {{ unreadCount }}
+          </span>
         </div>
       </button>
       <p 
@@ -65,33 +62,36 @@
       </p>
     </div>
 
-    <!-- Notifications Section replaced by badge + modal -->
-
-    <!-- Stats Cards with Liquid Glass Hover - Second on mobile -->
-    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-      <router-link
-        v-for="(stat, index) in stats"
-        :key="stat.label"
-        :to="stat.route"
-        v-scroll-animate.up
-        class="liquid-card p-8 rounded-3xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
-        :style="{ transitionDelay: `${index * 100}ms` }"
-        @mouseenter="handleCardHover($event, index)"
-        @mouseleave="handleCardLeave($event, index)"
-        @mousemove="handleCardMouseMove($event, index)"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <div class="liquid-icon p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
-            <component :is="stat.icon" class="w-6 h-6" />
+    <!-- Main Content Below Hero: Spinner/cards area -->
+    <div class="max-w-6xl mx-auto min-h-[200px]">
+      <div v-if="loadingAll" class="flex justify-center items-center min-h-[200px] py-12">
+        <div class="spinner-modern" style="width:64px;height:64px;"></div>
+      </div>
+      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <router-link
+          v-for="(stat, index) in stats"
+          :key="stat.label"
+          :to="stat.route"
+          v-scroll-animate.up
+          class="liquid-card p-8 rounded-3xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
+          :style="{ transitionDelay: `${index * 100}ms` }"
+          @mouseenter="handleCardHover($event, index)"
+          @mouseleave="handleCardLeave($event, index)"
+          @mousemove="handleCardMouseMove($event, index)"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <div class="liquid-icon p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
+              <component :is="stat.icon" class="w-6 h-6" />
+            </div>
+            <span class="text-4xl font-bold text-foreground liquid-number">
+              {{ stat.value }}
+            </span>
           </div>
-          <span class="text-4xl font-bold text-foreground liquid-number">
-            {{ stat.value }}
-          </span>
-        </div>
-        <p class="text-lg font-medium liquid-text text-stone-600 dark:text-zinc-400">
-          {{ stat.label }}
-        </p>
-      </router-link>
+          <p class="text-lg font-medium liquid-text text-stone-600 dark:text-zinc-400">
+            {{ stat.label }}
+          </p>
+        </router-link>
+      </div>
     </div>
 
   </div>

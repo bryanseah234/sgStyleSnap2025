@@ -17,7 +17,7 @@
       </button>
 
       <h3 class="text-xl font-bold mb-4 text-foreground pr-8">
-        Add Friend
+        Add
       </h3>
       
       <div class="space-y-4">

@@ -162,7 +162,7 @@
             {{ searchTerm ? 'No friends found matching your search.' : 'You don\'t have any friends yet.' }}
           </p>
           <p v-if="!searchTerm" class="text-sm mt-2 text-stone-500 dark:text-zinc-500">
-            Click "Add Friend" to start connecting!
+            Click "Add" to start connecting!
           </p>
         </div>
       </div>
