@@ -375,23 +375,6 @@
           </div>
 
       <div class="container grid md:grid-cols-2 gap-6 sm:gap-12 items-center relative z-10">
-        <div class="space-y-6 sm:space-y-8 scroll-hidden animate-slideInFromLeft" id="why-content">
-          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Why Choose StyleSnap?</h2>
-
-          <div
-            v-for="(item, idx) in whyChooseItems"
-            :key="idx"
-            class="flex gap-3 sm:gap-4 animate-staggeredFadeIn group cursor-pointer"
-            :style="{ animationDelay: `${idx * 0.1}s` }"
-          >
-            <component :is="item.icon" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 flex-shrink-0 mt-1 group-hover:scale-125 transition duration-300" />
-            <div>
-              <h3 class="font-bold text-sm sm:text-base md:text-lg mb-1 group-hover:text-gray-600 transition">{{ item.title }}</h3>
-              <p class="text-xs sm:text-sm md:text-base text-gray-600">{{ item.description }}</p>
-                </div>
-              </div>
-            </div>
-
         <div class="relative animate-parallaxFloat hidden sm:block">
           <div class="aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-2xl">
             <img 
@@ -412,6 +395,23 @@
             />
           </div>
         </div>
+
+        <div class="space-y-6 sm:space-y-8 scroll-hidden animate-slideInFromLeft" id="why-content">
+          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Why Choose StyleSnap?</h2>
+
+          <div
+            v-for="(item, idx) in whyChooseItems"
+            :key="idx"
+            class="flex gap-3 sm:gap-4 animate-staggeredFadeIn group cursor-pointer"
+            :style="{ animationDelay: `${idx * 0.1}s` }"
+          >
+            <component :is="item.icon" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 flex-shrink-0 mt-1 group-hover:scale-125 transition duration-300" />
+            <div>
+              <h3 class="font-bold text-sm sm:text-base md:text-lg mb-1 group-hover:text-gray-600 transition">{{ item.title }}</h3>
+              <p class="text-xs sm:text-sm md:text-base text-gray-600">{{ item.description }}</p>
+                </div>
+              </div>
+            </div>
       </div>
     </section>
     
