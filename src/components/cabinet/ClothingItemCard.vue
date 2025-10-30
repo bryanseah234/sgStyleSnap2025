@@ -46,6 +46,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Always-visible Favorite Button (top-right) -->
+  <button
+    @click.stop="$emit('toggleFavorite', item)"
+    :class="`absolute top-2 right-2 z-10 p-2 rounded-full shadow-sm transition-all duration-200 ${
+      item.is_favorite
+        ? 'bg-red-500 text-white hover:bg-red-600'
+        : 'bg-white/90 text-stone-600 hover:bg-stone-100'
+    }`"
+    title="Favorite"
+  >
+    <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current' : ''}`" />
+  </button>
 </template>
 
 <script setup>

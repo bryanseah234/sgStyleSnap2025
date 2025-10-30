@@ -25,7 +25,7 @@
           >
             <option :value="null">All Categories</option>
             <option v-for="category in categories" :key="category.value" :value="category.value">
-              {{ category.label }} ({{ category.count }})
+              {{ category.label }}
             </option>
           </select>
         </div>

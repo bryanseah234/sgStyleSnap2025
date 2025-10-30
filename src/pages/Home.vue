@@ -17,13 +17,9 @@
 -->
 <template>
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
-    <!-- Global Loading Overlay: visible until all sections finish loading -->
-    <div v-if="loadingAll" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-zinc-900">
-      <div class="spinner-modern mb-4"></div>
-      <div class="flex items-center gap-2 text-stone-600 dark:text-zinc-300">
-        <Shirt class="w-5 h-5" />
-        <span>Loading your dashboard…</span>
-      </div>
+    <!-- Right-side Loading Spinner: keeps nav and top content visible -->
+    <div v-if="loadingAll" class="fixed top-0 right-0 h-full w-1/3 md:w-2/5 lg:w-1/3 z-40 flex items-center justify-center pointer-events-none">
+      <div class="spinner-modern"></div>
     </div>
     <!-- Debug info -->
     <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
@@ -47,19 +43,20 @@
       >
         Welcome back{{ userName }}
       </h1>
-      <!-- Notifications Badge (top-right) -->
+      <!-- Notifications icon (top-right) -->
       <button
-        class="absolute top-0 right-0 inline-flex items-center gap-2 px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white"
+        class="absolute top-0 right-0 inline-flex items-center px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         @click="showNotificationsModal = true"
+        :disabled="loadingAll || loadingNotifications"
+        :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
         title="View notifications"
       >
+        <div class="relative">
         <Bell class="w-5 h-5" />
-        <span class="text-sm font-medium">Notifications</span>
-        <span
-          class="ml-1 inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-bold text-white bg-red-500"
-        >
+          <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
           {{ unreadCount }}
         </span>
+        </div>
       </button>
       <p 
         class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
@@ -110,7 +107,7 @@
         <div class="flex items-center gap-2">
           <Bell class="w-5 h-5" />
           <h3 class="text-lg font-semibold">Notifications</h3>
-          <span class="ml-1 inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-bold text-white bg-red-500">{{ unreadCount }}</span>
+          <span v-if="unreadCount > 0" class="ml-1 inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-bold text-white bg-red-500">{{ unreadCount }}</span>
         </div>
         <div class="flex items-center gap-2">
           <button
@@ -644,16 +641,24 @@ const handleHeroMouseLeave = () => {
 }
 
 const handleCardHover = (event, index) => {
-  cardHoverIn(event.target)
+  const card = event.currentTarget || event.target
+  cardHoverIn(card)
 }
 
 const handleCardLeave = (event, index) => {
-  cardHoverOut(event.target)
+  const card = event.currentTarget || event.target
+  cardHoverOut(card)
+  // Reset any inline transforms applied during mouse move
+  card.style.transform = ''
+  const icon = card.querySelector('.liquid-icon')
+  if (icon) icon.style.transform = ''
+  const number = card.querySelector('.liquid-number')
+  if (number) number.style.transform = ''
 }
 
 const handleCardMouseMove = (event, index) => {
   // Apply subtle parallax to cards
-  const card = event.target
+  const card = event.currentTarget || event.target
   const rect = card.getBoundingClientRect()
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top

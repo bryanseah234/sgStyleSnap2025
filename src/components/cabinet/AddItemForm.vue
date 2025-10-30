@@ -36,14 +36,20 @@
       <!-- Category -->
       <div class="form-section">
         <label class="form-label">Category</label>
-        <select v-model="formData.category" class="form-select" required>
-          <option value="">Select category</option>
-          <option value="top">Tops</option>
-          <option value="bottom">Bottoms</option>
-          <option value="outerwear">Outerwear</option>
-          <option value="shoes">Shoes</option>
-          <option value="accessory">Accessories</option>
-        </select>
+        <input
+          v-model="formData.category"
+          list="category-suggestions"
+          class="form-input"
+          required
+          placeholder="Type or select category"
+          @input="(e) => formData.category = e.target.value.toLowerCase()"
+          :value="capitalize(formData.category)"
+        />
+        <datalist id="category-suggestions">
+          <option v-for="cat in uniqueCategories" :key="cat" :value="capitalize(cat)">
+            {{ capitalize(cat) }}
+          </option>
+        </datalist>
       </div>
 
       <!-- Brand -->
@@ -109,14 +115,17 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { Brain, AlertCircle, X } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
-
-// Props
+// Added prop for owned categories
 const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  ownedCategories: {
+    type: Array,
+    default: () => []
   }
-})
+});
 
 // Emits
 const emit = defineEmits(['close', 'itemAdded'])
@@ -142,10 +151,21 @@ const canSubmit = computed(() => {
          formData.value.image_file
 })
 
+// Compute the unique categories to suggest to user (suggest owned, then common)
+const commonCategories = ['top', 'bottom', 'outerwear', 'shoes', 'accessory']
+const uniqueCategories = computed(() => {
+  const owned = (props.ownedCategories || []).map(c => c.toLowerCase())
+  const all = [...new Set([...owned, ...commonCategories])]
+  return all
+})
+
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1)
+
 
 // Methods
 const handleFileUpload = async (event) => {
-  const file = event.target.files?.[0]
+  // Enforce single file selection
+  const file = event.target.files && event.target.files.length > 0 ? event.target.files[0] : null
   if (!file) return
   
   selectedFileName.value = file.name
@@ -168,9 +188,31 @@ const handleFileUpload = async (event) => {
       return
     }
 
+    // Background removal step (best-effort). If it fails, fall back to original file.
+    let fileForDetection = file
+    try {
+      // Dynamic import to keep bundle light if not used elsewhere
+      const rembg = await import('rembg-js')
+      if (rembg && typeof rembg.remove === 'function') {
+        const buf = await file.arrayBuffer()
+        const outputPngBytes = await rembg.remove(new Uint8Array(buf))
+        const outputBlob = new Blob([outputPngBytes], { type: 'image/png' })
+        // Preserve original filename base, switch to .png
+        const baseName = file.name.replace(/\.[^.]+$/, '')
+        fileForDetection = new File([outputBlob], `${baseName}-nobg.png`, { type: 'image/png' })
+        // Also update the form image to use background-removed version for upload
+        formData.value.image_file = fileForDetection
+      }
+    } catch (bgErr) {
+      // Non-fatal: proceed with original image if BG removal not available/fails
+      console.warn('Background removal failed or unavailable, proceeding with original image:', bgErr)
+      fileForDetection = file
+      formData.value.image_file = file
+    }
+
     // Try AI classification (optional - don't let it break the form)
     try {
-      const classification = await classifyClothingItem(file)
+      const classification = await classifyClothingItem(fileForDetection)
       
       if (classification.success) {
         // Auto-fill only category from AI results

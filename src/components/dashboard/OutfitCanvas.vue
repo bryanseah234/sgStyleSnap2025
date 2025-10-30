@@ -92,6 +92,13 @@
           {{ item.name }}
         </p>
       </div>
+
+      <div v-if="selectedItemId === item.id" class="absolute left-1/2 -translate-x-1/2 -top-16 flex flex-col items-center z-50 select-none">
+        <Sparkles class="w-7 h-7 text-yellow-400 animate-bounce" />
+        <div class="mt-1 px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-md bg-white/90 text-xs font-medium text-stone-700 border border-stone-200 dark:bg-zinc-800/90 dark:text-zinc-100 dark:border-zinc-700">
+          Move, resize, or rotate
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
@@ -108,7 +115,8 @@
     </div>
 
     <!-- Canvas Instructions -->
-    <div v-if="items.length > 0" class="absolute bottom-4 left-4 text-xs text-stone-500 dark:text-zinc-500">
+    <div v-if="items.length > 0" class="absolute bottom-4 left-4 text-xs text-stone-500 dark:text-zinc-500 flex items-center gap-2 select-none">
+      <Sparkles class="w-5 h-5 text-yellow-400 animate-bounce" />
       <p>Click and drag to move items • Click to select • Use controls to layer items</p>
     </div>
   </div>
@@ -123,9 +131,9 @@
  * dragging, selection, and z-index management.
  */
 
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, defineExpose } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import { Trash2, ArrowUp, ArrowDown, Shirt, Palette } from 'lucide-vue-next'
+import { Trash2, ArrowUp, ArrowDown, Shirt, Palette, Sparkles } from 'lucide-vue-next'
 
 // Theme composable for styling
 const { theme } = useTheme()
@@ -250,6 +258,53 @@ const sendBackward = (itemId) => {
     emit('updateItem', itemId, { z_index: (item.z_index || 0) - 1 })
   }
 }
+
+// Helper: find first non-overlapping (x, y) for a new item
+function findNonOverlappingPosition(existingItems, itemSize, canvasSize) {
+  // Try up to 32 predefined slots in a spiral/grid around center
+  const attempts = 32
+  const centerX = canvasSize.width / 2 - itemSize.width / 2
+  const centerY = canvasSize.height / 2 - itemSize.height / 2
+  const radiusStep = Math.min(canvasSize.width, canvasSize.height) / 5
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    // Spiral: angle and radius
+    const theta = (2 * Math.PI / 8) * (attempt % 8)
+    const r = Math.floor(attempt / 8 + 1) * radiusStep
+    const x = centerX + r * Math.cos(theta)
+    const y = centerY + r * Math.sin(theta)
+    const box = { x, y, width: itemSize.width, height: itemSize.height }
+    let overlaps = false
+    for (const other of existingItems) {
+      const otherBox = {
+        x: other.x,
+        y: other.y,
+        width: itemSize.width,
+        height: itemSize.height
+      }
+      if (rectsOverlap(box, otherBox)) {
+        overlaps = true
+        break
+      }
+    }
+    if (!overlaps &&
+        x >= 0 && x + itemSize.width <= canvasSize.width &&
+        y >= 0 && y + itemSize.height <= canvasSize.height) {
+      return { x, y }
+    }
+  }
+  // If all attempts overlap, just return center (let UI resolve)
+  return { x: centerX, y: centerY }
+}
+// AABB overlap
+function rectsOverlap(a, b) {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  )
+}
+defineExpose({ findNonOverlappingPosition })
 
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleDrag)

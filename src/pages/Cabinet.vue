@@ -16,14 +16,12 @@
           <!-- Toggle button for add item dropdown menu -->
           <button
             @click="showAddMenu = !showAddMenu"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800`"
           >
             <Plus class="w-5 h-5" />
-            Add Item
+            Add
             <!-- Animated chevron icon that rotates when menu is open -->
-            <svg :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
+            <ChevronDown :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" />
           </button>
 
           <!-- Dropdown Menu with Add Item Options -->
@@ -55,7 +53,7 @@
             >
               <Shirt class="w-5 h-5" />
               <div>
-                <div class="font-medium">Add from Catalogue</div>
+                <div class="font-medium">Browse Catalogue</div>
                 <div :class="`text-xs text-stone-500 dark:text-zinc-400`">
                   Browse pre-populated items
                 </div>
@@ -77,7 +75,7 @@
             }`"
           >
             <Plus class="w-4 h-4" />
-            Manual Add
+            Manual Upload
           </button>
           <button
             @click="$router.push('/closet/add/catalogue')"
@@ -152,7 +150,7 @@
             ref="searchInputRef"
             v-model="searchTerm"
             type="text"
-            placeholder="Search your closet..."
+          placeholder="Search your closet (brand, type, category, color, tags)..."
             :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
               dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
             @input="handleSearch"
@@ -160,7 +158,7 @@
             @blur="handleSearchBlur"
           />
           <!-- Raycast-style keyboard hint -->
-          <div class="keyboard-hint">
+          <div class="keyboard-hint hidden md:block">
             <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
             <span>+</span>
             <span class="keyboard-hint-key">K</span>
@@ -225,6 +223,9 @@
           v-for="(item, index) in filteredItems"
           :key="item.id"
           @click="openItemDetails(item)"
+          tabindex="0"
+          @keydown.enter.prevent="openItemDetails(item)"
+          @keydown.space.prevent="openItemDetails(item)"
           @mouseenter="handleItemHover($event, index)"
           @mouseleave="handleItemLeave($event, index)"
           @mousemove="handleItemMouseMove($event, index)"
@@ -263,12 +264,14 @@
             <h3 class="liquid-item-title font-semibold mb-1 text-black dark:text-white">
               {{ item.name }}
             </h3>
-            <p class="liquid-item-category text-sm text-stone-600 dark:text-stone-100">
-              {{ item.brand || 'No brand' }}
+            <!-- Date Added / Created -->
+            <p class="text-sm text-stone-600 dark:text-stone-100">
+              {{ formatItemDate(item) }}
             </p>
-            <span class="inline-block px-2 py-1 mt-2 text-xs rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-200 dark:text-zinc-900">
-              {{ item.category }}
-            </span>
+            <!-- Category (Proper Case) -->
+            <p class="mt-2 text-xs font-medium text-stone-700 dark:text-zinc-200">
+              {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
+            </p>
           </div>
         </div>
       </TransitionGroup>
@@ -326,7 +329,7 @@ import { useLiquidHover, useLiquidPress } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 // UI Components
-import { Plus, Heart, Shirt, Search } from 'lucide-vue-next'
+import { Plus, Heart, Shirt, Search, ChevronDown } from 'lucide-vue-next'
 import UploadItemModal from '@/components/cabinet/UploadItemModal.vue'
 import ManualUploadForm from '@/components/cabinet/ManualUploadForm.vue'
 import CatalogueBrowser from '@/components/cabinet/CatalogueBrowser.vue'
@@ -356,7 +359,7 @@ const isMac = ref(false)
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
-    case 'manual': return 'Add Item Manually'
+    case 'manual': return 'Manual Upload'
     case 'catalogue': return 'Browse Catalogue'
     case 'friend': return `${route.params.username}'s Closet`
     default: return 'Your Closet'
@@ -441,10 +444,13 @@ const filteredItems = computed(() => {
     filtered = filtered.slice(0, maxFilter).filter(item => 
         item.name?.toLowerCase().includes(query) ||
         item.brand?.toLowerCase().includes(query) ||
-        item.color?.toLowerCase().includes(query) ||
+        item.type?.toLowerCase().includes(query) ||
         item.category?.toLowerCase().includes(query) ||
+        item.color?.toLowerCase().includes(query) ||
         item.material?.toLowerCase().includes(query) ||
         item.pattern?.toLowerCase().includes(query) ||
+        item.style?.toLowerCase().includes(query) ||
+        item.season?.toLowerCase().includes(query) ||
         item.description?.toLowerCase().includes(query) ||
         item.notes?.toLowerCase().includes(query) ||
         (Array.isArray(item.tags) ? item.tags.some(tag => tag?.toLowerCase().includes(query)) : false)
@@ -607,15 +613,23 @@ onMounted(async () => {
 
 // Liquid glass event handlers
 const handleItemHover = (event, index) => {
-  itemHoverIn(event.target)
+  const card = event.currentTarget || event.target
+  itemHoverIn(card)
 }
 
 const handleItemLeave = (event, index) => {
   // Call the composable's spring hover out
-  itemHoverOut(event.target)
+  const card = event.currentTarget || event.target
+  itemHoverOut(card)
   // Ensure transform and transition are fully reset after direct manipulation
-  event.target.style.transform = ''
-  event.target.style.transition = ''
+  card.style.transform = ''
+  card.style.transition = ''
+  const img = card.querySelector('.liquid-item-image')
+  if (img) img.style.transform = ''
+  const title = card.querySelector('.liquid-item-title')
+  if (title) title.style.transform = ''
+  const category = card.querySelector('.liquid-item-category')
+  if (category) category.style.transform = ''
 }
 
 // Throttle mouse move handler to reduce input delay using requestAnimationFrame
@@ -626,7 +640,7 @@ const handleItemMouseMove = (event, index) => {
   
   rafId = requestAnimationFrame(() => {
     // Apply subtle parallax to item cards
-    const card = event.target
+    const card = event.currentTarget || event.target
     const rect = card.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
@@ -666,5 +680,13 @@ const handleSearchFocus = (event) => {
 
 const handleSearchBlur = (event) => {
   event.target.classList.remove('search-input-focus')
+}
+
+  // Format item created/added date for card display
+  const formatItemDate = (item) => {
+    const dateString = item?.created_at || item?.inserted_at || item?.addedAt
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 </script>

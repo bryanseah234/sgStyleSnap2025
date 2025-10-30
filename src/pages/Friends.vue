@@ -48,7 +48,7 @@
               : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
           >
             <Bell class="w-4 h-4" />
-            Friend Requests
+            Requests Received
             <span
               v-if="friendRequests.length > 0"
               :class="currentTab === 'requests'
@@ -66,7 +66,7 @@
               : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
           >
             <UserPlus class="w-4 h-4" />
-            My Requests
+            Requests Sent
             <span
               v-if="sentRequests.length > 0"
               :class="currentTab === 'sent'
@@ -452,12 +452,10 @@ const isLoading = ref(true)
 
 // Computed
 const filteredFriends = computed(() => {
-  if (!searchTerm.value) return friends.value
-  
-  const query = searchTerm.value.toLowerCase()
-  return friends.value.filter(friend => 
-    friend.name?.toLowerCase().includes(query) ||
-    friend.username?.toLowerCase().includes(query)
+  const query = searchTerm.value.toLowerCase();
+  return friends.value.filter(friend =>
+    (friend.name?.toLowerCase().includes(query)) ||
+    (friend.username?.toLowerCase().includes(query))
   )
 })
 
@@ -581,10 +579,24 @@ const acceptFriendRequest = async (requestId) => {
     const res = await friendsService.acceptFriendRequest(requestId)
     if (!res || !res.success) throw new Error('Failed to accept request')
     showToast('Friend request accepted', 'success')
+    await loadFriendsData() // refresh after accept
   } catch (error) {
-    // Reload data on failure
     await loadFriendsData()
     showToast(error.message || 'Failed to accept friend request', 'error')
+  }
+}
+
+const declineFriendRequest = async (requestId) => {
+  try {
+    // Optimistic: remove from incoming list immediately
+    const prev = [...friendRequests.value]
+    friendRequests.value = friendRequests.value.filter(r => r.id !== requestId)
+    const res = await friendsService.declineFriendRequest(requestId)
+    if (!res || !res.success) throw new Error('Failed to decline request')
+    showToast('Friend request declined', 'success')
+  } catch (error) {
+    await loadFriendsData()
+    showToast(error.message || 'Failed to decline friend request', 'error')
   }
 }
 

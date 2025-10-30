@@ -23,7 +23,12 @@
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
-            Search by username or email
+            <div class="flex justify-between items-center w-full">
+              <span>Search by username or email</span>
+              <span v-if="searchQuery.length >= 4 && !searching && searchResults">
+                {{ searchResults.length }} friends found
+              </span>
+            </div>
           </label>
           <div class="relative search-input-group">
             <input
@@ -31,8 +36,7 @@
               type="text"
               placeholder="Enter username or email..."
               class="w-full px-3 pr-28 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 search-input dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
-              @input="searchQuery = sanitizeSearch(searchQuery)"
-              @keyup.enter="searchUsers"
+              @keyup="handleInputKeyup"
             />
             <!-- Small keyboard hint for search suggestions -->
             <div class="keyboard-hint" style="font-size: 10px; padding: 3px 6px;">
@@ -157,7 +161,13 @@ const isMac = ref(false)
 
 // Create debounced search function
 const { debounce } = useDebounce()
-const debouncedSearch = debounce(searchUsers, 500)
+const debouncedAutoSearch = debounce(() => {
+  if (searchQuery.value.length >= 4) {
+    searchUsers()
+  } else {
+    searchResults.value = []
+  }
+}, 400)
 
 // Search users
 const searchUsers = async () => {
@@ -250,11 +260,14 @@ watch(() => props.isOpen, (isOpen) => {
 })
 
 // Watch for search query changes with debounce
-watch(searchQuery, (newValue) => {
-  if (newValue.trim()) {
-    debouncedSearch()
-  } else {
-    searchResults.value = []
-  }
+watch(searchQuery, () => {
+  debouncedAutoSearch()
 })
+
+// (Optional, retain Enter for access)
+const handleInputKeyup = (ev) => {
+  if (ev.key === 'Enter' && searchQuery.value.length >= 4) {
+    searchUsers()
+  }
+}
 </script>

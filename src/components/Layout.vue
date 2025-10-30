@@ -27,7 +27,7 @@
     <aside 
       v-if="!isLandingPage"
       ref="navbarRef"
-      class="hidden md:flex fixed left-0 top-0 h-full w-64 navbar-glass flex-col items-stretch py-8 px-4 z-50"
+      class="hidden md:flex fixed left-0 top-0 h-full w-64 navbar-glass flex-col items-stretch py-8 px-4 z-50 shadow-[12px_0_24px_-16px_rgba(0,0,0,0.25)] dark:shadow-[12px_0_28px_-18px_rgba(0,0,0,0.6)]"
       @mouseenter="navbarHoverIn"
       @mouseleave="navbarHoverOut"
     >

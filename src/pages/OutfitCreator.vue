@@ -365,7 +365,7 @@
             <!-- Category Filters -->
             <div class="flex flex-wrap gap-2 mb-4">
               <button
-                v-for="category in categories"
+                v-for="category in categoryOptions"
                 :key="category"
                 @click="activeCategory = category"
                 :class="`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
@@ -806,7 +806,7 @@ const currentSubRoute = computed(() => {
 
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
-    case 'suggested': return 'AI Suggested Outfits'
+    case 'suggested': return 'Suggested Outfits'
     case 'personal': return 'Create Your Outfit'
     case 'friendSelect': return 'Select a Friend'
     case 'friend': return friendProfile.value ? `Create Outfit for ${getFirstName(friendProfile.value.name || friendProfile.value.username)}` : `Create with Friend's Items`
@@ -1011,13 +1011,20 @@ const selectFriend = (friend) => {
   router.push(`/outfits/add/friend/${friend.username}`)
 }
 
-const handleFriendRequestSent = async () => {
-  console.log('OutfitCreator: Friend request sent, reloading friends list...')
-  showAddFriendModal.value = false
-  // Reload the friends list to show the new friend request
-  await loadFriendsList()
-  showSuccess('Friend request sent successfully!')
+// Watch AddFriendDialog close/friendRequestSent to redirect
+const addFriendDialogOpen = ref(false)
+
+const handleFriendRequestSent = () => {
+  addFriendDialogOpen.value = false
+  router.push('/friends/requests/sent')
 }
+
+watch(addFriendDialogOpen, (open, prev) => {
+  if (prev && !open) {
+    // Closed dialog, manually navigate
+    router.push('/friends/requests/sent')
+  }
+})
 
 const loadWardrobeItems = async () => {
   try {
@@ -2157,4 +2164,18 @@ onMounted(async () => {
     window.removeEventListener('keyboard-remove-item', handleKeyboardEvent)
   })
 })
+
+// Category filter - only show dynamic:
+const categoryOptions = computed(() => {
+  const cats = new Set(
+    wardrobeItems.value
+      .map(item => (item.category || '').toLowerCase())
+      .filter(c => !!c)
+  )
+  return ['all', ...Array.from(cats)]
+});
+
+// Reset filter on route entry/change
+onMounted(() => { activeCategory.value = 'all' })
+watch(() => route.fullPath, () => { activeCategory.value = 'all' })
 </script>

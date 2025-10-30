@@ -16,51 +16,33 @@
             :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800`"
           >
             <Plus class="w-5 h-5" />
-            Add Outfit
+            Add
             <ChevronDown :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" />
           </button>
-          
-          <!-- Dropdown Menu -->
-          <div
-            v-if="showAddMenu"
-            class="absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800"
-          >
-            <button
-              @click="navigateToCreate('personal')"
-              class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white"
-            >
+          <!-- Dropdown Menu: Personal, Friend, then Suggested -->
+          <div v-if="showAddMenu" class="absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800">
+            <!-- Personal first -->
+            <button @click="navigateToCreate('personal')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
               <User class="w-5 h-5" />
               <div>
-                <div class="font-medium">Manual Creation</div>
-                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">
-                  Create your own outfit combinations
-                </div>
+                <div class="font-medium">Personal creation</div>
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Create your own outfit combinations</div>
               </div>
             </button>
-            
-            <button
-              @click="navigateToCreate('friend')"
-              class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white"
-            >
+            <!-- Friend second -->
+            <button @click="navigateToCreate('friend')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
               <Users class="w-5 h-5" />
               <div>
-                <div class="font-medium">Friend Creation</div>
-                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">
-                  Use items from friends' closets
-                </div>
+                <div class="font-medium">Friend creation</div>
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Use items from friends' closets</div>
               </div>
             </button>
-            
-            <button
-              @click="navigateToCreate('suggested')"
-              class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white"
-            >
+            <!-- Suggested third -->
+            <button @click="navigateToCreate('suggested')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
               <Sparkles class="w-5 h-5" />
               <div>
                 <div class="font-medium">AI Suggestions</div>
-                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">
-                  Get AI-powered outfit recommendations
-                </div>
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Get AI-powered outfit recommendations</div>
               </div>
             </button>
           </div>
@@ -73,12 +55,15 @@
           v-for="filter in filters"
           :key="filter.value"
           @click="activeFilter = filter.value"
-          :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeFilter === filter.value
-                      ? 'bg-black text-white dark:bg-white dark:text-black'
-                      : 'bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
+          :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+            activeFilter === filter.value
+              ? 'bg-black text-white dark:bg-white dark:text-black'
+              : 'bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
           }`"
         >
+          <template v-if="filter.value === 'favorites'">
+            <Heart :class="`w-5 h-5 ${activeFilter === 'favorites' ? 'fill-current text-red-500' : 'text-stone-500 dark:text-zinc-400'}`" />
+          </template>
           {{ filter.label }}
           <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 
                 class="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white">
@@ -96,14 +81,14 @@
           ref="searchInputRef"
           v-model="searchTerm"
           type="text"
-          placeholder="Search your outfits (name, occasion, items, colours)..."
+          placeholder="Search your outfits (name, tags, occasion, style, items)..."
           class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
           @input="handleSearch"
           @focus="handleSearchFocus"
           @blur="handleSearchBlur"
         />
         <!-- Raycast-style keyboard hint -->
-        <div class="keyboard-hint">
+        <div class="keyboard-hint hidden md:block">
           <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
           <span>+</span>
           <span class="keyboard-hint-key">K</span>
@@ -199,31 +184,32 @@
             <!-- Favourite button (top right) -->
             <button
               @click.stop="toggleFavorite(outfit)"
-              :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
-                outfit.is_favorite
-                  ? 'bg-red-500 text-white dark:bg-red-600'
-                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'
-              }`"
+              class="absolute top-2 right-2 z-20 p-2 rounded-full transition-all duration-200 shadow bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90"
+              :class="outfit.is_favorite ? 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600' : ''"
+              title="Favorite"
             >
-              <Heart :class="`w-4 h-4 ${outfit.is_favorite ? 'fill-current' : ''}`" />
+              <Heart :class="`w-5 h-5 ${outfit.is_favorite ? 'fill-current' : ''}`" />
             </button>
             
             <!-- Action buttons overlay -->
-            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"></div>
+              <div class="flex items-center gap-3 absolute inset-0 justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
               <button
                 @click.stop="editOutfit(outfit)"
-                class="p-3 rounded-xl transition-all duration-200 bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                  class="p-3 rounded-xl transition-all duration-200 bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 z-30"
                 title="Edit"
               >
                 <Pencil class="w-5 h-5" />
               </button>
               <button
                 @click.stop="deleteOutfit(outfit)"
-                class="p-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                  class="p-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all duration-200 z-30"
                 title="Delete"
               >
                 <Trash2 class="w-5 h-5" />
               </button>
+              </div>
             </div>
           </div>
           
@@ -472,6 +458,10 @@ const filteredOutfits = computed(() => {
         outfit.description?.toLowerCase().includes(query) ||
         outfit.occasion?.toLowerCase().includes(query) ||
         outfit.weather_condition?.toLowerCase().includes(query) ||
+        outfit.style?.toLowerCase().includes(query) ||
+        outfit.season?.toLowerCase().includes(query) ||
+        outfit.color_palette?.toLowerCase().includes(query) ||
+        outfit.notes?.toLowerCase().includes(query) ||
         (Array.isArray(outfit.tags) && outfit.tags.some(tag => tag?.toLowerCase().includes(query)))
       );
       // search inside items
@@ -480,7 +470,9 @@ const filteredOutfits = computed(() => {
         item.clothing_item?.brand?.toLowerCase().includes(query) ||
         item.clothing_item?.color?.toLowerCase().includes(query) ||
         item.clothing_item?.material?.toLowerCase().includes(query) ||
-        item.clothing_item?.category?.toLowerCase().includes(query)
+        item.clothing_item?.category?.toLowerCase().includes(query) ||
+        item.clothing_item?.type?.toLowerCase().includes(query) ||
+        (Array.isArray(item.clothing_item?.tags) && item.clothing_item.tags.some(tag => tag?.toLowerCase().includes(query)))
       );
       return matchMain || matchItems;
     })
