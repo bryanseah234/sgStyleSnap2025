@@ -17,7 +17,7 @@
             />
             <button
               @click="clearImage"
-              :class="`absolute top-4 right-4 p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors`"
+              :class="`absolute top-2 right-2 sm:top-4 sm:right-4 p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors z-10`"
             >
               <X class="w-4 h-4" />
             </button>
@@ -263,15 +263,54 @@ const handleFileUpload = async (e) => {
       fileType: file.type
     })
 
-    // Store the file for later upload (don't upload to Cloudinary yet)
-    formData.value.image_file = file
-    
-    // Create preview URL from the file
-    const previewBlob = URL.createObjectURL(file)
-    formData.value.image_url = previewBlob
-    previewUrl.value = previewBlob
-    
-    console.log('📸 ManualUploadForm: File stored for upload, preview created')
+    // 1) Basic validation (type/size)
+    const { validateImageForClassification, classifyClothingItem } = await import('@/services/fashion-rnn-service')
+    const validation = validateImageForClassification(file)
+    if (!validation.isValid) {
+      showError(validation.errors.join(', '))
+      return
+    }
+
+    // 2) Background removal (best-effort)
+    let processedFile = file
+    try {
+      const { removeBackground } = await import('modern-rembg')
+      const blob = await removeBackground(file, { model: '/u2netp.onnx' })
+      processedFile = new File([blob], file.name.replace(/\.[^.]+$/, '') + '-nobg.png', { type: 'image/png' })
+    } catch (bgErr) {
+      console.warn('modern-rembg background removal failed, proceeding with original image:', bgErr)
+      processedFile = file
+    }
+
+    // 3) AI classification (must pass to continue)
+    try {
+      const classification = await classifyClothingItem(processedFile)
+      if (!classification || !classification.success) {
+        showError(classification?.error || 'AI recognition failed. Please try another image.')
+        return
+      }
+      // Enforce minimum confidence threshold (70%)
+      const confidence = typeof classification.confidence === 'number' ? classification.confidence : 0
+      if (confidence < 0.7) {
+        const pct = Math.round(confidence * 100)
+        showError(`AI confidence is ${pct}%. Minimum required is 70%. Please upload a clearer, single-item image on a plain background.`)
+        return
+      }
+      // Auto-fill category if available
+      if (classification.styleSnapCategory) {
+        formData.value.category = classification.styleSnapCategory
+      }
+      // Store processed file for upload and show preview
+      formData.value.image_file = processedFile
+      const previewBlob = URL.createObjectURL(processedFile)
+      formData.value.image_url = previewBlob
+      previewUrl.value = previewBlob
+      console.log('📸 ManualUploadForm: File stored after AI checks, preview created')
+    } catch (aiErr) {
+      console.error('❌ ManualUploadForm: AI classification error:', aiErr)
+      showError('AI service unavailable. Please try again later or use a different image.')
+      return
+    }
   } catch (error) {
     console.error('❌ ManualUploadForm: Error processing file:', error)
     showError('Failed to process image file. Please try again.')

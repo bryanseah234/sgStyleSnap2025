@@ -37,22 +37,22 @@
     >
       <div class="flex items-start gap-4 flex-wrap">
         <h1 class="text-4xl font-bold mb-4 text-foreground break-words">
-          Welcome back{{ userName }}
-        </h1>
-        <button
+        Welcome back{{ userName }}
+      </h1>
+      <button
           class="inline-flex items-center px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-          @click="showNotificationsModal = true"
-          :disabled="loadingAll || loadingNotifications"
-          :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
-          title="View notifications"
-        >
-          <div class="relative">
-            <Bell class="w-5 h-5" />
-            <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
-              {{ unreadCount }}
-            </span>
-          </div>
-        </button>
+        @click="showNotificationsModal = true"
+        :disabled="loadingAll || loadingNotifications"
+        :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
+        title="View notifications"
+      >
+        <div class="relative">
+        <Bell class="w-5 h-5" />
+          <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
+          {{ unreadCount }}
+        </span>
+        </div>
+      </button>
       </div>
       <p 
         class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
@@ -67,29 +67,29 @@
         <div class="spinner-modern" style="width:64px;height:64px;"></div>
       </div>
       <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-        <router-link
-          v-for="(stat, index) in stats"
-          :key="stat.label"
-          :to="stat.route"
-          v-scroll-animate.up
+      <router-link
+        v-for="(stat, index) in stats"
+        :key="stat.label"
+        :to="stat.route"
+        v-scroll-animate.up
           class="liquid-card p-6 rounded-2xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
-          :style="{ transitionDelay: `${index * 100}ms` }"
-          @mouseenter="handleCardHover($event, index)"
-          @mouseleave="handleCardLeave($event, index)"
-          @mousemove="handleCardMouseMove($event, index)"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div class="liquid-icon p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
-              <component :is="stat.icon" class="w-6 h-6" />
-            </div>
-            <span class="text-4xl font-bold text-foreground liquid-number">
-              {{ stat.value }}
-            </span>
+        :style="{ transitionDelay: `${index * 100}ms` }"
+        @mouseenter="handleCardHover($event, index)"
+        @mouseleave="handleCardLeave($event, index)"
+        @mousemove="handleCardMouseMove($event, index)"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div class="liquid-icon p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
+            <component :is="stat.icon" class="w-6 h-6" />
           </div>
-          <p class="text-lg font-medium liquid-text text-stone-600 dark:text-zinc-400">
-            {{ stat.label }}
-          </p>
-        </router-link>
+          <span class="text-4xl font-bold text-foreground liquid-number">
+            {{ stat.value }}
+          </span>
+        </div>
+        <p class="text-lg font-medium liquid-text text-stone-600 dark:text-zinc-400">
+          {{ stat.label }}
+        </p>
+      </router-link>
       </div>
     </div>
 
@@ -154,6 +154,7 @@
                     <div v-if="!notification.is_read" class="w-2 h-2 rounded-full bg-blue-500" title="Unread" />
                   </div>
                 </div>
+                <p class="text-xs mt-1 truncate text-stone-600 dark:text-zinc-400">{{ getNotificationMessage(notification) }}</p>
               </div>
             </div>
           </div>

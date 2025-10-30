@@ -15,7 +15,7 @@
           class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           <UserPlus class="w-5 h-5" />
-          Add Friend
+          Add Your Friend
         </button>
       </div>
 
@@ -25,17 +25,13 @@
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <router-link
             to="/friends"
-            :class="currentTab === 'friends'
-              ? 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-black text-white dark:bg-white dark:text-black'
-              : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
+            :class="currentTab === 'friends' ? 'btn-tab btn-tab--active justify-center' : 'btn-tab justify-center'"
           >
             <Users class="w-4 h-4" />
             My Friends
             <span
               v-if="friends.length > 0"
-              :class="currentTab === 'friends'
-                ? 'px-2 py-1 text-xs rounded-full bg-black text-white'
-                : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+              :class="currentTab === 'friends' ? 'px-2 py-1 text-xs rounded-full bg-black text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
             >
               {{ friends.length }}
             </span>
@@ -43,17 +39,13 @@
 
           <router-link
             to="/friends/requests/received"
-            :class="currentTab === 'requests'
-              ? 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-black text-white dark:bg-white dark:text-black'
-              : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
+            :class="currentTab === 'requests' ? 'btn-tab btn-tab--active justify-center' : 'btn-tab justify-center'"
           >
             <Bell class="w-4 h-4" />
             Requests Received
             <span
               v-if="friendRequests.length > 0"
-              :class="currentTab === 'requests'
-                ? 'px-2 py-1 text-xs rounded-full bg-black text-white'
-                : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+              :class="currentTab === 'requests' ? 'px-2 py-1 text-xs rounded-full bg-black text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
             >
               {{ friendRequests.length }}
             </span>
@@ -61,17 +53,13 @@
 
           <router-link
             to="/friends/requests/sent"
-            :class="currentTab === 'sent'
-              ? 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-black text-white dark:bg-white dark:text-black'
-              : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
+            :class="currentTab === 'sent' ? 'btn-tab btn-tab--active justify-center' : 'btn-tab justify-center'"
           >
             <UserPlus class="w-4 h-4" />
             Requests Sent
             <span
               v-if="sentRequests.length > 0"
-              :class="currentTab === 'sent'
-                ? 'px-2 py-1 text-xs rounded-full bg-black text-white'
-                : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+              :class="currentTab === 'sent' ? 'px-2 py-1 text-xs rounded-full bg-black text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
             >
               {{ sentRequests.length }}
             </span>
@@ -313,7 +301,7 @@
           @click.stop
         >
           <h3 class="text-xl font-bold mb-4 text-black dark:text-white">
-            Add Friend
+            Add Your Friend
           </h3>
           
           <div class="space-y-4">

@@ -10,8 +10,8 @@
       <Transition name="modal" appear>
         <div
           v-if="isOpen"
-          :class="`liquid-modal-card relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border border-zinc-800`"
+          :class="`liquid-modal-card relative w-full max-w-2xl min-h-[420px] rounded-2xl shadow-2xl overflow-hidden bg-white border border-stone-200
+          dark:bg-zinc-900 dark:border-zinc-800`"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->

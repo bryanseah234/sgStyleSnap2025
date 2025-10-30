@@ -17,8 +17,8 @@
             </p>
           </div>
           
-          <!-- Action Buttons -->
-          <div class="flex items-center gap-3">
+          <!-- Action Buttons (moved into canvas; hidden here) -->
+          <div v-if="false" class="flex items-center gap-3">
           <button
             @click="undoAction"
             :disabled="!canUndo"
@@ -133,8 +133,8 @@
                '' }}
           </p>
           
-          <!-- Action Buttons -->
-          <div class="flex items-center gap-2 flex-wrap">
+          <!-- Action Buttons (moved into canvas; hidden here) -->
+          <div v-if="false" class="flex items-center gap-2 flex-wrap">
             <button
               @click="undoAction"
               :disabled="!canUndo"
@@ -247,7 +247,7 @@
           }`"
         >
           <Sparkles class="w-4 h-4" />
-          Suggested
+          Create
         </button>
         <button
           @click="$router.push('/outfits/add/personal')"
@@ -340,16 +340,16 @@
             class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             <Plus class="w-5 h-5" />
-            Add Friend
+            Add Your Friend
           </button>
           </div>
         </div>
       </div>
 
       <!-- Main Content (Canvas View) -->
-      <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <!-- Left Sidebar - Item Selection -->
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-2">
 
           <!-- Items Section -->
           <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
@@ -607,6 +607,50 @@
                   Click on items from the left to add them to the canvas
                 </p>
               </div>
+
+              <!-- Bottom-Center Canvas Toolbar -->
+              <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700">
+                <button
+                  @click="undoAction"
+                  :disabled="!canUndo"
+                  :class="`p-2 rounded-lg transition-all ${canUndo ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
+                  title="Undo"
+                >
+                  <Undo class="w-4 h-4" />
+                </button>
+                <button
+                  @click="redoAction"
+                  :disabled="!canRedo"
+                  :class="`p-2 rounded-lg transition-all ${canRedo ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
+                  title="Redo"
+                >
+                  <Redo class="w-4 h-4" />
+                </button>
+                <button
+                  @click="toggleGrid"
+                  :class="`p-2 rounded-lg transition-all ${showGrid ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'}`"
+                  title="Toggle Grid"
+                >
+                  <Grid3X3 class="w-4 h-4" />
+                </button>
+                <button
+                  @click="clearCanvas"
+                  :disabled="canvasItems.length === 0"
+                  :class="`p-2 rounded-lg transition-all flex items-center gap-1 ${canvasItems.length > 0 ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
+                  title="Clear Canvas"
+                >
+                  <Trash2 class="w-4 h-4" />
+                </button>
+                <button
+                  @click="saveOutfit"
+                  :disabled="canvasItems.length < 2 || savingOutfit"
+                  :class="`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${canvasItems.length >= 2 && !savingOutfit ? 'bg-black text-white dark:bg-white dark:text-black' : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'}`"
+                  title="Save Outfit"
+                >
+                  <Save class="w-4 h-4" />
+                  <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
+                </button>
+              </div>
             </div>
 
           </div>
@@ -806,7 +850,7 @@ const currentSubRoute = computed(() => {
 
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
-    case 'suggested': return 'Suggested Outfits'
+    case 'suggested': return 'Create Your Outfit'
     case 'personal': return 'Create Your Outfit'
     case 'friendSelect': return 'Select a Friend'
     case 'friend': return friendProfile.value ? `Create Outfit for ${getFirstName(friendProfile.value.name || friendProfile.value.username)}` : `Create with Friend's Items`

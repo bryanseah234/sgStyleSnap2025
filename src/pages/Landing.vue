@@ -421,7 +421,7 @@
     <!-- CTA Section -->
     <section 
       ref="ctaSectionRef"
-      class="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-gray-100 via-white to-gray-300 text-gray-900 relative overflow-hidden"
+      class="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-gray-100 via-white to-gray-300 text-gray-900 relative overflow-hidden border-b border-gray-200"
       @mousemove="handleCtaMouseMove"
       @mouseleave="handleCtaMouseLeave"
     >
@@ -441,12 +441,13 @@
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
         <div class="pt-4">
-          <button
+        <button
             @click="handleSignUp"
-            class="inline-flex items-center justify-center gap-2 bg-white text-gray-900 hover:bg-gray-200 px-10 py-5 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
-          >
-            Sign Up Now!
-          </button>
+            class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-10 py-5 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
+        >
+            Sign Up Now
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
+        </button>
         </div>
       </div>
     </section>
@@ -459,6 +460,16 @@
         </div>
       </div>
     </footer>
+
+    <!-- Scroll to Top Button -->
+    <button
+      v-if="showScrollToTop"
+      @click="scrollToTop"
+      class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center"
+      aria-label="Scroll to top"
+    >
+      <ChevronUp class="w-5 h-5 sm:w-6 sm:h-6" />
+    </button>
   </div>
 </template>
 
@@ -474,7 +485,8 @@ import {
   ArrowRight, 
   Menu, 
   X, 
-  Trash2
+  Trash2,
+  ChevronUp
 } from 'lucide-vue-next'
 
 // Import landing page animations
@@ -496,6 +508,7 @@ const visibleElements = ref(new Set())
 const isPageLoaded = ref(false)
 const ctaSectionRef = ref(null)
 const cursorLight = reactive({ x: 0, y: 0, opacity: 0 })
+const showScrollToTop = ref(false)
 
 // Demo items data
 const demoItems = [
@@ -716,12 +729,24 @@ const handleCtaMouseLeave = () => {
   cursorLight.opacity = 0
 }
 
+// Scroll to top functionality
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
 // Lifecycle hooks
 onMounted(() => {
   // Set page as loaded immediately to prevent flicker
   isPageLoaded.value = true
   
-  const handleScroll = () => setScrollY(window.scrollY)
+  const handleScroll = () => {
+    setScrollY(window.scrollY)
+    // Show scroll to top button when scrolled down more than 300px
+    showScrollToTop.value = window.scrollY > 300
+  }
   window.addEventListener('scroll', handleScroll)
   
   // Intersection Observer for scroll animations

@@ -50,16 +50,12 @@
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap gap-4 mb-6">
+      <div class="flex flex-wrap gap-3 md:gap-4 mb-6">
         <button
           v-for="filter in filters"
           :key="filter.value"
           @click="activeFilter = filter.value"
-          :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-            activeFilter === filter.value
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
-          }`"
+          :class="activeFilter === filter.value ? 'btn-tab btn-tab--active' : 'btn-tab'"
         >
           <template v-if="filter.value === 'favorites'">
             <Heart :class="`w-5 h-5 ${activeFilter === 'favorites' ? 'fill-current text-red-500' : 'text-stone-500 dark:text-zinc-400'}`" />
@@ -262,6 +258,9 @@
                 <span class="text-stone-600 dark:text-zinc-400">
                   Created {{ formatDate(selectedOutfit.created_at) }}
                 </span>
+                <span v-if="selectedOutfit.description" class="text-stone-600 dark:text-zinc-400 truncate max-w-[50%]" title="Description">
+                  {{ selectedOutfit.description }}
+                </span>
               </div>
             </div>
             
@@ -280,15 +279,8 @@
 
         <!-- Modal Content -->
         <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 180px);">
-          <!-- Description -->
-          <div v-if="selectedOutfit.description" class="mb-6">
-            <h3 :class="`text-sm font-semibold mb-2 text-stone-700 dark:text-zinc-300`">
-              Description
-            </h3>
-            <p :class="`text-stone-600 dark:text-zinc-400`">
-              {{ selectedOutfit.description }}
-            </p>
-          </div>
+          <!-- Description moved to header; keep space but no duplicate -->
+          <div v-if="false" class="mb-6"></div>
 
           <!-- Outfit Items -->
           <div v-if="selectedOutfit.outfit_items && selectedOutfit.outfit_items.length > 0">

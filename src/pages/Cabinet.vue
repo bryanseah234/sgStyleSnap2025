@@ -115,7 +115,7 @@
         <!-- Category Filters -->
         <div class="flex flex-wrap gap-2">
           <button
-            v-for="category in categories"
+            v-for="category in availableCategories"
             :key="category"
             @click="activeCategory = category"
             :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
@@ -317,7 +317,7 @@
  */
 
 // Vue 3 Composition API imports
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // Composables and stores
@@ -359,8 +359,8 @@ const isMac = ref(false)
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
-    case 'manual': return 'Manual Upload'
-    case 'catalogue': return 'Browse Catalogue'
+    case 'manual': return 'Add Your Item'
+    case 'catalogue': return 'Add Your Item'
     case 'friend': return `${route.params.username}'s Closet`
     default: return 'Your Closet'
   }
@@ -383,8 +383,20 @@ const activeCategory = ref('all')        // Currently active category filter
 const showFavoritesOnly = ref(false)     // Favorites-only filter toggle
 const searchTerm = ref('')               // Search input value
 
-// Available clothing categories for filtering
-const categories = ['all', 'top', 'bottom', 'outerwear', 'shoes', 'hat']
+// Available clothing categories for filtering (computed from user's items)
+const availableCategories = computed(() => {
+  const raw = new Set(
+    (items.value || [])
+      .map(i => (i.category || '').toLowerCase())
+      .filter(Boolean)
+  )
+  // Preserve a sensible order
+  const order = ['top', 'bottom', 'outerwear', 'shoes', 'hat']
+  const ordered = order.filter(cat => raw.has(cat))
+  // Include any unexpected categories at the end
+  const extras = Array.from(raw).filter(cat => !order.includes(cat))
+  return ['all', ...ordered, ...extras]
+})
 
 /**
  * Converts category key to display label
@@ -468,6 +480,14 @@ const filteredItems = computed(() => {
   }
 
   return filtered
+})
+
+// Ensure activeCategory remains valid when items change
+watch(items, () => {
+  const cats = new Set(availableCategories.value)
+  if (!cats.has(activeCategory.value)) {
+    activeCategory.value = 'all'
+  }
 })
 
 const loadItems = async () => {

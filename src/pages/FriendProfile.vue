@@ -209,10 +209,15 @@
             </button>
 
             <div class="pr-8">
-              <h3 class="text-xl font-bold mb-4 text-black dark:text-white">
+              <h3 class="text-xl font-bold mb-1 text-black dark:text-white">
                 {{ selectedOutfit?.outfit_name || 'Outfit Details' }}
               </h3>
-              
+              <div class="flex items-center gap-3 text-sm mb-4 text-stone-600 dark:text-zinc-400">
+                <span v-if="selectedOutfit?.outfit_items" >{{ selectedOutfit.outfit_items.length }} items</span>
+                <span v-if="selectedOutfit?.created_at">Created {{ new Date(selectedOutfit.created_at).toLocaleDateString() }}</span>
+                <span v-if="selectedOutfit?.description" class="truncate max-w-[50%]">{{ selectedOutfit.description }}</span>
+              </div>
+
               <div class="space-y-4">
                 <!-- Outfit Canvas -->
                 <div class="aspect-video bg-stone-100 dark:bg-zinc-800 rounded-lg overflow-hidden">
@@ -223,21 +228,6 @@
                   <div v-else class="w-full h-full flex items-center justify-center">
                     <span class="text-sm text-stone-400 dark:text-zinc-500">No items</span>
                   </div>
-                </div>
-
-                <div v-if="selectedOutfit?.description">
-                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Description</p>
-                  <p class="text-base text-black dark:text-white">{{ selectedOutfit.description }}</p>
-                </div>
-
-                <div v-if="selectedOutfit?.occasion">
-                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Occasion</p>
-                  <p class="text-base text-black dark:text-white">{{ selectedOutfit.occasion }}</p>
-                </div>
-
-                <div v-if="selectedOutfit?.created_at">
-                  <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Created</p>
-                  <p class="text-base text-black dark:text-white">{{ new Date(selectedOutfit.created_at).toLocaleDateString() }}</p>
                 </div>
               </div>
             </div>

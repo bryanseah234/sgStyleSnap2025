@@ -1410,3 +1410,42 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
     display: none;
   }
 }
+
+/* ============================================
+   REUSABLE TAB BUTTONS
+   ============================================ */
+.btn-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem; /* 8px */
+  padding: 0.75rem 1rem; /* py-3 px-4 */
+  border-radius: 0.5rem; /* rounded-lg */
+  font-weight: 500; /* font-medium */
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.25rem;
+  transition: background-color 200ms, color 200ms;
+  background: #f5f5f4; /* stone-100 */
+  color: #44403c; /* stone-700 */
+}
+.btn-tab:hover {
+  background: #e7e5e4; /* stone-200 */
+}
+@media (min-width: 768px) {
+  .btn-tab { font-size: 1rem; } /* md:text-base */
+}
+.dark .btn-tab {
+  background: #27272a; /* zinc-800 */
+  color: #d4d4d8; /* zinc-300 */
+}
+.dark .btn-tab:hover {
+  background: #3f3f46; /* zinc-700 */
+}
+.btn-tab--active {
+  background: #000; /* black */
+  color: #fff;
+}
+.dark .btn-tab--active {
+  background: #fff;
+  color: #000;
+}
