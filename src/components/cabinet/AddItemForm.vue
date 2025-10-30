@@ -182,8 +182,7 @@ const handleFileUpload = async (event) => {
     // Use modern-rembg
     let fileForDetection = file;
     try {
-      // Use the smaller public/u2netp.onnx model (just 4MB)
-      const blob = await removeBackground(file, { model: '/u2netp.onnx' });
+      const blob = await removeBackground(file);
       fileForDetection = new File([blob], file.name.replace(/\.[^.]+$/, '') + '-nobg.png', { type: 'image/png' });
       formData.value.image_file = fileForDetection;
     } catch (bgErr) {

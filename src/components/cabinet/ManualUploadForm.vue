@@ -275,7 +275,7 @@ const handleFileUpload = async (e) => {
     let processedFile = file
     try {
       const { removeBackground } = await import('modern-rembg')
-      const blob = await removeBackground(file, { model: '/u2netp.onnx' })
+      const blob = await removeBackground(file)
       processedFile = new File([blob], file.name.replace(/\.[^.]+$/, '') + '-nobg.png', { type: 'image/png' })
     } catch (bgErr) {
       console.warn('modern-rembg background removal failed, proceeding with original image:', bgErr)

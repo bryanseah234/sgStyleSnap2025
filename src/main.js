@@ -17,6 +17,11 @@ import { useTheme } from './composables/useTheme'
 import { useThemeStore } from './stores/theme-store'
 import { setupPageTransition, setupFocusManagement } from '@/composables/usePageTransition'
 // import { displayConsoleArt } from '@/utils/console-art' // Disabled for cleaner console
+import { env as onnxEnv } from 'onnxruntime-web'
+
+// Configure ONNX Runtime Web to avoid cross-origin isolation requirement
+onnxEnv.wasm.numThreads = 1
+onnxEnv.wasm.simd = false
 
 // Import page components
 import Landing from './pages/Landing.vue'
