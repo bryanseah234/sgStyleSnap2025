@@ -19,9 +19,19 @@ import { setupPageTransition, setupFocusManagement } from '@/composables/usePage
 // import { displayConsoleArt } from '@/utils/console-art' // Disabled for cleaner console
 import { env as onnxEnv } from 'onnxruntime-web'
 
-// Configure ONNX Runtime Web to avoid cross-origin isolation requirement
-onnxEnv.wasm.numThreads = 1
-onnxEnv.wasm.simd = false
+// Configure ONNX Runtime Web: prefer SIMD + multithreading under COI, otherwise safe fallback
+try {
+  const coi = typeof self !== 'undefined' && !!self.crossOriginIsolated
+  if (coi) {
+    onnxEnv.wasm.simd = true
+    onnxEnv.wasm.numThreads = Math.max(2, (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 4)
+  } else {
+    onnxEnv.wasm.simd = false
+    onnxEnv.wasm.numThreads = 1
+  }
+} catch (_) {
+  // Fallback if env not accessible; defaults are fine
+}
 
 // Import page components
 import Landing from './pages/Landing.vue'

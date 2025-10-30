@@ -1,5 +1,6 @@
 // api/notifications/notify.js
 import Brevo from '@getbrevo/brevo';
+import { createHash } from 'crypto';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -20,8 +21,55 @@ export default async function handler(req, res) {
     const payload = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody || {};
 
     const recipientEmail = payload?.recipient_email;
-    const subject = payload?.subject;
-    const htmlContent = payload?.content_html;
+    const notificationId = payload?.notification_id || null;
+    const notificationType = (payload?.notification_type || '').toLowerCase().replace(/\s+/g, '_');
+
+    // Simple template registry; payload values override templates if provided
+    const templates = {
+      new_friend: {
+        subject: 'You have a new friend on StyleSnap',
+        html: `
+          <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+            <h2 style="margin:0 0 12px;">New friend added 🎉</h2>
+            <p style="margin:0 0 12px;">${payload?.actor_name || 'Someone'} just became your friend.</p>
+            <p style="margin:0 0 12px;">Open the app to say hello and view their closet.</p>
+          </div>
+        `
+      },
+      friend_request: {
+        subject: 'You received a friend request',
+        html: `
+          <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+            <h2 style="margin:0 0 12px;">New friend request</h2>
+            <p style="margin:0 0 12px;">${payload?.actor_name || 'A user'} sent you a friend request.</p>
+            <p style="margin:0 0 12px;">Open the app to accept or decline.</p>
+          </div>
+        `
+      },
+      comment: {
+        subject: 'New comment on your outfit',
+        html: `
+          <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+            <h2 style="margin:0 0 12px;">New comment 💬</h2>
+            <p style="margin:0 0 12px;">${payload?.actor_name || 'A friend'} commented: “${payload?.comment_preview || 'View in app'}”.</p>
+            <p style="margin:0 0 12px;">Open the app to reply.</p>
+          </div>
+        `
+      },
+      like: {
+        subject: 'Someone liked your outfit',
+        html: `
+          <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+            <h2 style="margin:0 0 12px;">Your outfit got a like ❤️</h2>
+            <p style="margin:0 0 12px;">${payload?.actor_name || 'A friend'} liked your outfit.</p>
+          </div>
+        `
+      }
+    };
+
+    const templ = templates[notificationType] || null;
+    const subject = payload?.subject || templ?.subject;
+    const htmlContent = payload?.content_html || templ?.html;
 
     if (!recipientEmail || !subject || !htmlContent) {
       return res.status(400).json({
@@ -46,6 +94,17 @@ export default async function handler(req, res) {
     email.sender = { email: 'no-reply@yourcompanydomain.com' };
     email.subject = subject;
     email.htmlContent = htmlContent;
+
+    // Lightweight idempotency metadata (does not prevent duplicates without storage,
+    // but helps tracing/diagnostics in Brevo and logs)
+    const dedupeBasis = `${recipientEmail}|${notificationType}|${subject}|${String(htmlContent).slice(0, 256)}`;
+    const dedupeHash = createHash('sha256').update(dedupeBasis).digest('hex');
+    email.headers = {
+      ...(email.headers || {}),
+      'X-Notification-ID': notificationId || '',
+      'X-Idempotency-Key': dedupeHash,
+      'X-Notification-Type': notificationType || ''
+    };
 
     await transactionalEmailsApi.sendTransacEmail(email);
 
