@@ -22,12 +22,19 @@ interface PushPayload {
   requireInteraction?: boolean
 }
 
+// CORS headers - must be defined before serve()
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS'
+}
+
 /**
  * Send push notification to user's devices
  */
 serve(async (req) => {
   try {
-    // CORS headers
+    // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
       return new Response('ok', { headers: corsHeaders })
     }
@@ -249,9 +256,4 @@ function generateVapidAuthHeader(endpoint: string): string {
   const token = `${btoa(JSON.stringify(header))}.${btoa(JSON.stringify(payload))}.signature`
 
   return `vapid t=${token}, k=${VAPID_PUBLIC_KEY}`
-}
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 }

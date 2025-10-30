@@ -25,13 +25,22 @@
           <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
             Search by username or email
           </label>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Enter username or email..."
-            class="w-full px-3 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
-            @keyup.enter="searchUsers"
-          />
+          <div class="relative search-input-group">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Enter username or email..."
+              class="w-full px-3 pr-28 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 search-input dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
+              @input="searchQuery = sanitizeSearch(searchQuery)"
+              @keyup.enter="searchUsers"
+            />
+            <!-- Small keyboard hint for search suggestions -->
+            <div class="keyboard-hint" style="font-size: 10px; padding: 3px 6px;">
+              <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+              <span>+</span>
+              <span class="keyboard-hint-key">K</span>
+            </div>
+          </div>
         </div>
         
         <div v-if="searchResults.length > 0" class="space-y-2 max-h-40 overflow-y-auto">
@@ -109,6 +118,8 @@
 import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
+import { useDebounce } from '@/composables/useDebounce'
+import { useSanitize } from '@/composables/useSanitize'
 import { UserService } from '@/services/userService'
 import { FriendsService } from '@/services/friendsService'
 import { X } from 'lucide-vue-next'
@@ -117,8 +128,11 @@ import { X } from 'lucide-vue-next'
 const userService = new UserService()
 const friendsService = new FriendsService()
 
+// Sanitization
+const { sanitizeSearch } = useSanitize()
+
 // Props
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
@@ -138,12 +152,22 @@ const searchResults = ref([])
 const searching = ref(false)
 const sendingRequest = ref(null)
 
+// Detect Mac for keyboard shortcut display
+const isMac = ref(false)
+
+// Create debounced search function
+const { debounce } = useDebounce()
+const debouncedSearch = debounce(searchUsers, 500)
+
 // Search users
 const searchUsers = async () => {
   console.log('🔍 AddFriendDialog: ========== Searching Users ==========')
   console.log('🔍 AddFriendDialog: Search query:', searchQuery.value)
   
-  if (!searchQuery.value.trim()) {
+  // Sanitize search query
+  const sanitized = sanitizeSearch(searchQuery.value)
+  
+  if (!sanitized.trim()) {
     console.log('🔍 AddFriendDialog: Empty search query, clearing results')
     searchResults.value = []
     return
@@ -154,7 +178,7 @@ const searchUsers = async () => {
   
   try {
     console.log('🔍 AddFriendDialog: Calling userService.searchUsers...')
-    const result = await userService.searchUsers(searchQuery.value)
+    const result = await userService.searchUsers(sanitized)
     
     console.log('🔍 AddFriendDialog: Search result:', {
       hasResult: !!result,
@@ -217,10 +241,18 @@ const sendFriendRequest = async (userId) => {
   }
 }
 
-// Watch for search query changes
+// Watch for dialog open/close to detect Mac
+watch(() => props.isOpen, (isOpen) => {
+  if (isOpen) {
+    // Detect Mac OS when dialog opens
+    isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  }
+})
+
+// Watch for search query changes with debounce
 watch(searchQuery, (newValue) => {
   if (newValue.trim()) {
-    searchUsers()
+    debouncedSearch()
   } else {
     searchResults.value = []
   }

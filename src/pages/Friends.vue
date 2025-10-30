@@ -23,74 +23,82 @@
       <div class="mb-6">
         <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
-          <button
-            @click="activeTab = 'friends'"
-            :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
-              activeTab === 'friends'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
+          <router-link
+            to="/friends"
+            :class="currentTab === 'friends'
+              ? 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-black text-white dark:bg-white dark:text-black'
+              : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
           >
             <Users class="w-4 h-4" />
             My Friends
-            <span v-if="friends.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
-              activeTab === 'friends'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'
-            }`">
+            <span
+              v-if="friends.length > 0"
+              :class="currentTab === 'friends'
+                ? 'px-2 py-1 text-xs rounded-full bg-black text-white'
+                : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+            >
               {{ friends.length }}
             </span>
-          </button>
-          <button
-            @click="activeTab = 'requests'"
-            :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
-              activeTab === 'requests'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
+          </router-link>
+
+          <router-link
+            to="/friends/requests/received"
+            :class="currentTab === 'requests'
+              ? 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-black text-white dark:bg-white dark:text-black'
+              : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
           >
             <Bell class="w-4 h-4" />
             Friend Requests
-            <span v-if="friendRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
-              activeTab === 'requests'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'
-            }`">
+            <span
+              v-if="friendRequests.length > 0"
+              :class="currentTab === 'requests'
+                ? 'px-2 py-1 text-xs rounded-full bg-black text-white'
+                : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+            >
               {{ friendRequests.length }}
             </span>
-          </button>
-          <button
-            @click="activeTab = 'sent'"
-            :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base ${
-              activeTab === 'sent'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
+          </router-link>
+
+          <router-link
+            to="/friends/requests/sent"
+            :class="currentTab === 'sent'
+              ? 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-black text-white dark:bg-white dark:text-black'
+              : 'px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'"
           >
             <UserPlus class="w-4 h-4" />
             My Requests
-            <span v-if="sentRequests.length > 0" :class="`px-2 py-1 text-xs rounded-full ${
-              activeTab === 'sent'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'
-            }`">
+            <span
+              v-if="sentRequests.length > 0"
+              :class="currentTab === 'sent'
+                ? 'px-2 py-1 text-xs rounded-full bg-black text-white'
+                : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+            >
               {{ sentRequests.length }}
             </span>
-          </button>
+          </router-link>
         </div>
       </div>
 
       <!-- Search Bar -->
       <div class="mb-8">
-        <div class="relative">
-          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
+        <div class="relative search-input-group">
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
           <input
+            ref="searchInputRef"
             v-model="searchTerm"
             type="text"
             placeholder="Search friends..."
-            class="w-full pl-10 pr-4 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
+            class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
             @input="handleSearch"
+            @focus="handleSearchFocus"
+            @blur="handleSearchBlur"
           />
+          <!-- Raycast-style keyboard hint -->
+          <div class="keyboard-hint">
+            <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+            <span>+</span>
+            <span class="keyboard-hint-key">K</span>
+          </div>
         </div>
       </div>
 
@@ -103,7 +111,7 @@
       </div>
 
       <!-- Content Area -->
-      <div v-else-if="activeTab === 'friends'">
+      <div v-else-if="currentTab === 'friends'">
         <!-- My Friends -->
         <TransitionGroup 
           v-if="filteredFriends.length > 0" 
@@ -128,10 +136,7 @@
                   :alt="friend.name"
                   class="w-full h-full object-cover"
                 />
-                <div
-                  v-else
-                  class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
-                >
+                <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700" v-else>
                   <span class="text-lg md:text-xl font-bold text-stone-500 dark:text-zinc-400">
                     {{ (friend.name || friend.username || 'F').charAt(0).toUpperCase() }}
                   </span>
@@ -163,7 +168,7 @@
       </div>
 
       <!-- Friend Requests Tab -->
-      <div v-else-if="activeTab === 'requests'">
+      <div v-else-if="currentTab === 'requests'">
         <TransitionGroup 
           v-if="friendRequests.length > 0" 
           name="list" 
@@ -181,17 +186,14 @@
                 <!-- Avatar -->
                 <div class="w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                   <img
-                    v-if="request.requester.avatar_url"
+                    v-if="request.requester?.avatar_url"
                     :src="request.requester.avatar_url"
                     :alt="request.requester.name"
                     class="w-full h-full object-cover"
                   />
-                  <div
-                    v-else
-                    class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
-                  >
+                  <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700" v-else>
                     <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
-                      {{ (request.requester.name || 'U').charAt(0).toUpperCase() }}
+                      {{ (request.requester?.name || 'U').charAt(0).toUpperCase() }}
                     </span>
                   </div>
                 </div>
@@ -199,10 +201,10 @@
                 <!-- Request Info -->
                 <div class="text-left">
                   <h3 class="font-medium text-foreground">
-                    {{ request.requester.name }}
+                    {{ request.requester?.name || 'Unknown User' }}
                   </h3>
                   <p class="text-sm text-stone-600 dark:text-zinc-400">
-                    @{{ request.requester.username }}
+                    @{{ request.requester?.username || 'unknown' }}
                   </p>
                 </div>
               </div>
@@ -235,7 +237,7 @@
       </div>
 
       <!-- My Requests Tab -->
-      <div v-else-if="activeTab === 'sent'">
+      <div v-else-if="currentTab === 'sent'">
         <TransitionGroup 
           v-if="sentRequests.length > 0" 
           name="list" 
@@ -253,17 +255,14 @@
                 <!-- Avatar -->
                 <div class="w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                   <img
-                    v-if="request.receiver.avatar_url"
+                    v-if="request.receiver?.avatar_url"
                     :src="request.receiver.avatar_url"
                     :alt="request.receiver.name"
                     class="w-full h-full object-cover"
                   />
-                  <div
-                    v-else
-                    class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700"
-                  >
+                  <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700" v-else>
                     <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
-                      {{ (request.receiver.name || 'U').charAt(0).toUpperCase() }}
+                      {{ (request.receiver?.name || 'U').charAt(0).toUpperCase() }}
                     </span>
                   </div>
                 </div>
@@ -271,10 +270,10 @@
                 <!-- Request Info -->
                 <div class="text-left">
                   <h3 class="font-medium text-black dark:text-white">
-                    {{ request.receiver.name }}
+                    {{ request.receiver?.name || 'Unknown User' }}
                   </h3>
                   <p class="text-sm text-stone-600 dark:text-zinc-400">
-                    @{{ request.receiver.username }}
+                    @{{ request.receiver?.username || 'unknown' }}
                   </p>
                   <p class="text-xs text-stone-500 dark:text-zinc-500">
                     Sent {{ formatDate(request.created_at) }}
@@ -325,9 +324,9 @@
               <input
                 v-model="addFriendSearch"
                 type="text"
-                placeholder="Enter at least 3 characters (username only)"
+                placeholder="Enter at least 4 characters (username or name)"
                 class="w-full px-3 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
-                @keyup.enter="addFriendSearch.trim().length >= 3 && searchAndAddFriend()"
+                @keyup.enter="addFriendSearch.trim().length >= 4 && searchAndAddFriend()"
               />
             </div>
             
@@ -345,10 +344,7 @@
                       :alt="user.name"
                       class="w-full h-full object-cover"
                     />
-                    <div
-                      v-else
-                      class="w-full h-full flex items-center justify-center bg-stone-300 dark:bg-zinc-600"
-                    >
+                    <div class="w-full h-full flex items-center justify-center bg-stone-300 dark:bg-zinc-600" v-else>
                       <span class="text-xs font-bold text-stone-500 dark:text-zinc-400">
                         {{ (user.name || 'U').charAt(0).toUpperCase() }}
                       </span>
@@ -366,11 +362,9 @@
                 <button
                   @click="sendFriendRequest(user)"
                   :disabled="isRequestSent(user.id) || isFriend(user.id)"
-                  :class="`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
-                    isRequestSent(user.id) || isFriend(user.id)
-                      ? 'bg-zinc-600 text-zinc-300 cursor-not-allowed'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                  }`"
+                  :class="(isRequestSent(user.id) || isFriend(user.id))
+                    ? 'px-3 py-1 rounded-lg text-xs font-medium bg-zinc-600 text-zinc-300 cursor-not-allowed'
+                    : 'px-3 py-1 rounded-lg text-xs font-medium bg-blue-500 text-white hover:bg-blue-600'"
                 >
                   {{ isFriend(user.id) ? 'Friends' : isRequestSent(user.id) ? 'Pending' : 'Add' }}
                 </button>
@@ -387,12 +381,10 @@
             </button>
             <button
               @click="searchAndAddFriend"
-              :disabled="addFriendSearch.trim().length < 3"
-              :class="`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                addFriendSearch.trim().length < 3
-                  ? 'bg-zinc-600 text-zinc-300 cursor-not-allowed'
-                  : 'bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'
-              }`"
+              :disabled="addFriendSearch.trim().length < 4"
+              :class="addFriendSearch.trim().length < 4
+                ? 'flex-1 px-4 py-2 rounded-lg font-medium bg-zinc-600 text-zinc-300 cursor-not-allowed'
+                : 'flex-1 px-4 py-2 rounded-lg font-medium bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'"
             >
               Search
             </button>
@@ -400,49 +392,55 @@
         </div>
       </div>
 
-  <!-- Toasts -->
-  <div class="fixed top-4 right-4 z-[60] space-y-4">
-    <transition-group name="toast-fade" tag="div">
-      <div
-        v-for="t in toasts"
-        :key="t.id"
-        :class="`flex items-start gap-3 px-4 py-3 rounded-lg shadow-md text-sm ${
-          t.type === 'success'
-            ? 'bg-green-500 text-white dark:bg-green-600'
-            : 'bg-red-500 text-white dark:bg-red-600'
-        }`"
-      >
-        <component :is="t.type === 'success' ? CheckCircle : XCircle" class="w-5 h-5 mt-0.5" />
-        <div class="flex-1">{{ t.message }}</div>
-        <button class="opacity-80 hover:opacity-100" @click="dismissToast(t.id)">
-          <X class="w-4 h-4" />
-        </button>
+      <!-- Toasts -->
+      <div class="fixed top-4 right-4 z-[60] space-y-4">
+        <transition-group name="toast-fade" tag="div">
+          <div
+            v-for="t in toasts"
+            :key="t.id"
+            :class="t.type === 'success'
+              ? 'flex items-start gap-3 px-4 py-3 rounded-lg shadow-md text-sm bg-green-500 text-white dark:bg-green-600'
+              : 'flex items-start gap-3 px-4 py-3 rounded-lg shadow-md text-sm bg-red-500 text-white dark:bg-red-600'"
+          >
+            <component :is="t.type === 'success' ? CheckCircle : XCircle" class="w-5 h-5 mt-0.5" />
+            <div class="flex-1">{{ t.message }}</div>
+            <button class="opacity-80 hover:opacity-100" @click="dismissToast(t.id)">
+              <X class="w-4 h-4" />
+            </button>
+          </div>
+        </transition-group>
       </div>
-    </transition-group>
-  </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { useAuthStore } from '@/stores/auth-store'
 import { FriendsService } from '@/services/friendsService'
 import { UserService } from '@/services/userService'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X } from 'lucide-vue-next'
 
 const router = useRouter()
+const route = useRoute()
 const { theme } = useTheme()
+const { sanitizeSearch } = useSanitize()
 const authStore = useAuthStore()
 
 // Initialize services
 const friendsService = new FriendsService()
 const userService = new UserService()
 
+// Get current tab from route
+const currentTab = computed(() => {
+  return route.meta.subRoute || 'friends'
+})
+
 // State
-const activeTab = ref('friends')
 const searchTerm = ref('')
 const friends = ref([])
 const friendRequests = ref([])
@@ -495,12 +493,14 @@ const loadFriendsData = async () => {
 }
 
 const handleSearch = () => {
-  // Search is handled by computed property
+  // Sanitize search input in real-time
+  searchTerm.value = sanitizeSearch(searchTerm.value)
+  addFriendSearch.value = sanitizeSearch(addFriendSearch.value)
 }
 
 const searchAndAddFriend = async () => {
   const raw = addFriendSearch.value.trim()
-  if (!raw || raw.length < 3) return
+  if (!raw || raw.length < 4) return
 
   // Only allow username searches; strip leading '@' if present
   const usernameQuery = raw.startsWith('@') ? raw.slice(1) : raw
@@ -624,15 +624,37 @@ const viewFriendProfile = (friendUsername) => {
 }
 
 const isRequestSent = (userId) => {
-  return sentRequests.value.some(req => req.receiver.id === userId)
+  return sentRequests.value.some(req => req.receiver?.id === userId)
 }
 
 const isFriend = (userId) => {
   return friends.value.some(friend => friend.id === userId)
 }
 
+const handleSearchFocus = (event) => {
+  event.target.classList.add('search-input-focus')
+}
+
+const handleSearchBlur = (event) => {
+  event.target.classList.remove('search-input-focus')
+}
+
+// Search input ref and registration
+const searchInputRef = ref(null)
+const { registerSearchInput } = useKeyboardShortcuts()
+
+// Detect Mac for keyboard shortcut display
+const isMac = ref(false)
+
 // Lifecycle
 onMounted(() => {
+  // Detect Mac OS
+  isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  
+  // Register search input for keyboard shortcuts
+  if (searchInputRef.value) {
+    registerSearchInput(searchInputRef.value)
+  }
   loadFriendsData()
   
   // Add test function to window for debugging

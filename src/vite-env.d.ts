@@ -14,6 +14,8 @@ interface ImportMetaEnv {
   readonly VITE_FASHIONRNN_API_URL: string
   readonly VITE_BASE44_API_URL: string
   readonly VITE_FORCE_MOCK_MODE?: string
+  readonly VITE_HUGGINGFACE_API_TOKEN?: string
+  readonly VITE_OPENWEATHER_API_KEY?: string
 }
 
 interface ImportMeta {

@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+import { useTheme } from '@/composables/useTheme'
 import { Eye } from 'lucide-vue-next'
 
 // Props
@@ -42,4 +43,7 @@ defineProps({
     required: true
   }
 })
+
+// Theme
+const { theme } = useTheme()
 </script>

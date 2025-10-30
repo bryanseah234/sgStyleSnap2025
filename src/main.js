@@ -15,6 +15,8 @@ import App from './App.vue'
 import './index.css'
 import { useTheme } from './composables/useTheme'
 import { useThemeStore } from './stores/theme-store'
+import { setupPageTransition, setupFocusManagement } from '@/composables/usePageTransition'
+// import { displayConsoleArt } from '@/utils/console-art' // Disabled for cleaner console
 
 // Import page components
 import Landing from './pages/Landing.vue'
@@ -44,7 +46,10 @@ const routes = [
   { path: '/home', component: Home, meta: { requiresAuth: true } },
   { path: '/closet', component: Cabinet, meta: { requiresAuth: true } },
   { path: '/outfits', component: Outfits, meta: { requiresAuth: true } },
-  { path: '/friends', component: Friends, meta: { requiresAuth: true } },
+  { path: '/outfits/suggested', component: Outfits, meta: { requiresAuth: true, subRoute: 'suggestions' } },
+  { path: '/friends', component: Friends, meta: { requiresAuth: true, subRoute: 'friends' } },
+  { path: '/friends/requests/received', component: Friends, meta: { requiresAuth: true, subRoute: 'requests' } },
+  { path: '/friends/requests/sent', component: Friends, meta: { requiresAuth: true, subRoute: 'sent' } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/friend/:username/closet', component: FriendCabinet, meta: { requiresAuth: true } },
   { path: '/friend/:username/profile', component: FriendProfile, meta: { requiresAuth: true } },
@@ -78,6 +83,29 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 })
+
+/**
+ * Setup Page Transition System
+ * 
+ * Integrates the curtain-style page transition with Vue Router.
+ * IMPORTANT: Must be called BEFORE the authentication guard below.
+ * The transition system's beforeEach hook will run first to start
+ * the exit animation, then the auth guard will handle navigation logic.
+ * 
+ * The transition works as follows:
+ * 1. User clicks link → transition beforeEach starts curtain slide-down
+ * 2. Auth guard checks permissions (while curtain covers screen)
+ * 3. Navigation completes → transition afterEach triggers curtain slide-up
+ * 4. New content is revealed smoothly
+ */
+setupPageTransition(router, {
+  duration: 900,
+  staggerDelay: 50,
+  barCount: 10
+})
+
+// Setup focus management for accessibility
+setupFocusManagement(router)
 
 /**
  * Route Guard - Authentication Protection
@@ -321,6 +349,24 @@ router.afterEach((to, from) => {
   themeStore.refreshTheme()
 })
 
+// Router error handler for refresh token and other errors
+router.onError((error) => {
+  console.error('❌ Router error:', error)
+  
+  const errorMessage = error?.message || String(error || '')
+  
+  // Check if it's a refresh token error
+  if (errorMessage.toLowerCase().includes('refresh token') ||
+      errorMessage.toLowerCase().includes('refresh_token')) {
+    console.error('❌ Refresh token error in router, clearing session...')
+    
+    // Clear the invalid session and redirect to login
+    import('./lib/supabase').then(({ clearSupabaseSession }) => {
+      clearSupabaseSession()
+    })
+  }
+})
+
 /**
  * Initialize theme system
  * 
@@ -348,31 +394,18 @@ function initializeThemeSystem() {
 // Initialize theme system once
 initializeThemeSystem()
 
+// Display console art and messages (disabled for cleaner console)
+// displayConsoleArt()
+
 const authInitPromise = authStore.initializeAuth().then(async () => {
   console.log('✅ Auth store initialized successfully')
   
   // Load user theme preferences after auth is ready
   await themeStore.loadUser()
   
-  // Check Edge Function health in background (optional)
-  try {
-    const { edgeFunctionSyncService } = await import('@/services/edgeFunctionSyncService')
-    
-    // Check if Edge Function URL is configured before attempting health check
-    const configStatus = edgeFunctionSyncService.getConfigStatus()
-    if (configStatus.functionUrl.includes('Not configured')) {
-      console.log('ℹ️ Edge Function sync service not configured (base URL missing) - skipping health check')
-    } else {
-      const healthStatus = await edgeFunctionSyncService.checkSyncHealth()
-      if (healthStatus.success && healthStatus.healthy) {
-        console.log('✅ Edge Function sync service is healthy')
-      } else {
-        console.warn('⚠️ Edge Function sync service health check failed:', healthStatus.error)
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ Could not check Edge Function health:', error.message)
-  }
+  // Note: Edge Function health checks disabled - endpoint does not exist
+  // The sync functionality is handled automatically by Supabase triggers
+  console.log('ℹ️ Edge Function health check skipped (not required - using database triggers)')
 }).catch(error => {
   console.error('❌ Failed to initialize auth store:', error)
 })
@@ -491,8 +524,23 @@ window.onerror = function(message, source, lineno, colno, error) {
 // and refreshTheme() is called on route changes (router.afterEach)
 // No need for additional setTimeout calls
 
-// Global error handler for browser extension errors
+// Global error handler for browser extension errors and auth errors
 window.addEventListener('unhandledrejection', (event) => {
+  const errorMessage = event.reason?.message || String(event.reason || '')
+  
+  // Check if it's a refresh token error
+  if (errorMessage.toLowerCase().includes('refresh token') ||
+      errorMessage.toLowerCase().includes('refresh_token')) {
+    console.error('❌ Refresh token error detected:', errorMessage)
+    event.preventDefault()
+    
+    // Clear the invalid session and redirect to login
+    import('./lib/supabase').then(({ clearSupabaseSession }) => {
+      clearSupabaseSession()
+    })
+    return
+  }
+  
   // Check if it's a browser extension error
   if (event.reason && event.reason.message && 
       (event.reason.message.includes('message channel closed') ||

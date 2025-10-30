@@ -65,7 +65,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useTheme } from '@/composables/useTheme'
 import { Shirt } from 'lucide-vue-next'
+
+const { theme } = useTheme()
 
 const props = defineProps({
   items: {

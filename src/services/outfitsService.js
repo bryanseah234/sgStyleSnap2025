@@ -161,7 +161,7 @@ export class OutfitsService {
     try {
       console.log('👗 OutfitsService: ========== Creating New Outfit ==========')
       console.log('👗 OutfitsService: Input data:', {
-        name: outfitData.name,
+        outfit_name: outfitData.outfit_name || outfitData.name,
         description: outfitData.description,
         occasion: outfitData.occasion,
         weather: outfitData.weather,
@@ -226,10 +226,10 @@ export class OutfitsService {
       console.log('👗 OutfitsService: Creating outfit record...')
       const outfitInsertData = {
         owner_id: user.id,
-        outfit_name: outfitData.name,
+        outfit_name: outfitData.outfit_name || outfitData.name, // Support both field names
         description: outfitData.description,
         occasion: outfitData.occasion,
-        weather_condition: outfitData.weather,
+        weather_condition: outfitData.weather || outfitData.weather_condition,
         temperature: outfitData.temperature,
         is_public: outfitData.is_public || false,
         style_tags: outfitData.style_tags || []

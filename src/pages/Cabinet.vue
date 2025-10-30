@@ -16,7 +16,7 @@
           <!-- Toggle button for add item dropdown menu -->
           <button
             @click="showAddMenu = !showAddMenu"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800`"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             <Plus class="w-5 h-5" />
             Add Item
@@ -29,7 +29,7 @@
           <!-- Dropdown Menu with Add Item Options -->
           <div
             v-if="showAddMenu"
-            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 bg-white border-stone-200
+            :class="`absolute right-0 mt-2 w-64 rounded-xl shadow-xl dark:shadow-black/20 border overflow-hidden z-50 bg-white border-stone-200
               dark:bg-zinc-900 dark:border-zinc-800`"
           >
             <!-- Manual Upload Option -->
@@ -146,16 +146,25 @@
 
       <!-- Search Bar (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
-        <div class="relative">
+        <div class="relative search-input-group">
           <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
           <input
+            ref="searchInputRef"
             v-model="searchTerm"
             type="text"
             placeholder="Search your closet..."
-            :class="`w-full pl-10 pr-4 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500
+            :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
               dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
             @input="handleSearch"
+            @focus="handleSearchFocus"
+            @blur="handleSearchBlur"
           />
+          <!-- Raycast-style keyboard hint -->
+          <div class="keyboard-hint">
+            <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+            <span>+</span>
+            <span class="keyboard-hint-key">K</span>
+          </div>
         </div>
       </div>
     </div>
@@ -165,7 +174,7 @@
       <!-- Loading state -->
       <div v-if="loading" class="flex flex-col items-center py-16">
         <div class="spinner-modern mb-6"></div>
-        <p :class="'text-stone-600 dark:text-zinc-400'">
+        <p :class="'text-stone-600 dark:text-zinc-300'">
           Loading your closet...
         </p>
       </div>
@@ -185,7 +194,7 @@
         <div v-if="!searchTerm && authStore.isAuthenticated && currentUser?.id">
           <button
             @click="$router.push('/closet/add/manual')"
-            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto               dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
+            :class="`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             <Plus class="w-5 h-5" />
             Add Item
@@ -219,8 +228,8 @@
           @mouseenter="handleItemHover($event, index)"
           @mouseleave="handleItemLeave($event, index)"
           @mousemove="handleItemMouseMove($event, index)"
-          class="liquid-item-card group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
-          :style="{ transitionDelay: `${index * 50}ms` }"
+          class="liquid-item-card group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 dark:bg-zinc-700 dark:border-zinc-800 dark:hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+          v-memo="[item.id, item.name, item.image_url, item.is_favorite, activeCategory, searchTerm]"
         >
           <div class="aspect-square relative overflow-hidden">
             <img
@@ -231,9 +240,9 @@
             />
             <div
               v-else
-              class="w-full h-full flex items-center justify-center bg-stone-100"
+              class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-zinc-500"
             >
-              <Shirt class="w-12 h-12 text-stone-500" />
+              <Shirt class="w-12 h-12 text-stone-500 dark:text-white" />
             </div>
             
             <button
@@ -242,8 +251,8 @@
               @mouseup="handleFavoriteRelease($event, item)"
               :class="`liquid-favorite-btn absolute top-2 right-2 p-2 rounded-full ${
                 item.is_favorite
-                  ? 'bg-red-500 text-white'
-                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90'
+                  ? 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600'
+                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'
               }`"
             >
               <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current' : ''}`" />
@@ -251,13 +260,13 @@
           </div>
           
           <div class="p-4">
-            <h3 class="liquid-item-title font-semibold mb-1 text-black">
+            <h3 class="liquid-item-title font-semibold mb-1 text-black dark:text-white">
               {{ item.name }}
             </h3>
-            <p class="liquid-item-category text-sm text-stone-600">
+            <p class="liquid-item-category text-sm text-stone-600 dark:text-stone-100">
               {{ item.brand || 'No brand' }}
             </p>
-            <span class="inline-block px-2 py-1 mt-2 text-xs rounded-full bg-stone-100 text-stone-700">
+            <span class="inline-block px-2 py-1 mt-2 text-xs rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-200 dark:text-zinc-900">
               {{ item.category }}
             </span>
           </div>
@@ -310,9 +319,11 @@ import { useRoute, useRouter } from 'vue-router'
 
 // Composables and stores
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
 import { useLiquidHover, useLiquidPress } from '@/composables/useLiquidGlass'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 // UI Components
 import { Plus, Heart, Shirt, Search } from 'lucide-vue-next'
@@ -323,6 +334,7 @@ import ItemDetailsModal from '@/components/cabinet/ItemDetailsModal.vue'
 
 // Initialize composables and services
 const { theme } = useTheme()                    // Theme management
+const { sanitizeSearch } = useSanitize()        // Input sanitization
 const authStore = useAuthStore()                // Authentication state
 const route = useRoute()                        // Current route information
 const router = useRouter()                      // Router for navigation
@@ -330,6 +342,15 @@ const router = useRouter()                      // Router for navigation
 // Liquid glass animation effects for enhanced UX
 const { elementRef: itemCardRefs, hoverIn: itemHoverIn, hoverOut: itemHoverOut } = useLiquidHover()
 const { elementRef: favoriteButtonRefs, pressIn: favoritePressIn, pressOut: favoritePressOut } = useLiquidPress()
+
+// Keyboard shortcuts
+const { registerSearchInput } = useKeyboardShortcuts()
+
+// Search input ref
+const searchInputRef = ref(null)
+
+// Detect Mac for keyboard shortcut display
+const isMac = ref(false)
 
 // Route-based computed properties for dynamic content
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
@@ -415,7 +436,9 @@ const filteredItems = computed(() => {
   // Apply search filter across multiple fields
   if (searchTerm.value) {
     const query = searchTerm.value.toLowerCase()
-    filtered = filtered.filter(item => 
+    // Use faster filtering - only process up to 100 items for instant results
+    const maxFilter = 100
+    filtered = filtered.slice(0, maxFilter).filter(item => 
       item.name?.toLowerCase().includes(query) ||
       item.brand?.toLowerCase().includes(query) ||
       item.color?.toLowerCase().includes(query) ||
@@ -539,6 +562,12 @@ const handleItemUpdated = async () => {
 onMounted(async () => {
   console.log('Cabinet: Component mounted, initializing...')
   
+  // Detect Mac OS
+  isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  
+  // Register search input for keyboard shortcuts
+  registerSearchInput(searchInputRef.value)
+  
   // Ensure auth store is initialized
   if (!authStore.isAuthenticated) {
     console.log('Cabinet: Auth not initialized, initializing...')
@@ -580,19 +609,27 @@ const handleItemLeave = (event, index) => {
   itemHoverOut(event.target)
 }
 
+// Throttle mouse move handler to reduce input delay using requestAnimationFrame
+let rafId = null
 const handleItemMouseMove = (event, index) => {
-  // Apply subtle parallax to item cards
-  const card = event.target
-  const rect = card.getBoundingClientRect()
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  const centerX = rect.width / 2
-  const centerY = rect.height / 2
+  // Use requestAnimationFrame for smooth, non-blocking animations
+  if (rafId) return
   
-  const rotateX = (y - centerY) / centerY * 1.5
-  const rotateY = (x - centerX) / centerX * 1.5
-  
-  card.style.transform = `translateY(-6px) translateZ(12px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
+  rafId = requestAnimationFrame(() => {
+    // Apply subtle parallax to item cards
+    const card = event.target
+    const rect = card.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    
+    const rotateX = (y - centerY) / centerY * 1.5
+    const rotateY = (x - centerX) / centerX * 1.5
+    
+    card.style.transform = `translateY(-6px) translateZ(12px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
+    rafId = null
+  })
 }
 
 const handleFavoritePress = (event, item) => {
@@ -609,6 +646,16 @@ const handleFavoriteRelease = (event, item) => {
 }
 
 const handleSearch = () => {
-  // Search is handled by computed property
+  // Sanitize search input in real-time
+  searchTerm.value = sanitizeSearch(searchTerm.value)
+}
+
+// Search focus handlers
+const handleSearchFocus = (event) => {
+  event.target.classList.add('search-input-focus')
+}
+
+const handleSearchBlur = (event) => {
+  event.target.classList.remove('search-input-focus')
 }
 </script>

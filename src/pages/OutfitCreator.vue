@@ -9,12 +9,11 @@
             <h1 class="text-4xl font-bold mb-2 text-foreground">
               {{ subRouteTitle }}
             </h1>
-            <p class="text-lg text-stone-600 dark:text-zinc-400">
-              {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
-                 currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
-                 currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
+            <p v-if="currentSubRoute !== 'suggested'" class="text-lg text-stone-600 dark:text-zinc-400">
+              {{ currentSubRoute === 'personal' ? '' :
+                 currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
                  currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
-                 'Create and save your perfect looks' }}
+                 '' }}
             </p>
           </div>
           
@@ -86,15 +85,37 @@
             <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
           </button>
           
-          <!-- Regenerate AI button (only in AI mode) - shown second on mobile, third on desktop -->
+          <!-- Show Outfit on Model button -->
+          <button
+            @click="showVirtualTryOn"
+            :disabled="!canShowVirtualTryOn || generatingTryOn"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              canShowVirtualTryOn && !generatingTryOn
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
+                : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
+            }`"
+            title="Show Outfit on AI Model Person"
+          >
+            <User v-if="!generatingTryOn" class="w-5 h-5" />
+            <div v-else class="w-5 h-5 spinner-modern"></div>
+            <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Show on Model' }}</span>
+          </button>
+          
+          <!-- Generate AI button (only shown on suggested route) -->
           <button
             v-if="currentSubRoute === 'suggested'"
-            @click="generateAISuggestion"
-            class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
-            title="Generate New AI Suggestion"
+            @click="getAIRecommendations"
+            :disabled="recommendingOutfits || wardrobeItems.length < 2"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              !recommendingOutfits && wardrobeItems.length >= 2
+                ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500'
+                : 'opacity-50 cursor-not-allowed'
+            }`"
+            title="Generate AI Outfit Based on Score"
           >
-            <Sparkles class="w-5 h-5" />
-            <span class="hidden sm:inline">Regenerate</span>
+            <Sparkles v-if="!recommendingOutfits" class="w-5 h-5" />
+            <div v-else class="w-5 h-5 spinner-modern"></div>
+            <span class="hidden sm:inline">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
           </button>
           
         </div>
@@ -105,12 +126,11 @@
           <h1 class="text-3xl font-bold mb-2 text-foreground">
             {{ subRouteTitle }}
           </h1>
-          <p class="text-base mb-4 text-stone-600 dark:text-zinc-400">
-            {{ currentSubRoute === 'suggested' ? 'AI has suggested an outfit for you. Edit it or regenerate for a new suggestion.' : 
-               currentSubRoute === 'personal' ? 'Drag and drop items from your closet to create your perfect look' :
-               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${friendProfile.name || friendProfile.username} using items from their closet` : "Create outfit suggestion for your friend") :
+          <p v-if="currentSubRoute !== 'suggested'" class="text-base mb-4 text-stone-600 dark:text-zinc-400">
+            {{ currentSubRoute === 'personal' ? '' :
+               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
                currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
-               'Create and save your perfect looks' }}
+               '' }}
           </p>
           
           <!-- Action Buttons -->
@@ -167,15 +187,37 @@
               <span class="text-xs">Clear</span>
             </button>
             
-            <!-- Regenerate AI button (only in AI mode) -->
+            <!-- Show Outfit on Model button -->
+            <button
+              @click="showVirtualTryOn"
+              :disabled="!canShowVirtualTryOn || generatingTryOn"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+                canShowVirtualTryOn && !generatingTryOn
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                  : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
+              }`"
+              title="Show Outfit on AI Model Person"
+            >
+              <User v-if="!generatingTryOn" class="w-4 h-4" />
+              <div v-else class="w-4 h-4 spinner-modern"></div>
+              <span class="text-xs">{{ generatingTryOn ? 'Gen...' : 'Model' }}</span>
+            </button>
+            
+            <!-- Generate AI button (only in AI mode) -->
             <button
               v-if="currentSubRoute === 'suggested'"
-              @click="generateAISuggestion"
-              class="px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
-              title="Generate New AI Suggestion"
+              @click="getAIRecommendations"
+              :disabled="recommendingOutfits || wardrobeItems.length < 2"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+                !recommendingOutfits && wardrobeItems.length >= 2
+                  ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+              title="Generate AI Outfit Based on Score"
             >
-              <Sparkles class="w-4 h-4" />
-              <span class="text-xs">Regenerate</span>
+              <Sparkles v-if="!recommendingOutfits" class="w-4 h-4" />
+              <div v-else class="w-4 h-4 spinner-modern"></div>
+              <span class="text-xs">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
             </button>
             
             <button
@@ -195,48 +237,54 @@
       </div>
       
       <!-- Sub-route Navigation -->
-      <div v-if="currentSubRoute !== 'default'" class="mb-8">
-        <div class="flex space-x-1 p-1 rounded-lg bg-stone-100 dark:bg-zinc-800">
-          <button
-            @click="$router.push('/outfits/add/suggested')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'suggested' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            <Sparkles class="w-4 h-4 inline mr-2" />
-            Suggested
-          </button>
-          <button
-            @click="$router.push('/outfits/add/personal')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'personal' 
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            <User class="w-4 h-4 inline mr-2" />
-            Personal
-          </button>
-          <button
-            @click="$router.push('/outfits/add/friend')"
-            :class="`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
-                ? 'bg-card text-card-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`"
-          >
-            <Users class="w-4 h-4 inline mr-2" />
-            Friends
-          </button>
-        </div>
+      <div v-if="currentSubRoute !== 'default'" class="mb-8 flex flex-wrap gap-3">
+        <button
+          @click="$router.push('/outfits/add/suggested')"
+          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            currentSubRoute === 'suggested'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+          }`"
+        >
+          <Sparkles class="w-4 h-4" />
+          Suggested
+        </button>
+        <button
+          @click="$router.push('/outfits/add/personal')"
+          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            currentSubRoute === 'personal'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+          }`"
+        >
+          <User class="w-4 h-4" />
+          Personal
+        </button>
+        <button
+          @click="$router.push('/outfits/add/friend')"
+          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+          }`"
+        >
+          <Users class="w-4 h-4" />
+          Friends
+        </button>
       </div>
       
       <!-- Sub-route Content (removed for cleaner UI) -->
 
       <!-- Friend Selection View (when no username is provided) -->
-      <div v-if="currentSubRoute === 'friendSelect'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-if="currentSubRoute === 'friendSelect'">
+        <!-- Loading State -->
+        <div v-if="loadingFriends" class="flex flex-col items-center justify-center py-24">
+          <div class="w-16 h-16 spinner-modern mb-4"></div>
+          <p class="text-base text-stone-600 dark:text-zinc-400">Loading your friends...</p>
+        </div>
+        
+        <!-- Friends List -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="friend in friendsList"
           :key="friend.id"
@@ -260,7 +308,7 @@
             <!-- Friend Info -->
             <div class="flex-1 min-w-0">
               <p class="text-lg font-semibold mb-1 text-black dark:text-white">
-                {{ friend.name || friend.username }}
+                {{ getFirstName(friend.name) || friend.username }}
               </p>
               <p class="text-sm text-stone-600 dark:text-zinc-400">
                 @{{ friend.username }}
@@ -294,6 +342,7 @@
             <Plus class="w-5 h-5" />
             Add Friend
           </button>
+          </div>
         </div>
       </div>
 
@@ -311,14 +360,6 @@
               <span class="text-sm px-2 py-1 rounded-full bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400">
                 {{ filteredItems.length }}
               </span>
-            </div>
-            
-            <!-- AI Mode Info Banner -->
-            <div v-if="currentSubRoute === 'suggested'" class="mb-4 p-3 rounded-lg text-xs bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-300">
-              <div class="flex items-start gap-2">
-                <Sparkles class="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>AI has placed items on the canvas. You can still add more items manually or regenerate the suggestion.</span>
-              </div>
             </div>
             
             <!-- Category Filters -->
@@ -410,6 +451,9 @@
               @dragover.prevent
               @dragenter.prevent
               @click="deselectItem"
+              @mousemove="handleMouseMove"
+              @mouseup="handleMouseUp"
+              @mouseleave="handleMouseUp"
             >
               <!-- Grid Background -->
               <div
@@ -432,18 +476,21 @@
                   position: 'absolute',
                   left: `${item.x}px`,
                   top: `${item.y}px`,
-                  zIndex: item.z_index || 0,
+                  zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : (item.z_index || 0),
                   transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
-                  transformOrigin: 'center center'
+                  transformOrigin: 'center center',
+                  transition: draggedItem === item.id ? 'none' : 'all duration-200'
                 }"
-                class="cursor-move select-none transition-all duration-200"
+                :class="[
+                  draggedItem === item.id ? 'cursor-grabbing select-none' : 'cursor-move select-none',
+                  {
+                    'ring-4 ring-blue-500 ring-offset-2': selectedItemId === item.id
+                  }
+                ]"
                 @mousedown.stop="startDrag(item, $event)"
                 @click.stop="selectItem(item.id)"
-                :class="{
-                  'ring-4 ring-blue-500 ring-offset-2': selectedItemId === item.id
-                }"
               >
-                <div class="w-32 h-32 rounded-xl overflow-hidden shadow-2xl bg-white p-2 dark:bg-zinc-700">
+                <div class="w-32 h-32 overflow-hidden">
                   <img
                     v-if="item.image_url"
                     :src="item.image_url"
@@ -456,10 +503,10 @@
                   </div>
                 </div>
 
-                <!-- Toolkit (shown when selected) -->
+                <!-- Toolkit (shown on hover) -->
                 <div
                   v-if="selectedItemId === item.id"
-                  class="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-stone-200 dark:bg-zinc-800/95 dark:border-zinc-700"
+                  class="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-stone-200 dark:bg-zinc-800/95 dark:border-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                   @mousedown.stop
                   @click.stop
                 >
@@ -573,11 +620,132 @@
       @close="showAddFriendModal = false"
       @friendRequestSent="handleFriendRequestSent"
     />
+    
+    <!-- Share Outfit Dialog -->
+    <ShareOutfitDialog
+      :isOpen="showShareOutfitDialog"
+      :friendName="friendProfile?.name || friendProfile?.username || 'Friend'"
+      @close="showShareOutfitDialog = false"
+      @save="handleShareOutfit"
+    />
+    
+    <!-- Virtual Try-On Modal -->
+    <VirtualTryOnModal
+      :isOpen="showVirtualTryOnModal"
+      :generating="generatingTryOn"
+      :generatedImageUrl="virtualTryOnImageUrl"
+      :error="virtualTryOnError"
+      @close="closeVirtualTryOnModal"
+      @retry="retryVirtualTryOn"
+    />
+    
+    <!-- Recommendations Modal -->
+    <div
+      v-if="showRecommendationsModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      @click.self="showRecommendationsModal = false"
+    >
+      <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-stone-200 dark:border-zinc-800">
+          <div>
+            <h2 class="text-2xl font-bold text-black dark:text-white flex items-center gap-2">
+              <Sparkles class="w-6 h-6 text-purple-500" />
+              AI Outfit Recommendations
+            </h2>
+            <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">
+              Based on your closet items
+            </p>
+          </div>
+          <button
+            @click="showRecommendationsModal = false"
+            class="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <X class="w-5 h-5 text-stone-600 dark:text-zinc-400" />
+          </button>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <div v-if="recommendations.length === 0 && !recommendingOutfits" class="text-center py-12">
+            <Sparkles class="w-16 h-16 mx-auto mb-4 text-stone-300 dark:text-zinc-700" />
+            <p class="text-stone-600 dark:text-zinc-400">No recommendations found</p>
+          </div>
+          
+          <div v-else-if="recommendingOutfits" class="text-center py-12">
+            <div class="w-16 h-16 mx-auto mb-4 spinner-modern"></div>
+            <p class="text-stone-600 dark:text-zinc-400">Analyzing your closet...</p>
+          </div>
+          
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              v-for="rec in recommendations"
+              :key="rec.id"
+              class="border border-stone-200 dark:border-zinc-800 rounded-xl p-4 hover:border-purple-300 dark:hover:border-purple-700 transition-colors bg-white dark:bg-zinc-900"
+            >
+              <!-- Score Badge -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                    #{{ rec.rank }}
+                  </span>
+                  <span class="text-sm font-medium text-stone-600 dark:text-zinc-400">
+                    {{ Math.round(rec.score * 100) }}% Match
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Items Grid -->
+              <div class="grid grid-cols-2 gap-2 mb-3">
+                <div
+                  v-for="item in rec.items"
+                  :key="item.id"
+                  class="aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-800"
+                >
+                  <img
+                    :src="item.image_url || item.thumbnail_url"
+                    :alt="item.name"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              
+              <!-- Item Names -->
+              <div class="space-y-1 mb-3">
+                <p
+                  v-for="item in rec.items"
+                  :key="item.id"
+                  class="text-xs text-stone-600 dark:text-zinc-400 truncate"
+                >
+                  {{ item.name }}
+                </p>
+              </div>
+              
+              <!-- Load Button -->
+              <button
+                @click="loadRecommendation(rec)"
+                class="w-full py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              >
+                <Check class="w-4 h-4" />
+                Load to Canvas
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-4 border-t border-stone-200 dark:border-zinc-800 text-center">
+          <p class="text-xs text-stone-500 dark:text-zinc-500">
+            Recommendations are powered by AI and may take a few moments to generate
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
@@ -587,6 +755,9 @@ import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
+import { VirtualTryOnService } from '@/services/virtualTryOnService'
+import { generateRecommendations, getCategoryDisplayName } from '@/services/recommendation-service.js'
+import { getFirstName } from '@/utils'
 import { 
   Undo, 
   Redo, 
@@ -597,12 +768,16 @@ import {
   Shirt, 
   Sparkles,
   Plus,
-  Users
+  Users,
+  X,
+  Check
 } from 'lucide-vue-next'
 import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
+import ShareOutfitDialog from '@/components/dashboard/ShareOutfitDialog.vue'
+import VirtualTryOnModal from '@/components/dashboard/VirtualTryOnModal.vue'
 
 const { theme } = useTheme()
-const { showError, showSuccess, showWarning, showInfo } = usePopup()
+const { showError, showSuccess, showWarning, showInfo, showPrompt } = usePopup()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
@@ -615,6 +790,7 @@ const clothesService = new ClothesService()
 const outfitsService = new OutfitsService()
 const friendsService = new FriendsService()
 const notificationsService = new NotificationsService()
+const virtualTryOnService = new VirtualTryOnService()
 
 // Use computed to get reactive user data from auth store
 const currentUser = computed(() => authStore.user || authStore.profile)
@@ -633,7 +809,7 @@ const subRouteTitle = computed(() => {
     case 'suggested': return 'AI Suggested Outfits'
     case 'personal': return 'Create Your Outfit'
     case 'friendSelect': return 'Select a Friend'
-    case 'friend': return friendProfile.value ? `Create Outfit for ${friendProfile.value.name || friendProfile.value.username}` : `Create with Friend's Items`
+    case 'friend': return friendProfile.value ? `Create Outfit for ${getFirstName(friendProfile.value.name || friendProfile.value.username)}` : `Create with Friend's Items`
     case 'edit': return 'Edit Outfit'
     default: return 'Create Outfit'
   }
@@ -647,17 +823,33 @@ const canvasItems = ref([])
 const selectedItemId = ref(null)
 const showGrid = ref(false)
 const savingOutfit = ref(false)
+const scoringOutfit = ref(false)
+const outfitScore = ref(null)
 const canvasContainer = ref(null)
+
+// State for recommendations
+const recommendingOutfits = ref(false)
+const showRecommendationsModal = ref(false)
+const recommendations = ref([])
+const selectedRecommendation = ref(null)
 
 // State for friend data
 const friendProfile = ref(null)
 const friendUsername = computed(() => route.params.username)
 const friendsList = ref([]) // List of friends for selection
+const loadingFriends = ref(false) // Loading state for friends list
 const showAddFriendModal = ref(false) // Modal state for adding friends
+const showShareOutfitDialog = ref(false) // Modal state for sharing outfit with friend
 
 // State for edit mode
 const currentOutfitId = ref(null)
 const currentOutfitName = ref(null)
+
+// State for virtual try-on
+const showVirtualTryOnModal = ref(false)
+const generatingTryOn = ref(false)
+const virtualTryOnImageUrl = ref(null)
+const virtualTryOnError = ref(null)
 
 // Set itemsSource based on current sub-route
 const initializeItemsSource = () => {
@@ -686,9 +878,13 @@ const filteredItems = computed(() => {
   let filtered = wardrobeItems.value
   console.log('OutfitCreator: Filtering items. Total items:', wardrobeItems.value.length, 'Category:', activeCategory.value, 'Source:', itemsSource.value)
   
-  // Filter by category
+  // Filter by category (case-insensitive comparison)
   if (activeCategory.value !== 'all') {
-    filtered = filtered.filter(item => item.category === activeCategory.value)
+    filtered = filtered.filter(item => {
+      const itemCategory = (item.category || '').toLowerCase()
+      const filterCategory = activeCategory.value.toLowerCase()
+      return itemCategory === filterCategory
+    })
   }
   
   // Filter by source (items are already loaded based on source in loadWardrobeItems)
@@ -713,7 +909,7 @@ const selectedItem = computed(() => {
 
 const itemsSectionTitle = computed(() => {
   if (currentSubRoute.value === 'friend' && friendProfile.value) {
-    return `${friendProfile.value.name || friendProfile.value.username}'s Closet`
+    return `${getFirstName(friendProfile.value.name || friendProfile.value.username)}'s Closet`
   }
   switch (itemsSource.value) {
     case 'my-cabinet': return 'My Closet'
@@ -731,6 +927,26 @@ const saveButtonLabel = computed(() => {
     return 'Update Outfit'
   }
   return 'Save'
+})
+
+// Computed property to check if virtual try-on can be shown
+// Requires at least one top and one bottom on the canvas
+const canShowVirtualTryOn = computed(() => {
+  const hasTop = canvasItems.value.some(item => {
+    const category = item.category?.toLowerCase()
+    return category === 'tops' || category === 'top' || category === 't-shirt' || 
+           category === 'shirt' || category === 'blouse' || category === 'hoodie' || 
+           category === 'longsleeve' || category === 'polo' || category === 'body' || 
+           category === 'undershirt' || category === 'outerwear' || category === 'blazer'
+  })
+  
+  const hasBottom = canvasItems.value.some(item => {
+    const category = item.category?.toLowerCase()
+    return category === 'bottoms' || category === 'bottom' || category === 'pants' || 
+           category === 'shorts' || category === 'skirt'
+  })
+  
+  return hasTop && hasBottom
 })
 
 // Watch for changes in items source and reload items
@@ -763,10 +979,12 @@ const loadFriendProfile = async (username) => {
 const loadFriendsList = async () => {
   try {
     console.log('OutfitCreator: Loading friends list...')
+    loadingFriends.value = true
     
     if (!currentUser.value?.id) {
       console.log('OutfitCreator: No user ID, cannot load friends')
       friendsList.value = []
+      loadingFriends.value = false
       return
     }
     
@@ -782,6 +1000,8 @@ const loadFriendsList = async () => {
   } catch (error) {
     console.error('OutfitCreator: Error loading friends list:', error)
     friendsList.value = []
+  } finally {
+    loadingFriends.value = false
   }
 }
 
@@ -909,8 +1129,8 @@ const generateAISuggestion = async () => {
       return
     }
     
-    // TODO: Replace with actual AI backend call
-    // For now, use mock logic to select items from different categories
+    // Import fashion transformer service
+    const { scoreOutfit, validateOutfitItems } = await import('@/services/fashion-transformer-service')
     
     const categories = {
       top: wardrobeItems.value.filter(item => {
@@ -998,6 +1218,154 @@ const generateAISuggestion = async () => {
   }
 }
 
+// ============================================
+// Recommendation Functions
+// ============================================
+
+const getAIRecommendations = async () => {
+  try {
+    console.log('OutfitCreator: Getting AI recommendations...')
+    
+    if (wardrobeItems.value.length < 2) {
+      showWarning('You need at least 2 items in your closet for recommendations')
+      return
+    }
+    
+    recommendingOutfits.value = true
+    showRecommendationsModal.value = true
+    
+    // Generate recommendations
+    const recs = await generateRecommendations(wardrobeItems.value, {
+      maxRecommendations: 10,
+      maxCombinations: 50
+    })
+    
+    recommendations.value = recs
+    recommendingOutfits.value = false
+    
+    if (recs.length === 0) {
+      showWarning('No recommendations found. Try adding more items to your closet.')
+    } else {
+      showSuccess(`Generated ${recs.length} outfit recommendations`)
+    }
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error getting recommendations:', error)
+    recommendingOutfits.value = false
+    showError('Failed to generate recommendations. Please try again.')
+  }
+}
+
+const loadRecommendation = (rec) => {
+  try {
+    console.log('OutfitCreator: Loading recommendation:', rec)
+    
+    // Clear current canvas
+    canvasItems.value = []
+    
+    // Add recommendation items to canvas
+    const items = rec.items.map((item, index) => ({
+      ...item,
+      originalId: item.id,
+      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      x: 150 + (index * 20),
+      y: 100 + (index * 50),
+      scale: 1,
+      rotation: 0,
+      zIndex: index + 1
+    }))
+    
+    canvasItems.value = items
+    saveToHistory()
+    
+    // Close modal
+    showRecommendationsModal.value = false
+    
+    showSuccess('Outfit loaded to canvas!')
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error loading recommendation:', error)
+    showError('Failed to load outfit. Please try again.')
+  }
+}
+
+const scoreOutfitAI = async () => {
+  try {
+    console.log('OutfitCreator: Scoring outfit with AI...')
+    
+    if (canvasItems.value.length < 2) {
+      showWarning('Need at least 2 items to score an outfit')
+      return
+    }
+    
+    scoringOutfit.value = true
+    
+    // Import fashion transformer service
+    const { scoreOutfit, validateOutfitItems } = await import('@/services/fashion-transformer-service')
+    
+    // Prepare outfit items for scoring
+    const outfitItems = canvasItems.value.map(item => ({
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      image_url: item.image_url,
+      description: item.description || item.name || `${item.category} item`
+    }))
+    
+    // Validate items
+    const validation = validateOutfitItems(outfitItems)
+    if (!validation.isValid) {
+      console.warn('Cannot score outfit:', validation.errors)
+      showWarning('Cannot score outfit. Make sure all items have images.')
+      scoringOutfit.value = false
+      return
+    }
+    
+    // Score the outfit
+    const result = await scoreOutfit(outfitItems)
+    
+    scoringOutfit.value = false
+    
+    if (result.success) {
+      outfitScore.value = result.score
+      const scorePercent = Math.round(result.score * 100)
+      
+      // Show user the score with a nice notification
+      let message = `Outfit Compatibility: ${scorePercent}%`
+      let type = 'info'
+      
+      if (scorePercent >= 80) {
+        message = `Excellent outfit! ${scorePercent}% compatible`
+        type = 'success'
+      } else if (scorePercent >= 60) {
+        message = `Good outfit combination! ${scorePercent}% compatible`
+        type = 'info'
+      } else {
+        message = `Compatibility score: ${scorePercent}%. Consider trying different combinations.`
+        type = 'warning'
+      }
+      
+      // Show notification based on type
+      if (type === 'success') {
+        showSuccess(message)
+      } else if (type === 'warning') {
+        showWarning(message)
+      } else {
+        showInfo(message)
+      }
+      
+      console.log('OutfitCreator: Outfit scored:', scorePercent + '%')
+    } else {
+      showError(result.error || 'Failed to score outfit')
+    }
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error scoring outfit:', error)
+    scoringOutfit.value = false
+    showError('Failed to score outfit. Please try again.')
+  }
+}
+
 const addItemToCanvas = (item) => {
   // Validate: Maximum 10 items on canvas
   if (canvasItems.value.length >= 10) {
@@ -1056,32 +1424,40 @@ const handleDrop = (event) => {
   }
 }
 
+// Drag state
+const draggedItem = ref(null)
+const dragOffset = reactive({ x: 0, y: 0 })
+
 const startDrag = (item, event) => {
   selectedItemId.value = item.id
   
-  const startX = event.clientX
-  const startY = event.clientY
-  const startItemX = item.x
-  const startItemY = item.y
-  
-  const itemSize = 128 // Updated size for larger items
-  
-  const handleMouseMove = (e) => {
-    const deltaX = e.clientX - startX
-    const deltaY = e.clientY - startY
-    
-    item.x = Math.max(0, Math.min(startItemX + deltaX, canvasContainer.value.clientWidth - itemSize))
-    item.y = Math.max(0, Math.min(startItemY + deltaY, canvasContainer.value.clientHeight - itemSize))
+  draggedItem.value = item.id
+  if (canvasContainer.value) {
+    const rect = canvasContainer.value.getBoundingClientRect()
+    dragOffset.x = event.clientX - rect.left - item.x
+    dragOffset.y = event.clientY - rect.top - item.y
   }
+}
+
+const handleMouseMove = (e) => {
+  if (!draggedItem.value || !canvasContainer.value) return
   
-  const handleMouseUp = () => {
-    document.removeEventListener('mousemove', handleMouseMove)
-    document.removeEventListener('mouseup', handleMouseUp)
+  const rect = canvasContainer.value.getBoundingClientRect()
+  const x = e.clientX - rect.left - dragOffset.x
+  const y = e.clientY - rect.top - dragOffset.y
+  
+  const item = canvasItems.value.find(i => i.id === draggedItem.value)
+  if (item) {
+    item.x = Math.max(0, Math.min(x, rect.width - 128))
+    item.y = Math.max(0, Math.min(y, rect.height - 128))
+  }
+}
+
+const handleMouseUp = () => {
+  if (draggedItem.value) {
+    draggedItem.value = null
     saveToHistory()
   }
-  
-  document.addEventListener('mousemove', handleMouseMove)
-  document.addEventListener('mouseup', handleMouseUp)
 }
 
 const selectItem = (itemId) => {
@@ -1242,58 +1618,79 @@ const saveOwnOutfit = async () => {
       ? currentOutfitName.value 
       : `Outfit ${new Date().toLocaleDateString()}`
     
-    const outfitName = prompt('Enter a name for your outfit:', defaultName)
-    if (!outfitName) {
-      console.log('OutfitCreator: Save cancelled by user')
-      return
-    }
-    
-    const outfitData = {
-      outfit_name: outfitName,
-      description: 'Created in Outfit Creator',
-      occasion: null,
-      weather_condition: null,
-      items: canvasItems.value.map(item => ({
-        clothing_item_id: item.originalId || item.id, // Use stored original ID
-        x_position: item.x,
-        y_position: item.y,
-        z_index: item.z_index || 1,
-        rotation: item.rotation || 0,
-        scale: item.scale || 1
-      }))
-    }
-    
-    let result
-    if (isEditing) {
-      // Update existing outfit
-      console.log('OutfitCreator: Updating outfit:', currentOutfitId.value, outfitData)
-      result = await outfitsService.updateOutfit(currentOutfitId.value, outfitData)
-      
-      if (result && result.id) {
-        console.log('OutfitCreator: Outfit updated successfully:', result.id)
-        showSuccess('Outfit updated successfully!')
-        // Navigate back to outfits gallery
-        router.push('/outfits')
-      } else {
-        throw new Error('Failed to update outfit')
+    // Show input popup instead of browser prompt
+    showPrompt({
+      title: 'Save Outfit',
+      message: 'Enter a name for your outfit:',
+      defaultValue: defaultName,
+      placeholder: 'Outfit name',
+      confirmText: 'Save',
+      cancelText: 'Cancel',
+      onConfirm: async (outfitName) => {
+        if (!outfitName || !outfitName.trim()) {
+          console.log('OutfitCreator: Save cancelled - empty name')
+          return
+        }
+        
+        try {
+          savingOutfit.value = true
+          
+          const outfitData = {
+            outfit_name: outfitName.trim(),
+            description: 'Created in Outfit Creator',
+            occasion: null,
+            weather_condition: null,
+            items: canvasItems.value.map(item => ({
+              clothing_item_id: item.originalId || item.id, // Use stored original ID
+              x_position: item.x,
+              y_position: item.y,
+              z_index: item.z_index || 1,
+              rotation: item.rotation || 0,
+              scale: item.scale || 1
+            }))
+          }
+          
+          let result
+          if (isEditing) {
+            // Update existing outfit
+            console.log('OutfitCreator: Updating outfit:', currentOutfitId.value, outfitData)
+            result = await outfitsService.updateOutfit(currentOutfitId.value, outfitData)
+            
+            if (result && result.id) {
+              console.log('OutfitCreator: Outfit updated successfully:', result.id)
+              showSuccess('Outfit updated successfully!')
+              // Navigate back to outfits gallery
+              router.push('/outfits')
+            } else {
+              throw new Error('Failed to update outfit')
+            }
+          } else {
+            // Create new outfit
+            console.log('OutfitCreator: Creating outfit:', outfitData)
+            result = await outfitsService.createOutfit(outfitData)
+            
+            if (result && result.id) {
+              console.log('OutfitCreator: Outfit created successfully:', result.id)
+              showSuccess('Outfit saved successfully!')
+              // Navigate back to outfits gallery
+              router.push('/outfits')
+            } else {
+              throw new Error('Failed to create outfit')
+            }
+          }
+        } catch (error) {
+          console.error('OutfitCreator: Error saving own outfit:', error)
+          showError('Failed to save outfit. Please try again.')
+        } finally {
+          savingOutfit.value = false
+        }
+      },
+      onCancel: () => {
+        console.log('OutfitCreator: Save cancelled by user')
       }
-    } else {
-      // Create new outfit
-      console.log('OutfitCreator: Creating outfit:', outfitData)
-      result = await outfitsService.createOutfit(outfitData)
-      
-      if (result && result.id) {
-        console.log('OutfitCreator: Outfit created successfully:', result.id)
-        showSuccess('Outfit saved successfully!')
-        // Navigate back to outfits gallery
-        router.push('/outfits')
-      } else {
-        throw new Error('Failed to create outfit')
-      }
-    }
+    })
   } catch (error) {
-    console.error('OutfitCreator: Error saving own outfit:', error)
-    throw error
+    console.error('OutfitCreator: Error in saveOwnOutfit:', error)
   }
 }
 
@@ -1304,14 +1701,38 @@ const shareOutfitWithFriend = async () => {
       return
     }
     
+    console.log('OutfitCreator: Showing share outfit dialog for friend:', friendProfile.value.username)
+    
+    // Show the dialog to get outfit name
+    showShareOutfitDialog.value = true
+  } catch (error) {
+    console.error('OutfitCreator: Error showing share outfit dialog:', error)
+    showError('Failed to share outfit. Please try again.')
+  }
+}
+
+const handleShareOutfit = async (outfitName) => {
+  try {
+    if (!friendProfile.value) {
+      showError('Friend profile not loaded. Please try again.')
+      return
+    }
+    
+    // Validate outfit name is provided
+    if (!outfitName || !outfitName.trim()) {
+      showError('Please provide an outfit name.')
+      return
+    }
+    
     console.log('OutfitCreator: Sharing outfit with friend:', friendProfile.value.username)
+    console.log('OutfitCreator: Outfit name:', outfitName)
     
-    // Prompt for a message
-    const message = prompt(`Add a message for ${friendProfile.value.username} (optional):`, `I created this outfit for you using items from your closet!`)
-    
-    // Extract original clothing item IDs from canvas items
+    // Extract original clothing item IDs and details from canvas items
     const outfitItemsData = canvasItems.value.map(item => ({
-      clothing_item_id: item.originalId || item.id, // Use stored original ID
+      clothes_id: item.originalId || item.id, // Use stored original ID
+      name: item.name || 'Unnamed Item', // Include item name
+      category: item.category || 'top', // Include category
+      image_url: item.image_url || '', // Include image URL
       x_position: item.x,
       y_position: item.y,
       z_index: item.z_index || 1,
@@ -1323,15 +1744,18 @@ const shareOutfitWithFriend = async () => {
     
     // Create friend outfit suggestion via NotificationsService
     // This will create a notification for the friend
+    // Pass the outfit name as the message to display to the friend
     const result = await notificationsService.createFriendOutfitSuggestion(
       friendProfile.value.id,
       outfitItemsData,
-      message || undefined
+      outfitName // Outfit name is now the message to the friend
     )
     
     if (result && result.success) {
       console.log('OutfitCreator: Friend outfit suggestion created successfully')
-      showSuccess(`Outfit shared with ${friendProfile.value.username}! They will receive a notification.`)
+      showSuccess(`Outfit "${outfitName}" shared with ${friendProfile.value.username}! They will receive a notification.`)
+      // Close the dialog
+      showShareOutfitDialog.value = false
       // Navigate back to outfits gallery
       router.push('/outfits')
     } else {
@@ -1339,6 +1763,7 @@ const shareOutfitWithFriend = async () => {
     }
   } catch (error) {
     console.error('OutfitCreator: Error sharing outfit with friend:', error)
+    showError('Failed to share outfit. Please try again.')
     throw error
   }
 }
@@ -1346,6 +1771,94 @@ const shareOutfitWithFriend = async () => {
 const addOutfit = () => {
   // Function will be implemented later
   console.log('Add Outfit button clicked - function to be implemented')
+}
+
+// ============================================
+// Virtual Try-On Functions
+// ============================================
+
+/**
+ * Show virtual try-on modal and generate image
+ */
+const showVirtualTryOn = async () => {
+  try {
+    console.log('🎨 OutfitCreator: Showing virtual try-on...')
+    
+    // Validate that we have top and bottom
+    if (!canShowVirtualTryOn.value) {
+      showWarning('Please add at least one top and one bottom to your outfit before showing on model.')
+      return
+    }
+    
+    // Open modal
+    showVirtualTryOnModal.value = true
+    generatingTryOn.value = true
+    virtualTryOnError.value = null
+    virtualTryOnImageUrl.value = null
+    
+    // Get top and bottom items from canvas
+    const topItem = canvasItems.value.find(item => {
+      const category = item.category?.toLowerCase()
+      return category === 'tops' || category === 'top' || category === 't-shirt' || 
+             category === 'shirt' || category === 'blouse' || category === 'hoodie' || 
+             category === 'longsleeve' || category === 'polo' || category === 'body' || 
+             category === 'undershirt' || category === 'outerwear' || category === 'blazer'
+    })
+    
+    const bottomItem = canvasItems.value.find(item => {
+      const category = item.category?.toLowerCase()
+      return category === 'bottoms' || category === 'bottom' || category === 'pants' || 
+             category === 'shorts' || category === 'skirt'
+    })
+    
+    if (!topItem || !bottomItem) {
+      throw new Error('Unable to find top and bottom items')
+    }
+    
+    console.log('🎨 OutfitCreator: Top item:', topItem.name)
+    console.log('🎨 OutfitCreator: Bottom item:', bottomItem.name)
+    
+    // Generate virtual try-on
+    const result = await virtualTryOnService.generateTryOn({
+      topImageUrl: topItem.image_url || topItem.thumbnail_url,
+      bottomImageUrl: bottomItem.image_url || bottomItem.thumbnail_url
+    })
+    
+    if (result.success) {
+      virtualTryOnImageUrl.value = result.imageUrl
+      showSuccess('Virtual try-on generated successfully!')
+      console.log('✅ OutfitCreator: Virtual try-on generated')
+    } else {
+      virtualTryOnError.value = result.error || 'Failed to generate virtual try-on'
+      showError(virtualTryOnError.value)
+      console.error('❌ OutfitCreator: Virtual try-on failed:', result.error)
+    }
+    
+  } catch (error) {
+    console.error('❌ OutfitCreator: Error showing virtual try-on:', error)
+    virtualTryOnError.value = error.message || 'An unexpected error occurred'
+    showError(virtualTryOnError.value)
+  } finally {
+    generatingTryOn.value = false
+  }
+}
+
+/**
+ * Close virtual try-on modal
+ */
+const closeVirtualTryOnModal = () => {
+  showVirtualTryOnModal.value = false
+  // Don't clear the image immediately - let it stay for next open
+  // virtualTryOnImageUrl.value = null
+  // virtualTryOnError.value = null
+}
+
+/**
+ * Retry virtual try-on generation
+ */
+const retryVirtualTryOn = async () => {
+  console.log('🔄 OutfitCreator: Retrying virtual try-on...')
+  await showVirtualTryOn()
 }
 
 const saveToHistory = () => {
@@ -1372,6 +1885,54 @@ const redoAction = () => {
   if (canRedo.value) {
     historyIndex.value++
     canvasItems.value = JSON.parse(JSON.stringify(history.value[historyIndex.value]))
+  }
+}
+
+// Move item with arrow keys
+const moveItemWithArrows = (direction, amount = 10) => {
+  if (!selectedItemId.value) return
+  
+  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
+  if (!item) return
+  
+  const itemSize = 128
+  
+  switch (direction) {
+    case 'ArrowLeft':
+      item.x = Math.max(0, item.x - amount)
+      break
+    case 'ArrowRight':
+      item.x = Math.min(canvasContainer.value?.clientWidth - itemSize || 400, item.x + amount)
+      break
+    case 'ArrowUp':
+      item.y = Math.max(0, item.y - amount)
+      break
+    case 'ArrowDown':
+      item.y = Math.min(canvasContainer.value?.clientHeight - itemSize || 300, item.y + amount)
+      break
+  }
+  
+  saveToHistory()
+}
+
+// Handle keyboard events
+const handleKeydown = (event) => {
+  // Don't handle keyboard events if user is typing in an input or textarea
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+    return
+  }
+  
+  // Handle Esc to deselect item
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    deselectItem()
+    return
+  }
+  
+  // Handle arrow keys to move selected item
+  if (event.key.startsWith('Arrow')) {
+    event.preventDefault()
+    moveItemWithArrows(event.key, event.shiftKey ? 50 : 10) // Shift + Arrow = move 50px
   }
 }
 
@@ -1414,44 +1975,79 @@ watch(currentSubRoute, async (newRoute, oldRoute) => {
 
 // Lifecycle
 onMounted(async () => {
-  // Ensure auth store is initialized
-  if (!authStore.isAuthenticated) {
-    await authStore.initializeAuth()
+  try {
+    console.log('🎨 OutfitCreator: Component mounting...')
+    console.log('🎨 Current route:', route.path)
+    console.log('🎨 Current sub-route:', currentSubRoute.value)
+    
+    // Ensure auth store is initialized
+    if (!authStore.isAuthenticated) {
+      console.log('🔐 OutfitCreator: Initializing auth...')
+      await authStore.initializeAuth()
+    }
+    
+    // If we have a user but no profile, fetch the profile
+    if (authStore.user && !authStore.profile) {
+      console.log('👤 OutfitCreator: Fetching user profile...')
+      await authStore.fetchUserProfile()
+    }
+    
+    // Check if user is authenticated
+    if (!authStore.user || !authStore.user.id) {
+      console.warn('⚠️ OutfitCreator: User not authenticated, redirecting to login')
+      router.push('/login')
+      return
+    }
+    
+    // Initialize items source based on route
+    initializeItemsSource()
+    
+    // If friend selection route, load friends list
+    if (currentSubRoute.value === 'friendSelect') {
+      console.log('👥 OutfitCreator: Loading friends list...')
+      await loadFriendsList()
+      return // Don't load wardrobe items on friend selection page
+    }
+    
+    // If friend route with username, load friend profile first
+    if (currentSubRoute.value === 'friend' && friendUsername.value) {
+      console.log('👥 OutfitCreator: Loading friend profile:', friendUsername.value)
+      await loadFriendProfile(friendUsername.value)
+    }
+    
+    // Load wardrobe items (will load friend's items if in friend mode)
+    console.log('👕 OutfitCreator: Loading wardrobe items...')
+    await loadWardrobeItems()
+    
+    // Handle different sub-routes
+    if (currentSubRoute.value === 'edit' && route.params.outfitId) {
+      // Edit mode: Load existing outfit
+      console.log('✏️ OutfitCreator: Loading existing outfit:', route.params.outfitId)
+      await loadExistingOutfit(route.params.outfitId)
+    } else if (currentSubRoute.value === 'suggested') {
+      // AI Suggestions mode: Generate AI outfit
+      console.log('✨ OutfitCreator: Generating AI suggestion...')
+      await generateAISuggestion()
+    } else {
+      // Personal/friend/other modes: Start with empty canvas
+      console.log('🎨 OutfitCreator: Initializing empty canvas...')
+      saveToHistory() // Initialize history
+    }
+    
+    console.log('✅ OutfitCreator: Component mounted successfully')
+  } catch (error) {
+    console.error('❌ OutfitCreator: Error during mount:', error)
+    console.error('❌ Error stack:', error.stack)
+    // Show error to user
+    showError(`Failed to load outfit creator: ${error.message}`)
+    // Redirect to outfits page after a delay
+    setTimeout(() => {
+      router.push('/outfits')
+    }, 2000)
   }
-  
-  // If we have a user but no profile, fetch the profile
-  if (authStore.user && !authStore.profile) {
-    await authStore.fetchUserProfile()
-  }
-  
-  // Initialize items source based on route
-  initializeItemsSource()
-  
-  // If friend selection route, load friends list
-  if (currentSubRoute.value === 'friendSelect') {
-    await loadFriendsList()
-    return // Don't load wardrobe items on friend selection page
-  }
-  
-  // If friend route with username, load friend profile first
-  if (currentSubRoute.value === 'friend' && friendUsername.value) {
-    await loadFriendProfile(friendUsername.value)
-  }
-  
-  // Load wardrobe items (will load friend's items if in friend mode)
-  await loadWardrobeItems()
-  
-  // Handle different sub-routes
-  if (currentSubRoute.value === 'edit' && route.params.outfitId) {
-    // Edit mode: Load existing outfit
-    await loadExistingOutfit(route.params.outfitId)
-  } else if (currentSubRoute.value === 'suggested') {
-    // AI Suggestions mode: Generate AI outfit
-    await generateAISuggestion()
-  } else {
-    // Personal/friend/other modes: Start with empty canvas
-    saveToHistory() // Initialize history
-  }
+
+  // Setup keyboard event listener for arrow keys and Esc
+  window.addEventListener('keydown', handleKeydown)
 
   // Register canvas items for keyboard navigation
   registerCanvasItems(canvasItems.value)
@@ -1546,6 +2142,10 @@ onMounted(async () => {
 
   // Cleanup on unmount
   onUnmounted(() => {
+    // Remove arrow key and Esc handlers
+    window.removeEventListener('keydown', handleKeydown)
+    
+    // Remove other keyboard event listeners
     window.removeEventListener('keyboard-select-item', handleKeyboardEvent)
     window.removeEventListener('keyboard-move-item', handleKeyboardEvent)
     window.removeEventListener('keyboard-save-outfit', handleKeyboardEvent)

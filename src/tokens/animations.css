@@ -200,3 +200,30 @@
 .liquid-float:not(:hover) {
   will-change: auto;
 }
+
+/* ============================================
+   KONAMI CODE EASTER EGG ANIMATIONS
+   ============================================ */
+
+/* Confetti falling animation */
+@keyframes confettiFall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Konami activation flash effect */
+@keyframes konamiFlash {
+  0%, 100% {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  50% {
+    filter: hue-rotate(180deg) brightness(1.2);
+  }
+}
+
+/* Konami activated body effect */
+body.konami-activated {
+  animation: konamiFlash 0.5s ease-in-out 3;
+}

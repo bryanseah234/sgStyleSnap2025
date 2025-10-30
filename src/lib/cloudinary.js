@@ -133,6 +133,7 @@ export class CloudinaryService {
         `https://api.cloudinary.com/v1_1/${this.cloudName}/image/upload`,
         {
           method: 'POST',
+          mode: 'cors', // Explicitly set CORS mode
           body: formData
         }
       )
@@ -254,6 +255,7 @@ export class CloudinaryService {
         `https://api.cloudinary.com/v1_1/${this.cloudName}/image/destroy`,
         {
           method: 'POST',
+          mode: 'cors', // Explicitly set CORS mode
           headers: {
             'Content-Type': 'application/json'
           },

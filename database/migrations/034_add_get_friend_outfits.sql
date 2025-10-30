@@ -53,10 +53,10 @@ BEGIN
   SELECT 
     o.id,
     o.owner_id,
-    o.outfit_name,
+    o.outfit_name::TEXT,        -- Cast VARCHAR(255) to TEXT
     o.description,
-    o.occasion,
-    o.weather_condition,
+    o.occasion::TEXT,           -- Cast VARCHAR(50) to TEXT
+    o.weather_condition::TEXT,  -- Cast VARCHAR(50) to TEXT
     o.temperature,
     o.is_public,
     o.style_tags,

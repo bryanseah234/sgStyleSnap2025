@@ -90,16 +90,24 @@
 
     <!-- Search Bar -->
     <div class="max-w-6xl mx-auto mb-8">
-      <div class="relative">
+      <div class="relative search-input-group">
         <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
         <input
           ref="searchInputRef"
           v-model="searchTerm"
           type="text"
           placeholder="Search your outfits..."
-          class="w-full pl-10 pr-4 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400"
+          class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
           @input="handleSearch"
+          @focus="handleSearchFocus"
+          @blur="handleSearchBlur"
         />
+        <!-- Raycast-style keyboard hint -->
+        <div class="keyboard-hint">
+          <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+          <span>+</span>
+          <span class="keyboard-hint-key">K</span>
+        </div>
       </div>
     </div>
 
@@ -178,7 +186,7 @@
           v-for="(outfit, index) in filteredOutfits"
           :key="outfit.id"
           class="group cursor-pointer transition-all duration-300 hover:scale-105 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 rounded-xl overflow-hidden"
-          :style="{ transitionDelay: `${index * 50}ms` }"
+          v-memo="[outfit.id, outfit.outfit_name, outfit.preview_url, outfit.is_favorite, activeFilter, searchTerm]"
           @click="viewOutfit(outfit)"
         >
           <div class="aspect-square relative overflow-hidden">
@@ -193,8 +201,8 @@
               @click.stop="toggleFavorite(outfit)"
               :class="`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
                 outfit.is_favorite
-                  ? 'bg-red-500 text-white'
-                  : 'bg-white/80 dark:bg-zinc-800/80 text-stone-500 dark:text-zinc-400 hover:bg-stone-100/80 dark:hover:bg-zinc-700/80'
+                  ? 'bg-red-500 text-white dark:bg-red-600'
+                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'
               }`"
             >
               <Heart :class="`w-4 h-4 ${outfit.is_favorite ? 'fill-current' : ''}`" />
@@ -366,15 +374,19 @@
         <!-- Modal Footer with Actions -->
         <div class="p-6 border-t flex items-center justify-end gap-3 border-stone-200 dark:border-zinc-800">
           <button
-            @click="closeOutfitDetail"
-            :class="`px-6 py-3 rounded-xl font-medium transition-all bg-stone-100 text-stone-700 hover:bg-stone-200
-              dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
+            @click="toggleFavorite(selectedOutfit)"
+            :class="`p-3 rounded-xl transition-all duration-200 ${
+              selectedOutfit.is_favorite
+                ? 'bg-red-500 text-white dark:bg-red-600'
+                : 'bg-stone-100 text-stone-500 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
+            title="Toggle Favorite"
           >
-            Close
+            <Heart :class="`w-5 h-5 ${selectedOutfit.is_favorite ? 'fill-current' : ''}`" />
           </button>
           <button
             @click="editOutfit(selectedOutfit)"
-            :class="`px-6 py-3 rounded-xl font-medium transition-all dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
+            :class="`px-6 py-3 rounded-xl font-medium transition-all bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             Edit Outfit
           </button>
@@ -387,9 +399,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
 import { usePopup } from '@/composables/usePopup'
 import { useAuthStore } from '@/stores/auth-store'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -400,6 +413,7 @@ import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.
 import FriendSuggestionCard from '@/components/outfits/FriendSuggestionCard.vue'
 
 const { theme } = useTheme()
+const { sanitizeSearch } = useSanitize()
 const { showError, showSuccess, showConfirm } = usePopup()
 const authStore = useAuthStore()
 const router = useRouter()
@@ -423,8 +437,11 @@ const selectedOutfit = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
 
-// Initialize activeFilter from URL parameter
-if (route.query.filter === 'suggestions') {
+// Detect Mac for keyboard shortcut display
+const isMac = ref(false)
+
+// Initialize activeFilter from URL parameter or route
+if (route.query.filter === 'suggestions' || route.meta.subRoute === 'suggestions') {
   activeFilter.value = 'suggestions'
 }
 
@@ -445,7 +462,9 @@ const filteredOutfits = computed(() => {
   // Apply search filter
   if (searchTerm.value) {
     const query = searchTerm.value.toLowerCase()
-    filtered = filtered.filter(outfit => 
+    // Only process up to 50 items for instant results
+    const maxFilter = 50
+    filtered = filtered.slice(0, maxFilter).filter(outfit => 
       outfit.outfit_name?.toLowerCase().includes(query) ||
       outfit.name?.toLowerCase().includes(query) ||
       outfit.description?.toLowerCase().includes(query)
@@ -467,6 +486,7 @@ const loadOutfits = async () => {
     if (!currentUser.value?.id) {
       console.log('Outfits: No user ID, cannot load outfits')
       outfits.value = []
+      loading.value = false // Important: Set loading to false so empty state shows
       return
     }
     
@@ -490,6 +510,8 @@ const loadOutfits = async () => {
   } catch (error) {
     console.error('Outfits: Error loading outfits:', error)
     outfits.value = []
+    // Ensure loading is set to false on error
+    loading.value = false
   } finally {
     loading.value = false
   }
@@ -586,7 +608,17 @@ const formatDate = (dateString) => {
 }
 
 const handleSearch = () => {
-  // Search is handled by computed property
+  // Sanitize search input in real-time
+  searchTerm.value = sanitizeSearch(searchTerm.value)
+}
+
+// Search focus handlers
+const handleSearchFocus = (event) => {
+  event.target.classList.add('search-input-focus')
+}
+
+const handleSearchBlur = (event) => {
+  event.target.classList.remove('search-input-focus')
 }
 
 // Load suggestions
@@ -634,25 +666,64 @@ const handleSuggestionProcessed = ({ action, suggestionId }) => {
   }
 }
 
-onMounted(async () => {
-  console.log('Outfits: Component mounted, initializing...')
-  
-  // Ensure auth store is initialized
-  if (!authStore.isAuthenticated) {
-    console.log('Outfits: Auth not initialized, initializing...')
-    await authStore.initializeAuth()
+// Handle Esc key to close modal
+const handleEscKey = (event) => {
+  if (event.key === 'Escape' && showOutfitDetail.value) {
+    closeOutfitDetail()
   }
+}
+
+onMounted(async () => {
+  // Add event listener for Esc key
+  window.addEventListener('keydown', handleEscKey)
   
-  // Only load outfits if user is authenticated
-  if (authStore.isAuthenticated && authStore.user?.id) {
-    console.log('Outfits: User is authenticated, loading outfits...')
-    await Promise.all([
-      loadOutfits(),
-      loadSuggestions()
-    ])
-  } else {
-    console.log('Outfits: User not authenticated, skipping outfit loading')
-    loading.value = false
+  // Detect Mac OS
+  isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  
+  try {
+    console.log('👕 Outfits: Component mounting...')
+    console.log('👕 Outfits: Current route:', route.path)
+    
+    // Register search input for keyboard shortcuts
+    if (searchInputRef.value) {
+      registerSearchInput(searchInputRef.value)
+    }
+    
+    // Ensure auth store is initialized
+    if (!authStore.isAuthenticated) {
+      console.log('🔐 Outfits: Auth not initialized, initializing...')
+      await authStore.initializeAuth()
+    }
+    
+    // If we have a user but no profile, fetch the profile
+    if (authStore.user && !authStore.profile) {
+      console.log('👤 Outfits: Fetching user profile...')
+      await authStore.fetchUserProfile()
+    }
+    
+    // Only load outfits if user is authenticated
+    if (authStore.isAuthenticated && authStore.user?.id) {
+      console.log('✅ Outfits: User is authenticated, loading outfits...')
+      await Promise.all([
+        loadOutfits(),
+        loadSuggestions()
+      ])
+      console.log('✅ Outfits: Component mounted successfully')
+    } else {
+      console.log('⚠️ Outfits: User not authenticated, skipping outfit loading')
+      console.log('⚠️ Outfits: Auth state:', {
+        isAuthenticated: authStore.isAuthenticated,
+        hasUser: !!authStore.user,
+        userId: authStore.user?.id,
+        loading: authStore.loading
+      })
+      loading.value = false // Ensure loading is false so empty state can show
+    }
+  } catch (error) {
+    console.error('❌ Outfits: Error during mount:', error)
+    console.error('❌ Outfits: Error stack:', error.stack)
+    loading.value = false // Always set loading to false on error
+    showError(`Failed to load outfits: ${error.message}`)
   }
 })
 
@@ -661,6 +732,11 @@ watch(activeFilter, (newFilter) => {
   if (newFilter === 'suggestions' && suggestions.value.length === 0 && !suggestionsLoading.value) {
     loadSuggestions()
   }
+})
+
+onUnmounted(() => {
+  // Remove event listener for Esc key
+  window.removeEventListener('keydown', handleEscKey)
 })
 </script>
 

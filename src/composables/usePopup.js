@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 
 const showPopup = ref(false)
+const showInputPopup = ref(false)
 const popupConfig = ref({
   type: 'info',
   title: '',
@@ -8,6 +9,18 @@ const popupConfig = ref({
   confirmText: 'OK',
   cancelText: 'Cancel',
   showCancel: false,
+  closeOnBackdrop: true,
+  onConfirm: null,
+  onCancel: null
+})
+
+const inputPopupConfig = ref({
+  title: '',
+  message: '',
+  defaultValue: '',
+  placeholder: '',
+  confirmText: 'OK',
+  cancelText: 'Cancel',
   closeOnBackdrop: true,
   onConfirm: null,
   onCancel: null
@@ -74,8 +87,27 @@ export function usePopup() {
     })
   }
 
+  const showPrompt = (config) => {
+    inputPopupConfig.value = {
+      title: config.title || 'Input',
+      message: config.message || '',
+      defaultValue: config.defaultValue || '',
+      placeholder: config.placeholder || '',
+      confirmText: config.confirmText || 'OK',
+      cancelText: config.cancelText || 'Cancel',
+      closeOnBackdrop: config.closeOnBackdrop !== false,
+      onConfirm: config.onConfirm || null,
+      onCancel: config.onCancel || null
+    }
+    showInputPopup.value = true
+  }
+
   const hidePopup = () => {
     showPopup.value = false
+  }
+
+  const hideInputPopup = () => {
+    showInputPopup.value = false
   }
 
   const handleConfirm = () => {
@@ -92,6 +124,20 @@ export function usePopup() {
     hidePopup()
   }
 
+  const handleInputConfirm = (value) => {
+    if (inputPopupConfig.value.onConfirm) {
+      inputPopupConfig.value.onConfirm(value)
+    }
+    hideInputPopup()
+  }
+
+  const handleInputCancel = () => {
+    if (inputPopupConfig.value.onCancel) {
+      inputPopupConfig.value.onCancel()
+    }
+    hideInputPopup()
+  }
+
   return {
     showPopup,
     popupConfig,
@@ -101,8 +147,15 @@ export function usePopup() {
     showWarning,
     showInfo,
     showConfirm,
+    showPrompt,
     hidePopup,
     handleConfirm,
-    handleCancel
+    handleCancel,
+    // Input popup
+    showInputPopup,
+    inputPopupConfig,
+    hideInputPopup,
+    handleInputConfirm,
+    handleInputCancel
   }
 }

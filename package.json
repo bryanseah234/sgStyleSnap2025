@@ -16,6 +16,7 @@
     "cloudinary-cleanup": "echo 'Cloudinary cleanup script not implemented yet' && exit 0"
   },
   "dependencies": {
+    "@studio-freight/lenis": "^1.0.42",
     "@supabase/supabase-js": "^2.38.4",
     "@vueuse/core": "^10.7.0",
     "class-variance-authority": "^0.7.0",
@@ -24,10 +25,12 @@
     "motion": "^12.23.24",
     "pinia": "^2.1.7",
     "tailwind-merge": "^1.14.0",
+    "three": "^0.160.0",
     "vue": "^3.4.0",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
+    "@types/node": "^20.10.6",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.5.1",
     "autoprefixer": "^10.4.16",
@@ -37,6 +40,6 @@
     "tailwindcss": "^3.4.0",
     "typescript": "^5.3.3",
     "vite": "^7.1.12",
-    "vue-tsc": "^1.8.27"
+    "vue-tsc": "^3.1.2"
   }
 }

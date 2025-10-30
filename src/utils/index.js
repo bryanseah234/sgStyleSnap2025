@@ -107,3 +107,24 @@ export function debounce(func, wait) {
     timeout = setTimeout(later, wait);
   };
 }
+
+/**
+ * Extracts the first name from a full name
+ * 
+ * Splits a full name string on spaces and returns the first part.
+ * Useful for displaying first names only in friend-related UI elements
+ * while keeping full names for the Friends page and Friend Profile page.
+ * 
+ * @param {string} fullName - The full name to extract from
+ * @returns {string} The first name, or empty string if input is invalid
+ * 
+ * @example
+ * getFirstName('John Doe') // Returns 'John'
+ * getFirstName('Jane') // Returns 'Jane'
+ * getFirstName('') // Returns ''
+ * getFirstName(null) // Returns ''
+ */
+export function getFirstName(fullName) {
+  if (!fullName) return ''
+  return fullName.split(' ')[0]
+}

@@ -56,7 +56,7 @@
         >
           <div 
             :class="`nav-item-liquid flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative ${
-              $route.path === item.path
+              isActiveRoute(item.path)
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
             }`"
@@ -78,11 +78,11 @@
           @mouseup="themePressOut"
           @mouseleave="themePressOut"
           class="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
-          :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
         >
-         <!-- Sun icon for dark mode (action: switch to light) -->
-         <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
-         <!-- Moon icon for light mode (action: switch to dark) -->
+         <!-- Sun icon for light mode (action: switch to dark) -->
+         <Sun v-if="theme.value === 'light'" class="w-5 h-5" />
+         <!-- Moon icon for dark mode (action: switch to light) -->
          <Moon v-else class="w-5 h-5" />
           <span class="font-medium text-secondary-foreground">
             Toggle Theme
@@ -104,7 +104,7 @@
           ]"
         >
           <LogOut v-if="!loading" class="w-5 h-5" />
-          <div v-else class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <div v-else class="w-5 h-5 spinner-modern" />
           <span class="font-medium">{{ loading ? 'Logging out...' : 'Logout' }}</span>
         </button>
       </div>
@@ -147,14 +147,14 @@
         >
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
-              $route.path === item.path
+              isActiveRoute(item.path)
                 ? 'bg-black scale-110 -translate-y-0.5'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
-                  $route.path === item.path
+                  isActiveRoute(item.path)
                     ? 'text-white'
                     : 'text-black'
                 }`"
@@ -162,7 +162,7 @@
             </div>
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
-              $route.path === item.path
+              isActiveRoute(item.path)
                 ? 'text-black opacity-100 scale-100'
                 : 'text-black opacity-60 scale-90'
             }`">
@@ -171,7 +171,7 @@
 
             <!-- Active indicator -->
             <div
-              v-if="$route.path === item.path"
+              v-if="isActiveRoute(item.path)"
               class="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-black"
             />
           </div>
@@ -246,6 +246,15 @@ const { registerSearchInput } = useKeyboardShortcuts()
 
 // Computed property to check if current route is landing page
 const isLandingPage = computed(() => route.path === '/')
+
+// Helper function to check if a navigation item is active (memoized for performance)
+const isActiveRoute = (itemPath) => {
+  const currentPath = route.path
+  return currentPath === itemPath || 
+         (currentPath.startsWith('/outfits/add') && itemPath === '/outfits') || 
+         (currentPath.startsWith('/outfits/edit') && itemPath === '/outfits') ||
+         (currentPath.startsWith('/closet/') && itemPath === '/closet')
+}
 
 // Service instances for data prefetching
 const clothesService = new ClothesService()

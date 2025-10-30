@@ -170,6 +170,13 @@ export const vScrollAnimate = {
       once: !binding.modifiers.repeat
     }
     
+    // Check if browser supports IntersectionObserver
+    if (!('IntersectionObserver' in window)) {
+      // Fallback: immediately show element
+      el.classList.add('is-visible')
+      return
+    }
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -191,6 +198,25 @@ export const vScrollAnimate = {
     )
     
     observer.observe(el)
+    
+    // CRITICAL FIX: Check if element is already in viewport on mount
+    // This prevents elements from being stuck invisible when page loads
+    setTimeout(() => {
+      const rect = el.getBoundingClientRect()
+      const isInViewport = (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      )
+      
+      if (isInViewport) {
+        el.classList.add('is-visible')
+        if (options.once && observer) {
+          observer.unobserve(el)
+        }
+      }
+    }, 100)
     
     // Store observer on element for cleanup
     el._scrollObserver = observer

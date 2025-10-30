@@ -12,7 +12,7 @@
           </button>
           <div>
             <h1 class="text-4xl font-bold text-foreground">
-              {{ friend?.name || 'Friend' }}'s Closet
+              {{ getFirstName(friend?.name) || friend?.username || 'Friend' }}'s Closet
             </h1>
             <p class="text-lg text-stone-600 dark:text-zinc-400">
               Browse their wardrobe and get style inspiration
@@ -49,7 +49,7 @@
           </div>
           <div class="flex-1">
             <h2 class="text-2xl font-bold text-black dark:text-white">
-              {{ friend.name }}
+              {{ getFirstName(friend.name) || friend.username }}
             </h2>
             <p class="text-lg text-stone-600 dark:text-zinc-400">
               @{{ friend.username }}
@@ -188,7 +188,7 @@ import { useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { api } from '@/api/client'
 import { clothesService } from '@/services/clothesService'
-import { formatDate } from '@/utils'
+import { formatDate, getFirstName } from '@/utils'
 import { ArrowLeft, User, Shirt, Grid, List } from 'lucide-vue-next'
 
 const route = useRoute()

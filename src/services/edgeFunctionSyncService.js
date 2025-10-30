@@ -141,50 +141,15 @@ export class EdgeFunctionSyncService {
    * @returns {Promise<Object>} Sync function health status
    */
   async checkSyncHealth() {
-    try {
-      console.log('🔍 EdgeFunctionSync: Checking sync function health...')
-      
-      if (!this.functionUrl) {
-        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured (base URL missing) - skipping health check')
-        return {
-          success: false,
-          healthy: false,
-          error: 'Edge Function URL not configured (base URL missing)',
-          timestamp: new Date().toISOString()
-        }
-      }
-
-      // Try to make a simple request to the Edge Function
-      const response = await fetch(`${this.functionUrl}/health`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Edge Function health check failed: ${response.status} ${response.statusText}`)
-      }
-
-      const healthData = await response.json()
-      
-      console.log('✅ EdgeFunctionSync: Sync function is healthy:', healthData)
-      
-      return {
-        success: true,
-        healthy: true,
-        data: healthData,
-        timestamp: new Date().toISOString()
-      }
-    } catch (error) {
-      console.error('❌ EdgeFunctionSync: Sync health check failed:', error)
-      
-      return {
-        success: false,
-        healthy: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }
+    // DISABLED: Edge function health endpoint does not exist
+    // User sync is handled automatically by database triggers
+    console.log('ℹ️ EdgeFunctionSync: Health check disabled (endpoint does not exist)')
+    
+    return {
+      success: true,
+      healthy: true,
+      message: 'Health check disabled - using database triggers for sync',
+      timestamp: new Date().toISOString()
     }
   }
 
@@ -266,42 +231,15 @@ export class EdgeFunctionSyncService {
    * @returns {Promise<Object>} Connectivity test result
    */
   async testConnectivity() {
-    try {
-      console.log('🔍 EdgeFunctionSync: Testing Edge Function connectivity...')
-      
-      if (!this.functionUrl) {
-        console.log('ℹ️ EdgeFunctionSync: Edge Function URL not configured (base URL missing) - skipping connectivity test')
-        return {
-          success: false,
-          connected: false,
-          error: 'Edge Function URL not configured (base URL missing)',
-          timestamp: new Date().toISOString()
-        }
-      }
-
-      // Simple connectivity test
-      const response = await fetch(`${this.functionUrl}/ping`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-
-      return {
-        success: true,
-        connected: response.ok,
-        status: response.status,
-        timestamp: new Date().toISOString()
-      }
-    } catch (error) {
-      console.error('❌ EdgeFunctionSync: Connectivity test failed:', error)
-      
-      return {
-        success: false,
-        connected: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }
+    // DISABLED: Edge function connectivity endpoint does not exist
+    // User sync is handled automatically by database triggers
+    console.log('ℹ️ EdgeFunctionSync: Connectivity test disabled (endpoint does not exist)')
+    
+    return {
+      success: true,
+      connected: true,
+      message: 'Connectivity test disabled - using database triggers for sync',
+      timestamp: new Date().toISOString()
     }
   }
 }

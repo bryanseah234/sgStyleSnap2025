@@ -126,10 +126,12 @@ export async function classifyClothingItem(image) {
     }
 
     // Call your Hugging Face FashionRNN API
-    const response = await fetch('https://canken-is216.hf.space/run/predict', {
+    const response = await fetch('https://canken-is216.hf.space/api/predict', {
       method: 'POST',
+      mode: 'cors', // Explicitly set CORS mode
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         data: [`data:image/jpeg;base64,${imageData}`],
@@ -155,6 +157,11 @@ export async function classifyClothingItem(image) {
 
     // Parse Hugging Face response format
     // result.data[0] is the prediction string
+    // Add additional safety check before accessing array index
+    if (result.data[0] === undefined || result.data[0] === null) {
+      throw new Error('Invalid API response format - empty data at index 0')
+    }
+    
     const predictionString = result.data[0]
 
     // Check if we have a valid prediction string
