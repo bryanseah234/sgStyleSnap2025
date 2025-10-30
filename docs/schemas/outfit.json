@@ -1,0 +1,49 @@
+{
+    "name": "Outfit",
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Name of the outfit"
+      },
+      "items": {
+        "type": "array",
+        "description": "Array of clothing items with their positions and transforms",
+        "items": {
+          "type": "object",
+          "properties": {
+            "item_id": {
+              "type": "string"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "scale": {
+              "type": "number"
+            },
+            "rotation": {
+              "type": "number"
+            },
+            "z_index": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "thumbnail_url": {
+        "type": "string",
+        "description": "Preview image of the outfit"
+      },
+      "is_favorite": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
+      "items"
+    ]
+  }

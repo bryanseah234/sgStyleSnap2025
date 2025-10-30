@@ -416,11 +416,22 @@
     </section>
     
     <!-- CTA Section -->
-    <section class="group py-16 sm:py-20 md:py-24 bg-gray-900 text-white relative overflow-hidden">
-      <div class="absolute inset-0 opacity-20 md:opacity-0 md:group-hover:opacity-20 transition-opacity duration-500">
-        <div class="absolute top-10 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" />
-        <div class="absolute bottom-10 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style="animation-delay: 1s" />
-      </div>
+    <section 
+      ref="ctaSectionRef"
+      class="py-16 sm:py-20 md:py-24 bg-black text-white relative overflow-hidden"
+      @mousemove="handleCtaMouseMove"
+      @mouseleave="handleCtaMouseLeave"
+    >
+      <!-- Cursor-following light effect -->
+      <div 
+        class="absolute w-96 h-96 bg-white rounded-full blur-3xl pointer-events-none transition-opacity duration-300"
+        :style="{
+          left: `${cursorLight.x}px`,
+          top: `${cursorLight.y}px`,
+          transform: 'translate(-50%, -50%)',
+          opacity: cursorLight.opacity
+        }"
+      />
 
       <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">Ready to Transform Your Wardrobe?</h2>
@@ -479,6 +490,8 @@ const dragOffset = reactive({ x: 0, y: 0 })
 const canvasRef = ref(null)
 const visibleElements = ref(new Set())
 const isPageLoaded = ref(false)
+const ctaSectionRef = ref(null)
+const cursorLight = reactive({ x: 0, y: 0, opacity: 0 })
 
 // Demo items data
 const demoItems = [
@@ -683,6 +696,20 @@ const moveSelectedItemBackward = (itemId) => {
 const deleteSelectedItem = (itemId) => {
   outfitItems.value = outfitItems.value.filter(item => item.id !== itemId)
   selectedItemId.value = null
+}
+
+// CTA section cursor-following light effect
+const handleCtaMouseMove = (e) => {
+  if (!ctaSectionRef.value) return
+  
+  const rect = ctaSectionRef.value.getBoundingClientRect()
+  cursorLight.x = e.clientX - rect.left
+  cursorLight.y = e.clientY - rect.top
+  cursorLight.opacity = 0.2
+}
+
+const handleCtaMouseLeave = () => {
+  cursorLight.opacity = 0
 }
 
 // Lifecycle hooks
