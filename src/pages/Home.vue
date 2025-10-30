@@ -393,9 +393,11 @@ const loadNotifications = async () => {
       
       // Enrich notifications with actor first names for personalisation
       const base = notificationsData || []
-      const actorIds = Array.from(new Set((base
-        .map(n => n.actor_id)
-        .filter(Boolean)) as string[]))
+      const actorIds = Array.from(new Set(
+        base
+          .map(n => n.actor_id)
+          .filter(Boolean)
+      ))
 
       let actorMap = new Map()
       if (actorIds.length > 0) {
