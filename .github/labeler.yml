@@ -1,0 +1,79 @@
+# Labeler configuration for automatic PR labeling
+# Based on file paths changed in the PR
+
+# Frontend components
+frontend:
+  - 'src/components/**'
+  - 'src/pages/**'
+  - 'src/composables/**'
+  - 'src/stores/**'
+  - 'src/services/**'
+  - 'src/utils/**'
+  - 'src/assets/**'
+  - 'src/index.css'
+  - 'src/main.js'
+
+# Backend/Database
+database:
+  - 'database/migrations/**'
+  - 'database/**/*.sql'
+  - 'supabase/**'
+
+# API
+api:
+  - 'api/**'
+  - '*.js'
+  - '*.ts'
+
+# Edge Functions
+edge-function:
+  - 'supabase/functions/**'
+
+# Documentation
+documentation:
+  - 'docs/**'
+  - '*.md'
+  - 'README.md'
+  - 'CHANGELOG.md'
+
+# Tests
+tests:
+  - 'tests/**'
+  - '**/*.test.js'
+  - '**/*.test.ts'
+  - '**/*.spec.js'
+  - '**/*.spec.ts'
+  - 'playwright.config.js'
+
+# CI/CD
+ci:
+  - '.github/workflows/**'
+  - '.github/labeler.yml'
+  - '.github/**'
+
+# Configuration
+config:
+  - '*.config.js'
+  - '*.config.ts'
+  - '*.json'
+  - 'package.json'
+  - 'package-lock.json'
+  - 'tsconfig.json'
+  - 'tailwind.config.js'
+  - 'vite.config.ts'
+  - 'postcss.config.js'
+  - 'vercel.json'
+  - '.env.example'
+
+# Styles
+styles:
+  - 'src/**/*.css'
+  - 'src/tokens/**'
+  - 'tailwind.config.js'
+  - 'postcss.config.js'
+
+# Dependencies
+dependencies:
+  - 'package.json'
+  - 'package-lock.json'
+

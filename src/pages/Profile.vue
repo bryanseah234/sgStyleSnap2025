@@ -18,10 +18,10 @@
         </div>
         
         <!-- Profile content - Grid layout for large screens, stacked on mobile -->
-        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           <!-- User Account Card -->
-          <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
-            <div class="space-y-6">
+          <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col h-full">
+            <div class="space-y-6 flex-1">
               <!-- Profile Photo -->
               <div class="text-center">
                 <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 border-2 bg-stone-100 border-stone-300 dark:bg-zinc-800 dark:border-zinc-700">
@@ -79,7 +79,7 @@
               </div>
 
               <!-- Additional Info -->
-              <div class="text-center">
+              <div class="text-center mt-auto">
                 <p class="text-sm text-stone-600 dark:text-zinc-400">
                   Profile information is managed through your Google account.
                   <br>
@@ -90,41 +90,114 @@
             </div>
           </div>
 
-          <!-- Account Actions Section -->
-          <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
-            <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
-              Account Actions
-            </h3>
-          
-            <div class="space-y-3">
-              <!-- Theme Toggle Button -->
-              <button
-                @click="handleThemeToggle"
-                :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
-                :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
-              >
-                <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
-                <Moon v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5" />
-                <Sun v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5" />
-                <span class="font-medium text-sm md:text-base">
-                  Toggle Theme
-                </span>
-              </button>
+          <!-- Right Column: Email Notifications and Account Actions -->
+          <div class="flex flex-col gap-6 h-full">
+            <!-- Email Notifications Card -->
+            <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex-1 flex flex-col min-h-0">
+              <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
+                Email Notifications
+              </h3>
+              
+              <div v-if="loadingPreferences" class="flex items-center justify-center py-8 flex-1">
+                <div class="spinner-modern mb-4" />
+              </div>
+              
+              <div v-else class="space-y-4 flex-1">
+                <!-- Master Toggle -->
+                <div class="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-zinc-700">
+                  <div>
+                    <p class="font-medium text-stone-800 dark:text-zinc-200">Enable Email Notifications</p>
+                    <p class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Master control for all email notifications</p>
+                  </div>
+                  <button
+                    @click="toggleMasterEmail"
+                    :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      preferences.email_enabled 
+                        ? 'bg-primary' 
+                        : 'bg-stone-300 dark:bg-zinc-600'
+                    }`"
+                  >
+                    <span
+                      :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        preferences.email_enabled ? 'translate-x-5' : 'translate-x-0'
+                      }`"
+                    />
+                  </button>
+                </div>
 
-              <!-- Logout Button -->
-              <button
-                @click="handleLogout"
-                :disabled="loading"
-                :class="`w-full flex items-center justify-start gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
-                  loading
-                    ? 'opacity-50 cursor-not-allowed text-muted-foreground'
-                    : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:hover:text-red-300'
-                }`"
-              >
-                <LogOut v-if="!loading" class="w-4 h-4 md:w-5 md:h-5" />
-                <div v-else class="w-4 h-4 md:w-5 md:h-5 spinner-modern" />
-                <span class="font-medium text-sm md:text-base">{{ loading ? 'Logging out...' : 'Logout' }}</span>
-              </button>
+                <!-- Individual Notification Type Toggles -->
+                <div class="space-y-3 flex-1">
+                  <div
+                    v-for="type in notificationTypes"
+                    :key="type.key"
+                    class="flex items-center justify-between"
+                  >
+                    <div>
+                      <p class="font-medium text-sm text-stone-800 dark:text-zinc-200">{{ type.label }}</p>
+                      <p class="text-xs text-stone-600 dark:text-zinc-400 mt-0.5">{{ type.description }}</p>
+                    </div>
+                    <button
+                      @click="toggleNotificationType(type.key)"
+                      :disabled="!preferences.email_enabled"
+                      :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                        preferences.email_enabled && preferences[type.key]
+                          ? 'bg-primary'
+                          : 'bg-stone-300 dark:bg-zinc-600'
+                      } ${
+                        !preferences.email_enabled
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
+                      }`"
+                    >
+                      <span
+                        :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          preferences.email_enabled && preferences[type.key] 
+                            ? 'translate-x-5' 
+                            : 'translate-x-0'
+                        }`"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Account Actions Section -->
+            <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex-1 flex flex-col min-h-0">
+              <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
+                Account Actions
+              </h3>
+          
+              <div class="space-y-3 flex-1 flex flex-col justify-start">
+                <!-- Theme Toggle Button -->
+                <button
+                  @click="handleThemeToggle"
+                  :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
+                  :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
+                >
+                  <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
+                  <Moon v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                  <Sun v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                  <span class="font-medium text-sm md:text-base">
+                    Toggle Theme
+                  </span>
+                </button>
+
+                <!-- Logout Button -->
+                <button
+                  @click="handleLogout"
+                  :disabled="loading"
+                  :class="`w-full flex items-center justify-start gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+                    loading
+                      ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+                      : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:hover:text-red-300'
+                  }`"
+                >
+                  <LogOut v-if="!loading" class="w-4 h-4 md:w-5 md:h-5" />
+                  <div v-else class="w-4 h-4 md:w-5 md:h-5 spinner-modern" />
+                  <span class="font-medium text-sm md:text-base">{{ loading ? 'Logging out...' : 'Logout' }}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -157,16 +230,63 @@ import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePopup } from '@/composables/usePopup'
+import { notificationsService } from '@/services/notificationsService'
 import { Sun, Moon, LogOut } from 'lucide-vue-next'
 
 // Composables and stores
 const { theme, toggleTheme } = useTheme()
 const authStore = useAuthStore()
 const router = useRouter()
-const { showConfirm } = usePopup()
+const { showConfirm, showError, showSuccess } = usePopup()
 
 // Reactive state
 const loading = ref(false)
+const loadingPreferences = ref(false)
+
+// Email notification preferences
+const preferences = ref({
+  email_enabled: true,
+  friend_requests: true,
+  friend_accepted: true,
+  outfit_likes: true,
+  item_likes: true,
+  outfit_comments: true,
+  friend_outfit_suggestions: true
+})
+
+// Notification types configuration
+const notificationTypes = [
+  {
+    key: 'friend_requests',
+    label: 'Friend Requests',
+    description: 'When someone sends you a friend request'
+  },
+  {
+    key: 'friend_accepted',
+    label: 'Friend Request Accepted',
+    description: 'When someone accepts your friend request'
+  },
+  {
+    key: 'outfit_likes',
+    label: 'Outfit Likes',
+    description: 'When someone likes your outfit'
+  },
+  {
+    key: 'item_likes',
+    label: 'Item Likes',
+    description: 'When someone likes your closet item'
+  },
+  {
+    key: 'outfit_comments',
+    label: 'Outfit Comments',
+    description: 'When someone comments on your outfit'
+  },
+  {
+    key: 'friend_outfit_suggestions',
+    label: 'Outfit Suggestions',
+    description: 'When someone shares or suggests an outfit with you'
+  }
+]
 
 // Use computed to get reactive user data from auth store
 // Prefer profile data (from database) over user data (from auth) for username and other profile fields
@@ -280,6 +400,88 @@ const handleLogout = () => {
   )
 }
 
+/**
+ * Loads notification preferences from the database
+ */
+const loadNotificationPreferences = async () => {
+  try {
+    loadingPreferences.value = true
+    const prefs = await notificationsService.getNotificationPreferences()
+    preferences.value = {
+      email_enabled: prefs.email_enabled !== false,
+      friend_requests: prefs.friend_requests !== false,
+      friend_accepted: prefs.friend_accepted !== false,
+      outfit_likes: prefs.outfit_likes !== false,
+      item_likes: prefs.item_likes !== false,
+      outfit_comments: prefs.outfit_comments !== false,
+      friend_outfit_suggestions: prefs.friend_outfit_suggestions !== false
+    }
+    console.log('👤 Profile: Notification preferences loaded:', preferences.value)
+  } catch (error) {
+    console.error('👤 Profile: Error loading notification preferences:', error)
+    showError('Failed to load notification preferences', 'Error')
+  } finally {
+    loadingPreferences.value = false
+  }
+}
+
+/**
+ * Toggles the master email notification setting
+ */
+const toggleMasterEmail = async () => {
+  try {
+    preferences.value.email_enabled = !preferences.value.email_enabled
+    const result = await notificationsService.updateNotificationPreferences({
+      email_enabled: preferences.value.email_enabled
+    })
+    
+    if (result.success) {
+      showSuccess(
+        preferences.value.email_enabled 
+          ? 'Email notifications enabled' 
+          : 'Email notifications disabled',
+        'Settings Updated'
+      )
+    } else {
+      // Revert on error
+      preferences.value.email_enabled = !preferences.value.email_enabled
+      showError('Failed to update email notification settings', 'Error')
+    }
+  } catch (error) {
+    console.error('👤 Profile: Error toggling master email:', error)
+    // Revert on error
+    preferences.value.email_enabled = !preferences.value.email_enabled
+    showError('Failed to update email notification settings', 'Error')
+  }
+}
+
+/**
+ * Toggles a specific notification type setting
+ */
+const toggleNotificationType = async (typeKey) => {
+  if (!preferences.value.email_enabled) {
+    return // Don't allow toggling individual types if master is disabled
+  }
+  
+  try {
+    preferences.value[typeKey] = !preferences.value[typeKey]
+    const result = await notificationsService.updateNotificationPreferences({
+      [typeKey]: preferences.value[typeKey]
+    })
+    
+    if (!result.success) {
+      // Revert on error
+      preferences.value[typeKey] = !preferences.value[typeKey]
+      showError('Failed to update notification preference', 'Error')
+    }
+  } catch (error) {
+    console.error('👤 Profile: Error toggling notification type:', error)
+    // Revert on error
+    preferences.value[typeKey] = !preferences.value[typeKey]
+    showError('Failed to update notification preference', 'Error')
+  }
+}
+
 onMounted(async () => {
   console.log('👤 Profile: Component mounted')
   console.log('👤 Profile: Auth store user:', authStore.user)
@@ -306,6 +508,9 @@ onMounted(async () => {
     console.error('👤 Profile: Profile fetch failed or timed out:', error)
     // Continue without profile data - we still have user data from auth
   }
+  
+  // Load notification preferences
+  await loadNotificationPreferences()
   
   console.log('👤 Profile: Final user data:', user.value)
   console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)

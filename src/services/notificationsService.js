@@ -427,6 +427,87 @@ export class NotificationsService {
       return { success: false, error }
     }
   }
+
+  // Get notification preferences
+  async getNotificationPreferences() {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('notification_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (error) {
+        // If preferences don't exist, return defaults
+        if (error.code === 'PGRST116') {
+          return {
+            email_enabled: true,
+            friend_requests: true,
+            friend_accepted: true,
+            outfit_likes: true,
+            item_likes: true,
+            outfit_comments: true,
+            friend_outfit_suggestions: true
+          }
+        }
+        throw error
+      }
+
+      return data || {
+        email_enabled: true,
+        friend_requests: true,
+        friend_accepted: true,
+        outfit_likes: true,
+        item_likes: true,
+        outfit_comments: true,
+        friend_outfit_suggestions: true
+      }
+    } catch (error) {
+      console.error('NotificationsService: Error getting notification preferences:', error)
+      handleSupabaseError(error, 'get notification preferences')
+      // Return defaults on error
+      return {
+        email_enabled: true,
+        friend_requests: true,
+        friend_accepted: true,
+        outfit_likes: true,
+        item_likes: true,
+        outfit_comments: true,
+        friend_outfit_suggestions: true
+      }
+    }
+  }
+
+  // Update notification preferences
+  async updateNotificationPreferences(preferences) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      // Upsert preferences (insert or update)
+      const { data, error } = await supabase
+        .from('notification_preferences')
+        .upsert({
+          user_id: user.id,
+          ...preferences,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return { success: true, data }
+    } catch (error) {
+      console.error('NotificationsService: Error updating notification preferences:', error)
+      handleSupabaseError(error, 'update notification preferences')
+      return { success: false, error }
+    }
+  }
 }
 
 export const notificationsService = new NotificationsService()

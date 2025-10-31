@@ -13,7 +13,7 @@
 import { test, expect } from '@playwright/test'
 
 // Test configuration
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000'
+const BASE_URL = process.env.VITE_APP_URL || process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:5173'
 
 // Helper to login via Google OAuth (mocked in test env)
 async function loginAsTestUser(page) {

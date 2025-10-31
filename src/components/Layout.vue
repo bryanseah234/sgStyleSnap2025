@@ -81,8 +81,8 @@
           :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
         >
          <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
-         <Moon v-if="theme.value === 'light'" class="w-5 h-5" />
-         <Sun v-else-if="theme.value === 'dark'" class="w-5 h-5" />
+         <Moon v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground" />
+         <Sun v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground" />
           <span class="font-medium text-secondary-foreground">
             Toggle Theme
           </span>
