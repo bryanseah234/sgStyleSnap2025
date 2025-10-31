@@ -416,7 +416,7 @@ export function displayAchievement(name, description) {
 /**
  * Display ASCII art on page navigation
  * 
- * Randomly selects and displays one of the ASCII art pieces
+ * Randomly selects and displays the logo first, then one of the ASCII art pieces
  * from PAGE_NAVIGATION_ART collection.
  * 
  * @param {string} routeName - Optional route name for context
@@ -434,10 +434,15 @@ export function displayPageNavigationArt(routeName = null) {
       return
     }
 
+    // Display logo first
+    const randomLogo = getRandomLogo()
+    const logoStyle = 'color: #8b5cf6; font-weight: bold; font-size: 12px; font-family: monospace; line-height: 1.2;'
+    console.log('%c' + randomLogo, logoStyle)
+    
     // Get a random ASCII art piece
     const randomArt = PAGE_NAVIGATION_ART[Math.floor(Math.random() * PAGE_NAVIGATION_ART.length)]
     
-    // Display with styling
+    // Display art with styling
     const artStyle = 'color: #8b5cf6; font-weight: bold; font-size: 11px; font-family: monospace; line-height: 1.2;'
     console.log('%c' + randomArt.art, artStyle)
     

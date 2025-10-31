@@ -37,19 +37,13 @@
 
       <!-- Loading State -->
       <div v-if="generating" class="flex flex-col items-center justify-center py-16">
-        <div class="w-20 h-20 spinner-modern mb-6"></div>
+        <div class="spinner-modern mb-6" style="color: rgb(168, 85, 247);"></div>
         <p class="text-lg font-medium text-black dark:text-white mb-2">
           Generating virtual try-on...
         </p>
         <p class="text-sm text-stone-600 dark:text-zinc-400 text-center max-w-md">
           {{ loadingMessage }}
         </p>
-        <div class="mt-4 w-full max-w-md bg-stone-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
-          <div 
-            class="bg-purple-500 h-full rounded-full transition-all duration-500"
-            :style="{ width: `${progress}%` }"
-          ></div>
-        </div>
       </div>
 
       <!-- Error State -->
@@ -184,7 +178,6 @@ const props = defineProps({
 const emit = defineEmits(['close', 'retry'])
 
 // State
-const progress = ref(0)
 const loadingMessage = ref('Preparing outfit images...')
 const isDesktop = ref(false)
 
@@ -219,23 +212,12 @@ const loadingMessages = [
   'Almost there...'
 ]
 
-let progressInterval = null
 let messageInterval = null
 
 // Watch for generating state changes
 watch(() => props.generating, (isGenerating) => {
   if (isGenerating) {
-    // Start progress simulation
-    progress.value = 0
     let currentMessageIndex = 0
-    
-    // Animate progress bar
-    progressInterval = setInterval(() => {
-      if (progress.value < 90) {
-        progress.value += Math.random() * 15
-        if (progress.value > 90) progress.value = 90
-      }
-    }, 800)
     
     // Cycle through loading messages
     messageInterval = setInterval(() => {
@@ -243,19 +225,10 @@ watch(() => props.generating, (isGenerating) => {
       loadingMessage.value = loadingMessages[currentMessageIndex]
     }, 2500)
   } else {
-    // Stop progress simulation
-    if (progressInterval) {
-      clearInterval(progressInterval)
-      progressInterval = null
-    }
+    // Stop message cycling
     if (messageInterval) {
       clearInterval(messageInterval)
       messageInterval = null
-    }
-    
-    // Complete progress if successful
-    if (props.generatedImageUrl && !props.error) {
-      progress.value = 100
     }
   }
 })
@@ -276,13 +249,8 @@ const downloadImage = () => {
 watch(() => props.isOpen, (isOpen) => {
   if (!isOpen) {
     // Reset state when modal closes
-    progress.value = 0
     loadingMessage.value = loadingMessages[0]
     
-    if (progressInterval) {
-      clearInterval(progressInterval)
-      progressInterval = null
-    }
     if (messageInterval) {
       clearInterval(messageInterval)
       messageInterval = null
@@ -291,18 +259,4 @@ watch(() => props.isOpen, (isOpen) => {
 })
 </script>
 
-<style scoped>
-/* Spinner animation */
-.spinner-modern {
-  border: 4px solid rgba(168, 85, 247, 0.1);
-  border-top: 4px solid rgb(168, 85, 247);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-</style>
 

@@ -18,8 +18,9 @@ export class VirtualTryOnService {
     this.apiEndpoints = [
       'https://api-inference.huggingface.co/models/yisol/IDM-VTON', // IDM-VTON Inference API primary (requires token)
       'https://api-inference.huggingface.co/models/levihsu/OOTDiffusion', // OOTDiffusion Inference API alternative
-      'https://yisol-idm-vton.hf.space/api/predict', // IDM-VTON Space fallback
-      'https://levihsu-ootdiffusion.hf.space/api/predict' // OOTDiffusion Space fallback
+      // Spaces API endpoints - use /run endpoint which is more reliable than /api/predict
+      'https://yisol-idm-vton.hf.space', // IDM-VTON Space (will use /run endpoint)
+      'https://levihsu-ootdiffusion.hf.space' // OOTDiffusion Space (will use /run endpoint)
     ]
     this.apiUrl = this.apiEndpoints[0] // Primary endpoint
     this.useSpacesFormat = false // Inference API is more reliable
@@ -237,25 +238,55 @@ export class VirtualTryOnService {
    * @returns {Promise<Response>} API response
    */
   async callWithFormData(url, modelImage, garmentImage) {
-    console.log('📦 Using FormData method')
-    const formData = new FormData()
-    formData.append('human_img', modelImage, 'model.png')
-    formData.append('garm_img', garmentImage, 'garment.png')
-    formData.append('garment_des', 'clothing item')
-
-    const headers = {}
+    safeLog('📦 Using FormData method')
     
-    // Only add Authorization header for inference API
-    if (this.apiToken && url.includes('api-inference.huggingface.co')) {
-      headers['Authorization'] = `Bearer ${this.apiToken}`
-    }
+    // Determine if this is Inference API or Spaces API
+    const isInferenceAPI = url.includes('api-inference.huggingface.co')
+    const isSpacesAPI = !isInferenceAPI
+    
+    if (isSpacesAPI) {
+      // For Spaces API, use /run endpoint and send as base64 in JSON instead
+      // FormData doesn't work well with Spaces API, so convert to base64
+      const modelBase64 = await this.blobToBase64(modelImage)
+      const garmentBase64 = await this.blobToBase64(garmentImage)
+      
+      const spacesUrl = url.endsWith('/predict') || url.endsWith('/api/predict') 
+        ? url.replace('/api/predict', '/run').replace('/predict', '/run')
+        : url + '/run'
+      
+      const payload = {
+        data: [modelBase64, garmentBase64]
+      }
+      
+      return await fetch(spacesUrl, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+    } else {
+      // For Inference API, use FormData
+      const formData = new FormData()
+      formData.append('human_img', modelImage, 'model.png')
+      formData.append('garm_img', garmentImage, 'garment.png')
+      formData.append('garment_des', 'clothing item')
 
-    return await fetch(url, {
-      method: 'POST',
-      mode: 'cors',
-      headers: headers,
-      body: formData
-    })
+      const headers = {}
+      
+      // Only add Authorization header for inference API
+      if (this.apiToken) {
+        headers['Authorization'] = `Bearer ${this.apiToken}`
+      }
+
+      return await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        headers: headers,
+        body: formData
+      })
+    }
   }
 
   /**
@@ -272,6 +303,27 @@ export class VirtualTryOnService {
     const isIDMVTON = url.includes('yisol/IDM-VTON')
     const isOOTDiffusion = url.includes('OOTDiffusion') || url.includes('ootdiffusion')
     
+    // For Inference API, first check if model is loaded (warmup)
+    if (isInferenceAPI && this.apiToken) {
+      try {
+        const warmupResponse = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${this.apiToken}`
+          }
+        })
+        
+        if (warmupResponse.status === 503) {
+          // Model is loading, wait and retry
+          const retryAfter = warmupResponse.headers.get('X-Wait-For-Model') || '30'
+          safeLog(`⏳ Model is loading, waiting ${retryAfter} seconds...`)
+          await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter) * 1000))
+        }
+      } catch (e) {
+        // Ignore warmup check errors, proceed with request
+      }
+    }
+    
     if (isInferenceAPI) {
       const formatMsg = isIDMVTON ? '📄 Using IDM-VTON Inference API JSON format' : (isOOTDiffusion ? '📄 Using OOTDiffusion Inference API JSON format' : '📄 Using Inference API JSON format')
       console.log(formatMsg)
@@ -286,19 +338,24 @@ export class VirtualTryOnService {
       let payload
       if (isIDMVTON) {
         // IDM-VTON specific format: expects inputs as a dictionary with human_img and garm_img
+        // Try with data URL format first as it's more compatible
+        const modelDataUrl = `data:image/png;base64,${modelBase64Data}`
+        const garmentDataUrl = `data:image/png;base64,${garmentBase64Data}`
         payload = {
           inputs: {
-            human_img: modelBase64Data,
-            garm_img: garmentBase64Data
+            human_img: modelDataUrl,
+            garm_img: garmentDataUrl
             // Note: IDM-VTON may not require garment_des parameter
           }
         }
       } else if (isOOTDiffusion) {
-        // OOTDiffusion specific format: expects model_image and cloth_image
+        // OOTDiffusion specific format: expects model_image and cloth_image as data URLs
+        const modelDataUrl = `data:image/png;base64,${modelBase64Data}`
+        const garmentDataUrl = `data:image/png;base64,${garmentBase64Data}`
         payload = {
           inputs: {
-            model_image: modelBase64Data,
-            cloth_image: garmentBase64Data,
+            model_image: modelDataUrl,
+            cloth_image: garmentDataUrl,
             model_type: 'hd', // 'hd' or 'dc'
             category: 0, // 0 for upper body, 1 for lower body, 2 for dress
             scale: 2.0,
@@ -339,15 +396,42 @@ export class VirtualTryOnService {
       console.log(`📤 Model image size: ${Math.round(modelBase64Data.length / 1024)}KB`)
       console.log(`📤 Garment image size: ${Math.round(garmentBase64Data.length / 1024)}KB`)
 
-      return await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        headers: headers,
-        body: JSON.stringify(payload)
-      })
+      // For Inference API, add retry logic for 503 (model loading)
+      const makeRequest = async () => {
+        const response = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          headers: headers,
+          body: JSON.stringify(payload)
+        })
+        
+        // If model is loading (503), wait and retry once
+        if (response.status === 503 && this.apiToken) {
+          const retryAfter = response.headers.get('X-Wait-For-Model') || response.headers.get('Retry-After') || '30'
+          safeLog(`⏳ Model loading (503), waiting ${retryAfter} seconds before retry...`)
+          await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter) * 1000))
+          
+          // Retry once
+          const retryResponse = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            headers: headers,
+            body: JSON.stringify(payload)
+          })
+          return retryResponse
+        }
+        
+        return response
+      }
+      
+      return await makeRequest()
     } else {
-      console.log('📄 Using Spaces API JSON format')
-      // Spaces API format
+      safeLog('📄 Using Spaces API JSON format')
+      // Spaces API format - use /run endpoint which is more reliable
+      const spacesUrl = url.endsWith('/predict') || url.endsWith('/api/predict') 
+        ? url.replace('/api/predict', '/run').replace('/predict', '/run')
+        : url + '/run'
+      
       let modelBase64, garmentBase64
       
       if (isOOTDiffusion) {
@@ -391,8 +475,8 @@ export class VirtualTryOnService {
       const headers = {
         'Content-Type': 'application/json'
       }
-
-      return await fetch(url, {
+      
+      return await fetch(spacesUrl, {
         method: 'POST',
         mode: 'cors',
         headers: headers,
@@ -476,18 +560,44 @@ export class VirtualTryOnService {
       console.log(`📤 Format: ${formatType}`)
       console.log(`📤 Payload structure: inputs object with ${Object.keys(payload.inputs).length} keys`)
 
-      return await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        headers: headers,
-        body: JSON.stringify(payload)
-      })
+      // For Inference API, add retry logic for 503 (model loading)
+      const makeRequest = async () => {
+        const response = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          headers: headers,
+          body: JSON.stringify(payload)
+        })
+        
+        // If model is loading (503), wait and retry once
+        if (response.status === 503 && this.apiToken) {
+          const retryAfter = response.headers.get('X-Wait-For-Model') || response.headers.get('Retry-After') || '30'
+          safeLog(`⏳ Model loading (503), waiting ${retryAfter} seconds before retry...`)
+          await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter) * 1000))
+          
+          // Retry once
+          const retryResponse = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            headers: headers,
+            body: JSON.stringify(payload)
+          })
+          return retryResponse
+        }
+        
+        return response
+      }
+      
+      return await makeRequest()
     } else {
-      // Spaces API alternative format - expects 'data' array, not 'inputs' object
-      // Spaces API format: { data: [modelImage, garmentImage], fn_index: 0 }
+      // Spaces API alternative format - use /run endpoint
+      const spacesUrl = url.endsWith('/predict') || url.endsWith('/api/predict') 
+        ? url.replace('/api/predict', '/run').replace('/predict', '/run')
+        : url + '/run'
+      
+      // Spaces API format: { data: [modelImage, garmentImage] } for /run endpoint
       const payload = {
-        data: [modelBase64, garmentBase64],
-        fn_index: 0
+        data: [modelBase64, garmentBase64]
       }
 
       const headers = {
@@ -495,10 +605,10 @@ export class VirtualTryOnService {
       }
       
       // Log request details
-      safeLog(`📤 Sending Spaces API alternative format to ${sanitizeUrl(url)}`)
-      console.log(`📤 Payload format: data array with ${payload.data.length} items, fn_index: ${payload.fn_index}`)
+      safeLog(`📤 Sending Spaces API alternative format to ${sanitizeUrl(spacesUrl)}`)
+      safeLog(`📤 Payload format: data array with ${payload.data.length} items`)
 
-      return await fetch(url, {
+      return await fetch(spacesUrl, {
         method: 'POST',
         mode: 'cors',
         headers: headers,
@@ -672,13 +782,15 @@ export class VirtualTryOnService {
 
       for (const method of methods) {
         try {
-          console.log(`🚀 Trying ${method.name} on ${endpoint}`)
+          // Use normalized endpoint for Spaces API
+          const urlToUse = normalizedEndpoint || endpoint
+          safeLog(`🚀 Trying ${method.name} on ${sanitizeUrl(urlToUse)}`)
           
-          // Add timeout (30 seconds for Inference API, 60 seconds for Spaces API which may be slower)
-          const timeoutMs = endpoint.includes('api-inference.huggingface.co') ? 30000 : 60000
+          // Add timeout (45 seconds for Inference API, 90 seconds for Spaces API which may be slower)
+          const timeoutMs = endpoint.includes('api-inference.huggingface.co') ? 45000 : 90000
           
           const response = await Promise.race([
-            method.fn(endpoint),
+            method.fn(urlToUse),
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
             )
@@ -721,28 +833,28 @@ export class VirtualTryOnService {
           }
 
           // Success! Parse the response (pass endpoint URL for model-specific parsing)
-          const result = await this.parseResponse(response, endpoint)
-          console.log(`✅ Success with ${method.name} on ${endpoint}`)
+          const result = await this.parseResponse(response, urlToUse)
+          safeLog(`✅ Success with ${method.name} on ${sanitizeUrl(urlToUse)}`)
           return result
 
         } catch (error) {
           // Handle timeout errors
           if (error.message.includes('timeout')) {
-            const errorMsg = `${method.name} on ${endpoint}: ${error.message}`
+            const errorMsg = `${method.name} on ${sanitizeUrl(urlToUse || endpoint)}: ${error.message}`
             errors.push(errorMsg)
-            console.warn(`⏱️ ${errorMsg}`)
+            safeWarn(`⏱️ ${errorMsg}`)
             continue
           }
           
           // If it's a token-related error and we're trying Inference API, skip silently
           if (error.message.includes('token') && endpoint.includes('api-inference.huggingface.co')) {
-            safeLog(`⏭️ ${method.name} skipped on ${endpoint} - token issue: ${error.message}`)
+            safeLog(`⏭️ ${method.name} skipped on ${sanitizeUrl(urlToUse || endpoint)} - token issue: ${error.message}`)
             continue
           }
           
-          const errorMsg = `${method.name} failed on ${endpoint}: ${error.message}`
+          const errorMsg = `${method.name} failed on ${sanitizeUrl(urlToUse || endpoint)}: ${error.message}`
           errors.push(errorMsg)
-          console.warn(`❌ ${errorMsg}`)
+          safeWarn(`❌ ${errorMsg}`)
           // Continue to next method/endpoint
           continue
         }
