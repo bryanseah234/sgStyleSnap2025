@@ -161,7 +161,7 @@
         v-else 
         name="list" 
         tag="div" 
-        class="grid grid-cols-2 md:grid-cols-3 gap-6"
+        class="grid grid-cols-2 md:grid-cols-4 gap-6"
       >
         <div
           v-for="(outfit, index) in filteredOutfits"
@@ -176,16 +176,6 @@
                 :items="outfit.outfit_items || []"
                 :scale-factor="0.4"
               />
-            
-            <!-- Favourite button (top right) -->
-            <button
-              @click.stop="toggleFavorite(outfit)"
-              class="absolute top-2 right-2 z-20 p-2 rounded-full transition-all duration-200 shadow bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90"
-              :class="outfit.is_favorite ? 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600' : ''"
-              title="Favorite"
-            >
-              <Heart :class="`w-5 h-5 ${outfit.is_favorite ? 'fill-current' : ''}`" />
-            </button>
             
             <!-- Action buttons overlay -->
             <div class="absolute inset-0 flex items-center justify-center">
@@ -210,15 +200,24 @@
           </div>
           
           <div class="p-4">
-            <h3 :class="`font-semibold mb-1 text-black dark:text-white`">
-              {{ outfit.outfit_name || outfit.name || 'Untitled Outfit' }}
-            </h3>
-            <p :class="`text-sm text-stone-600 dark:text-zinc-400`">
-              {{ outfit.item_count || 0 }} items
-            </p>
-            <p class="text-xs mt-1 text-stone-500 dark:text-zinc-500">
-              {{ formatDate(outfit.created_at) }}
-            </p>
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <h3 :class="`font-semibold mb-1 text-black dark:text-white`">
+                  {{ outfit.outfit_name || outfit.name || 'Untitled Outfit' }}
+                </h3>
+                <p :class="`text-xs text-stone-500 dark:text-zinc-500`">
+                  {{ outfit.item_count || 0 }} items, {{ formatDate(outfit.created_at) }}
+                </p>
+              </div>
+              <button
+                @click.stop="toggleFavorite(outfit)"
+                class="flex-shrink-0 p-2 rounded-full transition-all duration-200 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
+                :class="outfit.is_favorite ? 'text-red-500 dark:text-red-400' : ''"
+                title="Favorite"
+              >
+                <Heart :class="`w-5 h-5 ${outfit.is_favorite ? 'fill-current' : ''}`" />
+              </button>
+            </div>
           </div>
         </div>
       </TransitionGroup>

@@ -93,16 +93,16 @@
           <!-- Right Column: Email Notifications and Account Actions -->
           <div class="flex flex-col gap-6 h-full">
             <!-- Email Notifications Card -->
-            <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex-1 flex flex-col min-h-0">
+            <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
               <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
                 Email Notifications
               </h3>
               
-              <div v-if="loadingPreferences" class="flex items-center justify-center py-8 flex-1">
+              <div v-if="loadingPreferences" class="flex items-center justify-center py-8">
                 <div class="spinner-modern mb-4" />
               </div>
               
-              <div v-else class="space-y-4 flex-1">
+              <div v-else class="space-y-4">
                 <!-- Master Toggle -->
                 <div class="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-zinc-700">
                   <div>
@@ -126,7 +126,7 @@
                 </div>
 
                 <!-- Individual Notification Type Toggles -->
-                <div class="space-y-3 flex-1">
+                <div class="space-y-3">
                   <div
                     v-for="type in notificationTypes"
                     :key="type.key"
@@ -163,12 +163,12 @@
             </div>
 
             <!-- Account Actions Section -->
-            <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex-1 flex flex-col min-h-0">
+            <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
               <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
                 Account Actions
               </h3>
           
-              <div class="space-y-3 flex-1 flex flex-col justify-start">
+              <div class="space-y-3">
                 <!-- Theme Toggle Button -->
                 <button
                   @click="handleThemeToggle"

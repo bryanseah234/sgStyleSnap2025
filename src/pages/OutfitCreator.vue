@@ -9,11 +9,8 @@
             <h1 class="text-4xl font-bold mb-2 text-foreground">
               {{ subRouteTitle }}
             </h1>
-            <p v-if="currentSubRoute !== 'suggested'" class="text-lg text-stone-600 dark:text-zinc-400">
-              {{ currentSubRoute === 'personal' ? '' :
-                 currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
-                 currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
-                 '' }}
+            <p v-if="currentSubRoute === 'edit'" class="text-lg text-stone-600 dark:text-zinc-400">
+              Make changes to your saved outfit
             </p>
           </div>
           
@@ -126,11 +123,8 @@
           <h1 class="text-3xl font-bold mb-2 text-foreground">
             {{ subRouteTitle }}
           </h1>
-          <p v-if="currentSubRoute !== 'suggested'" class="text-base mb-4 text-stone-600 dark:text-zinc-400">
-            {{ currentSubRoute === 'personal' ? '' :
-               currentSubRoute === 'friend' ? (friendProfile ? `Create an outfit suggestion for ${getFirstName(friendProfile.name || friendProfile.username)}` : "Create outfit suggestion for your friend") :
-               currentSubRoute === 'edit' ? 'Make changes to your saved outfit' :
-               '' }}
+          <p v-if="currentSubRoute === 'edit'" class="text-base mb-4 text-stone-600 dark:text-zinc-400">
+            Make changes to your saved outfit
           </p>
           
           <!-- Action Buttons (moved into canvas; hidden here) -->
@@ -247,7 +241,7 @@
           }`"
         >
           <Sparkles class="w-4 h-4" />
-          Create
+          Suggested
         </button>
         <button
           @click="$router.push('/outfits/add/personal')"

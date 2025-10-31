@@ -246,32 +246,34 @@
               <Shirt class="w-12 h-12 text-stone-500 dark:text-white" />
             </div>
             
-            <button
-              @click.stop="toggleFavorite(item)"
-              @mousedown="handleFavoritePress($event, item)"
-              @mouseup="handleFavoriteRelease($event, item)"
-              :class="`liquid-favorite-btn absolute top-2 right-2 p-2 rounded-full ${
-                item.is_favorite
-                  ? 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600'
-                  : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'
-              }`"
-            >
-              <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current' : ''}`" />
-            </button>
           </div>
           
           <div class="p-4">
-            <h3 class="liquid-item-title font-semibold mb-1 text-black dark:text-white">
-              {{ item.name }}
-            </h3>
-            <!-- Date Added / Created -->
-            <p class="text-sm text-stone-600 dark:text-stone-100">
-              {{ formatItemDate(item) }}
-            </p>
-            <!-- Category (Proper Case) -->
-            <p class="mt-2 text-xs font-medium text-stone-700 dark:text-zinc-200">
-              {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
-            </p>
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <h3 class="liquid-item-title font-semibold mb-1 text-black dark:text-white">
+                  {{ item.name }}
+                </h3>
+                <!-- Date Added / Created -->
+                <p class="text-sm text-stone-600 dark:text-stone-100">
+                  {{ formatItemDate(item) }}
+                </p>
+                <!-- Category (Proper Case) -->
+                <p class="mt-2 text-xs font-medium text-stone-700 dark:text-zinc-200">
+                  {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
+                </p>
+              </div>
+              <button
+                @click.stop="toggleFavorite(item)"
+                @mousedown="handleFavoritePress($event, item)"
+                @mouseup="handleFavoriteRelease($event, item)"
+                class="liquid-favorite-btn flex-shrink-0 p-2 rounded-full transition-all duration-200 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
+                :class="item.is_favorite ? 'text-red-500 dark:text-red-400' : ''"
+                title="Favorite"
+              >
+                <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current' : ''}`" />
+              </button>
+            </div>
           </div>
         </div>
       </TransitionGroup>

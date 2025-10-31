@@ -30,7 +30,7 @@
     <!-- Hero Section with Liquid Glass Reveal -->
     <div 
       ref="heroRef"
-      class="max-w-full mb-12 liquid-reveal relative"
+      class="max-w-6xl mx-auto mb-12 liquid-reveal relative"
       v-scroll-animate.up
       @mousemove="handleHeroMouseMove"
       @mouseleave="handleHeroMouseLeave"
@@ -62,7 +62,7 @@
     </div>
 
     <!-- Main Content Below Hero: Spinner/cards area -->
-    <div class="max-w-full min-h-[200px]">
+    <div class="max-w-6xl mx-auto min-h-[200px]">
       <div v-if="loadingAll" class="flex justify-center items-center min-h-[200px] py-12">
         <div class="spinner-modern" style="width:64px;height:64px;"></div>
       </div>
