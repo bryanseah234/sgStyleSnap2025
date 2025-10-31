@@ -377,8 +377,10 @@
               <div
                 v-for="item in filteredItems"
                 :key="item.id"
+                draggable="true"
+                @dragstart="handleDragStart(item, $event)"
                 @click="addItemToCanvas(item)"
-                class="group p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600"
+                class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600"
               >
                 <div class="flex items-center gap-3">
                   <!-- Item Image -->
@@ -388,6 +390,7 @@
                       :src="item.image_url"
                       :alt="item.name"
                       class="w-full h-full object-cover"
+                      draggable="false"
                     />
                     <div class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
                       <Shirt class="w-6 h-6 text-stone-400 dark:text-zinc-500" />
@@ -1453,6 +1456,11 @@ const addItemToCanvas = (item) => {
   canvasItems.value.push(newItem)
   saveToHistory()
   selectedItemId.value = newItem.id
+}
+
+const handleDragStart = (item, event) => {
+  event.dataTransfer.setData('text/plain', item.id)
+  event.dataTransfer.effectAllowed = 'move'
 }
 
 const handleDrop = (event) => {
