@@ -18,7 +18,7 @@
         </div>
         
         <!-- Profile content - Grid layout for large screens, stacked on mobile -->
-        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <!-- User Account Card -->
           <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col h-full">
             <div class="space-y-6 flex-1">
@@ -91,7 +91,7 @@
           </div>
 
           <!-- Right Column: Email Notifications and Account Actions -->
-          <div class="flex flex-col gap-6 h-full">
+          <div class="flex flex-col gap-6">
             <!-- Email Notifications Card -->
             <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
               <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
@@ -104,10 +104,10 @@
               
               <div v-else class="space-y-4">
                 <!-- Master Toggle -->
-                <div class="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-zinc-700">
-                  <div>
-                    <p class="font-medium text-stone-800 dark:text-zinc-200">Enable Email Notifications</p>
-                    <p class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Master control for all email notifications</p>
+                <div class="flex items-center justify-between pb-4 border-b border-stone-200 dark:border-zinc-700">
+                  <div class="flex-1">
+                    <p class="text-base font-medium text-stone-800 dark:text-zinc-200">Enable Email Notifications</p>
+                    <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">Master control for all email notifications</p>
                   </div>
                   <button
                     @click="toggleMasterEmail"
@@ -126,15 +126,15 @@
                 </div>
 
                 <!-- Individual Notification Type Toggles -->
-                <div class="space-y-3">
+                <div class="space-y-4">
                   <div
                     v-for="type in notificationTypes"
                     :key="type.key"
                     class="flex items-center justify-between"
                   >
-                    <div>
-                      <p class="font-medium text-sm text-stone-800 dark:text-zinc-200">{{ type.label }}</p>
-                      <p class="text-xs text-stone-600 dark:text-zinc-400 mt-0.5">{{ type.description }}</p>
+                    <div class="flex-1">
+                      <p class="text-base font-medium text-stone-800 dark:text-zinc-200">{{ type.label }}</p>
+                      <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">{{ type.description }}</p>
                     </div>
                     <button
                       @click="toggleNotificationType(type.key)"
