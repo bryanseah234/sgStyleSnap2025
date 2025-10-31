@@ -14,9 +14,7 @@
         '--target-size': splashTransform.fontSize || '3.5rem',
         transform: `translate(var(--target-x), var(--target-y))`,
         fontSize: 'var(--target-size)',
-        fontWeight: 800,
-        letterSpacing: '-0.02em',
-        lineHeight: 1.2
+        fontWeight: 700
       } : {}"
     >
       {{ displayedTitle }}<span v-if="showTypewriterCursor" class="typewriter-cursor-splash">|</span>
@@ -277,7 +275,9 @@
                     left: '50%',
                     top: '50%',
                     transform: `translate(calc(-50% + ${item.x}px), calc(-50% + ${item.y}px)) scale(${item.scale || 1}) rotate(${item.rotation || 0}deg)`,
-                    zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : (item.z_index || 0) + 10,
+                    zIndex: draggedItem === item.id 
+                      ? 10000 
+                      : (selectedItemId === item.id ? 5000 : 100) + ((item.z_index || 0) * 100),
                   }"
                   @mousedown.prevent="(e) => handleMouseDown(e, item.id)"
                   @click.stop="selectItem(item.id)"
@@ -360,7 +360,8 @@
 
                 <!-- Move Forward -->
                 <button
-                  @click.stop="moveSelectedItemForward(item.id)"
+                  @click.stop.prevent="moveSelectedItemForward(item.id)"
+                  @mousedown.stop.prevent
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Move Forward"
                 >
@@ -371,7 +372,8 @@
 
                 <!-- Move Backward -->
                 <button
-                  @click.stop="moveSelectedItemBackward(item.id)"
+                  @click.stop.prevent="moveSelectedItemBackward(item.id)"
+                  @mousedown.stop.prevent
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Move Backward"
                 >
@@ -747,16 +749,57 @@ const rotateSelectedItem = (itemId, degrees) => {
 
 const moveSelectedItemForward = (itemId) => {
   const item = outfitItems.value.find(i => i.id === itemId)
-  if (item) {
-    item.z_index = (item.z_index || 0) + 1
+  if (!item) {
+    console.warn('Item not found:', itemId)
+    return
   }
+  
+  // Find the highest z_index currently
+  const maxZIndex = Math.max(...outfitItems.value.map(i => i.z_index || 0), -1)
+  const oldZIndex = item.z_index || 0
+  
+  // Bring this item to the front by giving it the highest z_index + 1
+  item.z_index = maxZIndex + 1
+  
+  console.log(`Move forward: Item ${itemId} z_index ${oldZIndex} -> ${item.z_index}`)
+  
+  // Force Vue reactivity by reassigning the array
+  outfitItems.value = [...outfitItems.value]
 }
 
 const moveSelectedItemBackward = (itemId) => {
   const item = outfitItems.value.find(i => i.id === itemId)
-  if (item) {
-    item.z_index = Math.max(0, (item.z_index || 0) - 1)
+  if (!item) {
+    console.warn('Item not found:', itemId)
+    return
   }
+  
+  const currentZIndex = item.z_index || 0
+  
+  // Can't go below 0
+  if (currentZIndex === 0) {
+    console.log(`Item ${itemId} already at back (z_index: 0)`)
+    return
+  }
+  
+  // Simply decrease z_index by 1
+  const newZIndex = currentZIndex - 1
+  
+  // If the new z_index would conflict with another item, swap positions
+  const conflictingItem = outfitItems.value.find(i => i.id !== itemId && (i.z_index || 0) === newZIndex)
+  if (conflictingItem) {
+    // Swap z_index values
+    conflictingItem.z_index = currentZIndex
+    item.z_index = newZIndex
+    console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex} (swapped with ${conflictingItem.id})`)
+  } else {
+    // No conflict, just decrease
+    item.z_index = newZIndex
+    console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex}`)
+  }
+  
+  // Force Vue reactivity by reassigning the array
+  outfitItems.value = [...outfitItems.value]
 }
 
 const deleteSelectedItem = (itemId) => {
@@ -991,14 +1034,9 @@ const setScrollY = (value) => {
 }
 
 .splash-title-moving {
-  /* Apply final styling that transitions smoothly */
-  font-weight: 800 !important;
-  background: linear-gradient(135deg, #1a1a1a 0%, #333333 50%, #000000 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  letter-spacing: -0.02em !important;
-  line-height: 1.2 !important;
+  /* Apply final styling that transitions smoothly - match hero title */
+  font-weight: 700 !important; /* font-bold matches "Powerful Features" */
+  color: inherit !important; /* Use normal text color, no gradient */
   /* Lock position */
   position: fixed !important;
   z-index: 10001 !important;
@@ -1015,9 +1053,8 @@ const setScrollY = (value) => {
   will-change: auto !important;
   /* Lock size - use exact pixel value */
   font-size: 2.5625rem !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.02em !important;
-  line-height: 1.2 !important;
+  font-weight: 700 !important; /* font-bold matches "Powerful Features" */
+  color: inherit !important; /* Use normal text color, no gradient */
   /* Lock position exactly where it is */
   position: fixed !important;
   /* Prevent ANY responsive behavior */
@@ -1056,14 +1093,8 @@ const setScrollY = (value) => {
 
 /* Hero title styling */
 .hero-title {
-  font-weight: 800;
-  background: linear-gradient(135deg, #1a1a1a 0%, #333333 50%, #000000 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-weight: 700; /* font-bold matches "Powerful Features" */
+  color: inherit; /* Use normal text color, no gradient */
   position: relative;
   opacity: 0;
   transition: opacity 0.5s ease-in;
@@ -1071,16 +1102,6 @@ const setScrollY = (value) => {
 
 .hero-title-visible {
   opacity: 1 !important;
-}
-
-/* Add subtle glow effect */
-.hero-title::before {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: -1;
-  text-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Typewriter cursor animation */
