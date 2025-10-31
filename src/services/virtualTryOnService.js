@@ -16,11 +16,10 @@ export class VirtualTryOnService {
     // Priority: Hugging Face Inference API (most reliable) > Spaces API
     // Note: Inference API requires API token, Spaces may not
     this.apiEndpoints = [
-      'https://api-inference.huggingface.co/models/yisol/IDM-VTON', // IDM-VTON Inference API primary (requires token)
-      'https://api-inference.huggingface.co/models/levihsu/OOTDiffusion', // OOTDiffusion Inference API alternative
+      'https://api-inference.huggingface.co/models/ovi054/virtual-tryon-kontext-lora', // Virtual Try-On Kontext LoRA (requires token, uses "wear it" prompt)
+      'https://api-inference.huggingface.co/models/yisol/IDM-VTON', // IDM-VTON Inference API alternative (requires token)
       // Spaces API endpoints - use /run endpoint which is more reliable than /api/predict
-      'https://yisol-idm-vton.hf.space', // IDM-VTON Space (will use /run endpoint)
-      'https://levihsu-ootdiffusion.hf.space' // OOTDiffusion Space (will use /run endpoint)
+      'https://yisol-idm-vton.hf.space' // IDM-VTON Space (will use /run endpoint)
     ]
     this.apiUrl = this.apiEndpoints[0] // Primary endpoint
     this.useSpacesFormat = false // Inference API is more reliable
@@ -47,7 +46,7 @@ export class VirtualTryOnService {
   }
 
   /**
-   * Generate virtual try-on image using IDM-VTON
+   * Generate virtual try-on image using Virtual Try-On Kontext LoRA model
    * 
    * @param {Object} options - Try-on options
    * @param {string} options.topImageUrl - URL of the top/shirt image
@@ -81,7 +80,7 @@ export class VirtualTryOnService {
         modelImageBlob = await this.getDefaultModelImage()
       }
 
-      // Call IDM-VTON API
+      // Call Virtual Try-On API
       const result = await this.callIDMVTONApi(modelImageBlob, outfitImageBlob)
 
       console.log('✅ VirtualTryOnService: Try-on generated successfully')
@@ -98,6 +97,91 @@ export class VirtualTryOnService {
         error: error.message || 'Failed to generate virtual try-on'
       }
     }
+  }
+
+  /**
+   * Create garment overlay by compositing garment image onto model image
+   * Used for Virtual Try-On Kontext LoRA model which requires garments overlaid on model
+   * 
+   * @param {Blob} modelImage - Model person image blob
+   * @param {Blob} garmentImage - Clothing/outfit image blob
+   * @returns {Promise<Blob>} Image with garments overlaid on model
+   */
+  async createGarmentOverlay(modelImage, garmentImage) {
+    try {
+      console.log('🎨 VirtualTryOnService: Creating garment overlay...')
+      
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      // Set canvas size (standard for virtual try-on)
+      canvas.width = 768
+      canvas.height = 1024
+      
+      // Load model image
+      const modelImg = await this.blobToImage(modelImage)
+      
+      // Draw model image as background
+      ctx.drawImage(modelImg, 0, 0, canvas.width, canvas.height)
+      
+      // Load and overlay garment image (composited outfit)
+      const garmentImg = await this.blobToImage(garmentImage)
+      
+      // Overlay garment image on top of model
+      // Use multiply or overlay blend mode for better integration
+      ctx.globalAlpha = 0.7 // Semi-transparent overlay
+      ctx.globalCompositeOperation = 'source-over'
+      
+      // Scale garment to fit model size
+      const scale = Math.min(canvas.width / garmentImg.width, canvas.height / garmentImg.height)
+      const scaledWidth = garmentImg.width * scale
+      const scaledHeight = garmentImg.height * scale
+      const x = (canvas.width - scaledWidth) / 2
+      const y = (canvas.height - scaledHeight) / 2
+      
+      ctx.drawImage(garmentImg, x, y, scaledWidth, scaledHeight)
+      ctx.globalAlpha = 1.0 // Reset alpha
+      
+      // Convert canvas to blob
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            console.log('✅ VirtualTryOnService: Garment overlay created successfully')
+            resolve(blob)
+          } else {
+            reject(new Error('Failed to create garment overlay image'))
+          }
+        }, 'image/png')
+      })
+      
+    } catch (error) {
+      safeError('❌ VirtualTryOnService: Error creating garment overlay:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Convert Blob to HTMLImageElement
+   * @param {Blob} blob - Image blob
+   * @returns {Promise<HTMLImageElement>} Image element
+   */
+  async blobToImage(blob) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const objectUrl = URL.createObjectURL(blob)
+      
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl)
+        resolve(img)
+      }
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl)
+        reject(new Error('Failed to load image from blob'))
+      }
+      
+      img.src = objectUrl
+    })
   }
 
   /**
@@ -301,6 +385,7 @@ export class VirtualTryOnService {
   async callWithJSON(url, modelImage, garmentImage) {
     const isInferenceAPI = url.includes('api-inference.huggingface.co')
     const isIDMVTON = url.includes('yisol/IDM-VTON')
+    const isKontextLoRA = url.includes('ovi054/virtual-tryon-kontext-lora') || url.includes('virtual-tryon-kontext-lora')
     const isOOTDiffusion = url.includes('OOTDiffusion') || url.includes('ootdiffusion')
     
     // For Inference API, first check if model is loaded (warmup)
@@ -325,7 +410,7 @@ export class VirtualTryOnService {
     }
     
     if (isInferenceAPI) {
-      const formatMsg = isIDMVTON ? '📄 Using IDM-VTON Inference API JSON format' : (isOOTDiffusion ? '📄 Using OOTDiffusion Inference API JSON format' : '📄 Using Inference API JSON format')
+      const formatMsg = isKontextLoRA ? '📄 Using Virtual Try-On Kontext LoRA Inference API JSON format' : (isIDMVTON ? '📄 Using IDM-VTON Inference API JSON format' : (isOOTDiffusion ? '📄 Using OOTDiffusion Inference API JSON format' : '📄 Using Inference API JSON format'))
       console.log(formatMsg)
       // Extract base64 data from data URL (remove "data:image/...;base64," prefix)
       const modelBase64 = await this.blobToBase64(modelImage)
@@ -336,7 +421,26 @@ export class VirtualTryOnService {
       const garmentBase64Data = garmentBase64.includes(',') ? garmentBase64.split(',')[1] : garmentBase64
       
       let payload
-      if (isIDMVTON) {
+      if (isKontextLoRA) {
+        // Virtual Try-On Kontext LoRA format: FLUX-based image-to-image model
+        // Requires model image with garment overlay, and prompt with "wear it" trigger word
+        // For Kontext LoRA, we need to overlay garments onto the model image
+        // The model expects a single input image with garments overlaid
+        const overlayImage = await this.createGarmentOverlay(modelImage, garmentImage)
+        const overlayBase64 = await this.blobToBase64(overlayImage)
+        const overlayBase64Data = overlayBase64.includes(',') ? overlayBase64.split(',')[1] : overlayBase64
+        
+        payload = {
+          inputs: {
+            image: `data:image/png;base64,${overlayBase64Data}`,
+            prompt: "wear it",
+            strength: 0.8,
+            guidance_scale: 7.5,
+            num_inference_steps: 28,
+            lora_scale: 1.0 // Recommended LoRA weight
+          }
+        }
+      } else if (isIDMVTON) {
         // IDM-VTON specific format: expects inputs as a dictionary with human_img and garm_img
         // Try with data URL format first as it's more compatible
         const modelDataUrl = `data:image/png;base64,${modelBase64Data}`
@@ -382,7 +486,7 @@ export class VirtualTryOnService {
       // Inference API REQUIRES token
       if (this.apiToken) {
         headers['Authorization'] = `Bearer ${this.apiToken}`
-        const modelType = isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'Inference API')
+        const modelType = isKontextLoRA ? 'Virtual Try-On Kontext LoRA' : (isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'Inference API'))
         safeLog(`🔑 Using API token for ${modelType} request`)
       } else {
         throw new Error('Hugging Face API token is required for Inference API. Please set VITE_HUGGINGFACE_API_TOKEN.')
@@ -390,7 +494,7 @@ export class VirtualTryOnService {
       
       // Log request details (sanitized)
       safeLog(`📤 Sending to ${sanitizeUrl(url)}`)
-      const formatType = isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'standard Inference API')
+      const formatType = isKontextLoRA ? 'Virtual Try-On Kontext LoRA' : (isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'standard Inference API'))
       console.log(`📤 Payload format: ${formatType}`)
       console.log(`📤 Payload keys: ${Object.keys(payload.inputs).join(', ')}`)
       console.log(`📤 Model image size: ${Math.round(modelBase64Data.length / 1024)}KB`)
@@ -497,9 +601,10 @@ export class VirtualTryOnService {
   async callWithInputsJSON(url, modelImage, garmentImage) {
     const isInferenceAPI = url.includes('api-inference.huggingface.co')
     const isIDMVTON = url.includes('yisol/IDM-VTON')
+    const isKontextLoRA = url.includes('ovi054/virtual-tryon-kontext-lora') || url.includes('virtual-tryon-kontext-lora')
     const isOOTDiffusion = url.includes('OOTDiffusion') || url.includes('ootdiffusion')
     
-    const formatMsg = isIDMVTON ? '📋 Using IDM-VTON alternative inputs format' : (isOOTDiffusion ? '📋 Using OOTDiffusion alternative inputs format' : (isInferenceAPI ? '📋 Using Inference API raw inputs format' : '📋 Using JSON inputs method'))
+    const formatMsg = isKontextLoRA ? '📋 Using Virtual Try-On Kontext LoRA alternative inputs format' : (isIDMVTON ? '📋 Using IDM-VTON alternative inputs format' : (isOOTDiffusion ? '📋 Using OOTDiffusion alternative inputs format' : (isInferenceAPI ? '📋 Using Inference API raw inputs format' : '📋 Using JSON inputs method')))
     console.log(formatMsg)
     const modelBase64 = await this.blobToBase64(modelImage)
     const garmentBase64 = await this.blobToBase64(garmentImage)
@@ -510,7 +615,23 @@ export class VirtualTryOnService {
 
     if (isInferenceAPI) {
       let payload
-      if (isIDMVTON) {
+      if (isKontextLoRA) {
+        // Virtual Try-On Kontext LoRA alternative format
+        const overlayImage = await this.createGarmentOverlay(modelImage, garmentImage)
+        const overlayBase64 = await this.blobToBase64(overlayImage)
+        const overlayBase64Data = overlayBase64.includes(',') ? overlayBase64.split(',')[1] : overlayBase64
+        
+        payload = {
+          inputs: {
+            image: overlayBase64Data, // Raw base64 without data URL prefix
+            prompt: "wear it",
+            strength: 0.8,
+            guidance_scale: 7.5,
+            num_inference_steps: 28,
+            lora_scale: 1.0
+          }
+        }
+      } else if (isIDMVTON) {
         // IDM-VTON alternative: try with direct data URL format (some models accept this)
         payload = {
           inputs: {
@@ -548,7 +669,7 @@ export class VirtualTryOnService {
       
       if (this.apiToken) {
         headers['Authorization'] = `Bearer ${this.apiToken}`
-        const modelType = isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'Inference API')
+        const modelType = isKontextLoRA ? 'Virtual Try-On Kontext LoRA' : (isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'Inference API'))
         safeLog(`🔑 Using API token for ${modelType} request (alternative format)`)
       } else {
         throw new Error('Hugging Face API token is required for Inference API.')
@@ -556,7 +677,7 @@ export class VirtualTryOnService {
       
       // Log request details (sanitized)
       safeLog(`📤 Sending alternative format to ${sanitizeUrl(url)}`)
-      const formatType = isIDMVTON ? 'IDM-VTON data URL format' : (isOOTDiffusion ? 'OOTDiffusion format' : 'standard dictionary')
+      const formatType = isKontextLoRA ? 'Virtual Try-On Kontext LoRA format' : (isIDMVTON ? 'IDM-VTON data URL format' : (isOOTDiffusion ? 'OOTDiffusion format' : 'standard dictionary'))
       console.log(`📤 Format: ${formatType}`)
       console.log(`📤 Payload structure: inputs object with ${Object.keys(payload.inputs).length} keys`)
 
@@ -629,6 +750,7 @@ export class VirtualTryOnService {
   async parseResponse(response, url = '') {
     const contentType = response.headers.get('content-type') || ''
     const isIDMVTON = url.includes('yisol/IDM-VTON')
+    const isKontextLoRA = url.includes('ovi054/virtual-tryon-kontext-lora') || url.includes('virtual-tryon-kontext-lora')
     const isOOTDiffusion = url.includes('OOTDiffusion') || url.includes('ootdiffusion')
     
     if (contentType.includes('application/json')) {
@@ -638,6 +760,48 @@ export class VirtualTryOnService {
       // Handle Inference API error responses
       if (json.error) {
         throw new Error(`API error: ${json.error}`)
+      }
+      
+      // Handle Kontext LoRA response format (FLUX-based image-to-image)
+      if (isKontextLoRA) {
+        console.log('🔄 Parsing Virtual Try-On Kontext LoRA response format')
+        
+        // FLUX models may return base64 string directly or in an object
+        if (typeof json === 'string' && json.length > 100) {
+          // Likely a base64-encoded image
+          const imageData = json.startsWith('data:image') ? json : `data:image/png;base64,${json}`
+          const imageResponse = await fetch(imageData)
+          const imageBlob = await imageResponse.blob()
+          const imageUrl = URL.createObjectURL(imageBlob)
+          return { imageUrl, imageBlob }
+        }
+        
+        // FLUX models may return object with image key
+        if (json && typeof json === 'object') {
+          const imageData = json.image || json.generated_image || json.output || json.result || json.data
+          
+          if (imageData) {
+            let imageUrl
+            if (typeof imageData === 'string') {
+              imageUrl = imageData.startsWith('data:image') 
+                ? imageData 
+                : `data:image/png;base64,${imageData}`
+            } else if (Array.isArray(imageData) && imageData[0]) {
+              // Handle array response
+              const firstItem = imageData[0]
+              imageUrl = typeof firstItem === 'string' && firstItem.startsWith('data:image')
+                ? firstItem
+                : `data:image/png;base64,${firstItem}`
+            } else {
+              throw new Error('Unexpected Kontext LoRA response format')
+            }
+            
+            const imageResponse = await fetch(imageUrl)
+            const imageBlob = await imageResponse.blob()
+            const blobUrl = URL.createObjectURL(imageBlob)
+            return { imageUrl: blobUrl, imageBlob }
+          }
+        }
       }
       
       // Handle OOTDiffusion response format: list of dictionaries with 'image' key
