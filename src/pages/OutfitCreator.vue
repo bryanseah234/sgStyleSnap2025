@@ -602,6 +602,27 @@
                 </p>
               </div>
 
+              <!-- Show on Model Button (Top Right) - Only for personal and suggested routes -->
+              <div
+                v-if="currentSubRoute === 'personal' || currentSubRoute === 'suggested'"
+                class="absolute top-4 right-4 z-20"
+              >
+                <button
+                  @click="showVirtualTryOn"
+                  :disabled="!canShowVirtualTryOn || generatingTryOn"
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                    canShowVirtualTryOn && !generatingTryOn
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
+                      : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
+                  }`"
+                  title="Show Outfit on AI Model Person"
+                >
+                  <User v-if="!generatingTryOn" class="w-4 h-4" />
+                  <div v-else class="w-4 h-4 spinner-modern"></div>
+                  <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Show on Model' }}</span>
+                </button>
+              </div>
+
               <!-- Bottom-Center Canvas Toolbar -->
               <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700">
                 <button
