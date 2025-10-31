@@ -17,6 +17,7 @@
  */
 
 import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { sanitizeEmail, safeLog } from '@/utils/log-sanitizer'
 import { cloudinary } from '@/lib/cloudinary'
 
 /**
@@ -163,7 +164,7 @@ export class ClothesService {
         throw new Error('Not authenticated')
       }
 
-      console.log('🔧 ClothesService: User authenticated:', user.email)
+      safeLog('🔧 ClothesService: User authenticated:', sanitizeEmail(user.email))
 
       // Use the get_friend_closet function which respects privacy settings
       const { data, error } = await supabase

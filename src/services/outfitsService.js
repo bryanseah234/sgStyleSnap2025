@@ -1,4 +1,5 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { sanitizeEmail, safeLog } from '@/utils/log-sanitizer'
 
 export class OutfitsService {
   async getOutfits(filters = {}) {
@@ -17,7 +18,7 @@ export class OutfitsService {
         throw new Error('Not authenticated')
       }
 
-      console.log('🔧 OutfitsService: User authenticated:', user.email)
+      safeLog('🔧 OutfitsService: User authenticated:', sanitizeEmail(user.email))
 
       let query = supabase
         .from('outfits')

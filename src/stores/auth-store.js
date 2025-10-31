@@ -42,6 +42,7 @@ import {
   clearActiveSession, 
   removeUserSession 
 } from '@/services/session-service'
+import { sanitizeEmail, sanitizeUser, sanitizeSession, sanitizeUrl, safeLog, safeError } from '@/utils/log-sanitizer'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -71,7 +72,7 @@ export const useAuthStore = defineStore('auth', {
      * @param {Object|null} userData - User object or null to clear
      */
     setUser(userData) {
-      console.log('🔧 AuthStore: Setting user:', userData ? userData.email : 'null')
+      safeLog('🔧 AuthStore: Setting user:', userData ? sanitizeEmail(userData.email) : 'null')
       this.user = userData
       this.isAuthenticated = !!userData
       
@@ -136,10 +137,10 @@ export const useAuthStore = defineStore('auth', {
         
         // If this is an OAuth callback route, handle it specially
         if (isCallbackRoute) {
-          console.log('🔄 AuthStore: =============== OAuth Callback Route Detected ===============')
-          console.log('🔄 AuthStore: Current URL:', window.location.href)
-          console.log('🔄 AuthStore: URL search params:', window.location.search)
-          console.log('🔄 AuthStore: URL hash:', window.location.hash)
+          safeLog('🔄 AuthStore: =============== OAuth Callback Route Detected ===============')
+          safeLog('🔄 AuthStore: Current URL:', sanitizeUrl(window.location.href))
+          safeLog('🔄 AuthStore: URL search params:', sanitizeUrl(window.location.search))
+          safeLog('🔄 AuthStore: URL hash:', sanitizeUrl(window.location.hash))
           
           // Wait longer for Supabase to process the OAuth callback
           console.log('🔄 AuthStore: Waiting 3 seconds for Supabase to process OAuth callback...')
@@ -158,43 +159,39 @@ export const useAuthStore = defineStore('auth', {
               // Get session directly from Supabase
               const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
               
-              console.log(`🔄 AuthStore: Session data:`, currentSession ? {
+              safeLog(`🔄 AuthStore: Session data:`, currentSession ? {
                 user_id: currentSession.user?.id,
-                user_email: currentSession.user?.email,
-                access_token: currentSession.access_token ? 'present' : 'missing',
-                refresh_token: currentSession.refresh_token ? 'present' : 'missing',
+                user_email: currentSession.user?.email ? sanitizeEmail(currentSession.user.email) : null,
+                access_token: currentSession.access_token ? '[REDACTED]' : 'missing',
+                refresh_token: currentSession.refresh_token ? '[REDACTED]' : 'missing',
                 expires_at: currentSession.expires_at
               } : 'null')
               
               if (sessionError) {
-                console.log(`🔄 AuthStore: Session error on attempt ${attempts + 1}:`, {
-                  message: sessionError.message,
-                  status: sessionError.status,
-                  name: sessionError.name
-                })
+              safeLog(`🔄 AuthStore: Session error on attempt ${attempts + 1}:`, {
+                message: sessionError.message,
+                status: sessionError.status,
+                name: sessionError.name
+              })
               } else if (currentSession?.user) {
                 session = currentSession
                 user = currentSession.user
-                console.log('✅ AuthStore: Session found!')
-                console.log('✅ AuthStore: User authenticated:', {
+                safeLog('✅ AuthStore: Session found!')
+                safeLog('✅ AuthStore: User authenticated:', {
                   id: user.id,
-                  email: user.email,
+                  email: sanitizeEmail(user.email),
                   provider: user.app_metadata?.provider,
                   created_at: user.created_at
                 })
-                console.log('✅ AuthStore: User metadata:', user.user_metadata)
-                console.log('✅ AuthStore: App metadata:', user.app_metadata)
+                safeLog('✅ AuthStore: User metadata:', sanitizeUser(user).user_metadata)
+                safeLog('✅ AuthStore: App metadata:', user.app_metadata)
                 break
               } else {
                 console.log(`🔄 AuthStore: No session found on attempt ${attempts + 1}`)
                 console.log(`🔄 AuthStore: Session is null or missing user`)
               }
             } catch (error) {
-              console.log(`🔄 AuthStore: Attempt ${attempts + 1} failed:`, {
-                message: error.message,
-                name: error.name,
-                stack: error.stack
-              })
+              safeError(`🔄 AuthStore: Attempt ${attempts + 1} failed:`, error)
             }
             
             attempts++
@@ -214,7 +211,7 @@ export const useAuthStore = defineStore('auth', {
           }
           
           if (user) {
-            console.log('✅ AuthStore: OAuth callback successful, setting user:', user.email)
+            safeLog('✅ AuthStore: OAuth callback successful, setting user:', sanitizeEmail(user.email))
             this.setUser(user)
             
             // Try to fetch/create profile in the background
@@ -228,7 +225,7 @@ export const useAuthStore = defineStore('auth', {
               let profile = await authService.getCurrentProfile()
               
               if (profile) {
-                console.log('✅ AuthStore: Profile fetched successfully:', profile.email)
+                safeLog('✅ AuthStore: Profile fetched successfully:', sanitizeEmail(profile.email))
                 this.profile = profile
               } else {
                 console.log('🔄 AuthStore: Profile not found, waiting for Edge Function to create it...')
@@ -237,7 +234,7 @@ export const useAuthStore = defineStore('auth', {
                 const syncStatus = await edgeFunctionSyncService.waitForUserSync(user.id, 15000)
                 
                 if (syncStatus.success && syncStatus.synced) {
-                  console.log('✅ AuthStore: Profile created by Edge Function:', syncStatus.user.email)
+                  safeLog('✅ AuthStore: Profile created by Edge Function:', sanitizeEmail(syncStatus.user.email))
                   this.profile = syncStatus.user
                 } else {
                   console.warn('⚠️ AuthStore: Edge Function did not create profile within timeout')
@@ -249,7 +246,7 @@ export const useAuthStore = defineStore('auth', {
                 }
               }
             } catch (profileError) {
-              console.error('❌ AuthStore: Error fetching/creating profile:', profileError)
+              safeError('❌ AuthStore: Error fetching/creating profile:', profileError)
               // Don't fail authentication if profile fetch fails
               console.log('⚠️ AuthStore: Profile will be created on next page load')
             }
@@ -276,14 +273,14 @@ export const useAuthStore = defineStore('auth', {
         console.log('📦 AuthStore: User retrieved:', user ? 'Found' : 'Not found')
 
         if (user) {
-          console.log('✅ AuthStore: Setting user from session:', user.email)
+          safeLog('✅ AuthStore: Setting user from session:', sanitizeEmail(user.email))
           this.setUser(user)
           
           // Fetch/create profile in background (don't block auth initialization)
           console.log('✅ AuthStore: Fetching user profile in background...')
           authService.getCurrentProfile().then(profile => {
             if (profile) {
-              console.log('✅ AuthStore: Profile loaded successfully:', profile.email)
+              safeLog('✅ AuthStore: Profile loaded successfully:', sanitizeEmail(profile.email))
               this.profile = profile
             } else {
               console.warn('⚠️ AuthStore: Profile fetch returned null, will retry on next page')
@@ -527,13 +524,13 @@ export const useAuthStore = defineStore('auth', {
           updated_at: new Date().toISOString()
         }
 
-        console.log('✅ AuthStore: Mock user created:', mockUser.email)
+        safeLog('✅ AuthStore: Mock user created:', sanitizeEmail(mockUser.email))
         this.setUser(mockUser)
 
         // Simulate a small delay for realistic UX
         await new Promise(resolve => setTimeout(resolve, 500))
 
-        console.log('✅ AuthStore: Mock login successful')
+        safeLog('✅ AuthStore: Mock login successful')
         return mockUser
       } catch (error) {
         console.error('❌ AuthStore: Mock login failed:', error)

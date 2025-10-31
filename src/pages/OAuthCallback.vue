@@ -43,6 +43,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth-store'
 import { useTheme } from '@/composables/useTheme'
+import { sanitizeUrl, sanitizeEmail, safeLog, safeError } from '@/utils/log-sanitizer'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -59,17 +60,35 @@ const redirectToLogin = () => {
 
 const handleOAuthCallback = async () => {
   try {
-    console.log('🔄 OAuthCallback: =============== START OAuth Callback ===============')
-    console.log('🔄 OAuthCallback: Current URL:', window.location.href)
-    console.log('🔄 OAuthCallback: URL hash:', window.location.hash)
-    console.log('🔄 OAuthCallback: URL search:', window.location.search)
+    safeLog('🔄 OAuthCallback: =============== START OAuth Callback ===============')
+    safeLog('🔄 OAuthCallback: Current URL:', sanitizeUrl(window.location.href))
+    safeLog('🔄 OAuthCallback: URL hash:', sanitizeUrl(window.location.hash))
+    safeLog('🔄 OAuthCallback: URL search:', sanitizeUrl(window.location.search))
     
     // Check URL parameters
     const urlParams = new URLSearchParams(window.location.search)
     const hashParams = new URLSearchParams(window.location.hash.substring(1))
     
-    console.log('🔄 OAuthCallback: URL params:', Object.fromEntries(urlParams.entries()))
-    console.log('🔄 OAuthCallback: Hash params:', Object.fromEntries(hashParams.entries()))
+    // Sanitize params before logging
+    const sanitizedUrlParams = {}
+    const sanitizedHashParams = {}
+    urlParams.forEach((value, key) => {
+      if (['token', 'access_token', 'refresh_token', 'code', 'state'].includes(key)) {
+        sanitizedUrlParams[key] = '[REDACTED]'
+      } else {
+        sanitizedUrlParams[key] = value
+      }
+    })
+    hashParams.forEach((value, key) => {
+      if (['token', 'access_token', 'refresh_token', 'code', 'state'].includes(key)) {
+        sanitizedHashParams[key] = '[REDACTED]'
+      } else {
+        sanitizedHashParams[key] = value
+      }
+    })
+    
+    safeLog('🔄 OAuthCallback: URL params:', sanitizedUrlParams)
+    safeLog('🔄 OAuthCallback: Hash params:', sanitizedHashParams)
     
     const hasError = urlParams.has('error') || hashParams.has('error')
     const hasCode = urlParams.has('code')
@@ -85,7 +104,7 @@ const handleOAuthCallback = async () => {
       const errorParam = urlParams.get('error') || hashParams.get('error')
       const errorDescription = urlParams.get('error_description') || hashParams.get('error_description') || 'Authentication failed'
       
-      console.error('❌ OAuthCallback: OAuth error:', errorParam, errorDescription)
+      safeError('❌ OAuthCallback: OAuth error:', errorParam, errorDescription)
       
       statusMessage.value = 'Authentication Failed'
       statusDescription.value = 'There was an error during the authentication process.'
@@ -99,10 +118,10 @@ const handleOAuthCallback = async () => {
       return
     }
     
-    console.log('✅ OAuthCallback: Processing authentication...')
-    console.log('✅ OAuthCallback: Initial auth state:', {
+    safeLog('✅ OAuthCallback: Processing authentication...')
+    safeLog('✅ OAuthCallback: Initial auth state:', {
       isAuthenticated: authStore.isAuthenticated,
-      user: authStore.user ? authStore.user.email : null,
+      user: authStore.user ? sanitizeEmail(authStore.user.email) : null,
       loading: authStore.loading
     })
     

@@ -18,6 +18,7 @@ import { useThemeStore } from './stores/theme-store'
 import { setupPageTransition, setupFocusManagement } from '@/composables/usePageTransition'
 // import { displayConsoleArt } from '@/utils/console-art' // Disabled for cleaner console
 import { env as onnxEnv } from 'onnxruntime-web'
+import { sanitizeUrl, sanitizeEmail, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
 
 // Configure ONNX Runtime Web: prefer SIMD + multithreading under COI, otherwise safe fallback
 try {
@@ -153,7 +154,7 @@ router.beforeEach(async (to, from, next) => {
       
       // If still loading after max wait, check if user has existing session
       if (authStore.loading) {
-        console.warn('⚠️ Router: Auth initialization timeout, checking for existing session...')
+        safeWarn('⚠️ Router: Auth initialization timeout, checking for existing session...')
         
         // Check if we're navigating to login page (likely after logout)
         if (to.path === '/login') {
@@ -168,15 +169,15 @@ router.beforeEach(async (to, from, next) => {
           const { authService } = await import('@/services/authService')
           const user = await authService.getCurrentUser()
           if (user) {
-            console.log('✅ Router: Found existing session, setting user')
+            safeLog('✅ Router: Found existing session, setting user:', sanitizeEmail(user.email))
             authStore.setUser(user)
             authStore.loading = false
           } else {
-            console.log('❌ Router: No existing session found')
+            safeLog('❌ Router: No existing session found')
             authStore.loading = false
           }
         } catch (error) {
-          console.error('❌ Router: Error checking existing session:', error)
+          safeError('❌ Router: Error checking existing session:', error)
           authStore.loading = false
         }
       } else {

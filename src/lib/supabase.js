@@ -9,6 +9,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { safeError, sanitizeError } from '@/utils/log-sanitizer'
 
 // Environment variables for Supabase configuration
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -106,12 +107,12 @@ export function clearSupabaseSession() {
  * }
  */
 export function handleSupabaseError(error, operation = 'operation') {
-  console.error(`Supabase ${operation} error:`, error)
+  safeError(`Supabase ${operation} error:`, sanitizeError(error))
   
   // Handle refresh token errors
   if (error.message?.toLowerCase().includes('refresh token') || 
       error.message?.toLowerCase().includes('refresh_token')) {
-    console.error('❌ Invalid or expired refresh token detected')
+    safeError('❌ Invalid or expired refresh token detected')
     clearSupabaseSession()
     return // clearSupabaseSession will redirect, so we don't throw
   }

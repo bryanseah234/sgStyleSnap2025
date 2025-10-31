@@ -27,15 +27,15 @@ export class VirtualTryOnService {
     this.apiToken = import.meta.env.VITE_HUGGINGFACE_API_TOKEN || ''
     
     // Log for debugging (but don't expose the actual token)
-    console.log('🔍 VirtualTryOnService initialized')
-    console.log('🔍 API URL:', this.apiUrl)
-    console.log('🔍 apiToken exists:', !!this.apiToken)
-    console.log('🔍 apiToken length:', this.apiToken ? this.apiToken.length : 0)
+    safeLog('🔍 VirtualTryOnService initialized')
+    safeLog('🔍 API URL:', this.apiUrl)
+    safeLog('🔍 apiToken exists:', !!this.apiToken)
+    safeLog('🔍 apiToken:', sanitizeToken(this.apiToken))
     if (!this.apiToken) {
-      console.warn('⚠️ VITE_HUGGINGFACE_API_TOKEN is not set')
-      console.warn('⚠️ Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
+      safeWarn('⚠️ VITE_HUGGINGFACE_API_TOKEN is not set')
+      safeWarn('⚠️ Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
     } else {
-      console.log('✅ VITE_HUGGINGFACE_API_TOKEN is configured')
+      safeLog('✅ VITE_HUGGINGFACE_API_TOKEN is configured')
     }
     
     // Default model person image (base64 or URL)

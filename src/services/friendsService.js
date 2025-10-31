@@ -1,5 +1,6 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 import { authService } from '@/services/authService'
+import { sanitizeEmail, safeLog, safeError } from '@/utils/log-sanitizer'
 
 export class FriendsService {
   async getFriends(filters = {}) {
@@ -18,7 +19,7 @@ export class FriendsService {
         throw new Error('Not authenticated')
       }
 
-      console.log('🔧 FriendsService: User authenticated:', user.email)
+      safeLog('🔧 FriendsService: User authenticated:', sanitizeEmail(user.email))
 
       // Ensure user profile exists in database (required for foreign key constraint)
       console.log('🔧 FriendsService: Ensuring user profile exists...')
@@ -250,7 +251,7 @@ export class FriendsService {
         throw new Error('Not authenticated')
       }
 
-      console.log('🔧 FriendsService: User authenticated:', user.email)
+      safeLog('🔧 FriendsService: User authenticated:', sanitizeEmail(user.email))
 
       // First, get the user by username
       const { data: users, error: userError2 } = await supabase
