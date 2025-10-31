@@ -782,8 +782,7 @@ export class VirtualTryOnService {
 
       for (const method of methods) {
         try {
-          // Use normalized endpoint for Spaces API
-          const urlToUse = normalizedEndpoint || endpoint
+          const urlToUse = endpoint
           safeLog(`🚀 Trying ${method.name} on ${sanitizeUrl(urlToUse)}`)
           
           // Add timeout (45 seconds for Inference API, 90 seconds for Spaces API which may be slower)
@@ -840,7 +839,7 @@ export class VirtualTryOnService {
         } catch (error) {
           // Handle timeout errors
           if (error.message.includes('timeout')) {
-            const errorMsg = `${method.name} on ${sanitizeUrl(urlToUse || endpoint)}: ${error.message}`
+            const errorMsg = `${method.name} on ${sanitizeUrl(urlToUse)}: ${error.message}`
             errors.push(errorMsg)
             safeWarn(`⏱️ ${errorMsg}`)
             continue
@@ -848,11 +847,11 @@ export class VirtualTryOnService {
           
           // If it's a token-related error and we're trying Inference API, skip silently
           if (error.message.includes('token') && endpoint.includes('api-inference.huggingface.co')) {
-            safeLog(`⏭️ ${method.name} skipped on ${sanitizeUrl(urlToUse || endpoint)} - token issue: ${error.message}`)
+            safeLog(`⏭️ ${method.name} skipped on ${sanitizeUrl(urlToUse)} - token issue: ${error.message}`)
             continue
           }
           
-          const errorMsg = `${method.name} failed on ${sanitizeUrl(urlToUse || endpoint)}: ${error.message}`
+          const errorMsg = `${method.name} failed on ${sanitizeUrl(urlToUse)}: ${error.message}`
           errors.push(errorMsg)
           safeWarn(`❌ ${errorMsg}`)
           // Continue to next method/endpoint
