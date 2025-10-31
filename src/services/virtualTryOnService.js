@@ -8,6 +8,8 @@
  * by taking garment images as input and compositing them onto a human model.
  */
 
+import { sanitizeToken, sanitizeUrl, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
+
 export class VirtualTryOnService {
   constructor() {
     // Hugging Face API configuration - multiple endpoints to try
@@ -55,8 +57,8 @@ export class VirtualTryOnService {
   async generateTryOn({ topImageUrl, bottomImageUrl, modelImageUrl = null }) {
     try {
       console.log('🎨 VirtualTryOnService: Starting try-on generation...')
-      console.log('🎨 Top image:', topImageUrl)
-      console.log('🎨 Bottom image:', bottomImageUrl)
+      safeLog('🎨 Top image:', sanitizeUrl(topImageUrl))
+      safeLog('🎨 Bottom image:', sanitizeUrl(bottomImageUrl))
 
       // Validate inputs
       if (!topImageUrl && !bottomImageUrl) {
@@ -89,7 +91,7 @@ export class VirtualTryOnService {
       }
 
     } catch (error) {
-      console.error('❌ VirtualTryOnService: Error generating try-on:', error)
+      safeError('❌ VirtualTryOnService: Error generating try-on:', error)
       return {
         success: false,
         error: error.message || 'Failed to generate virtual try-on'
@@ -154,7 +156,7 @@ export class VirtualTryOnService {
       })
 
     } catch (error) {
-      console.error('❌ VirtualTryOnService: Error compositing outfit:', error)
+      safeError('❌ VirtualTryOnService: Error compositing outfit:', error)
       throw error
     }
   }
@@ -324,13 +326,13 @@ export class VirtualTryOnService {
       if (this.apiToken) {
         headers['Authorization'] = `Bearer ${this.apiToken}`
         const modelType = isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'Inference API')
-        console.log(`🔑 Using API token for ${modelType} request`)
+        safeLog(`🔑 Using API token for ${modelType} request`)
       } else {
         throw new Error('Hugging Face API token is required for Inference API. Please set VITE_HUGGINGFACE_API_TOKEN.')
       }
       
       // Log request details (sanitized)
-      console.log(`📤 Sending to ${url}`)
+      safeLog(`📤 Sending to ${sanitizeUrl(url)}`)
       const formatType = isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'standard Inference API')
       console.log(`📤 Payload format: ${formatType}`)
       console.log(`📤 Payload keys: ${Object.keys(payload.inputs).join(', ')}`)
@@ -463,13 +465,13 @@ export class VirtualTryOnService {
       if (this.apiToken) {
         headers['Authorization'] = `Bearer ${this.apiToken}`
         const modelType = isIDMVTON ? 'IDM-VTON' : (isOOTDiffusion ? 'OOTDiffusion' : 'Inference API')
-        console.log(`🔑 Using API token for ${modelType} request (alternative format)`)
+        safeLog(`🔑 Using API token for ${modelType} request (alternative format)`)
       } else {
         throw new Error('Hugging Face API token is required for Inference API.')
       }
       
       // Log request details (sanitized)
-      console.log(`📤 Sending alternative format to ${url}`)
+      safeLog(`📤 Sending alternative format to ${sanitizeUrl(url)}`)
       const formatType = isIDMVTON ? 'IDM-VTON data URL format' : (isOOTDiffusion ? 'OOTDiffusion format' : 'standard dictionary')
       console.log(`📤 Format: ${formatType}`)
       console.log(`📤 Payload structure: inputs object with ${Object.keys(payload.inputs).length} keys`)
@@ -493,7 +495,7 @@ export class VirtualTryOnService {
       }
       
       // Log request details
-      console.log(`📤 Sending Spaces API alternative format to ${url}`)
+      safeLog(`📤 Sending Spaces API alternative format to ${sanitizeUrl(url)}`)
       console.log(`📤 Payload format: data array with ${payload.data.length} items, fn_index: ${payload.fn_index}`)
 
       return await fetch(url, {
@@ -664,7 +666,7 @@ export class VirtualTryOnService {
     for (const endpoint of sortedEndpoints) {
       // Skip Inference API endpoints if no token
       if (endpoint.includes('api-inference.huggingface.co') && !this.apiToken) {
-        console.log(`⏭️ Skipping ${endpoint} - API token required`)
+        safeLog(`⏭️ Skipping ${endpoint} - API token required`)
         continue
       }
 
@@ -734,7 +736,7 @@ export class VirtualTryOnService {
           
           // If it's a token-related error and we're trying Inference API, skip silently
           if (error.message.includes('token') && endpoint.includes('api-inference.huggingface.co')) {
-            console.log(`⏭️ ${method.name} skipped on ${endpoint} - token issue: ${error.message}`)
+            safeLog(`⏭️ ${method.name} skipped on ${endpoint} - token issue: ${error.message}`)
             continue
           }
           
@@ -755,7 +757,7 @@ export class VirtualTryOnService {
     let errorMessage = 'All API calling methods failed.'
     
     if (errors.length > 0) {
-      console.error('🔍 All API attempts failed. Last few errors:', errors.slice(-3))
+      safeError('🔍 All API attempts failed. Last few errors:', errors.slice(-3))
       errorMessage += `\n\nRecent errors:\n${errors.slice(-3).map((e, i) => `${i + 1}. ${e}`).join('\n')}`
     }
     
@@ -814,7 +816,7 @@ export class VirtualTryOnService {
       })
 
     } catch (error) {
-      console.error('❌ VirtualTryOnService: Error creating default model:', error)
+      safeError('❌ VirtualTryOnService: Error creating default model:', error)
       throw error
     }
   }
@@ -849,7 +851,7 @@ export class VirtualTryOnService {
       }
       return await response.blob()
     } catch (error) {
-      console.error('❌ VirtualTryOnService: Error converting URL to blob:', error)
+      safeError('❌ VirtualTryOnService: Error converting URL to blob:', error)
       throw error
     }
   }
