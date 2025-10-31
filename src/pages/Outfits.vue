@@ -55,10 +55,12 @@
           v-for="filter in filters"
           :key="filter.value"
           @click="activeFilter = filter.value"
-          :class="activeFilter === filter.value ? 'btn-tab btn-tab--active' : 'btn-tab'"
+          :class="filter.value === 'favorites' && activeFilter === filter.value
+            ? 'px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 bg-red-500 text-white dark:bg-red-600'
+            : activeFilter === filter.value ? 'btn-tab btn-tab--active' : 'btn-tab'"
         >
           <template v-if="filter.value === 'favorites'">
-            <Heart :class="`w-5 h-5 ${activeFilter === 'favorites' ? 'fill-current text-red-500' : 'text-stone-500 dark:text-zinc-400'}`" />
+            <Heart :class="`w-5 h-5 ${activeFilter === 'favorites' ? 'fill-current' : ''}`" />
           </template>
           {{ filter.label }}
           <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 

@@ -27,6 +27,10 @@
           <span class="debug-icon">🐛</span>
           <span>Debug Mode</span>
         </div>
+        <!-- ESC Key Hint (Desktop only) -->
+        <div v-if="isDesktop" class="keyboard-hint-modal">
+          <span class="keyboard-hint-key">ESC</span>
+        </div>
       </div>
       
       <!-- Content -->
@@ -53,7 +57,7 @@
           
           <!-- FPS Mini Graph -->
           <div class="debug-graph">
-            <canvas ref="graphCanvas" width="200" height="40"></canvas>
+            <canvas ref="graphCanvas" width="200" height="50"></canvas>
           </div>
         </div>
         
@@ -114,6 +118,7 @@
         <div class="debug-hints">
           <div class="debug-hint">💡 Type "debug" to toggle</div>
           <div class="debug-hint">⌨️ Shift+D also works</div>
+          <div class="debug-hint" v-if="isDesktop">⌨️ Press ESC to close</div>
         </div>
       </div>
     </div>
@@ -298,6 +303,13 @@ const stopMonitoring = () => {
   }
 }
 
+// ESC key handler
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && props.visible) {
+    emit('close')
+  }
+}
+
 // Watch visibility
 watch(() => props.visible, (isVisible) => {
   if (isVisible) {
@@ -309,6 +321,7 @@ watch(() => props.visible, (isVisible) => {
 
 onMounted(() => {
   window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEsc)
   if (props.visible && isDesktop.value) {
     startMonitoring()
   }
@@ -316,6 +329,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEsc)
   stopMonitoring()
 })
 
@@ -366,10 +380,8 @@ const isDark = computed(() => theme.value === 'dark')
 .debug-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 12px 16px;
-}
-.debug-header {
+  justify-content: space-between;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--debug-header-border);
 }
 :global(.debug-overlay--dark) .debug-header {
@@ -384,18 +396,18 @@ const isDark = computed(() => theme.value === 'dark')
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  font-size: 14px;
-}
-
-.debug-icon {
   font-size: 16px;
 }
 
+.debug-icon {
+  font-size: 18px;
+}
+
 .debug-content {
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   max-height: 500px;
   overflow-y: auto;
 }
@@ -410,26 +422,26 @@ const isDark = computed(() => theme.value === 'dark')
 }
 
 .debug-section-title {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 8px;
-  opacity: 0.8;
+  margin-bottom: 10px;
+  opacity: 0.9;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .debug-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
 }
 
 .debug-stat {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.05);
-  padding: 8px;
+  padding: 12px 10px;
   border-radius: 6px;
 }
 
@@ -438,22 +450,24 @@ const isDark = computed(() => theme.value === 'dark')
 }
 
 .debug-stat-label {
-  font-size: 10px;
-  opacity: 0.6;
+  font-size: 11px;
+  opacity: 0.7;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .debug-stat-value {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
 .debug-stat-value--small {
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 500;
   word-break: break-all;
+  line-height: 1.3;
 }
 
 .debug-stat-value--good {
@@ -469,31 +483,33 @@ const isDark = computed(() => theme.value === 'dark')
 }
 
 .debug-graph {
-  margin-top: 8px;
+  margin-top: 10px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   overflow: hidden;
+  height: 50px;
 }
 
 .debug-graph canvas {
   display: block;
   width: 100%;
-  height: auto;
+  height: 50px;
 }
 
 .debug-hints {
   flex-basis: 100%;
-  padding-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: row;
   gap: 16px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .debug-hint {
-  font-size: 10px;
-  opacity: 0.5;
+  font-size: 11px;
+  opacity: 0.6;
   font-style: italic;
 }
 

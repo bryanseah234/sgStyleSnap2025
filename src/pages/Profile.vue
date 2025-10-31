@@ -111,10 +111,10 @@
                   </div>
                   <button
                     @click="toggleMasterEmail"
-                    :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                    :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                       preferences.email_enabled 
-                        ? 'bg-primary' 
-                        : 'bg-stone-300 dark:bg-zinc-600'
+                        ? 'bg-green-500' 
+                        : 'bg-gray-300 dark:bg-gray-500'
                     }`"
                   >
                     <span
@@ -139,10 +139,10 @@
                     <button
                       @click="toggleNotificationType(type.key)"
                       :disabled="!preferences.email_enabled"
-                      :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                         preferences.email_enabled && preferences[type.key]
-                          ? 'bg-primary'
-                          : 'bg-stone-300 dark:bg-zinc-600'
+                          ? 'bg-green-500'
+                          : 'bg-gray-300 dark:bg-gray-500'
                       } ${
                         !preferences.email_enabled
                           ? 'opacity-50 cursor-not-allowed'

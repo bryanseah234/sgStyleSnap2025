@@ -12,12 +12,18 @@
     <div class="form-header relative">
       <h2 class="header-title">Add New Item</h2>
       <!-- Close Button -->
-      <button
-        @click="$emit('close')"
-        class="absolute top-0 right-0 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black"
-      >
-        <X class="w-5 h-5" />
-      </button>
+      <div class="absolute top-0 right-0 z-50 flex items-center gap-2">
+        <!-- ESC Key Hint (Desktop only) -->
+        <div v-if="isDesktop" class="keyboard-hint-modal">
+          <span class="keyboard-hint-key">ESC</span>
+        </div>
+        <button
+          @click="$emit('close')"
+          class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
     </div>
 
     <form @submit.prevent="handleSubmit" class="form-content">
@@ -111,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { Brain, AlertCircle, X } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
@@ -136,6 +142,28 @@ const uploading = ref(false)
 const selectedFileName = ref('')
 const aiRecognitionStatus = ref(null)
 const clothesService = new ClothesService()
+const isDesktop = ref(false)
+
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
+
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEsc)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEsc)
+})
 
 // Form data
 const formData = ref({

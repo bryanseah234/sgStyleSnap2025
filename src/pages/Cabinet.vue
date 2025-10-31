@@ -226,10 +226,7 @@
           tabindex="0"
           @keydown.enter.prevent="openItemDetails(item)"
           @keydown.space.prevent="openItemDetails(item)"
-          @mouseenter="handleItemHover($event, index)"
-          @mouseleave="handleItemLeave($event, index)"
-          @mousemove="handleItemMouseMove($event, index)"
-          class="liquid-item-card group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 dark:bg-zinc-700 dark:border-zinc-800 dark:hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+          class="group cursor-pointer transition-all duration-300 hover:scale-105 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
           v-memo="[item.id, item.name, item.image_url, item.is_favorite, activeCategory, searchTerm]"
         >
           <div class="aspect-square relative overflow-hidden">
@@ -237,7 +234,7 @@
               v-if="item.image_url"
               :src="item.image_url"
               :alt="item.name"
-              class="liquid-item-image w-full h-full object-cover"
+              class="w-full h-full object-cover"
             />
             <div
               v-else
@@ -251,7 +248,7 @@
           <div class="p-4">
             <div class="flex items-start justify-between gap-2">
               <div class="flex-1 min-w-0">
-                <h3 class="liquid-item-title font-semibold mb-1 text-black dark:text-white">
+                <h3 class="font-semibold mb-1 text-black dark:text-white">
                   {{ item.name }}
                 </h3>
                 <!-- Date Added / Created -->
@@ -327,7 +324,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useSanitize } from '@/composables/useSanitize'
 import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
-import { useLiquidHover, useLiquidPress } from '@/composables/useLiquidGlass'
+import { useLiquidPress } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 // UI Components
@@ -345,7 +342,6 @@ const route = useRoute()                        // Current route information
 const router = useRouter()                      // Router for navigation
 
 // Liquid glass animation effects for enhanced UX
-const { elementRef: itemCardRefs, hoverIn: itemHoverIn, hoverOut: itemHoverOut } = useLiquidHover()
 const { elementRef: favoriteButtonRefs, pressIn: favoritePressIn, pressOut: favoritePressOut } = useLiquidPress()
 
 // Keyboard shortcuts
@@ -633,49 +629,6 @@ onMounted(async () => {
   }
 })
 
-// Liquid glass event handlers
-const handleItemHover = (event, index) => {
-  const card = event.currentTarget || event.target
-  itemHoverIn(card)
-}
-
-const handleItemLeave = (event, index) => {
-  // Call the composable's spring hover out
-  const card = event.currentTarget || event.target
-  itemHoverOut(card)
-  // Ensure transform and transition are fully reset after direct manipulation
-  card.style.transform = ''
-  card.style.transition = ''
-  const img = card.querySelector('.liquid-item-image')
-  if (img) img.style.transform = ''
-  const title = card.querySelector('.liquid-item-title')
-  if (title) title.style.transform = ''
-  const category = card.querySelector('.liquid-item-category')
-  if (category) category.style.transform = ''
-}
-
-// Throttle mouse move handler to reduce input delay using requestAnimationFrame
-let rafId = null
-const handleItemMouseMove = (event, index) => {
-  // Use requestAnimationFrame for smooth, non-blocking animations
-  if (rafId) return
-  
-  rafId = requestAnimationFrame(() => {
-    // Apply subtle parallax to item cards
-    const card = event.currentTarget || event.target
-    const rect = card.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
-    
-    const rotateX = (y - centerY) / centerY * 1.5
-    const rotateY = (x - centerX) / centerX * 1.5
-    
-    card.style.transform = `translateY(-6px) translateZ(12px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
-    rafId = null
-  })
-}
 
 const handleFavoritePress = (event, item) => {
   favoritePressIn(event.target)

@@ -605,11 +605,28 @@
                 </p>
               </div>
 
-              <!-- Show on Model Button (Top Right) - Only for personal and suggested routes -->
+              <!-- Top Right Buttons - Regenerate (suggested only) and Show on Model (personal & suggested) -->
               <div
                 v-if="currentSubRoute === 'personal' || currentSubRoute === 'suggested'"
-                class="absolute top-4 right-4 z-20"
+                class="absolute top-4 right-4 z-20 flex items-center gap-2"
               >
+                <!-- Regenerate Button - Only for suggested route -->
+                <button
+                  v-if="currentSubRoute === 'suggested'"
+                  @click="generateAISuggestion"
+                  :disabled="wardrobeItems.length === 0"
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                    wardrobeItems.length > 0
+                      ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 shadow-lg'
+                      : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
+                  }`"
+                  title="Regenerate AI Outfit Suggestion"
+                >
+                  <Sparkles class="w-4 h-4" />
+                  <span class="hidden sm:inline">Regenerate</span>
+                </button>
+                
+                <!-- Show on Model Button -->
                 <button
                   @click="showVirtualTryOn"
                   :disabled="!canShowVirtualTryOn || generatingTryOn"

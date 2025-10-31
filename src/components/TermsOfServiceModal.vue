@@ -9,14 +9,20 @@
       @click.stop
     >
       <!-- Close Button -->
-      <button
-        @click="close"
-        class="absolute top-4 right-4 p-2 rounded-lg transition-all 
-              hover:bg-stone-100 text-stone-500 hover:text-black 
-              dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
-      >
-        <X class="w-5 h-5" />
-      </button>
+      <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <!-- ESC Key Hint (Desktop only) -->
+        <div v-if="isDesktop" class="keyboard-hint-modal">
+          <span class="keyboard-hint-key">ESC</span>
+        </div>
+        <button
+          @click="close"
+          class="p-2 rounded-lg transition-all bg-white/90 shadow-lg
+                hover:bg-stone-100 text-stone-500 hover:text-black 
+                dark:bg-zinc-800/90 dark:hover:bg-zinc-700 dark:text-zinc-300 dark:hover:text-white"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
 
       <!-- Content -->
       <div class="pr-4">
@@ -242,13 +248,13 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { X } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true
@@ -256,6 +262,29 @@ defineProps({
 })
 
 const emit = defineEmits(['close'])
+
+const isDesktop = ref(false)
+
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
+
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEsc)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEsc)
+})
 
 const close = () => {
   emit('close')
