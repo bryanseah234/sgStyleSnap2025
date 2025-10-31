@@ -11,14 +11,14 @@ G3 Group 4
 
 | Photo | Full Name | Role / Features Responsible For |
 |:--:|:--|:--|
-| <img src="photos/leon.jpg" width="80"> | Leon | Frontend Developer - Outfit Canvas & Drag-and-Drop |
-| <img src="photos/kaijie.jpg" width="80"> | Kai Jie | Backend Developer - Supabase API & Database |
-| <img src="photos/bryan.jpg" width="80"> | Bryan | Full Stack Developer - Authentication & Notifications |
-| <img src="photos/weiting.jpg" width="80"> | Wei Ting | UI/UX Designer - Theme System & Responsive Design |
-| <img src="photos/andrew.jpg" width="80"> | Andrew | Frontend Developer - Closet Management & Search |
-| <img src="photos/alan.jpg" width="80"> | Alan | Backend Developer - AI Integration & Cloudinary |
+| <img src="public/photos/leon.png" width="80"> | Leon | Frontend Developer - Outfit Canvas & Drag-and-Drop |
+| <img src="public/photos/kaijie.png" width="80"> | Kai Jie | Backend Developer - Supabase API & Database |
+| <img src="public/photos/bryan.png" width="80"> | Bryan | Full Stack Developer - Authentication & Notifications |
+| <img src="public/photos/weiting.png" width="80"> | Wei Ting | UI/UX Designer - Theme System & Responsive Design |
+| <img src="public/photos/andrew.png" width="80"> | Andrew | Frontend Developer - Closet Management & Search |
+| <img src="public/photos/alan.png" width="80"> | Alan | Backend Developer - AI Integration & Cloudinary |
 
-> Place all headshot thumbnails in the `/photos` folder (JPEG or PNG).
+> ✅ All headshot thumbnails are in the `/public/photos` folder (PNG format).
 
 ---
 
