@@ -33,7 +33,7 @@
                 : 'bg-white text-stone-500 hover:bg-stone-100'
             }`"
           >
-            <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current' : ''}`" />
+            <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current text-white' : ''}`" />
           </button>
           
           <button
@@ -57,7 +57,7 @@
     }`"
     title="Favorite"
   >
-    <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current' : ''}`" />
+    <Heart :class="`w-4 h-4 ${item.is_favorite ? 'fill-current text-white' : ''}`" />
   </button>
 </template>
 

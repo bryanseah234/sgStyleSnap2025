@@ -211,11 +211,11 @@
               </div>
               <button
                 @click.stop="toggleFavorite(outfit)"
-                class="flex-shrink-0 p-2 rounded-full transition-all duration-200 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
-                :class="outfit.is_favorite ? 'text-red-500 dark:text-red-400' : ''"
+                class="flex-shrink-0 p-2 rounded-full transition-all duration-200"
+                :class="outfit.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'"
                 title="Favorite"
               >
-                <Heart :class="`w-5 h-5 ${outfit.is_favorite ? 'fill-current' : ''}`" />
+                <Heart :class="`w-5 h-5 ${outfit.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
               </button>
             </div>
           </div>
@@ -359,7 +359,7 @@
             }`"
             title="Toggle Favourite"
           >
-            <Heart :class="`w-5 h-5 ${selectedOutfit.is_favorite ? 'fill-current' : ''}`" />
+            <Heart :class="`w-5 h-5 ${selectedOutfit.is_favorite ? 'fill-current text-white' : ''}`" />
           </button>
           <button
             @click="editOutfit(selectedOutfit)"

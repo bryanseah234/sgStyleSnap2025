@@ -33,7 +33,7 @@
         :class="`liquid-favorite-btn absolute top-4 right-16 z-10 p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600' : 'bg-white/90 text-stone-500 hover:bg-stone-100/90 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90'}`"
         title="Favorite"
       >
-        <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current' : ''}`" />
+        <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-white' : ''}`" />
       </button>
 
       <div class="grid md:grid-cols-2">

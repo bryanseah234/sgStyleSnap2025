@@ -267,11 +267,11 @@
                 @click.stop="toggleFavorite(item)"
                 @mousedown="handleFavoritePress($event, item)"
                 @mouseup="handleFavoriteRelease($event, item)"
-                class="liquid-favorite-btn flex-shrink-0 p-2 rounded-full transition-all duration-200 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
-                :class="item.is_favorite ? 'text-red-500 dark:text-red-400' : ''"
+                class="liquid-favorite-btn flex-shrink-0 p-2 rounded-full transition-all duration-200"
+                :class="item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'"
                 title="Favorite"
               >
-                <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current' : ''}`" />
+                <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
               </button>
             </div>
           </div>
