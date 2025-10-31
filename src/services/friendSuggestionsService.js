@@ -202,7 +202,7 @@ export class FriendSuggestionsService {
       console.log('FriendSuggestionsService: Rejecting suggestion:', suggestionId)
 
       // Call the database function to reject the suggestion
-      const { data, error } = await supabase
+      const { error } = await supabase
         .rpc('reject_friend_outfit_suggestion', {
           p_suggestion_id: suggestionId
         })

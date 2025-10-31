@@ -173,7 +173,7 @@ import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 
 const router = useRouter()
 const route = useRoute()
-const { theme, loadUser } = useTheme()
+const { loadUser } = useTheme()
 const authStore = useAuthStore()
 
 // Use auth store state

@@ -80,11 +80,33 @@
 
               <!-- Additional Info -->
               <div class="text-center mt-auto">
-                <p class="text-sm text-stone-600 dark:text-zinc-400">
+                <p class="text-sm text-stone-600 dark:text-zinc-400 mb-6">
                   Profile information is managed through your Google account.
                   <br>
                   To update your name or email, please visit your Google account settings.
                 </p>
+
+                <!-- User Stats -->
+                <div v-if="!loadingStats" class="grid grid-cols-3 gap-3 pt-4 border-t border-stone-200 dark:border-zinc-700">
+                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                    <Shirt class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
+                    <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.closetItems }}</span>
+                    <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Closet</span>
+                  </div>
+                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                    <Palette class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
+                    <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.outfits }}</span>
+                    <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Outfits</span>
+                  </div>
+                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                    <Users class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
+                    <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.friends }}</span>
+                    <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Friends</span>
+                  </div>
+                </div>
+                <div v-else class="flex items-center justify-center pt-4 border-t border-stone-200 dark:border-zinc-700">
+                  <div class="spinner-modern"></div>
+                </div>
               </div>
 
             </div>
@@ -231,7 +253,10 @@ import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePopup } from '@/composables/usePopup'
 import { notificationsService } from '@/services/notificationsService'
-import { Sun, Moon, LogOut } from 'lucide-vue-next'
+import { Sun, Moon, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
+import { ClothesService } from '@/services/clothesService'
+import { OutfitsService } from '@/services/outfitsService'
+import { FriendsService } from '@/services/friendsService'
 
 // Composables and stores
 const { theme, toggleTheme } = useTheme()
@@ -242,6 +267,19 @@ const { showConfirm, showError, showSuccess } = usePopup()
 // Reactive state
 const loading = ref(false)
 const loadingPreferences = ref(false)
+const loadingStats = ref(true)
+
+// User statistics
+const stats = ref({
+  closetItems: 0,
+  outfits: 0,
+  friends: 0
+})
+
+// Services
+const clothesService = new ClothesService()
+const outfitsService = new OutfitsService()
+const friendsService = new FriendsService()
 
 // Email notification preferences
 const preferences = ref({
@@ -482,6 +520,56 @@ const toggleNotificationType = async (typeKey) => {
   }
 }
 
+/**
+ * Loads user statistics (closet items, outfits, friends)
+ */
+const loadStats = async () => {
+  try {
+    loadingStats.value = true
+    
+    if (!user.value?.id) {
+      console.log('👤 Profile: No user ID, skipping stats load')
+      stats.value = { closetItems: 0, outfits: 0, friends: 0 }
+      return
+    }
+
+    // Load stats in parallel
+    const [closetStats, outfitsData, friendsData] = await Promise.all([
+      clothesService.getClothesStats().catch(() => ({ success: false, data: { total_items: 0 } })),
+      outfitsService.getOutfits().catch(() => []),
+      friendsService.getFriends().catch(() => [])
+    ])
+
+    // Set closet items count
+    if (closetStats && closetStats.success) {
+      stats.value.closetItems = closetStats.data?.total_items || 0
+    } else {
+      stats.value.closetItems = 0
+    }
+
+    // Set outfits count - use array length
+    if (Array.isArray(outfitsData)) {
+      stats.value.outfits = outfitsData.length
+    } else {
+      stats.value.outfits = 0
+    }
+
+    // Set friends count
+    if (Array.isArray(friendsData)) {
+      stats.value.friends = friendsData.length
+    } else {
+      stats.value.friends = 0
+    }
+
+    console.log('👤 Profile: Stats loaded:', stats.value)
+  } catch (error) {
+    console.error('👤 Profile: Error loading stats:', error)
+    stats.value = { closetItems: 0, outfits: 0, friends: 0 }
+  } finally {
+    loadingStats.value = false
+  }
+}
+
 onMounted(async () => {
   console.log('👤 Profile: Component mounted')
   console.log('👤 Profile: Auth store user:', authStore.user)
@@ -511,6 +599,9 @@ onMounted(async () => {
   
   // Load notification preferences
   await loadNotificationPreferences()
+  
+  // Load user statistics
+  await loadStats()
   
   console.log('👤 Profile: Final user data:', user.value)
   console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)

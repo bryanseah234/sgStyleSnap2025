@@ -504,7 +504,6 @@ const scrollY = ref(0)
 const draggedItem = ref(null)
 const dragOffset = reactive({ x: 0, y: 0 })
 const canvasRef = ref(null)
-const visibleElements = ref(new Set())
 const isPageLoaded = ref(false)
 const ctaSectionRef = ref(null)
 const cursorLight = reactive({ x: 0, y: 0, opacity: 0 })
@@ -698,7 +697,6 @@ const rotateSelectedItem = (itemId, degrees) => {
 const moveSelectedItemForward = (itemId) => {
   const item = outfitItems.value.find(i => i.id === itemId)
   if (item) {
-    const maxZ = Math.max(...outfitItems.value.map(i => i.z_index || 0))
     item.z_index = (item.z_index || 0) + 1
   }
 }

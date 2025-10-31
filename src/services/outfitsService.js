@@ -691,8 +691,7 @@ export class OutfitsService {
         const itemStyles = item.style_tags || []
         const suggestionStyles = suggestion.style_tags || []
         
-        return itemColors.some(color => suggestionColors.includes(color)) ||
-               itemStyles.some(style => suggestionStyles.includes(style))
+        return itemStyles.some(style => suggestionStyles.includes(style))
       })
 
       return compatibleItems.slice(0, 6) // Return top 6 suggestions

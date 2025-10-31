@@ -855,7 +855,7 @@ import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
 import ShareOutfitDialog from '@/components/dashboard/ShareOutfitDialog.vue'
 import VirtualTryOnModal from '@/components/dashboard/VirtualTryOnModal.vue'
 
-const { theme } = useTheme()
+// Theme is not used in this component
 const { showError, showSuccess, showWarning, showInfo, showPrompt } = usePopup()
 const authStore = useAuthStore()
 const route = useRoute()

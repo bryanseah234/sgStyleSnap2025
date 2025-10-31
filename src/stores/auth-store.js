@@ -39,7 +39,6 @@ import { authService } from '@/services/authService'
 import { supabase } from '@/lib/supabase'
 import { 
   storeUserSession, 
-  getActiveSession, 
   clearActiveSession, 
   removeUserSession 
 } from '@/services/session-service'

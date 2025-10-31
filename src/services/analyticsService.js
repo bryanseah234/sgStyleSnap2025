@@ -189,7 +189,7 @@ export class AnalyticsService {
 
       // Analyze color palette
       const colorCount = {}
-      items.forEach(item => {
+      items.forEach(() => {
         // color_tags column doesn't exist in database schema
         // if (item.color_tags && Array.isArray(item.color_tags)) {
         //   item.color_tags.forEach(color => {
@@ -354,7 +354,7 @@ export class AnalyticsService {
 
       // Analyze colors
       const colorCount = {}
-      items.forEach(item => {
+      items.forEach(() => {
         // color_tags column doesn't exist in database schema
         // if (item.color_tags && Array.isArray(item.color_tags)) {
         //   item.color_tags.forEach(color => {
@@ -451,7 +451,7 @@ export class AnalyticsService {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
       
       brandAnalysis.recent_brands = Object.entries(brandDates)
-        .filter(([brand, dates]) => 
+        .filter(([, dates]) => 
           dates.some(date => new Date(date) > thirtyDaysAgo)
         )
         .map(([brand]) => brand)

@@ -155,7 +155,7 @@ export class FriendsService {
       console.log('Searching for users with query:', query)
       
       // First, let's check if there are any users at all
-      const { data: allUsers, error: allUsersError } = await supabase
+      const { data: allUsers } = await supabase
         .from('users')
         .select('id, username, name, email')
         .limit(5)
@@ -204,7 +204,7 @@ export class FriendsService {
       )
       
       const data = uniqueData.slice(0, 10)
-      const error = usernameError || nameError || emailError
+      const error = usernameError || nameError
 
       if (error) {
         console.error('Search users error:', error)

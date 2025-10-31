@@ -177,7 +177,7 @@ export class QuotaService {
   formatQuotaWarning(quotaData, quotaType) {
     if (!quotaData) return null
 
-    const { current, limit, isWarning, isLimitReached, percentage } = quotaData
+    const { current, limit, isWarning, isLimitReached } = quotaData
 
     if (isLimitReached) {
       const typeLabels = {

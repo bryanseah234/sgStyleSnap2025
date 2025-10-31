@@ -70,7 +70,7 @@ export function sanitizeText(input) {
   let sanitized = input.replace(/\0/g, '')
 
   // Allow only letters, numbers, spaces, underscore, dash, backslash, forward slash
-  sanitized = sanitized.replace(/[^A-Za-z0-9 _\-\\\/]/g, '')
+  sanitized = sanitized.replace(/[^A-Za-z0-9 _\-\\/]/g, '')
 
   // Collapse consecutive whitespace to a single space and trim
   sanitized = sanitized.replace(/\s+/g, ' ').trim()
@@ -148,7 +148,7 @@ export function sanitizeUrl(input) {
   }
 
   // Only allow http, https, and relative URLs
-  if (!/^(https?:)?\/\//i.test(input) && !/^\/[^\/]/i.test(input)) {
+  if (!/^(https?:)?\/\//i.test(input) && !/^\/[^/]/i.test(input)) {
     return input.replace(/[^a-zA-Z0-9/:._?=&%-]/g, '')
   }
 

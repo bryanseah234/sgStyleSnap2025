@@ -106,7 +106,6 @@ function generateOutfitCombinations(items, maxCombinations = 50) {
   const dresses = items.filter(i => i.category === 'dress')
   const outerwear = items.filter(i => i.category === 'outerwear')
   const shoes = items.filter(i => i.category === 'shoes')
-  const accessories = items.filter(i => i.category === 'accessory' || i.category === 'hat')
   
   // Generate 2-item combinations (top + bottom)
   for (const top of tops) {

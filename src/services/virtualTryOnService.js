@@ -830,7 +830,7 @@ export class VirtualTryOnService {
       const img = new Image()
       img.crossOrigin = 'anonymous' // Enable CORS
       img.onload = () => resolve(img)
-      img.onerror = (error) => reject(new Error(`Failed to load image: ${url}`))
+      img.onerror = () => reject(new Error(`Failed to load image: ${url}`))
       img.src = url
     })
   }

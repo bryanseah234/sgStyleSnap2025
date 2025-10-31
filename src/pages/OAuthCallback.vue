@@ -46,7 +46,6 @@ import { useTheme } from '@/composables/useTheme'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { theme } = useTheme()
 
 // State
 const statusMessage = ref('Processing authentication...')

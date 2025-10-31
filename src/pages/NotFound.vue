@@ -111,7 +111,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { Shirt, Home, Palette, ArrowLeft, RefreshCw } from 'lucide-vue-next'
 
-const { theme } = useTheme()
+// Theme is not used in this component
 const route = useRoute()
 const router = useRouter()
 

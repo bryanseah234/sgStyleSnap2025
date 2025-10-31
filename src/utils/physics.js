@@ -87,7 +87,7 @@ export function calculateSpring(config, deltaTime, currentValue, targetValue, ve
  * @param {Object} config - Spring configuration
  * @returns {Object} - Transform values for liquid dip
  */
-export function calculateLiquidDip(pressure, config = SPRING_CONFIGS.liquid) {
+export function calculateLiquidDip(pressure) {
   const dipDepth = pressure * 0.15 // Max 15% compression
   const wobbleIntensity = pressure * 0.05 // Max 5% wobble
   

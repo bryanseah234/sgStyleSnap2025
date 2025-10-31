@@ -23,7 +23,8 @@ async function loginAsTestUser(page) {
   await page.waitForURL(`${BASE_URL}/closet`, { timeout: 10000 })
 }
 
-// Helper to create test item
+// Helper to create test item (currently unused)
+// eslint-disable-next-line no-unused-vars
 async function createTestItem(page, itemData) {
   await page.click('button[aria-label="Add item"]')
   await page.fill('input[name="name"]', itemData.name)

@@ -360,6 +360,13 @@ router.afterEach((to, from) => {
   console.log('🧭 Router: Current route:', router.currentRoute.value.path)
   console.log('🧭 Router: Route component:', to.component?.name || 'Unknown')
   
+  // Display ASCII art on page navigation
+  import('@/utils/console-art').then(({ displayPageNavigationArt }) => {
+    displayPageNavigationArt(to.path)
+  }).catch(() => {
+    // Silent fail if import fails
+  })
+  
   // Ensure theme is applied on route changes
   themeStore.refreshTheme()
 })

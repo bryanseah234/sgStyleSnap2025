@@ -38,7 +38,6 @@ import { useAuthStore } from '@/stores/auth-store'
 
 // Composables
 const router = useRouter()
-const { theme } = useTheme()
 const authStore = useAuthStore()
 
 // State

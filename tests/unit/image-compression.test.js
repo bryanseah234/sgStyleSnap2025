@@ -35,8 +35,10 @@
  * - Vitest docs: https://vitest.dev/
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe } from 'vitest'
 // TODO: Import functions to test
+// TODO: Uncomment when tests are implemented:
+// import { it, expect, beforeEach } from 'vitest'
 // import { validateImage, compressImage, createImagePreview } from '@/utils/image-compression'
 
 describe('Image Compression Utility', () => {

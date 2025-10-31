@@ -9,14 +9,13 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { TestTransaction } from '../helpers/db-transactions.js'
 
 let transaction
-let supabase
 let testUser1, testUser2, testItem1, testItem2
 
 describe('Likes API Integration Tests', () => {
   beforeEach(async () => {
     // Initialize test transaction
     transaction = new TestTransaction()
-    supabase = await transaction.begin()
+    await transaction.begin()
     
     // Create test users
     testUser1 = await transaction.createTestUser({
