@@ -1,5 +1,32 @@
 <template>
-  <div class="min-h-screen bg-white text-gray-900 overflow-hidden landing-page">
+  <!-- Apple-style Splash Screen -->
+  <div 
+    v-show="showSplash" 
+    class="splash-screen"
+    :class="{ 'splash-transitioning': isTransitioning }"
+  >
+    <h1 
+      class="splash-title" 
+      :class="{ 'splash-title-moving': isTransitioning, 'splash-title-frozen': animationComplete }"
+      :style="isTransitioning || animationComplete ? {
+        '--target-x': `${splashTransform.x}px`,
+        '--target-y': `${splashTransform.y}px`,
+        '--target-size': splashTransform.fontSize || '3.5rem',
+        transform: `translate(var(--target-x), var(--target-y))`,
+        fontSize: 'var(--target-size)',
+        fontWeight: 800,
+        letterSpacing: '-0.02em',
+        lineHeight: 1.2
+      } : {}"
+    >
+      {{ displayedTitle }}<span v-if="showTypewriterCursor" class="typewriter-cursor-splash">|</span>
+    </h1>
+  </div>
+
+  <div 
+    class="min-h-screen bg-white text-gray-900 overflow-hidden landing-page"
+    :class="{ 'page-hidden': !isTransitioning && showSplash, 'page-visible': isTransitioning || !showSplash }"
+  >
     <!-- Navigation -->
   <nav :class="[
         'sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 animate-fadeInDown',
@@ -70,7 +97,12 @@
 
       <div class="container grid md:grid-cols-2 gap-6 sm:gap-12 items-center relative z-10">
         <div class="space-y-4 sm:space-y-6">
-          <h1 class="text-4xl font-bold text-foreground">
+          <h1 
+            ref="heroTitleRef"
+            class="hero-title"
+            :class="{ 'hero-title-visible': showHeroTitle }"
+            style="font-size: 2.5625rem;"
+          >
             Transform Your Fashion Game
           </h1>
             <p class="text-sm sm:text-base md:text-lg text-gray-600">
@@ -465,10 +497,11 @@
     <button
       v-if="showScrollToTop"
       @click="scrollToTop"
-      class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center"
+      class="bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center"
+      style="position: fixed !important; top: 50% !important; right: 1.5rem !important; left: unset !important; transform: translateY(-50%) !important; z-index: 9999 !important; transition: all 0.3s ease;"
       aria-label="Scroll to top"
     >
-      <ChevronUp class="w-5 h-5 sm:w-6 sm:h-6" />
+      <ArrowUp class="w-6 h-6" />
     </button>
   </div>
 </template>
@@ -486,7 +519,7 @@ import {
   Menu, 
   X, 
   Trash2,
-  ChevronUp
+  ArrowUp
 } from 'lucide-vue-next'
 
 // Import landing page animations
@@ -508,6 +541,24 @@ const isPageLoaded = ref(false)
 const ctaSectionRef = ref(null)
 const cursorLight = reactive({ x: 0, y: 0, opacity: 0 })
 const showScrollToTop = ref(false)
+const displayedTitle = ref('')
+const showTypewriterCursor = ref(true)
+const showSplash = ref(true)
+const isTransitioning = ref(false)
+const animationComplete = ref(false)
+const showHeroTitle = ref(false)
+const heroTitleRef = ref(null)
+const splashTransform = reactive({
+  x: 0,
+  y: 0,
+  scale: 1,
+  fontSize: ''
+})
+const finalTransform = reactive({
+  x: 0,
+  y: 0,
+  fontSize: '2.5625rem'
+})
 
 // Demo items data
 const demoItems = [
@@ -735,10 +786,95 @@ const scrollToTop = () => {
   })
 }
 
+// Calculate position for splash transition
+const calculateSplashTransform = () => {
+  if (!heroTitleRef.value) return
+  
+  const heroRect = heroTitleRef.value.getBoundingClientRect()
+  const splashCenterX = window.innerWidth / 2
+  const splashCenterY = window.innerHeight / 2
+  
+  // Calculate the offset needed to move from splash center to hero position
+  const heroCenterY = heroRect.top + (heroRect.height / 2)
+  
+  // Position the splash text so it aligns with the hero title
+  // Use the center of the hero title element as reference point
+  const heroLeftEdge = heroRect.left
+  const heroTextCenter = heroLeftEdge + (heroRect.width / 2)
+  
+  const finalX = heroTextCenter - splashCenterX
+  const finalY = heroCenterY - splashCenterY
+  
+  splashTransform.x = finalX
+  splashTransform.y = finalY
+  splashTransform.scale = 1
+  // Don't set fontSize here - it will be set after isTransitioning to trigger animation
+  
+  // Store the final values for locking later
+  finalTransform.x = finalX
+  finalTransform.y = finalY
+  finalTransform.fontSize = '2.5625rem'
+}
+
+// Typewriter effect
+const typewriterEffect = () => {
+  const fullText = 'Transform Your Fashion Game'
+  let index = 0
+  
+  const typeChar = () => {
+    if (index < fullText.length) {
+      displayedTitle.value = fullText.substring(0, index + 1)
+      index++
+      setTimeout(typeChar, 80) // Adjust speed here (lower = faster)
+    } else {
+      // Hide cursor after typing is complete
+      showTypewriterCursor.value = false
+      
+      // Wait a moment, then start transition
+      setTimeout(() => {
+        // Calculate target position
+        calculateSplashTransform()
+        
+        // DON'T set fontSize yet - let it stay at the splash size initially
+        // This allows CSS transition to animate from current size to final size
+        
+        // Start the transition state
+        isTransitioning.value = true
+        
+        // Wait one frame to ensure DOM is ready, then set target values
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // Set the final font size - CSS will transition smoothly
+            splashTransform.fontSize = '2.5625rem'
+            
+            // Wait for transition to complete, then LOCK everything
+            setTimeout(() => {
+              animationComplete.value = true
+              
+              // Wait a tiny bit, then show real title
+              setTimeout(() => {
+                showHeroTitle.value = true
+                setTimeout(() => {
+                  showSplash.value = false
+                }, 300)
+              }, 50)
+            }, 1500) // Lock exactly when animation completes
+          })
+        })
+      }, 500) // Pause after typing finishes
+    }
+  }
+  
+  typeChar()
+}
+
 // Lifecycle hooks
 onMounted(() => {
   // Set page as loaded immediately to prevent flicker
   isPageLoaded.value = true
+  
+  // Start typewriter effect
+  typewriterEffect()
   
   const handleScroll = () => {
     setScrollY(window.scrollY)
@@ -808,6 +944,164 @@ const setScrollY = (value) => {
 </script>
 
 <style scoped>
+/* Apple-style Splash Screen */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 1s ease-out;
+}
+
+.splash-transitioning {
+  background: transparent;
+  pointer-events: none;
+}
+
+.splash-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  letter-spacing: -0.03em;
+  text-align: center;
+  padding: 0 2rem;
+  transition: transform 1500ms cubic-bezier(0.4, 0, 0.2, 1),
+              font-size 1500ms cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 90vw;
+  transform-origin: center center;
+  will-change: transform, font-size;
+}
+
+@media (min-width: 768px) {
+  .splash-title:not(.splash-title-moving):not(.splash-title-frozen) {
+    font-size: 4.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .splash-title:not(.splash-title-moving):not(.splash-title-frozen) {
+    font-size: 5rem;
+  }
+}
+
+.splash-title-moving {
+  /* Apply final styling that transitions smoothly */
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, #1a1a1a 0%, #333333 50%, #000000 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+  /* Lock position */
+  position: fixed !important;
+  z-index: 10001 !important;
+  pointer-events: none !important;
+  /* No padding or margin that could shift */
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.splash-title-frozen {
+  /* NUCLEAR FREEZE - absolutely NOTHING can change */
+  transition: none !important;
+  animation: none !important;
+  will-change: auto !important;
+  /* Lock size - use exact pixel value */
+  font-size: 2.5625rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+  /* Lock position exactly where it is */
+  position: fixed !important;
+  /* Prevent ANY responsive behavior */
+  max-width: none !important;
+  /* Force exact values from CSS variables */
+  transform: translate(var(--target-x), var(--target-y)) !important;
+  /* Block any potential parent influences */
+  isolation: isolate !important;
+}
+
+.typewriter-cursor-splash {
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+  color: #1d1d1f;
+}
+
+/* Landing page hidden/visible states */
+.page-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-visible {
+  opacity: 1;
+  animation: fadeInPage 1s ease-out;
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hero title styling */
+.hero-title {
+  font-weight: 800;
+  background: linear-gradient(135deg, #1a1a1a 0%, #333333 50%, #000000 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
+
+.hero-title-visible {
+  opacity: 1 !important;
+}
+
+/* Add subtle glow effect */
+.hero-title::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Typewriter cursor animation */
+.typewriter-cursor {
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes blink {
+  from, to {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
 /* Force landing page to always use light mode colors on all devices */
 .landing-page,
 .landing-page * {

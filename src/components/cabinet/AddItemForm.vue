@@ -43,7 +43,6 @@
       <div class="form-section">
         <label class="form-label">Category</label>
         <input
-          v-model="formData.category"
           list="category-suggestions"
           class="form-input"
           required
