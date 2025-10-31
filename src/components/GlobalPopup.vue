@@ -4,6 +4,7 @@
     :type="popupConfig.type"
     :title="popupConfig.title"
     :message="popupConfig.message"
+    :image-url="popupConfig.imageUrl"
     :confirm-text="popupConfig.confirmText"
     :cancel-text="popupConfig.cancelText"
     :show-cancel="popupConfig.showCancel"

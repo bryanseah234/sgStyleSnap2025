@@ -6,6 +6,7 @@ const popupConfig = ref({
   type: 'info',
   title: '',
   message: '',
+  imageUrl: null, // URL to display image in popup (e.g., processed image with background removed)
   confirmText: 'OK',
   cancelText: 'Cancel',
   showCancel: false,
@@ -32,6 +33,7 @@ export function usePopup() {
       type: config.type || 'info',
       title: config.title || 'Alert',
       message: config.message || '',
+      imageUrl: config.imageUrl || null,
       confirmText: config.confirmText || 'OK',
       cancelText: config.cancelText || 'Cancel',
       showCancel: config.showCancel || false,
@@ -42,11 +44,12 @@ export function usePopup() {
     showPopup.value = true
   }
 
-  const showError = (message, title = 'Error') => {
+  const showError = (message, title = 'Error', imageUrl = null) => {
     showAlert({
       type: 'error',
       title,
-      message
+      message,
+      imageUrl
     })
   }
 
@@ -103,6 +106,10 @@ export function usePopup() {
   }
 
   const hidePopup = () => {
+    // Clean up blob URL if it exists
+    if (popupConfig.value.imageUrl && popupConfig.value.imageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(popupConfig.value.imageUrl)
+    }
     showPopup.value = false
   }
 

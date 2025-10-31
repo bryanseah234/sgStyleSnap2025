@@ -123,6 +123,8 @@
                   :src="friend.avatar_url"
                   :alt="friend.name"
                   class="w-full h-full object-cover"
+                  crossorigin="anonymous"
+                  @error="handleImageError"
                 />
                 <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700" v-else>
                   <span class="text-lg md:text-xl font-bold text-stone-500 dark:text-zinc-400">
@@ -247,6 +249,8 @@
                     :src="request.receiver.avatar_url"
                     :alt="request.receiver.name"
                     class="w-full h-full object-cover"
+                    crossorigin="anonymous"
+                    @error="handleImageError"
                   />
                   <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700" v-else>
                     <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
@@ -331,6 +335,8 @@
                       :src="user.avatar_url"
                       :alt="user.name"
                       class="w-full h-full object-cover"
+                      crossorigin="anonymous"
+                      @error="handleImageError"
                     />
                     <div class="w-full h-full flex items-center justify-center bg-stone-300 dark:bg-zinc-600" v-else>
                       <span class="text-xs font-bold text-stone-500 dark:text-zinc-400">
@@ -482,6 +488,12 @@ const handleSearch = () => {
   // Sanitize search input in real-time
   searchTerm.value = sanitizeSearch(searchTerm.value)
   addFriendSearch.value = sanitizeSearch(addFriendSearch.value)
+}
+
+// Handle image loading errors
+const handleImageError = (event) => {
+  // Hide the broken image - fallback will show
+  event.target.style.display = 'none'
 }
 
 const searchAndAddFriend = async () => {

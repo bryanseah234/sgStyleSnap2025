@@ -22,9 +22,9 @@
     dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
     :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
   >
-    <!-- Moon icon in light mode; Sun icon in dark mode -->
+    <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
     <Moon v-if="theme.value === 'light'" class="w-5 h-5" />
-    <Sun v-else class="w-5 h-5" />
+    <Sun v-else-if="theme.value === 'dark'" class="w-5 h-5" />
   </button>
 </template>
 

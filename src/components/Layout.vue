@@ -80,9 +80,9 @@
           class="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
           :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
         >
-         <!-- Show sun in dark mode, moon in light mode -->
-         <Sun v-if="theme.value === 'dark'" class="w-5 h-5" />
-         <Moon v-else class="w-5 h-5" />
+         <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
+         <Moon v-if="theme.value === 'light'" class="w-5 h-5" />
+         <Sun v-else-if="theme.value === 'dark'" class="w-5 h-5" />
           <span class="font-medium text-secondary-foreground">
             Toggle Theme
           </span>

@@ -101,10 +101,11 @@
               <button
                 @click="handleThemeToggle"
                 :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
-                :title="theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+                :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
               >
-                <Sun v-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5" />
-                <Moon v-else class="w-4 h-4 md:w-5 md:h-5" />
+                <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
+                <Moon v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5" />
+                <Sun v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5" />
                 <span class="font-medium text-sm md:text-base">
                   Toggle Theme
                 </span>

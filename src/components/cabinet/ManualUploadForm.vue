@@ -286,14 +286,28 @@ const handleFileUpload = async (e) => {
     try {
       const classification = await classifyClothingItem(processedFile)
       if (!classification || !classification.success) {
-        showError(classification?.error || 'AI recognition failed. Please try another image.')
+        // Show the processed image (background removed) in error popup
+        const processedImageUrl = URL.createObjectURL(processedFile)
+        showError(
+          classification?.error || 'AI recognition failed. Please try another image.',
+          'AI Recognition Failed',
+          processedImageUrl
+        )
         return
       }
       // Enforce minimum confidence threshold (70%)
       const confidence = typeof classification.confidence === 'number' ? classification.confidence : 0
       if (confidence < 0.7) {
         const pct = Math.round(confidence * 100)
-        showError(`AI confidence is ${pct}%. Minimum required is 70%. Please upload a clearer, single-item image on a plain background.`)
+        // Create blob URL for the processed image (background removed) to show in error popup
+        const processedImageUrl = URL.createObjectURL(processedFile)
+        showError(
+          `AI confidence is ${pct}%. Minimum required is 70%. Please upload a clearer, single-item image on a plain background.`,
+          'Low Confidence',
+          processedImageUrl
+        )
+        // Clean up the blob URL when popup is closed (handled by popup cleanup)
+        // Note: We'll need to revoke it manually or let the component handle it
         return
       }
       // Auto-fill category if available

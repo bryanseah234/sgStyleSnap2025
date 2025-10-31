@@ -5,17 +5,17 @@
       <!-- Close Button -->
       <button
         @click="$emit('close')"
-        :class="`absolute top-4 right-4 p-2 rounded-lg transition-all ${
+        :class="`absolute top-4 right-4 z-10 p-2 rounded-lg transition-all ${
           theme === 'dark'
-            ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white'
-            : 'hover:bg-stone-100 text-stone-500 hover:text-black'
+            ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white'
+            : 'bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-black'
         }`"
       >
         <X class="w-5 h-5" />
       </button>
 
       <!-- Header -->
-      <div class="flex items-center gap-3 mb-4 pr-8">
+      <div class="flex items-center gap-3 mb-4 pr-12">
         <div v-if="type === 'error'" class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
           <X class="w-5 h-5 text-white" />
         </div>
@@ -34,9 +34,27 @@
       </div>
 
       <!-- Message -->
-      <p :class="`text-sm mb-6 ${theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+      <p :class="`text-sm mb-4 ${theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
         {{ message }}
       </p>
+
+      <!-- Image (if provided) -->
+      <div v-if="imageUrl" class="mb-6">
+        <p :class="`text-xs mb-2 text-center ${theme === 'dark' ? 'text-zinc-500' : 'text-stone-500'}`">
+          Processed image (background removed):
+        </p>
+        <div class="flex justify-center">
+          <div :class="`relative rounded-lg overflow-hidden border-2 ${theme === 'dark' ? 'border-zinc-700' : 'border-stone-200'}`">
+            <img
+              :src="imageUrl"
+              alt="Processed image"
+              class="max-w-full max-h-64 object-contain"
+              @load="handleImageLoad"
+              @error="handleImageError"
+            />
+          </div>
+        </div>
+      </div>
 
       <!-- Actions -->
       <div class="flex gap-2 justify-end">
@@ -83,6 +101,10 @@ const props = defineProps({
     type: String,
     required: true
   },
+  imageUrl: {
+    type: String,
+    default: null
+  },
   confirmText: {
     type: String,
     default: 'OK'
@@ -117,6 +139,15 @@ const handleBackdropClick = () => {
   if (props.closeOnBackdrop) {
     emit('close')
   }
+}
+
+const handleImageLoad = () => {
+  // Image loaded successfully
+}
+
+const handleImageError = () => {
+  // Image failed to load - could show fallback but for now just fail silently
+  console.warn('Failed to load image in popup')
 }
 
 const getConfirmButtonClass = () => {

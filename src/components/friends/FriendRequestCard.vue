@@ -11,6 +11,8 @@
             :src="request.requester.avatar_url"
             :alt="request.requester.name"
             class="w-full h-full object-cover"
+            crossorigin="anonymous"
+            @error="handleImageError"
           />
           <div
             v-else
@@ -77,6 +79,12 @@ const { showError } = usePopup()
 
 // State
 const processing = ref(false)
+
+// Handle image loading errors
+const handleImageError = (event) => {
+  // Hide the broken image - fallback will show
+  event.target.style.display = 'none'
+}
 
 // Accept friend request
 const acceptRequest = async () => {
