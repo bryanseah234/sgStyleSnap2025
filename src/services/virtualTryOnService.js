@@ -1,44 +1,37 @@
 /**
  * Virtual Try-On Service
  * 
- * Service for integrating with IDM-VTON (Improved Diffusion Models for Virtual Try-On)
- * via Hugging Face Inference API
+ * Service for integrating with Virtual Try-On Kontext LoRA model
+ * via Hugging Face Inference Client
  * 
- * IDM-VTON generates realistic images of people wearing specified clothing items
+ * Generates realistic images of people wearing specified clothing items
  * by taking garment images as input and compositing them onto a human model.
  */
 
+import { InferenceClient } from '@huggingface/inference'
 import { sanitizeToken, sanitizeUrl, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
 
 export class VirtualTryOnService {
   constructor() {
-    // Hugging Face API configuration - multiple endpoints to try
-    // Priority: Hugging Face Inference API (most reliable) > Spaces API
-    // Note: Inference API requires API token, Spaces may not
-    this.apiEndpoints = [
-      'https://api-inference.huggingface.co/models/ovi054/virtual-tryon-kontext-lora', // Virtual Try-On Kontext LoRA (requires token, uses "wear it" prompt)
-      'https://api-inference.huggingface.co/models/yisol/IDM-VTON', // IDM-VTON Inference API alternative (requires token)
-      // Spaces API endpoints - use /run endpoint which is more reliable than /api/predict
-      'https://yisol-idm-vton.hf.space' // IDM-VTON Space (will use /run endpoint)
-    ]
-    this.apiUrl = this.apiEndpoints[0] // Primary endpoint
-    this.useSpacesFormat = false // Inference API is more reliable
-    
     // You'll need to set your Hugging Face API token in environment variables
     // Get a free token from: https://huggingface.co/settings/tokens
     this.apiToken = import.meta.env.VITE_HUGGINGFACE_API_TOKEN || ''
     
-    // Log for debugging (but don't expose the actual token)
-    safeLog('🔍 VirtualTryOnService initialized')
-    safeLog('🔍 API URL:', this.apiUrl)
-    safeLog('🔍 apiToken exists:', !!this.apiToken)
-    safeLog('🔍 apiToken:', sanitizeToken(this.apiToken))
+    // Initialize Hugging Face Inference Client
     if (!this.apiToken) {
       safeWarn('⚠️ VITE_HUGGINGFACE_API_TOKEN is not set')
       safeWarn('⚠️ Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
+      this.client = null
     } else {
-      safeLog('✅ VITE_HUGGINGFACE_API_TOKEN is configured')
+      this.client = new InferenceClient(this.apiToken)
+      safeLog('✅ VirtualTryOnService initialized with Hugging Face Inference Client')
+      safeLog('🔍 apiToken exists:', !!this.apiToken)
+      safeLog('🔍 apiToken:', sanitizeToken(this.apiToken))
     }
+    
+    // Model configuration
+    this.model = 'ovi054/virtual-tryon-kontext-lora'
+    this.provider = 'replicate'
     
     // Default model person image (base64 or URL)
     // For production, you should have a default model photo
@@ -80,8 +73,8 @@ export class VirtualTryOnService {
         modelImageBlob = await this.getDefaultModelImage()
       }
 
-      // Call Virtual Try-On API
-      const result = await this.callIDMVTONApi(modelImageBlob, outfitImageBlob)
+      // Call Virtual Try-On API using InferenceClient
+      const result = await this.callVirtualTryOnApi(modelImageBlob, outfitImageBlob)
 
       console.log('✅ VirtualTryOnService: Try-on generated successfully')
       return {
@@ -906,145 +899,71 @@ export class VirtualTryOnService {
   }
 
   /**
-   * Call virtual try-on API with multiple fallback methods
+   * Convert Blob to ArrayBuffer for InferenceClient
+   * 
+   * @param {Blob} blob - Image blob
+   * @returns {Promise<ArrayBuffer>} ArrayBuffer
+   */
+  async blobToArrayBuffer(blob) {
+    return await blob.arrayBuffer()
+  }
+
+  /**
+   * Call virtual try-on API using Hugging Face InferenceClient
    * 
    * @param {Blob} modelImage - Model person image
    * @param {Blob} garmentImage - Clothing/outfit image
    * @returns {Promise<Object>} Generated try-on image
    */
-  async callIDMVTONApi(modelImage, garmentImage) {
-    // Use appropriate methods based on API type
-    // Inference API: try structured inputs first, then array format
-    // Spaces API: try standard format, then FormData
-    const methods = [
-      { name: 'JSON (API-aware)', fn: (url) => this.callWithJSON(url, modelImage, garmentImage) },
-      { name: 'JSON Inputs (Alternative)', fn: (url) => this.callWithInputsJSON(url, modelImage, garmentImage) },
-      { name: 'FormData', fn: (url) => this.callWithFormData(url, modelImage, garmentImage) }
-    ]
+  async callVirtualTryOnApi(modelImage, garmentImage) {
+    // Check if client is initialized
+    if (!this.client) {
+      throw new Error('Hugging Face API token is required. Please set VITE_HUGGINGFACE_API_TOKEN in your environment variables. You can get a free token from: https://huggingface.co/settings/tokens')
+    }
 
-    // Sort endpoints: prioritize Inference API if token is available (more reliable)
-    // Token available: Inference API first, then Spaces API
-    // No token: Spaces API only
-    const sortedEndpoints = this.apiToken 
-      ? [
-          // Inference API endpoints first (require token, more reliable)
-          ...this.apiEndpoints.filter(url => url.includes('api-inference.huggingface.co')),
-          // Then Spaces API endpoints (may not require token but less reliable)
-          ...this.apiEndpoints.filter(url => !url.includes('api-inference.huggingface.co'))
-        ]
-      : this.apiEndpoints.filter(url => !url.includes('api-inference.huggingface.co'))
-
-    const errors = [] // Track all errors for better debugging
-
-    // Try each endpoint with each method
-    for (const endpoint of sortedEndpoints) {
-      // Skip Inference API endpoints if no token
-      if (endpoint.includes('api-inference.huggingface.co') && !this.apiToken) {
-        safeLog(`⏭️ Skipping ${endpoint} - API token required`)
-        continue
+    try {
+      safeLog('🚀 Calling Virtual Try-On Kontext LoRA model via InferenceClient')
+      
+      // Create garment overlay image (model with garments overlaid)
+      safeLog('🎨 Creating garment overlay...')
+      const overlayImage = await this.createGarmentOverlay(modelImage, garmentImage)
+      
+      safeLog(`📤 Sending to model: ${this.model} with provider: ${this.provider}`)
+      
+      // Call imageToImage using InferenceClient
+      // InferenceClient accepts Blob, ArrayBuffer, or File directly
+      const imageBlob = await this.client.imageToImage({
+        provider: this.provider,
+        model: this.model,
+        inputs: overlayImage, // Pass Blob directly
+        parameters: {
+          prompt: "wear it",
+        },
+      })
+      
+      // The result is already a Blob
+      const imageUrl = URL.createObjectURL(imageBlob)
+      
+      safeLog('✅ Virtual try-on generated successfully')
+      return {
+        imageUrl,
+        imageBlob
       }
-
-      for (const method of methods) {
-        try {
-          const urlToUse = endpoint
-          safeLog(`🚀 Trying ${method.name} on ${sanitizeUrl(urlToUse)}`)
-          
-          // Add timeout (45 seconds for Inference API, 90 seconds for Spaces API which may be slower)
-          const timeoutMs = endpoint.includes('api-inference.huggingface.co') ? 45000 : 90000
-          
-          const response = await Promise.race([
-            method.fn(urlToUse),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
-            )
-          ])
-          
-          if (!response.ok) {
-            let errorText = ''
-            try {
-              errorText = await response.text()
-            } catch (e) {
-              errorText = 'Could not read error response'
-            }
-            
-            const errorMsg = `${method.name} failed on ${endpoint}: ${response.status} ${response.statusText}${errorText ? ` - ${errorText.substring(0, 200)}` : ''}`
-            errors.push(errorMsg)
-            console.warn(`⚠️ ${errorMsg}`)
-            
-            // If it's a 404, 503, or 500 (server errors), try next endpoint/method
-            if (response.status === 404 || response.status === 503 || response.status === 500) {
-              console.log(`⏭️ Server error ${response.status}, trying next method/endpoint...`)
-              continue
-            }
-            
-            // For auth errors with token, provide helpful message
-            if (response.status === 401) {
-              if (endpoint.includes('api-inference.huggingface.co')) {
-                throw new Error('Invalid or expired Hugging Face API token. Please check your VITE_HUGGINGFACE_API_TOKEN.')
-              }
-              continue // Try next endpoint
-            }
-            
-            // For other client errors (400, 422, etc.), try next method
-            if (response.status >= 400 && response.status < 500) {
-              console.log(`⏭️ Client error ${response.status}, trying next method...`)
-              continue
-            }
-            
-            // For other errors, throw but continue
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`)
-          }
-
-          // Success! Parse the response (pass endpoint URL for model-specific parsing)
-          const result = await this.parseResponse(response, urlToUse)
-          safeLog(`✅ Success with ${method.name} on ${sanitizeUrl(urlToUse)}`)
-          return result
-
-        } catch (error) {
-          // Handle timeout errors
-          if (error.message.includes('timeout')) {
-            const errorMsg = `${method.name} on ${sanitizeUrl(urlToUse)}: ${error.message}`
-            errors.push(errorMsg)
-            safeWarn(`⏱️ ${errorMsg}`)
-            continue
-          }
-          
-          // If it's a token-related error and we're trying Inference API, skip silently
-          if (error.message.includes('token') && endpoint.includes('api-inference.huggingface.co')) {
-            safeLog(`⏭️ ${method.name} skipped on ${sanitizeUrl(urlToUse)} - token issue: ${error.message}`)
-            continue
-          }
-          
-          const errorMsg = `${method.name} failed on ${sanitizeUrl(urlToUse)}: ${error.message}`
-          errors.push(errorMsg)
-          safeWarn(`❌ ${errorMsg}`)
-          // Continue to next method/endpoint
-          continue
-        }
+      
+    } catch (error) {
+      safeError('❌ VirtualTryOnService: Error calling InferenceClient:', error)
+      
+      // Provide helpful error messages
+      if (error.message.includes('token') || error.message.includes('401') || error.message.includes('403')) {
+        throw new Error('Invalid or expired Hugging Face API token. Please check your VITE_HUGGINGFACE_API_TOKEN.')
       }
+      
+      if (error.message.includes('503') || error.message.includes('loading')) {
+        throw new Error('Model is currently loading. Please wait a moment and try again.')
+      }
+      
+      throw new Error(error.message || 'Failed to generate virtual try-on image')
     }
-
-    // If all methods and endpoints failed, provide helpful error message
-    const hasToken = !!this.apiToken
-    const triedInferenceAPI = sortedEndpoints.some(url => url.includes('api-inference.huggingface.co'))
-    
-    // Build comprehensive error message
-    let errorMessage = 'All API calling methods failed.'
-    
-    if (errors.length > 0) {
-      safeError('🔍 All API attempts failed. Last few errors:', errors.slice(-3))
-      errorMessage += `\n\nRecent errors:\n${errors.slice(-3).map((e, i) => `${i + 1}. ${e}`).join('\n')}`
-    }
-    
-    if (!hasToken && triedInferenceAPI) {
-      errorMessage += '\n\nPlease set VITE_HUGGINGFACE_API_TOKEN in your environment variables for Inference API access. You can get a free token from: https://huggingface.co/settings/tokens'
-    } else if (hasToken) {
-      errorMessage += '\n\nSince your API token is configured, the issue might be:\n1) The model endpoints are temporarily unavailable (500 errors suggest server-side issues)\n2) Network connectivity issues to HuggingFace\n3) The model spaces may be experiencing high load\n\nPlease try again in a few moments, or check https://status.huggingface.co for service status.'
-    } else {
-      errorMessage += '\n\nThe virtual try-on service may be temporarily unavailable. Please try again later or set up an API token for more reliable access.'
-    }
-    
-    throw new Error(errorMessage)
   }
 
   /**
