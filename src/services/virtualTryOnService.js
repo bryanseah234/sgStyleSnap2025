@@ -886,50 +886,72 @@ export class VirtualTryOnService {
 
   /**
    * Get default model image for try-on
+   * Uses a standard fashion model photo for better try-on results
    * 
    * @returns {Promise<Blob>} Default model image blob
    */
   async getDefaultModelImage() {
     try {
-      // For now, create a simple placeholder
-      // In production, you should use a real model photo
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
+      // Use a standard fashion model photo from Unsplash
+      // Neutral pose, plain background, ideal for virtual try-on
+      // Image: 768x1024px fashion model in neutral pose (free to use via Unsplash license)
+      const defaultModelImageUrl = 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=768&h=1024&fit=crop&crop=center&auto=format&q=90'
       
-      canvas.width = 768
-      canvas.height = 1024
+      safeLog('📸 Using default fashion model image from Unsplash')
       
-      // Draw a simple silhouette placeholder
-      ctx.fillStyle = '#F5F5F5'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      // Fetch the image and convert to blob
+      const response = await fetch(defaultModelImageUrl)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch default model image: ${response.statusText}`)
+      }
       
-      // Draw body shape
-      ctx.fillStyle = '#E0E0E0'
-      ctx.beginPath()
-      ctx.ellipse(canvas.width / 2, canvas.height / 2, 150, 400, 0, 0, Math.PI * 2)
-      ctx.fill()
-      
-      // Add text
-      ctx.fillStyle = '#999999'
-      ctx.font = '24px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText('Model Placeholder', canvas.width / 2, canvas.height - 50)
-      ctx.font = '16px sans-serif'
-      ctx.fillText('(Use your own model photo for better results)', canvas.width / 2, canvas.height - 20)
-      
-      return new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob)
-          } else {
-            reject(new Error('Failed to create default model image'))
-          }
-        }, 'image/png')
-      })
+      const blob = await response.blob()
+      safeLog('✅ Default model image loaded successfully')
+      return blob
 
     } catch (error) {
-      safeError('❌ VirtualTryOnService: Error creating default model:', error)
-      throw error
+      safeError('❌ VirtualTryOnService: Error loading default model image:', error)
+      safeWarn('⚠️ Falling back to placeholder...')
+      
+      // Fallback to a simple placeholder if the URL fails
+      try {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        canvas.width = 768
+        canvas.height = 1024
+        
+        // Draw a simple silhouette placeholder
+        ctx.fillStyle = '#F5F5F5'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        
+        // Draw body shape
+        ctx.fillStyle = '#E0E0E0'
+        ctx.beginPath()
+        ctx.ellipse(canvas.width / 2, canvas.height / 2, 150, 400, 0, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Add text
+        ctx.fillStyle = '#999999'
+        ctx.font = '24px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('Model Placeholder', canvas.width / 2, canvas.height - 50)
+        ctx.font = '16px sans-serif'
+        ctx.fillText('(Default model image unavailable)', canvas.width / 2, canvas.height - 20)
+        
+        return new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob)
+            } else {
+              reject(new Error('Failed to create fallback model image'))
+            }
+          }, 'image/png')
+        })
+      } catch (fallbackError) {
+        safeError('❌ VirtualTryOnService: Error creating fallback model image:', fallbackError)
+        throw new Error('Failed to load or create default model image')
+      }
     }
   }
 
