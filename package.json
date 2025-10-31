@@ -20,7 +20,7 @@
   "dependencies": {
     "@studio-freight/lenis": "^1.0.42",
     "@supabase/supabase-js": "^2.38.4",
-    "@getbrevo/brevo": "^2.1.0",
+    "@getbrevo/brevo": "^3.0.1",
     "@vueuse/core": "^10.7.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
