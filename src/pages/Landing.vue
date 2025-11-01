@@ -116,10 +116,10 @@
         <div class="flex justify-center">
           <button
             @click="handleSignUp"
-            class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            class="group inline-flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-100 px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             Get Started
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition text-black" />
           </button>
         </div>
       </div>
@@ -156,27 +156,27 @@
               class="carousel-3d-item"
               :class="{ 'expanded': feature.expanded }"
               :style="{
-                transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(400px)`,
+                transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(300px)`,
                 '--item-index': idx
               }"
               @click="toggleFeatureExpand(feature.id)"
             >
-              <div class="carousel-card bg-white rounded-xl border border-gray-200 p-6 sm:p-8 shadow-lg transition-all duration-300 cursor-pointer min-h-full flex flex-col">
-                <div class="flex flex-col items-center text-center space-y-3 sm:space-y-4 flex-1">
+              <div class="carousel-card bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg transition-all duration-300 cursor-pointer min-h-full flex flex-col">
+                <div class="flex flex-col items-center text-center space-y-2 sm:space-y-2.5 flex-1">
                   <component 
                     :is="feature.icon" 
-                    class="w-12 h-12 sm:w-16 sm:h-16 text-gray-900 transition-transform duration-300 flex-shrink-0"
+                    class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 transition-transform duration-300 flex-shrink-0"
                     :class="{ 'scale-125': feature.expanded }"
                   />
-                  <h3 class="text-lg sm:text-xl font-bold flex-shrink-0">{{ feature.title }}</h3>
+                  <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
                   <p 
-                    class="text-sm sm:text-base text-gray-600 transition-all duration-300"
-                    :class="feature.expanded ? 'opacity-0 max-h-0 overflow-hidden mb-0' : 'opacity-100 max-h-32 mb-2'"
+                    class="text-xs sm:text-sm text-gray-600 transition-all duration-300"
+                    :class="feature.expanded ? 'opacity-0 max-h-0 overflow-hidden mb-0' : 'opacity-100 max-h-32 mb-1'"
                   >
                     {{ feature.description }}
                   </p>
                   <div 
-                    class="expanded-content text-sm sm:text-base text-gray-600 transition-all duration-500 flex-1"
+                    class="expanded-content text-xs sm:text-sm text-gray-600 transition-all duration-500 flex-1"
                     :class="feature.expanded ? 'opacity-100 max-h-full' : 'opacity-0 max-h-0 overflow-hidden'"
                   >
                     <p class="leading-relaxed">{{ feature.expandedDescription }}</p>
@@ -456,30 +456,29 @@
               </template>
 
                 <!-- Bottom-Center Canvas Toolbar -->
-                <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-gray-200 shadow-sm backdrop-blur">
+                <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700">
+                  <button
+                    @click="toggleGrid"
+                    :class="`p-2 rounded-lg transition-all ${
+                      showGrid
+                        ? 'bg-black text-white dark:bg-white dark:text-black'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                    }`"
+                    title="Toggle Grid"
+                  >
+                    <Grid3X3 class="w-4 h-4" />
+                  </button>
                   <button
                     @click="clearOutfit"
                     :disabled="outfitItems.length === 0"
-                    :class="`p-2 rounded-lg transition-all duration-200 ${
+                    :class="`p-2 rounded-lg transition-all ${
                       outfitItems.length > 0
-                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
                         : 'opacity-50 cursor-not-allowed'
                     }`"
                     title="Clear Canvas"
                   >
                     <Trash2 class="w-4 h-4" />
-                  </button>
-                  
-                  <button
-                    @click="toggleGrid"
-                    :class="`p-2 rounded-lg transition-all duration-200 ${
-                      showGrid
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`"
-                    title="Toggle Grid"
-                  >
-                    <Grid3X3 class="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -583,7 +582,7 @@
     <button
       v-if="showScrollToTop"
       @click="scrollToTop"
-      class="bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center fixed bottom-6 right-6 z-[9999] transition-all duration-300"
+      class="scroll-to-top-button bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300"
       aria-label="Scroll to top"
     >
       <ArrowUp class="w-6 h-6" />
@@ -839,19 +838,12 @@ const toggleItemInOutfit = (itemId) => {
 const loadCatalogueItems = async () => {
   loadingCatalogue.value = true
   try {
-    // For landing page, we'll get public catalog items without auth requirement
-    // Fallback to empty if not authenticated
-    try {
-      const items = await catalogService.getCatalogItems({
-        limit: 20,
-        offset: 0
-      })
-      catalogueItems.value = items
-    } catch (error) {
-      // If not authenticated or error, use empty array
-      console.log('Landing: Could not load catalog items (expected for non-authenticated users)')
-      catalogueItems.value = []
-    }
+    // Use public catalog items method (no authentication required)
+    const items = await catalogService.getPublicCatalogItems({
+      limit: 20,
+      offset: 0
+    })
+    catalogueItems.value = items || []
   } catch (error) {
     console.error('Landing: Error loading catalogue items:', error)
     catalogueItems.value = []
@@ -1360,7 +1352,7 @@ const setScrollY = (value) => {
 /* Hero title styling */
 .hero-title {
   font-weight: 700; /* font-bold matches "Powerful Features" */
-  color: inherit; /* Use normal text color, no gradient */
+  color: #ffffff; /* White text for better contrast */
   position: relative;
   opacity: 0;
   transition: opacity 0.5s ease-in;
@@ -1421,7 +1413,7 @@ const setScrollY = (value) => {
   perspective: 1200px;
   perspective-origin: center center;
   width: 100%;
-  height: 500px;
+  height: 400px;
   position: relative;
   margin: 4rem 0;
   display: flex;
@@ -1431,20 +1423,20 @@ const setScrollY = (value) => {
 
 .carousel-3d-container {
   position: relative;
-  width: 300px;
-  height: 400px;
+  width: 260px;
+  height: 320px;
   transform-style: preserve-3d;
   transition: transform 1s ease-in-out;
 }
 
 .carousel-3d-item {
   position: absolute;
-  width: 280px;
-  height: 380px;
+  width: 240px;
+  height: 300px;
   left: 50%;
   top: 50%;
-  margin-left: -140px;
-  margin-top: -190px;
+  margin-left: -120px;
+  margin-top: -150px;
   transform-style: preserve-3d;
   transition: transform 0.5s ease, z-index 0.5s ease;
   cursor: pointer;
@@ -1452,11 +1444,11 @@ const setScrollY = (value) => {
 
 .carousel-3d-item.expanded {
   z-index: 10;
-  transform: translateZ(500px) scale(1.1) !important;
+  transform: translateZ(400px) scale(1.1) !important;
 }
 
 .carousel-3d-item.expanded .carousel-card {
-  max-height: 500px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
@@ -1480,47 +1472,55 @@ const setScrollY = (value) => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .carousel-3d-wrapper {
-    height: 400px;
+    height: 320px;
     margin: 2rem 0;
   }
   
   .carousel-3d-container {
-    width: 250px;
-    height: 350px;
-  }
-  
-  .carousel-3d-item {
-    width: 240px;
-    height: 330px;
-    margin-left: -120px;
-    margin-top: -165px;
-  }
-  
-  .carousel-3d-item.expanded {
-    transform: translateZ(400px) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .carousel-3d-wrapper {
-    height: 350px;
-    margin: 1.5rem 0;
-  }
-  
-  .carousel-3d-container {
     width: 220px;
-    height: 300px;
+    height: 280px;
   }
   
   .carousel-3d-item {
     width: 200px;
-    height: 280px;
+    height: 260px;
     margin-left: -100px;
-    margin-top: -140px;
+    margin-top: -130px;
   }
   
   .carousel-3d-item.expanded {
     transform: translateZ(350px) !important;
   }
+}
+
+@media (max-width: 640px) {
+  .carousel-3d-wrapper {
+    height: 280px;
+    margin: 1.5rem 0;
+  }
+  
+  .carousel-3d-container {
+    width: 200px;
+    height: 240px;
+  }
+  
+  .carousel-3d-item {
+    width: 180px;
+    height: 220px;
+    margin-left: -90px;
+    margin-top: -110px;
+  }
+  
+  .carousel-3d-item.expanded {
+    transform: translateZ(300px) !important;
+  }
+}
+
+/* Scroll to Top Button - Fixed bottom right */
+.scroll-to-top-button {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 9999 !important;
 }
 </style>
