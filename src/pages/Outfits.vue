@@ -19,25 +19,9 @@
             Add
             <ChevronDown :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" />
           </button>
-          <!-- Dropdown Menu: Personal, Friend, then Suggested -->
+          <!-- Dropdown Menu: AI Suggestions first, then Personal, then Friend -->
           <div v-if="showAddMenu" class="absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800">
-            <!-- Personal first -->
-            <button @click="navigateToCreate('personal')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
-              <User class="w-5 h-5" />
-              <div>
-                <div class="font-medium">Personal creation</div>
-                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Create your own outfit combinations</div>
-              </div>
-            </button>
-            <!-- Friend second -->
-            <button @click="navigateToCreate('friend')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
-              <Users class="w-5 h-5" />
-              <div>
-                <div class="font-medium">Friend creation</div>
-                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Use items from friends' closets</div>
-              </div>
-            </button>
-            <!-- Suggested third -->
+            <!-- AI Suggestions first -->
             <button @click="navigateToCreate('suggested')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
               <Sparkles class="w-5 h-5" />
               <div>
@@ -45,28 +29,57 @@
                 <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Get AI-powered outfit recommendations</div>
               </div>
             </button>
+            <!-- Personal second -->
+            <button @click="navigateToCreate('personal')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
+              <User class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Personal creation</div>
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Create your own outfit combinations</div>
+              </div>
+            </button>
+            <!-- Friend third -->
+            <button @click="navigateToCreate('friend')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
+              <Users class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Friend creation</div>
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Use items from friends' closets</div>
+              </div>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap gap-3 md:gap-4 mb-6">
+      <div class="flex flex-wrap gap-2 mb-6">
+        <!-- Category Filters (All Outfits, Suggestions) -->
         <button
-          v-for="filter in filters"
+          v-for="filter in categoryFilters"
           :key="filter.value"
           @click="activeFilter = filter.value"
-          :class="filter.value === 'favorites' && activeFilter === filter.value
-            ? 'px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 bg-red-500 text-white dark:bg-red-600'
-            : activeFilter === filter.value ? 'btn-tab btn-tab--active' : 'btn-tab'"
+          :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
+            activeFilter === filter.value
+              ? 'bg-black text-white dark:bg-white dark:text-black'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+          }`"
         >
-          <template v-if="filter.value === 'favorites'">
-            <Heart :class="`w-5 h-5 ${activeFilter === 'favorites' ? 'fill-current' : ''}`" />
-          </template>
           {{ filter.label }}
           <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 
                 class="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white">
             {{ suggestionStats.pending }}
           </span>
+        </button>
+        
+        <!-- Favourites Button - Same style as Closet page, independent toggle -->
+        <button
+          @click="showFavoritesOnly = !showFavoritesOnly"
+          :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+            showFavoritesOnly
+              ? 'bg-red-500 text-white dark:bg-red-600'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+          }`"
+        >
+          <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+          Favourites
         </button>
       </div>
     </div>
@@ -411,6 +424,7 @@ const outfits = ref([])
 const loading = ref(true)
 const showAddMenu = ref(false)
 const activeFilter = ref('all')
+const showFavoritesOnly = ref(false) // Independent favorites toggle, same as Closet page
 const showOutfitDetail = ref(false)
 const selectedOutfit = ref(null)
 const searchTerm = ref('')
@@ -429,9 +443,9 @@ const suggestions = ref([])
 const suggestionsLoading = ref(false)
 const suggestionStats = ref({ pending: 0, approved: 0, rejected: 0, total: 0 })
 
-const filters = [
+// Category filters (All Outfits, Suggestions) - separate from favorites toggle
+const categoryFilters = [
   { value: 'all', label: 'All Outfits' },
-  { value: 'favorites', label: 'Favourites' },
   { value: 'suggestions', label: 'Suggestions' }
 ]
 
@@ -471,8 +485,8 @@ const filteredOutfits = computed(() => {
     })
   }
 
-  // Apply favorites filter
-  if (activeFilter.value === 'favorites') {
+  // Apply favorites filter (independent toggle, same as Closet page)
+  if (showFavoritesOnly.value) {
     filtered = filtered.filter(outfit => outfit.is_favorite)
   }
 

@@ -88,57 +88,39 @@
   </nav>
 
     <!-- Hero Section -->
-    <section class="relative overflow-hidden py-12 sm:py-20 md:py-32 bg-gradient-to-br from-white via-white to-gray-100">
-      <!-- Background elements -->
-        <div class="absolute top-10 sm:top-20 right-5 sm:right-10 w-40 sm:w-72 h-40 sm:h-72 bg-gray-900/10 rounded-full blur-3xl" />
-        <div class="absolute bottom-10 sm:bottom-20 left-5 sm:left-10 w-48 sm:w-96 h-48 sm:h-96 bg-gray-900/5 rounded-full blur-3xl" />
+    <section 
+      class="relative overflow-hidden min-h-screen flex items-center justify-center"
+      :style="{
+        backgroundImage: 'url(/images/hero-fashion-outfit.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }"
+    >
+      <!-- Overlay for better text readability -->
+      <div class="absolute inset-0 bg-black/20"></div>
 
-      <div class="container grid md:grid-cols-2 gap-6 sm:gap-12 items-center relative z-10">
-        <div class="space-y-4 sm:space-y-6">
-          <h1 
-            ref="heroTitleRef"
-            class="hero-title"
-            :class="{ 'hero-title-visible': showHeroTitle }"
-            style="font-size: 2.5625rem;"
+      <!-- Centered content -->
+      <div class="container relative z-10 text-center space-y-6 sm:space-y-8">
+        <h1 
+          ref="heroTitleRef"
+          class="hero-title text-white"
+          :class="{ 'hero-title-visible': showHeroTitle }"
+          style="font-size: 2.5625rem;"
+        >
+          Transform Your Fashion Game
+        </h1>
+        <p class="text-sm sm:text-base md:text-lg text-white/90 max-w-2xl mx-auto">
+          Organise your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
+        </p>
+        <div class="flex justify-center">
+          <button
+            @click="handleSignUp"
+            class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
-            Transform Your Fashion Game
-          </h1>
-            <p class="text-sm sm:text-base md:text-lg text-gray-600">
-            Organise your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button
-              @click="handleSignUp"
-              class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
-            >
-              Get Started
-              <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Hero Image -->
-        <div class="relative hidden sm:block animate-parallaxFloat">
-          <div class="aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-2xl">
-            <img 
-              src="/images/hero-fashion-outfit.jpg" 
-              alt="Fashion outfit showcase - leather jacket, white tee, jeans, and accessories" 
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-gray-900/10 rounded-full blur-3xl" />
-          <div class="absolute -top-6 -left-6 w-40 h-40 bg-gray-900/5 rounded-full blur-3xl" />
-        </div>
-
-        <!-- Mobile Hero Image -->
-        <div class="relative animate-slideInRight sm:hidden">
-          <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-lg">
-            <img 
-              src="/images/hero-fashion-outfit.jpg" 
-              alt="Fashion outfit showcase" 
-              class="w-full h-full object-cover"
-            />
-          </div>
+            Get Started
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
+          </button>
         </div>
       </div>
     </section>
@@ -155,44 +137,60 @@
           <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Powerful Features for Your Style</h2>
           <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             Everything you need to manage, create, and share your fashion effortlessly
-            </p>
-          </div>
+          </p>
+        </div>
           
-        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-          <div
-            v-for="(feature, idx) in features"
-            :key="feature.id"
-            class="flip-card scroll-hidden hover:shadow-lg hover:-translate-y-1 animate-wiggle transition-all duration-300"
-            :class="[
-              idx % 2 === 0 ? 'animate-slideInFromLeft' : 'animate-slideInFromRight',
-              feature.flipped ? 'flipped' : ''
-            ]"
-            :id="`feature-${idx}`"
-            @mouseenter="toggleCardFlip(feature.id)"
-            @mouseleave="toggleCardFlip(feature.id)"
+        <!-- 3D Carousel Container -->
+        <div 
+          class="carousel-3d-wrapper"
+          @mouseenter="pauseCarousel"
+          @mouseleave="resumeCarousel"
+        >
+          <div 
+            class="carousel-3d-container"
+            :style="{ transform: `rotateY(${carouselRotation}deg)` }"
           >
-            <div class="flip-card-inner">
-              <!-- Front side -->
-              <div class="flip-card-front p-4 sm:p-6 md:p-8 rounded-xl bg-white border border-gray-200 hover:border-gray-900 transition group cursor-pointer">
-                <component :is="feature.icon" class="w-10 h-10 sm:w-12 sm:h-12 text-gray-900 mb-3 sm:mb-4 group-hover:scale-125 transition duration-300" />
-                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{{ feature.title }}</h3>
-            </div>
-            
-              <!-- Back side -->
-              <div class="flip-card-back p-4 sm:p-6 md:p-8 rounded-xl bg-white text-gray-900 border border-gray-200 hover:border-gray-900 transition group cursor-pointer">
-                <div class="flex flex-col justify-center items-center h-full text-center">
-                  <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{{ feature.title }}</h3>
-                  <p class="text-xs sm:text-sm md:text-base text-gray-600">{{ feature.description }}</p>
+            <div
+              v-for="(feature, idx) in features"
+              :key="feature.id"
+              class="carousel-3d-item"
+              :class="{ 'expanded': feature.expanded }"
+              :style="{
+                transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(400px)`,
+                '--item-index': idx
+              }"
+              @click="toggleFeatureExpand(feature.id)"
+            >
+              <div class="carousel-card bg-white rounded-xl border border-gray-200 p-6 sm:p-8 shadow-lg transition-all duration-300 cursor-pointer min-h-full flex flex-col">
+                <div class="flex flex-col items-center text-center space-y-3 sm:space-y-4 flex-1">
+                  <component 
+                    :is="feature.icon" 
+                    class="w-12 h-12 sm:w-16 sm:h-16 text-gray-900 transition-transform duration-300 flex-shrink-0"
+                    :class="{ 'scale-125': feature.expanded }"
+                  />
+                  <h3 class="text-lg sm:text-xl font-bold flex-shrink-0">{{ feature.title }}</h3>
+                  <p 
+                    class="text-sm sm:text-base text-gray-600 transition-all duration-300"
+                    :class="feature.expanded ? 'opacity-0 max-h-0 overflow-hidden mb-0' : 'opacity-100 max-h-32 mb-2'"
+                  >
+                    {{ feature.description }}
+                  </p>
+                  <div 
+                    class="expanded-content text-sm sm:text-base text-gray-600 transition-all duration-500 flex-1"
+                    :class="feature.expanded ? 'opacity-100 max-h-full' : 'opacity-0 max-h-0 overflow-hidden'"
+                  >
+                    <p class="leading-relaxed">{{ feature.expandedDescription }}</p>
+                  </div>
                 </div>
-          </div>
-          </div>
+              </div>
+            </div>
           </div>
         </div>
-        </div>
-      </section>
+      </div>
+    </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="py-6 sm:py-12 md:py-20 relative overflow-hidden">
+    <section id="demo" class="py-6 sm:py-12 md:py-20 relative overflow-hidden bg-white">
       <div class="absolute inset-0 opacity-5">
         <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
       </div>
@@ -205,66 +203,121 @@
           </p>
         </div>
         
-        <div class="grid md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-          <!-- Item Selection - First on mobile, second on desktop -->
-          <div class="space-y-2 sm:space-y-3 md:order-1 order-1 animate-expandWidth">
-            <h3 class="text-base sm:text-lg md:text-xl font-bold text-center">Select Items</h3>
-            <div class="flex flex-col gap-2 sm:gap-3 items-center max-h-[300px] sm:max-h-[400px] md:max-h-none overflow-y-auto">
-              <button
-                v-for="(item, idx) in demoItems"
-                :key="item.id"
-                @click="toggleItemInOutfit(item.id)"
-                :class="[
-                  'group relative overflow-hidden rounded-lg border-2 transition-all duration-300 transform hover:scale-[1.02] bg-white w-full max-w-xs',
-                  isItemSelected(item.id)
-                    ? 'border-gray-900 bg-gray-50 shadow-lg'
-                    : 'border-gray-200 hover:border-gray-900/50'
-                ]"
-                :style="{
-                  animation: `fadeInUp 0.5s ease-out ${idx * 0.05}s both`,
-                }"
-              >
-                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3">
-                  <div class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                    <img 
-                      :src="`/images/${item.id}.jpg`" 
-                      :alt="item.name"
-                      class="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div class="text-left flex-1 min-w-0">
-                    <div class="font-semibold text-xs sm:text-sm text-gray-900 truncate">{{ item.name }}</div>
-                    <div class="text-xs text-gray-600 truncate">{{ item.category }}</div>
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+          <!-- Left Sidebar - Catalogue Items -->
+          <div class="lg:col-span-2">
+            <div class="rounded-xl p-4 sm:p-6 bg-white border border-gray-200">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base sm:text-lg font-bold">Catalogue</h3>
+                <span class="text-xs sm:text-sm px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                  {{ filteredCatalogueItems.length }}
+                </span>
+              </div>
+              
+              <!-- Category Filters -->
+              <div class="flex flex-wrap gap-2 mb-4">
+                <button
+                  v-for="category in categoryOptions"
+                  :key="category"
+                  @click="activeCategory = category"
+                  :class="`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    activeCategory === category
+                      ? 'bg-black text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+                  }`"
+                >
+                  {{ category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1) }}
+                </button>
+              </div>
+
+              <!-- Items List -->
+              <div class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                <div
+                  v-if="loadingCatalogue"
+                  class="text-center py-8 text-gray-500"
+                >
+                  Loading items...
+                </div>
+                <div
+                  v-else-if="filteredCatalogueItems.length === 0"
+                  class="text-center py-8 text-gray-500"
+                >
+                  <Shirt class="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p class="text-sm">No items available</p>
+                </div>
+                <div
+                  v-else
+                  v-for="item in filteredCatalogueItems"
+                  :key="item.id"
+                  draggable="true"
+                  @dragstart="handleCatalogDragStart(item, $event)"
+                  @click="addCatalogueItemToCanvas(item)"
+                  class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300"
+                >
+                  <div class="flex items-center gap-3">
+                    <!-- Item Image -->
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-sm bg-white">
+                      <img
+                        v-if="item.image_url || item.thumbnail_url"
+                        :src="item.thumbnail_url || item.image_url"
+                        :alt="item.name"
+                        class="w-full h-full object-cover"
+                        draggable="false"
+                      />
+                      <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
+                        <Shirt class="w-6 h-6 text-gray-400" />
+                      </div>
+                    </div>
+                    
+                    <!-- Item Info -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs sm:text-sm font-medium truncate mb-1 text-gray-900">
+                        {{ item.name }}
+                      </p>
+                      <p class="text-xs truncate capitalize text-gray-500">
+                        {{ item.category }}
+                      </p>
+                    </div>
+                    
+                    <!-- Add Icon -->
+                    <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500">
+                      <Plus class="w-4 h-4 sm:w-5 sm:h-5" />
+                    </div>
                   </div>
                 </div>
-              </button>
+              </div>
             </div>
           </div>
 
-          <!-- Outfit Preview - Second on mobile, first on desktop -->
-          <div class="flex flex-col h-full space-y-2 sm:space-y-3 md:order-2 order-2 animate-expandHeight">
-            <div class="flex items-center justify-between">
-              <h3 class="text-base sm:text-lg md:text-xl font-bold text-center w-full">Your Outfit</h3>
-              <button
-                v-if="outfitItems.length > 0"
-                @click="clearOutfit"
-                class="text-xs sm:text-sm text-gray-600 hover:text-destructive transition flex items-center gap-1"
+          <!-- Right Area - Outfit Canvas -->
+          <div class="lg:col-span-3">
+            <div class="rounded-xl overflow-hidden bg-white border border-gray-200">
+              <!-- Canvas Area -->
+              <div
+                ref="canvasRef"
+                class="relative w-full rounded-lg overflow-hidden bg-gray-50"
+                style="height: 500px;"
+                @drop="handleDrop"
+                @dragover.prevent
+                @dragenter.prevent
+                @click="selectedItemId = null"
+                @mousemove="handleMouseMove"
+                @mouseup="handleMouseUp"
+                @mouseleave="handleMouseUp"
               >
-                <Trash2 class="w-3 h-3 sm:w-4 sm:h-4" />
-                Clear
-              </button>
-            </div>
-
-            <!-- Canvas for draggable items -->
-            <div
-              ref="canvasRef"
-              class="flex-1 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden border-2 border-gray-300 select-none min-h-[250px] sm:min-h-[300px] md:min-h-[400px] max-h-[400px] sm:max-h-[500px] md:max-h-none"
-              @mousemove="handleMouseMove"
-              @mouseup="handleMouseUp"
-              @mouseleave="handleMouseUp"
-              @dragstart.prevent
-              @click="selectedItemId = null"
-            >
+                <!-- Grid Background -->
+                <div
+                  v-if="showGrid"
+                  class="absolute inset-0 opacity-20 pointer-events-none"
+                  :style="{
+                    backgroundImage: `
+                      linear-gradient(#000000 1px, transparent 1px),
+                      linear-gradient(90deg, #000000 1px, transparent 1px)
+                    `,
+                    backgroundSize: '40px 40px'
+                  }"
+                />
+                
               <template v-if="outfitItems.length > 0">
                 <div
                   v-for="item in outfitItems"
@@ -272,43 +325,37 @@
                   class="absolute group select-none"
                   :class="draggedItem === item.id ? 'cursor-grabbing' : 'cursor-grab'"
                   :style="{
-                    left: '50%',
-                    top: '50%',
-                    transform: `translate(calc(-50% + ${item.x}px), calc(-50% + ${item.y}px)) scale(${item.scale || 1}) rotate(${item.rotation || 0}deg)`,
-                    zIndex: draggedItem === item.id 
-                      ? 10000 
-                      : (selectedItemId === item.id ? 5000 : 100) + ((item.z_index || 0) * 100),
+                    position: 'absolute',
+                    left: `${item.x}px`,
+                    top: `${item.y}px`,
+                    zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : (item.z_index || 0),
+                    transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
+                    transformOrigin: 'center center',
+                    transition: draggedItem === item.id ? 'none' : 'all 0.2s'
                   }"
-                  @mousedown.prevent="(e) => handleMouseDown(e, item.id)"
+                  @mousedown.stop="handleMouseDown(item, $event)"
                   @click.stop="selectItem(item.id)"
                 >
-                  <div class="relative select-none">
-                    <div 
-                      :class="[
-                        'rounded-lg overflow-hidden bg-white shadow-lg border-2 transition-colors',
-                        selectedItemId === item.id ? 'border-blue-500 ring-2 ring-blue-300' : 'border-transparent group-hover:border-blue-400'
-                      ]"
-                      :style="{
-                        width: `${96 * item.scale}px`,
-                        height: `${128 * item.scale}px`
-                      }"
-                    >
-                      <img 
-                        :src="`/images/${item.id}.jpg`" 
-                        :alt="item.name"
-                        class="w-full h-full object-cover pointer-events-none select-none"
-                        draggable="false"
-                      />
-          </div>
-
-            </div>
+                  <div class="w-32 h-32 overflow-hidden">
+                    <img
+                      v-if="item.image_url || item.thumbnail_url"
+                      :src="item.thumbnail_url || item.image_url"
+                      :alt="item.name"
+                      class="w-full h-full object-contain"
+                      draggable="false"
+                    />
+                    <div v-else class="w-full h-full flex items-center justify-center bg-gray-200">
+                      <Shirt class="w-12 h-12 text-gray-400" />
+                    </div>
+                  </div>
               
-              <!-- Toolkit (shown on hover) -->
-              <div
-                class="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                @mousedown.stop
-                @click.stop
-              >
+                  <!-- Toolkit (shown when selected) -->
+                  <div
+                    v-if="selectedItemId === item.id"
+                    class="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    @mousedown.stop
+                    @click.stop
+                  >
                 <!-- Zoom Out -->
                 <button
                   @click.stop="scaleSelectedItem(item.id, -0.1)"
@@ -394,11 +441,47 @@
             </div>
               </template>
               <template v-else>
-                <div class="text-center space-y-3 sm:space-y-4 animate-fadeInUp">
-                  <Sparkles class="w-12 h-12 sm:w-16 sm:h-16 text-gray-600/50 mx-auto animate-float" />
-                  <p class="text-xs sm:text-sm md:text-base text-gray-600">Start creating your outfit</p>
-            </div>
+                <!-- Empty State -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-gray-200">
+                    <Sparkles class="w-12 h-12 text-orange-500" />
+                  </div>
+                  <p class="text-xl font-medium mb-2 text-gray-700">
+                    Start Creating Your Outfit
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    Click on items from the left to add them to the canvas
+                  </p>
+                </div>
               </template>
+
+                <!-- Bottom-Center Canvas Toolbar -->
+                <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-gray-200 shadow-sm backdrop-blur">
+                  <button
+                    @click="clearOutfit"
+                    :disabled="outfitItems.length === 0"
+                    :class="`p-2 rounded-lg transition-all duration-200 ${
+                      outfitItems.length > 0
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`"
+                    title="Clear Canvas"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    @click="toggleGrid"
+                    :class="`p-2 rounded-lg transition-all duration-200 ${
+                      showGrid
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`"
+                    title="Toggle Grid"
+                  >
+                    <Grid3X3 class="w-4 h-4" />
+                  </button>
+                </div>
           </div>
                 </div>
               </div>
@@ -508,9 +591,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth-store'
 import { useRouter } from 'vue-router'
+import { CatalogService } from '@/services/catalogService'
 import { 
   Shirt, 
   Sparkles, 
@@ -520,7 +604,15 @@ import {
   Menu, 
   X, 
   Trash2,
-  ArrowUp
+  ArrowUp,
+  Palette,
+  Camera,
+  Heart,
+  Undo,
+  Redo,
+  Grid3X3,
+  Save,
+  Plus
 } from 'lucide-vue-next'
 
 // Import landing page animations
@@ -561,45 +653,29 @@ const finalTransform = reactive({
   fontSize: '2.5625rem'
 })
 
-// Demo items data
-const demoItems = [
-  {
-    id: 'white-tshirt',
-    name: 'White T-Shirt',
-    category: 'Tops',
-    color: 'white',
-  },
-  {
-    id: 'black-tshirt',
-    name: 'Black T-Shirt',
-    category: 'Tops',
-    color: 'black',
-  },
-  {
-    id: 'blue-jeans',
-    name: 'Blue Jeans',
-    category: 'Bottoms',
-    color: 'blue',
-  },
-  {
-    id: 'white-sneakers',
-    name: 'White Sneakers',
-    category: 'Shoes',
-    color: 'white',
-  },
-  {
-    id: 'brown-jacket',
-    name: 'Brown Jacket',
-    category: 'Outerwear',
-    color: 'brown',
-  },
-  {
-    id: 'beige-sweater',
-    name: 'Beige Sweater',
-    category: 'Tops',
-    color: 'beige',
-  },
-]
+// Catalog service instance
+const catalogService = new CatalogService()
+
+// Catalogue items and state
+const catalogueItems = ref([])
+const loadingCatalogue = ref(false)
+const activeCategory = ref('all')
+const showGrid = ref(false)
+const categoryOptions = ['all', 'top', 'bottom', 'outerwear', 'shoes', 'accessories']
+
+// Filtered catalogue items
+const filteredCatalogueItems = computed(() => {
+  let filtered = catalogueItems.value
+  
+  if (activeCategory.value !== 'all') {
+    filtered = filtered.filter(item => {
+      const itemCategory = (item.category || '').toLowerCase()
+      return itemCategory === activeCategory.value.toLowerCase()
+    })
+  }
+  
+  return filtered
+})
 
 // Features data
 const features = ref([
@@ -608,23 +684,61 @@ const features = ref([
     icon: Shirt,
     title: 'Digital Closet',
     description: 'Organise all your clothing items by category. Track what you own and never lose track of your favourite pieces.',
+    expandedDescription: 'Transform your messy wardrobe into an organized digital catalog. Categorize items by type, color, season, and occasion. Use advanced search and filter options to quickly find exactly what you\'re looking for. Add tags, notes, and outfit history to each piece. Never forget about that perfect item hiding in the back of your closet again!',
     flipped: false,
+    expanded: false,
   },
   {
     id: 'outfit-creator',
     icon: Zap,
     title: 'Outfit Creator',
     description: 'Drag and drop to create stunning outfits. Get AI-powered suggestions for perfect combinations.',
+    expandedDescription: 'Create unlimited outfit combinations with our intuitive drag-and-drop interface. Visualize how pieces work together before you wear them. Our AI analyzes color theory, style matching, and current fashion trends to suggest perfect pairings. Save your favorite combinations for quick access. Mix and match to discover styles you never knew you could create!',
     flipped: false,
+    expanded: false,
   },
   {
     id: 'share-connect',
     icon: Users,
     title: 'Share & Connect',
     description: 'Share your outfits with friends, get feedback, and discover inspiration from their styles.',
+    expandedDescription: 'Build your fashion community! Share your daily outfits, special event looks, and style experiments with friends. Get real-time feedback and styling tips from your network. Browse through your friends\' outfit collections for endless inspiration. Follow fashion influencers and discover trending styles. Create style challenges, share shopping finds, and celebrate each other\'s fashion journey together!',
     flipped: false,
+    expanded: false,
+  },
+  {
+    id: 'style-analyzer',
+    icon: Palette,
+    title: 'Style Analyzer',
+    description: 'Analyze your fashion choices and discover your unique style profile.',
+    expandedDescription: 'Uncover your personal style DNA with our advanced analytics! Our AI examines your wardrobe choices, color preferences, and outfit patterns to create a comprehensive style profile. Discover if you lean towards minimalist, boho, classic, or trendy aesthetics. Get personalized recommendations based on your style preferences. Track your fashion evolution over time and see how your taste develops. Perfect for understanding what truly represents you!',
+    flipped: false,
+    expanded: false,
+  },
+  {
+    id: 'photo-capture',
+    icon: Camera,
+    title: 'Photo Capture',
+    description: 'Instantly capture and catalog your clothing items with smart photo recognition.',
+    expandedDescription: 'Simply snap a photo and watch the magic happen! Our advanced image recognition technology automatically identifies clothing items, extracts colors, patterns, and details. No more manual data entry - just point, shoot, and your items are instantly added to your digital closet. Edit photos with built-in filters and cropping tools. Organize by outfit photos, item photos, or style inspiration boards. Your fashion catalog has never been easier to build!',
+    flipped: false,
+    expanded: false,
+  },
+  {
+    id: 'favorites',
+    icon: Heart,
+    title: 'Favorites & Collections',
+    description: 'Save your favorite pieces, create wishlists, and build curated collections.',
+    expandedDescription: 'Never lose track of your dream items! Create unlimited collections for different occasions, seasons, or style goals. Save items from your closet, friend\'s outfits, or shopping sites. Build wishlists for special events, shopping trips, or seasonal updates. Organize collections like "Date Night Looks", "Work Wardrobe", or "Summer Essentials". Get reminders for items you haven\'t worn in a while. Your personal fashion curator at your fingertips!',
+    flipped: false,
+    expanded: false,
   },
 ])
+
+// Carousel state
+const carouselRotation = ref(0)
+const carouselInterval = ref(null)
+const isCarouselPaused = ref(false)
 
 // Why choose items data
 const whyChooseItems = [
@@ -654,10 +768,48 @@ const handleSignUp = () => {
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
-const toggleCardFlip = (featureId) => {
+// Toggle feature expansion on click
+const toggleFeatureExpand = (featureId) => {
   const feature = features.value.find(f => f.id === featureId)
   if (feature) {
-    feature.flipped = !feature.flipped
+    // Close all other expanded features
+    features.value.forEach(f => {
+      if (f.id !== featureId) {
+        f.expanded = false
+      }
+    })
+    // Toggle current feature
+    feature.expanded = !feature.expanded
+  }
+}
+
+// Carousel rotation functions
+const startCarousel = () => {
+  if (carouselInterval.value) return
+  
+  // Initial delay before first rotation
+  setTimeout(() => {
+    carouselInterval.value = setInterval(() => {
+      if (!isCarouselPaused.value) {
+        const rotationStep = 360 / features.value.length
+        carouselRotation.value += rotationStep
+      }
+    }, 5000) // Rotate every 5 seconds
+  }, 3000) // Start rotating after 3 seconds
+}
+
+const pauseCarousel = () => {
+  isCarouselPaused.value = true
+}
+
+const resumeCarousel = () => {
+  isCarouselPaused.value = false
+}
+
+const stopCarousel = () => {
+  if (carouselInterval.value) {
+    clearInterval(carouselInterval.value)
+    carouselInterval.value = null
   }
 }
 
@@ -666,18 +818,8 @@ const isItemSelected = (itemId) => {
 }
 
 const addItemToOutfit = (itemId) => {
-  const item = demoItems.find(i => i.id === itemId)
-  if (item && !outfitItems.value.find(oi => oi.id === itemId)) {
-    const newItem = {
-      ...item,
-      x: Math.random() * 20 - 10,
-      y: Math.random() * 20 - 10,
-      scale: 1,
-      rotation: 0,
-      z_index: outfitItems.value.length,
-    }
-    outfitItems.value.push(newItem)
-  }
+  // This function is kept for compatibility but not used anymore
+  // Items are added via addCatalogueItemToCanvas
 }
 
 const removeItemFromOutfit = (itemId) => {
@@ -692,21 +834,108 @@ const toggleItemInOutfit = (itemId) => {
   }
 }
 
+// Load catalogue items
+const loadCatalogueItems = async () => {
+  loadingCatalogue.value = true
+  try {
+    // For landing page, we'll get public catalog items without auth requirement
+    // Fallback to empty if not authenticated
+    try {
+      const items = await catalogService.getCatalogItems({
+        limit: 20,
+        offset: 0
+      })
+      catalogueItems.value = items
+    } catch (error) {
+      // If not authenticated or error, use empty array
+      console.log('Landing: Could not load catalog items (expected for non-authenticated users)')
+      catalogueItems.value = []
+    }
+  } catch (error) {
+    console.error('Landing: Error loading catalogue items:', error)
+    catalogueItems.value = []
+  } finally {
+    loadingCatalogue.value = false
+  }
+}
+
+// Add item to canvas from catalogue
+const addCatalogueItemToCanvas = (item) => {
+  if (!canvasRef.value) return
+  
+  const rect = canvasRef.value.getBoundingClientRect()
+  const itemSize = 128
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
+  
+  const newItem = {
+    ...item,
+    id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    x: centerX - itemSize / 2 + (Math.random() * 40 - 20),
+    y: centerY - itemSize / 2 + (Math.random() * 40 - 20),
+    scale: 1,
+    rotation: 0,
+    z_index: outfitItems.value.length,
+  }
+  
+  outfitItems.value.push(newItem)
+  selectedItemId.value = newItem.id
+}
+
+// Handle drag from catalogue
+const handleCatalogDragStart = (item, event) => {
+  event.dataTransfer.setData('text/plain', JSON.stringify(item))
+  event.dataTransfer.effectAllowed = 'move'
+}
+
+// Handle drop on canvas
+const handleDrop = (event) => {
+  event.preventDefault()
+  if (!canvasRef.value) return
+  
+  try {
+    const itemData = event.dataTransfer.getData('text/plain')
+    const item = JSON.parse(itemData)
+    
+    const rect = canvasRef.value.getBoundingClientRect()
+    const itemSize = 128
+    const x = event.clientX - rect.left - (itemSize / 2)
+    const y = event.clientY - rect.top - (itemSize / 2)
+    
+    const newItem = {
+      ...item,
+      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      x: Math.max(0, Math.min(x, rect.width - itemSize)),
+      y: Math.max(0, Math.min(y, rect.height - itemSize)),
+      z_index: outfitItems.value.length,
+      rotation: 0,
+      scale: 1
+    }
+    
+    outfitItems.value.push(newItem)
+    selectedItemId.value = newItem.id
+  } catch (error) {
+    console.error('Error handling drop:', error)
+  }
+}
+
+// Toggle grid
+const toggleGrid = () => {
+  showGrid.value = !showGrid.value
+}
+
 const clearOutfit = () => {
   outfitItems.value = []
 }
 
-const handleMouseDown = (e, itemId) => {
+const handleMouseDown = (item, event) => {
   if (!canvasRef.value) return
   
-  draggedItem.value = itemId
+  selectedItemId.value = item.id
+  draggedItem.value = item.id
   const rect = canvasRef.value.getBoundingClientRect()
-  const item = outfitItems.value.find(i => i.id === itemId)
-  
-  if (item) {
-    dragOffset.x = e.clientX - rect.left - (rect.width / 2 + item.x)
-    dragOffset.y = e.clientY - rect.top - (rect.height / 2 + item.y)
-  }
+  dragOffset.x = event.clientX - rect.left - item.x
+  dragOffset.y = event.clientY - rect.top - item.y
 }
 
 const handleMouseMove = (e) => {
@@ -714,11 +943,16 @@ const handleMouseMove = (e) => {
   if (!draggedItem.value || !canvasRef.value) return
 
   const rect = canvasRef.value.getBoundingClientRect()
-  const x = e.clientX - rect.left - rect.width / 2 - dragOffset.x
-  const y = e.clientY - rect.top - rect.height / 2 - dragOffset.y
+  const x = e.clientX - rect.left - dragOffset.x
+  const y = e.clientY - rect.top - dragOffset.y
+
+  // Constrain to canvas bounds
+  const itemSize = 128
+  const constrainedX = Math.max(0, Math.min(x, rect.width - itemSize))
+  const constrainedY = Math.max(0, Math.min(y, rect.height - itemSize))
 
   outfitItems.value = outfitItems.value.map(item =>
-    item.id === draggedItem.value ? { ...item, x, y } : item
+    item.id === draggedItem.value ? { ...item, x: constrainedX, y: constrainedY } : item
   )
 }
 
@@ -995,12 +1229,20 @@ onMounted(() => {
   const elementsToObserve = document.querySelectorAll('.scroll-hidden')
   elementsToObserve.forEach((el) => observer.observe(el))
   
+  // Start carousel rotation
+  startCarousel()
+  
+  // Load catalogue items for demo
+  loadCatalogueItems()
+  
   // Cleanup function
   onUnmounted(() => {
-  // Ensure body scroll is re-enabled when component is unmounted
-  enableBodyScroll()
+    // Ensure body scroll is re-enabled when component is unmounted
+    enableBodyScroll()
     window.removeEventListener('scroll', handleScroll)
     observer.disconnect()
+    // Stop carousel rotation
+    stopCarousel()
   })
 })
 
@@ -1170,6 +1412,114 @@ const setScrollY = (value) => {
   .landing-page {
     background-color: white !important;
     color: rgb(17, 24, 39) !important;
+  }
+}
+
+/* 3D Carousel Styles */
+.carousel-3d-wrapper {
+  perspective: 1200px;
+  perspective-origin: center center;
+  width: 100%;
+  height: 500px;
+  position: relative;
+  margin: 4rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-3d-container {
+  position: relative;
+  width: 300px;
+  height: 400px;
+  transform-style: preserve-3d;
+  transition: transform 1s ease-in-out;
+}
+
+.carousel-3d-item {
+  position: absolute;
+  width: 280px;
+  height: 380px;
+  left: 50%;
+  top: 50%;
+  margin-left: -140px;
+  margin-top: -190px;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease, z-index 0.5s ease;
+  cursor: pointer;
+}
+
+.carousel-3d-item.expanded {
+  z-index: 10;
+  transform: translateZ(500px) scale(1.1) !important;
+}
+
+.carousel-3d-item.expanded .carousel-card {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.carousel-card {
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.carousel-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.expanded-content {
+  transition: max-height 0.5s ease, opacity 0.5s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .carousel-3d-wrapper {
+    height: 400px;
+    margin: 2rem 0;
+  }
+  
+  .carousel-3d-container {
+    width: 250px;
+    height: 350px;
+  }
+  
+  .carousel-3d-item {
+    width: 240px;
+    height: 330px;
+    margin-left: -120px;
+    margin-top: -165px;
+  }
+  
+  .carousel-3d-item.expanded {
+    transform: translateZ(400px) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .carousel-3d-wrapper {
+    height: 350px;
+    margin: 1.5rem 0;
+  }
+  
+  .carousel-3d-container {
+    width: 220px;
+    height: 300px;
+  }
+  
+  .carousel-3d-item {
+    width: 200px;
+    height: 280px;
+    margin-left: -100px;
+    margin-top: -140px;
+  }
+  
+  .carousel-3d-item.expanded {
+    transform: translateZ(350px) !important;
   }
 }
 </style>

@@ -36,9 +36,11 @@
           <div class="w-20 h-20 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
             <img
               v-if="friend.avatar_url"
-              :src="friend.avatar_url"
+              :src="getProxiedImageUrl(friend.avatar_url)"
               :alt="friend.name"
               class="w-full h-full object-cover"
+              crossorigin="anonymous"
+              @error="handleImageError"
             />
             <div
               v-else
@@ -189,6 +191,7 @@ import { useTheme } from '@/composables/useTheme'
 import { api } from '@/api/client'
 import { clothesService } from '@/services/clothesService'
 import { formatDate, getFirstName } from '@/utils'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { ArrowLeft, User, Shirt, Grid, List } from 'lucide-vue-next'
 
 const route = useRoute()

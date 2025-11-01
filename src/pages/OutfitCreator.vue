@@ -290,9 +290,10 @@
             <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-stone-100 dark:bg-zinc-800">
               <img
                 v-if="friend.avatar_url"
-                :src="friend.avatar_url"
+                :src="getProxiedImageUrl(friend.avatar_url)"
                 :alt="friend.username"
                 class="w-full h-full object-cover"
+                crossorigin="anonymous"
               />
               <div class="w-full h-full flex items-center justify-center text-stone-400 dark:text-zinc-500">
                 <User class="w-8 h-8" />
@@ -837,6 +838,7 @@ import { NotificationsService } from '@/services/notificationsService'
 import { VirtualTryOnService } from '@/services/virtualTryOnService'
 import { generateRecommendations, getCategoryDisplayName } from '@/services/recommendation-service.js'
 import { getFirstName } from '@/utils'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { 
   Undo, 
   Redo, 
