@@ -25,8 +25,79 @@
     class="min-h-screen bg-white text-gray-900 overflow-hidden landing-page"
     :class="{ 'page-hidden': !isTransitioning && showSplash, 'page-visible': isTransitioning || !showSplash }"
   >
-    <!-- Navigation -->
+    <!-- Navigation - Floating Pill Header -->
   <nav :class="[
+        'fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-6xl mx-auto px-4 transition-all duration-300',
+        scrollY > 50 ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      ]">
+      <div class="flex items-center justify-between py-3 px-6 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
+        <!-- Logo and Brand -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="bg-black rounded-xl p-2 flex items-center justify-center">
+            <Shirt class="w-5 h-5 text-white" />
+          </div>
+          <span class="font-bold text-lg sm:text-xl truncate">StyleSnap</span>
+        </div>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Features</a>
+          <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Demo</a>
+          <a href="#why" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Why Us</a>
+        </div>
+      
+        <!-- Auth Buttons -->
+        <div class="flex items-center gap-3">
+          <button
+            @click="handleLogin"
+            class="hidden md:inline-flex items-center justify-center text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition px-4 py-2"
+          >
+            Log In
+          </button>
+          <button
+            @click="handleSignUp"
+            :class="`inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 px-5 py-2 rounded-full font-medium text-sm transition-all shadow-md hover:shadow-lg ${
+              scrollY > 50 ? 'opacity-100' : 'opacity-0'
+            }`"
+          >
+            Join for free
+          </button>
+
+          <!-- Mobile Menu Button -->
+          <button
+            class="md:hidden ml-2"
+            @click="isMenuOpen = !isMenuOpen"
+          >
+            <X v-if="isMenuOpen" class="w-5 h-5 text-gray-900 dark:text-gray-100" />
+            <Menu v-else class="w-5 h-5 text-gray-900 dark:text-gray-100" />
+          </button>
+        </div>
+      </div>
+      
+      <!-- Mobile Menu -->
+      <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/95 dark:bg-zinc-900/95 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg animate-slideInDown">
+        <div class="py-4 px-4 flex flex-col gap-3">
+          <a href="#features" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2">Features</a>
+          <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2">Demo</a>
+          <a href="#why" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2">Why Us</a>
+          <button
+            @click="handleLogin"
+            class="text-left text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2"
+          >
+            Log In
+          </button>
+          <button
+            @click="handleSignUp"
+            class="text-left text-sm font-medium bg-black text-white hover:bg-gray-900 px-4 py-2 rounded-full transition-all mt-2"
+          >
+            Join for free
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Static Initial Navigation (shown when not scrolled) -->
+    <nav v-if="scrollY <= 50" :class="[
         'sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 animate-fadeInDown',
         authStore.isAuthenticated ? 'md:[box-shadow:8px_2px_14px_-6px_rgba(0,0,0,0.15)]' : ''
       ]">
@@ -77,15 +148,15 @@
           <a href="#features" class="text-base font-medium hover:text-gray-600 transition py-2">Features</a>
           <a href="#demo" class="text-base font-medium hover:text-gray-600 transition py-2">Demo</a>
           <a href="#why" class="text-base font-medium hover:text-gray-600 transition py-2">Why Us</a>
-      <button
+          <button
             @click="handleLogin"
             class="text-left text-base font-medium text-gray-900 hover:text-gray-600 transition py-2"
-      >
+          >
             Log In
-      </button>
+          </button>
         </div>
-    </div>
-  </nav>
+      </div>
+    </nav>
 
     <!-- Hero Section -->
     <section 
@@ -110,7 +181,7 @@
         >
           Transform Your Fashion Game
         </h1>
-        <p class="text-sm sm:text-base md:text-lg text-white/90 max-w-2xl mx-auto">
+        <p class="text-sm sm:text-base md:text-lg text-white max-w-2xl mx-auto">
           Organise your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
         </p>
         <div class="flex justify-center">
@@ -126,7 +197,7 @@
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="py-12 sm:py-20 md:py-32 bg-gray-200/50 relative overflow-hidden">
+    <section id="features" class="py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute top-10 left-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" />
         <div class="absolute bottom-10 right-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s" />
@@ -154,32 +225,37 @@
               v-for="(feature, idx) in features"
               :key="feature.id"
               class="carousel-3d-item"
-              :class="{ 'expanded': feature.expanded }"
+              :class="{ 
+                'expanded': feature.expanded,
+                'front-facing': isCardFrontFacing(idx)
+              }"
               :style="{
-                transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(300px)`,
+                transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
                 '--item-index': idx
               }"
-              @click="toggleFeatureExpand(feature.id)"
+              @click="isCardFrontFacing(idx) && toggleFeatureExpand(feature.id)"
             >
-              <div class="carousel-card bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg transition-all duration-300 cursor-pointer min-h-full flex flex-col">
-                <div class="flex flex-col items-center text-center space-y-2 sm:space-y-2.5 flex-1">
-                  <component 
-                    :is="feature.icon" 
-                    class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 transition-transform duration-300 flex-shrink-0"
-                    :class="{ 'scale-125': feature.expanded }"
-                  />
-                  <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
-                  <p 
-                    class="text-xs sm:text-sm text-gray-600 transition-all duration-300"
-                    :class="feature.expanded ? 'opacity-0 max-h-0 overflow-hidden mb-0' : 'opacity-100 max-h-32 mb-1'"
-                  >
-                    {{ feature.description }}
-                  </p>
-                  <div 
-                    class="expanded-content text-xs sm:text-sm text-gray-600 transition-all duration-500 flex-1"
-                    :class="feature.expanded ? 'opacity-100 max-h-full' : 'opacity-0 max-h-0 overflow-hidden'"
-                  >
-                    <p class="leading-relaxed">{{ feature.expandedDescription }}</p>
+              <div 
+                class="carousel-card-wrapper"
+                :class="{ 'flipped': feature.flipped }"
+              >
+                <!-- Front Face -->
+                <div class="carousel-card-face carousel-card-front bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
+                  <div class="flex flex-col items-center text-center space-y-2 sm:space-y-2.5 flex-1">
+                    <component 
+                      :is="feature.icon" 
+                      class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 flex-shrink-0"
+                    />
+                    <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
+                  </div>
+                </div>
+                
+                <!-- Back Face -->
+                <div class="carousel-card-face carousel-card-back bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
+                  <div class="flex flex-col items-center text-center space-y-3 sm:space-y-4 flex-1 justify-center">
+                    <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                      {{ feature.expandedDescription }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -196,9 +272,9 @@
       </div>
 
       <div class="container relative z-10">
-        <div class="text-center space-y-1 sm:space-y-2 mb-4 sm:mb-8 scroll-hidden animate-slideInFromBottom" id="demo-header">
-          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Try the Outfit Creator</h2>
-          <p class="text-xs sm:text-sm md:text-base text-gray-600">
+        <div class="text-center space-y-2 sm:space-y-4 mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="demo-header">
+          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Try the Outfit Creator</h2>
+          <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             Click items to add them, then drag to adjust positions in your outfit
           </p>
         </div>
@@ -215,7 +291,7 @@
               </div>
               
               <!-- Category Filters -->
-              <div class="flex flex-wrap gap-2 mb-4">
+              <div v-if="catalogueItems.length > 0" class="flex flex-wrap gap-2 mb-4">
                 <button
                   v-for="category in categoryOptions"
                   :key="category"
@@ -456,13 +532,13 @@
               </template>
 
                 <!-- Bottom-Center Canvas Toolbar -->
-                <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700">
+                <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-gray-200 shadow-sm backdrop-blur dark:bg-white dark:border-gray-200">
                   <button
                     @click="toggleGrid"
                     :class="`p-2 rounded-lg transition-all ${
                       showGrid
-                        ? 'bg-black text-white dark:bg-white dark:text-black'
-                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                        ? 'bg-black text-white dark:bg-black dark:text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-100 dark:text-gray-700 dark:hover:bg-gray-200'
                     }`"
                     title="Toggle Grid"
                   >
@@ -473,7 +549,7 @@
                     :disabled="outfitItems.length === 0"
                     :class="`p-2 rounded-lg transition-all ${
                       outfitItems.length > 0
-                        ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-100 dark:text-gray-700 dark:hover:bg-gray-200'
                         : 'opacity-50 cursor-not-allowed'
                     }`"
                     title="Clear Canvas"
@@ -489,7 +565,7 @@
     </section>
 
     <!-- Why Choose Section -->
-    <section id="why" class="py-12 sm:py-20 md:py-32 bg-gray-200/50 relative overflow-hidden">
+    <section id="why" class="py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s" />
           </div>
@@ -537,21 +613,8 @@
     
     <!-- CTA Section -->
     <section 
-      ref="ctaSectionRef"
-      class="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-gray-100 via-white to-gray-300 text-gray-900 relative overflow-hidden border-b border-gray-200"
-      @mousemove="handleCtaMouseMove"
-      @mouseleave="handleCtaMouseLeave"
+      class="py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative overflow-hidden"
     >
-      <!-- Cursor-following light effect -->
-      <div 
-        class="absolute w-96 h-96 bg-gray-300/80 rounded-full blur-3xl pointer-events-none transition-opacity duration-300"
-        :style="{
-          left: `${cursorLight.x}px`,
-          top: `${cursorLight.y}px`,
-          transform: 'translate(-50%, -50%)',
-          opacity: cursorLight.opacity
-        }"
-      />
       <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
         <p class="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-gray-800/95">
@@ -569,14 +632,76 @@
       </div>
     </section>
     
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 py-8 sm:py-12 animate-fadeInUp">
-      <div class="container">
-        <div class="text-center text-xs sm:text-sm text-gray-600">
-          <p>&copy; 2025 StyleSnap. All rights reserved.</p>
+    <!-- Cut-out Section (reveals footer on scroll) -->
+    <div class="footer-reveal-section relative">
+      <!-- Content area with cut-out shape -->
+      <div class="content-with-cutout bg-white">
+        <div class="container py-8 sm:py-12">
+          <!-- Empty spacer - footer content is below -->
         </div>
       </div>
-    </footer>
+      
+      <!-- Footer -->
+      <footer 
+        class="footer-reveal bg-black text-white transition-transform duration-500 ease-out"
+        :class="{ 'translate-y-0': showFooter, '-translate-y-full': !showFooter }"
+      >
+        <div class="container py-12 sm:py-16">
+          <!-- Top Section: Branding and Links -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+            <!-- Left: Logo and Tagline -->
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center gap-3">
+                <div class="bg-white rounded-xl p-2 flex items-center justify-center">
+                  <Shirt class="w-6 h-6 text-black" />
+                </div>
+                <span class="font-bold text-xl text-white">StyleSnap</span>
+              </div>
+              <p class="text-sm text-gray-400">
+                Transform your fashion game with StyleSnap.
+              </p>
+            </div>
+            
+            <!-- Right: Navigation Links Column -->
+            <div class="flex justify-start md:justify-end">
+              <ul class="space-y-3">
+                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Contact</a></li>
+                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Help center</a></li>
+                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
+                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Merch</a></li>
+                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">X (Twitter)</a></li>
+                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">LinkedIn</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Bottom Section: Copyright and Legal Links -->
+          <div class="flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-gray-800 gap-4">
+            <p class="text-xs text-gray-400">
+              &copy; StyleSnap 2025. All rights reserved.
+            </p>
+            <div class="flex items-center gap-6">
+              <button
+                @click="showPrivacy = true"
+                class="text-xs text-gray-400 hover:text-gray-300 transition"
+              >
+                Privacy policy
+              </button>
+              <button
+                @click="showTerms = true"
+                class="text-xs text-gray-400 hover:text-gray-300 transition"
+              >
+                Terms
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Modals -->
+    <TermsOfServiceModal :isOpen="showTerms" @close="showTerms = false" />
+    <PrivacyPolicyModal :isOpen="showPrivacy" @close="showPrivacy = false" />
 
     <!-- Scroll to Top Button -->
     <button
@@ -614,6 +739,8 @@ import {
   Save,
   Plus
 } from 'lucide-vue-next'
+import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
+import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 
 // Import landing page animations
 import '@/assets/css/landing-page-animations.css'
@@ -627,16 +754,19 @@ const isMenuOpen = ref(false)
 const outfitItems = ref([])
 const selectedItemId = ref(null)
 const scrollY = ref(0)
+const lastScrollY = ref(0)
+const isScrollingDown = ref(false)
+const showFooter = ref(false)
 const draggedItem = ref(null)
 const dragOffset = reactive({ x: 0, y: 0 })
 const canvasRef = ref(null)
 const isPageLoaded = ref(false)
-const ctaSectionRef = ref(null)
-const cursorLight = reactive({ x: 0, y: 0, opacity: 0 })
 const showScrollToTop = ref(false)
 const displayedTitle = ref('')
 const showTypewriterCursor = ref(true)
 const showSplash = ref(true)
+const showTerms = ref(false)
+const showPrivacy = ref(false)
 const isTransitioning = ref(false)
 const animationComplete = ref(false)
 const showHeroTitle = ref(false)
@@ -677,8 +807,17 @@ const filteredCatalogueItems = computed(() => {
   return filtered
 })
 
-// Features data
+// Features data - Photo Capture first
 const features = ref([
+  {
+    id: 'photo-capture',
+    icon: Camera,
+    title: 'Photo Capture',
+    description: 'Instantly capture and catalog your clothing items with smart photo recognition.',
+    expandedDescription: 'Simply snap a photo and watch the magic happen! Our advanced image recognition technology automatically identifies clothing items, extracts colors, patterns, and details. No more manual data entry - just point, shoot, and your items are instantly added to your digital closet. Edit photos with built-in filters and cropping tools. Organize by outfit photos, item photos, or style inspiration boards. Your fashion catalog has never been easier to build!',
+    flipped: false,
+    expanded: false,
+  },
   {
     id: 'digital-closet',
     icon: Shirt,
@@ -716,15 +855,6 @@ const features = ref([
     expanded: false,
   },
   {
-    id: 'photo-capture',
-    icon: Camera,
-    title: 'Photo Capture',
-    description: 'Instantly capture and catalog your clothing items with smart photo recognition.',
-    expandedDescription: 'Simply snap a photo and watch the magic happen! Our advanced image recognition technology automatically identifies clothing items, extracts colors, patterns, and details. No more manual data entry - just point, shoot, and your items are instantly added to your digital closet. Edit photos with built-in filters and cropping tools. Organize by outfit photos, item photos, or style inspiration boards. Your fashion catalog has never been easier to build!',
-    flipped: false,
-    expanded: false,
-  },
-  {
     id: 'favorites',
     icon: Heart,
     title: 'Favorites & Collections',
@@ -739,6 +869,7 @@ const features = ref([
 const carouselRotation = ref(0)
 const carouselInterval = ref(null)
 const isCarouselPaused = ref(false)
+const flipTimers = ref({}) // Track timers for auto-flip back
 
 // Why choose items data
 const whyChooseItems = [
@@ -768,19 +899,58 @@ const handleSignUp = () => {
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
-// Toggle feature expansion on click
+// Toggle feature flip on click
 const toggleFeatureExpand = (featureId) => {
   const feature = features.value.find(f => f.id === featureId)
-  if (feature) {
-    // Close all other expanded features
-    features.value.forEach(f => {
-      if (f.id !== featureId) {
-        f.expanded = false
-      }
-    })
-    // Toggle current feature
-    feature.expanded = !feature.expanded
+  if (!feature || !isCardFrontFacing(features.value.findIndex(f => f.id === featureId))) return
+  
+  // If card is already flipped, flip it back immediately and resume
+  if (feature.flipped) {
+    feature.flipped = false
+    clearTimeout(flipTimers.value[featureId])
+    delete flipTimers.value[featureId]
+    resumeCarousel()
+    return
   }
+  
+  // Close all other flipped features
+  features.value.forEach(f => {
+    if (f.id !== featureId && f.flipped) {
+      f.flipped = false
+      if (flipTimers.value[f.id]) {
+        clearTimeout(flipTimers.value[f.id])
+        delete flipTimers.value[f.id]
+      }
+    }
+  })
+  
+  // Pause rotation
+  pauseCarousel()
+  
+  // Flip the card
+  feature.flipped = true
+  
+  // Auto-flip back after 5 seconds
+  flipTimers.value[featureId] = setTimeout(() => {
+    feature.flipped = false
+    delete flipTimers.value[featureId]
+    resumeCarousel()
+  }, 5000)
+}
+
+// Check if a card is facing forward (within 30 degrees of center)
+const isCardFrontFacing = (index) => {
+  const totalCards = features.value.length
+  const cardAngle = index * (360 / totalCards)
+  const currentRotation = carouselRotation.value % 360
+  const normalizedRotation = currentRotation < 0 ? currentRotation + 360 : currentRotation
+  
+  // Calculate the effective angle of this card after rotation
+  const effectiveAngle = (cardAngle - normalizedRotation + 360) % 360
+  
+  // Card is front-facing if it's within 30 degrees of 0 (center front)
+  const isFront = effectiveAngle <= 30 || effectiveAngle >= 330
+  return isFront
 }
 
 // Carousel rotation functions
@@ -792,7 +962,7 @@ const startCarousel = () => {
     carouselInterval.value = setInterval(() => {
       if (!isCarouselPaused.value) {
         const rotationStep = 360 / features.value.length
-        carouselRotation.value += rotationStep
+        carouselRotation.value -= rotationStep // Changed to negative for counter-clockwise
       }
     }, 5000) // Rotate every 5 seconds
   }, 3000) // Start rotating after 3 seconds
@@ -811,6 +981,9 @@ const stopCarousel = () => {
     clearInterval(carouselInterval.value)
     carouselInterval.value = null
   }
+  // Clear all flip timers
+  Object.values(flipTimers.value).forEach(timer => clearTimeout(timer))
+  flipTimers.value = {}
 }
 
 const isItemSelected = (itemId) => {
@@ -1033,20 +1206,6 @@ const deleteSelectedItem = (itemId) => {
   selectedItemId.value = null
 }
 
-// CTA section cursor-following light effect
-const handleCtaMouseMove = (e) => {
-  if (!ctaSectionRef.value) return
-  
-  const rect = ctaSectionRef.value.getBoundingClientRect()
-  cursorLight.x = e.clientX - rect.left
-  cursorLight.y = e.clientY - rect.top
-  cursorLight.opacity = 0.2
-}
-
-const handleCtaMouseLeave = () => {
-  cursorLight.opacity = 0
-}
-
 // Scroll to top functionality
 const scrollToTop = () => {
   window.scrollTo({
@@ -1168,11 +1327,29 @@ onMounted(() => {
   typewriterEffect()
   
   const handleScroll = () => {
-    setScrollY(window.scrollY)
+    const currentScrollY = window.scrollY
+    setScrollY(currentScrollY)
+    
+    // Detect scroll direction
+    isScrollingDown.value = currentScrollY > lastScrollY.value
+    lastScrollY.value = currentScrollY
+    
+    // Show/hide footer based on scroll direction and position
+    // Show footer when scrolling down and near bottom, hide when scrolling up
+    const windowHeight = window.innerHeight
+    const documentHeight = document.documentElement.scrollHeight
+    const scrollPercentage = (currentScrollY / (documentHeight - windowHeight)) * 100
+    
+    if (isScrollingDown.value && scrollPercentage > 70) {
+      showFooter.value = true
+    } else if (!isScrollingDown.value && scrollPercentage < 60) {
+      showFooter.value = false
+    }
+    
     // Show scroll to top button when scrolled down more than 300px
-    showScrollToTop.value = window.scrollY > 300
+    showScrollToTop.value = currentScrollY > 300
   }
-  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('scroll', handleScroll, { passive: true })
   
   // Intersection Observer for scroll animations
   const observer = new IntersectionObserver(
@@ -1442,6 +1619,14 @@ const setScrollY = (value) => {
   cursor: pointer;
 }
 
+.carousel-3d-item:not(.front-facing) {
+  pointer-events: none;
+}
+
+.carousel-3d-item.front-facing {
+  pointer-events: auto;
+}
+
 .carousel-3d-item.expanded {
   z-index: 10;
   transform: translateZ(400px) scale(1.1) !important;
@@ -1452,16 +1637,39 @@ const setScrollY = (value) => {
   overflow-y: auto;
 }
 
-.carousel-card {
+.carousel-card-wrapper {
   width: 100%;
   height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+
+.carousel-card-wrapper.flipped {
+  transform: rotateY(180deg);
+}
+
+.carousel-card-face {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
 }
 
-.carousel-card:hover {
-  transform: translateY(-8px);
+.carousel-card-front {
+  transform: rotateY(0deg);
+}
+
+.carousel-card-back {
+  transform: rotateY(180deg);
+}
+
+.carousel-card-wrapper:hover:not(.flipped) .carousel-card-front {
+  transform: translateY(-8px) rotateY(0deg);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
@@ -1522,5 +1730,46 @@ const setScrollY = (value) => {
   bottom: 24px !important;
   right: 24px !important;
   z-index: 9999 !important;
+}
+
+/* Footer Reveal with Cut-out */
+.footer-reveal-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.content-with-cutout {
+  position: relative;
+  margin-bottom: -150px;
+  padding-bottom: 150px;
+}
+
+.content-with-cutout::before,
+.content-with-cutout::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 200px;
+  height: 200px;
+  background: white;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.content-with-cutout::before {
+  left: -100px;
+  transform: translateY(50%);
+}
+
+.content-with-cutout::after {
+  right: -100px;
+  transform: translateY(50%);
+}
+
+.footer-reveal {
+  position: relative;
+  z-index: 1;
+  transform-origin: top center;
+  will-change: transform;
 }
 </style>

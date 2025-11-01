@@ -41,7 +41,7 @@ export function useTheme() {
   return {
     theme: computed(() => themeStore.theme),
     toggleTheme: themeStore.toggleTheme,
-    setTheme: themeStore.setTheme,
+    setTheme: themeStore.setTheme.bind(themeStore), // Bind to ensure async works correctly
     user: computed(() => themeStore.user),
     loadUser: themeStore.loadUser,
     refreshTheme: themeStore.refreshTheme

@@ -13,9 +13,10 @@ import { api } from '@/api/base44Client'
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
-    theme: 'light',
+    theme: 'system',
     user: null,
-    isInitialized: false
+    isInitialized: false,
+    systemThemeListener: null
   }),
 
   getters: {
@@ -27,14 +28,25 @@ export const useThemeStore = defineStore('theme', {
     /**
      * Applies the specified theme to the DOM by adding/removing CSS classes
      * 
-     * @param {string} newTheme - The theme to apply ('light' or 'dark')
+     * @param {string} newTheme - The theme to apply ('light', 'dark', or 'system')
      */
     applyTheme(newTheme) {
       const root = document.documentElement
       console.log('🎨 ThemeStore: Applying theme to DOM:', newTheme)
+      
+      // If system theme, resolve to actual theme based on system preference
+      let actualTheme = newTheme
+      if (newTheme === 'system') {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          actualTheme = 'dark'
+        } else {
+          actualTheme = 'light'
+        }
+      }
+      
       console.log('🎨 ThemeStore: Root element before:', root.className)
       
-      if (newTheme === 'dark') {
+      if (actualTheme === 'dark') {
         root.classList.add('dark')
         console.log('🎨 ThemeStore: Added dark class')
       } else {
@@ -62,24 +74,24 @@ export const useThemeStore = defineStore('theme', {
 
       // Check localStorage first for saved preference
       const savedTheme = localStorage.getItem('stylesnap-theme')
-      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system')) {
         console.log('🎨 ThemeStore: Initializing theme from localStorage:', savedTheme)
         this.theme = savedTheme
         this.applyTheme(savedTheme)
         this.isInitialized = true
+        
+        // Listen for system theme changes if using system theme
+        if (savedTheme === 'system') {
+          this.setupSystemThemeListener()
+        }
         return
       }
 
-      // Check system preference if no saved theme
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        console.log('🎨 ThemeStore: Initializing theme from system preference: dark')
-        this.theme = 'dark'
-        this.applyTheme('dark')
-      } else {
-        console.log('🎨 ThemeStore: Initializing theme from system preference: light')
-        this.theme = 'light'
-        this.applyTheme('light')
-      }
+      // Default to system theme if no saved preference
+      console.log('🎨 ThemeStore: Initializing theme as system (default)')
+      this.theme = 'system'
+      this.applyTheme('system')
+      this.setupSystemThemeListener()
       
       this.isInitialized = true
     },
@@ -106,10 +118,15 @@ export const useThemeStore = defineStore('theme', {
         } else {
           // If no user theme preference, use localStorage or initialize
           const savedTheme = localStorage.getItem('stylesnap-theme')
-          if (savedTheme) {
+          if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system')) {
             console.log('Using saved theme from localStorage:', savedTheme)
             this.theme = savedTheme
             this.applyTheme(savedTheme)
+            
+            // Setup system theme listener if needed
+            if (savedTheme === 'system') {
+              this.setupSystemThemeListener()
+            }
           } else {
             console.log('Initializing theme from system preference')
             this.initializeTheme()
@@ -157,12 +174,36 @@ export const useThemeStore = defineStore('theme', {
     },
 
     /**
+     * Sets up a listener for system theme changes
+     */
+    setupSystemThemeListener() {
+      if (this.systemThemeListener) {
+        this.systemThemeListener.removeEventListener('change', this.handleSystemThemeChange)
+      }
+      
+      if (window.matchMedia) {
+        this.systemThemeListener = window.matchMedia('(prefers-color-scheme: dark)')
+        this.systemThemeListener.addEventListener('change', this.handleSystemThemeChange.bind(this))
+      }
+    },
+
+    /**
+     * Handles system theme changes
+     */
+    handleSystemThemeChange(event) {
+      if (this.theme === 'system') {
+        console.log('🎨 ThemeStore: System theme changed, updating...')
+        this.applyTheme('system')
+      }
+    },
+
+    /**
      * Sets a specific theme
      * 
-     * @param {string} newTheme - The theme to set ('light' or 'dark')
+     * @param {string} newTheme - The theme to set ('light', 'dark', or 'system')
      */
-    setTheme(newTheme) {
-      if (newTheme !== 'light' && newTheme !== 'dark') {
+    async setTheme(newTheme) {
+      if (newTheme !== 'light' && newTheme !== 'dark' && newTheme !== 'system') {
         console.error('Invalid theme:', newTheme)
         return
       }
@@ -171,6 +212,25 @@ export const useThemeStore = defineStore('theme', {
       this.theme = newTheme
       this.applyTheme(newTheme)
       localStorage.setItem('stylesnap-theme', newTheme)
+      
+      // Setup system theme listener if needed
+      if (newTheme === 'system') {
+        this.setupSystemThemeListener()
+      } else if (this.systemThemeListener) {
+        this.systemThemeListener.removeEventListener('change', this.handleSystemThemeChange)
+        this.systemThemeListener = null
+      }
+      
+      // Update user's theme preference in the database
+      if (this.user) {
+        try {
+          console.log('🎨 ThemeStore: Updating user theme preference in database:', newTheme)
+          await api.auth.updateMe({ theme: newTheme })
+          console.log('✅ ThemeStore: Theme preference updated successfully')
+        } catch (error) {
+          console.error('❌ ThemeStore: Error updating theme:', error)
+        }
+      }
     },
 
     /**

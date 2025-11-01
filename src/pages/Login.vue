@@ -47,12 +47,9 @@
         
         <!-- Welcome Message -->
         <div class="text-center mb-8">
-          <h2 class="text-2xl font-bold mb-2 text-foreground">
-            Welcome back
-          </h2>
-          <p class="text-lg text-stone-600 dark:text-zinc-400">
+          <h2 class="text-2xl font-bold text-foreground">
             {{ ctaText }}
-          </p>
+          </h2>
         </div>
 
         <!-- Google Sign In Button -->

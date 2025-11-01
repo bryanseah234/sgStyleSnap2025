@@ -133,7 +133,7 @@
                   </div>
                   <button
                     @click="toggleMasterEmail"
-                    :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                    :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                       preferences.email_enabled 
                         ? 'bg-green-500' 
                         : 'bg-gray-300 dark:bg-gray-500'
@@ -141,7 +141,7 @@
                   >
                     <span
                       :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        preferences.email_enabled ? 'translate-x-5' : 'translate-x-0'
+                        preferences.email_enabled ? 'translate-x-[22px]' : 'translate-x-0.5'
                       }`"
                     />
                   </button>
@@ -161,7 +161,7 @@
                     <button
                       @click="toggleNotificationType(type.key)"
                       :disabled="!preferences.email_enabled"
-                      :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                      :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                         preferences.email_enabled && preferences[type.key]
                           ? 'bg-green-500'
                           : 'bg-gray-300 dark:bg-gray-500'
@@ -174,8 +174,8 @@
                       <span
                         :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                           preferences.email_enabled && preferences[type.key] 
-                            ? 'translate-x-5' 
-                            : 'translate-x-0'
+                            ? 'translate-x-[22px]' 
+                            : 'translate-x-0.5'
                         }`"
                       />
                     </button>
