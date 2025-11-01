@@ -192,30 +192,30 @@
       </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="py-12 sm:py-20 md:py-32 relative overflow-hidden">
+    <section id="demo" class="py-6 sm:py-12 md:py-20 relative overflow-hidden">
       <div class="absolute inset-0 opacity-5">
         <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
       </div>
 
       <div class="container relative z-10">
-        <div class="text-center space-y-2 sm:space-y-4 mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="demo-header">
-          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Try the Outfit Creator</h2>
-          <p class="text-sm sm:text-base md:text-lg text-gray-600">
+        <div class="text-center space-y-1 sm:space-y-2 mb-4 sm:mb-8 scroll-hidden animate-slideInFromBottom" id="demo-header">
+          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Try the Outfit Creator</h2>
+          <p class="text-xs sm:text-sm md:text-base text-gray-600">
             Click items to add them, then drag to adjust positions in your outfit
           </p>
         </div>
         
-        <div class="grid md:grid-cols-2 gap-0 items-stretch">
-          <!-- Item Selection -->
-          <div class="space-y-4 sm:space-y-6 animate-expandWidth">
-            <h3 class="text-xl sm:text-2xl font-bold text-center">Select Items</h3>
-            <div class="flex flex-col gap-3 items-center">
+        <div class="grid md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+          <!-- Item Selection - First on mobile, second on desktop -->
+          <div class="space-y-2 sm:space-y-3 md:order-1 order-1 animate-expandWidth">
+            <h3 class="text-base sm:text-lg md:text-xl font-bold text-center">Select Items</h3>
+            <div class="flex flex-col gap-2 sm:gap-3 items-center max-h-[300px] sm:max-h-[400px] md:max-h-none overflow-y-auto">
               <button
                 v-for="(item, idx) in demoItems"
                 :key="item.id"
                 @click="toggleItemInOutfit(item.id)"
                 :class="[
-                  'group relative overflow-hidden rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] bg-white w-2/3',
+                  'group relative overflow-hidden rounded-lg border-2 transition-all duration-300 transform hover:scale-[1.02] bg-white w-full max-w-xs',
                   isItemSelected(item.id)
                     ? 'border-gray-900 bg-gray-50 shadow-lg'
                     : 'border-gray-200 hover:border-gray-900/50'
@@ -224,27 +224,27 @@
                   animation: `fadeInUp 0.5s ease-out ${idx * 0.05}s both`,
                 }"
               >
-                <div class="flex items-center gap-3 p-4">
-                  <div class="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3">
+                  <div class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                     <img 
                       :src="`/images/${item.id}.jpg`" 
                       :alt="item.name"
                       class="w-full h-full object-cover"
                     />
                   </div>
-                  <div class="text-left">
-                    <div class="font-semibold text-sm sm:text-base text-gray-900">{{ item.name }}</div>
-                    <div class="text-xs sm:text-sm text-gray-600">{{ item.category }}</div>
+                  <div class="text-left flex-1 min-w-0">
+                    <div class="font-semibold text-xs sm:text-sm text-gray-900 truncate">{{ item.name }}</div>
+                    <div class="text-xs text-gray-600 truncate">{{ item.category }}</div>
                   </div>
                 </div>
               </button>
             </div>
           </div>
 
-          <!-- Outfit Preview -->
-          <div class="flex flex-col h-full space-y-4 sm:space-y-6 animate-expandHeight">
+          <!-- Outfit Preview - Second on mobile, first on desktop -->
+          <div class="flex flex-col h-full space-y-2 sm:space-y-3 md:order-2 order-2 animate-expandHeight">
             <div class="flex items-center justify-between">
-              <h3 class="text-xl sm:text-2xl font-bold text-center w-full">Your Outfit</h3>
+              <h3 class="text-base sm:text-lg md:text-xl font-bold text-center w-full">Your Outfit</h3>
               <button
                 v-if="outfitItems.length > 0"
                 @click="clearOutfit"
@@ -258,7 +258,7 @@
             <!-- Canvas for draggable items -->
             <div
               ref="canvasRef"
-              class="flex-1 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden border-2 border-gray-300 select-none min-h-[400px]"
+              class="flex-1 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden border-2 border-gray-300 select-none min-h-[250px] sm:min-h-[300px] md:min-h-[400px] max-h-[400px] sm:max-h-[500px] md:max-h-none"
               @mousemove="handleMouseMove"
               @mouseup="handleMouseUp"
               @mouseleave="handleMouseUp"
@@ -499,8 +499,7 @@
     <button
       v-if="showScrollToTop"
       @click="scrollToTop"
-      class="bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center"
-      style="position: fixed !important; top: 50% !important; right: 1.5rem !important; left: unset !important; transform: translateY(-50%) !important; z-index: 9999 !important; transition: all 0.3s ease;"
+      class="bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center fixed bottom-6 right-6 z-[9999] transition-all duration-300"
       aria-label="Scroll to top"
     >
       <ArrowUp class="w-6 h-6" />
@@ -509,7 +508,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth-store'
 import { useRouter } from 'vue-router'
 import { 
@@ -911,6 +910,28 @@ const typewriterEffect = () => {
   typeChar()
 }
 
+// Prevent body scrolling when splash screen is displayed
+const disableBodyScroll = () => {
+  document.body.style.overflow = 'hidden'
+  document.body.style.position = 'fixed'
+  document.body.style.width = '100%'
+}
+
+const enableBodyScroll = () => {
+  document.body.style.overflow = ''
+  document.body.style.position = ''
+  document.body.style.width = ''
+}
+
+// Watch for splash screen visibility and disable/enable scrolling
+watch(showSplash, (isVisible) => {
+  if (isVisible) {
+    disableBodyScroll()
+  } else {
+    enableBodyScroll()
+  }
+}, { immediate: true })
+
 // Lifecycle hooks
 onMounted(() => {
   // Set page as loaded immediately to prevent flicker
@@ -976,6 +997,8 @@ onMounted(() => {
   
   // Cleanup function
   onUnmounted(() => {
+  // Ensure body scroll is re-enabled when component is unmounted
+  enableBodyScroll()
     window.removeEventListener('scroll', handleScroll)
     observer.disconnect()
   })

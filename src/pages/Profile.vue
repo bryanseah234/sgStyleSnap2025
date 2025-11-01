@@ -257,6 +257,7 @@ import { Sun, Moon, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Composables and stores
 const { theme, toggleTheme } = useTheme()
@@ -330,7 +331,7 @@ const notificationTypes = [
 // Prefer profile data (from database) over user data (from auth) for username and other profile fields
 const user = computed(() => authStore.profile || authStore.user)
 
-// Computed property for avatar URL with fallback logic
+// Computed property for avatar URL with fallback logic and proxy for Google images
 const avatarUrl = computed(() => {
   if (!user.value) return null
   
@@ -346,7 +347,9 @@ const avatarUrl = computed(() => {
   console.log('🖼️ Profile: Avatar URL sources:', sources)
   console.log('🖼️ Profile: Selected avatar URL:', validUrl)
   
-  return validUrl
+  // Proxy Google images to avoid CORS, return original for others
+  if (!validUrl) return null
+  return getProxiedImageUrl(validUrl)
 })
 
 const handleImageError = (event) => {
@@ -501,23 +504,49 @@ const toggleNotificationType = async (typeKey) => {
     return // Don't allow toggling individual types if master is disabled
   }
   
-  try {
-    preferences.value[typeKey] = !preferences.value[typeKey]
-    const result = await notificationsService.updateNotificationPreferences({
-      [typeKey]: preferences.value[typeKey]
-    })
-    
-    if (!result.success) {
-      // Revert on error
-      preferences.value[typeKey] = !preferences.value[typeKey]
-      showError('Failed to update notification preference', 'Error')
+  // Get the notification type info
+  const notificationType = notificationTypes.find(type => type.key === typeKey)
+  const currentValue = preferences.value[typeKey]
+  const newValue = !currentValue
+  
+  // Show confirmation popup before toggling
+  const actionText = newValue ? 'enable' : 'disable'
+  const message = `Are you sure you want to ${actionText} ${notificationType?.label || 'this notification'}?`
+  
+  showConfirm(
+    message,
+    'Confirm Notification Setting',
+    async () => {
+      // User confirmed - proceed with toggle
+      try {
+        preferences.value[typeKey] = newValue
+        const result = await notificationsService.updateNotificationPreferences({
+          [typeKey]: preferences.value[typeKey]
+        })
+        
+        if (result.success) {
+          // Show success popup
+          const successMessage = newValue 
+            ? `${notificationType?.label || 'Notification'} enabled`
+            : `${notificationType?.label || 'Notification'} disabled`
+          showSuccess(successMessage, 'Settings Updated')
+        } else {
+          // Revert on error
+          preferences.value[typeKey] = currentValue
+          showError('Failed to update notification preference', 'Error')
+        }
+      } catch (error) {
+        console.error('👤 Profile: Error toggling notification type:', error)
+        // Revert on error
+        preferences.value[typeKey] = currentValue
+        showError('Failed to update notification preference', 'Error')
+      }
+    },
+    () => {
+      // User cancelled - do nothing (toggle stays as it was)
+      console.log('👤 Profile: User cancelled notification toggle')
     }
-  } catch (error) {
-    console.error('👤 Profile: Error toggling notification type:', error)
-    // Revert on error
-    preferences.value[typeKey] = !preferences.value[typeKey]
-    showError('Failed to update notification preference', 'Error')
-  }
+  )
 }
 
 /**

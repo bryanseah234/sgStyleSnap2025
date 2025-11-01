@@ -86,7 +86,7 @@
           <button
             @click="showVirtualTryOn"
             :disabled="!canShowVirtualTryOn || generatingTryOn"
-            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
               canShowVirtualTryOn && !generatingTryOn
                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                 : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
@@ -185,9 +185,9 @@
             <button
               @click="showVirtualTryOn"
               :disabled="!canShowVirtualTryOn || generatingTryOn"
-              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 gradient-button-shimmer ${
                 canShowVirtualTryOn && !generatingTryOn
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
                   : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
               }`"
               title="Show Outfit on AI Model Person"
@@ -615,9 +615,9 @@
                   v-if="currentSubRoute === 'suggested'"
                   @click="generateAISuggestion"
                   :disabled="wardrobeItems.length === 0"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
                     wardrobeItems.length > 0
-                      ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 shadow-lg'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
                   title="Regenerate AI Outfit Suggestion"
@@ -630,7 +630,7 @@
                 <button
                   @click="showVirtualTryOn"
                   :disabled="!canShowVirtualTryOn || generatingTryOn"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
                     canShowVirtualTryOn && !generatingTryOn
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'

@@ -27,9 +27,22 @@
           <span class="debug-icon">🐛</span>
           <span>Debug Mode</span>
         </div>
-        <!-- ESC Key Hint (Desktop only) -->
-        <div v-if="isDesktop" class="keyboard-hint-modal">
-          <span class="keyboard-hint-key">ESC</span>
+        <!-- Close Buttons -->
+        <div v-if="isDesktop" class="flex items-center gap-2">
+          <!-- ESC Key Hint -->
+          <div class="keyboard-hint-modal">
+            <span class="keyboard-hint-key">ESC</span>
+          </div>
+          <!-- Close Button -->
+          <button
+            @click="$emit('close')"
+            class="p-2 rounded-lg transition-all bg-white/90 shadow-lg
+                  hover:bg-stone-100 text-stone-500 hover:text-black 
+                  dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
+            title="Close debug panel"
+          >
+            <X class="w-5 h-5" />
+          </button>
         </div>
       </div>
       
@@ -128,6 +141,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { X } from 'lucide-vue-next'
 
 const props = defineProps({
   visible: {

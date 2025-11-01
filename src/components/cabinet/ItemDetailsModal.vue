@@ -11,7 +11,7 @@
         <div
           v-if="isOpen"
           :class="`liquid-modal-card relative w-full max-w-2xl min-h-[420px] rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800`"
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden`"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -32,14 +32,14 @@
             </button>
           </div>
 
-      <div class="grid md:grid-cols-2">
+      <div class="grid md:grid-cols-2 h-full min-h-[420px]">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image aspect-square relative overflow-hidden bg-stone-100 dark:bg-zinc-800">
+        <div class="liquid-modal-image h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
             :alt="item.name"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-contain"
           />
           <div
             v-else
@@ -84,6 +84,21 @@
             </div>
           </div>
 
+          <!-- Meta Info (Moved above Privacy) -->
+          <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800">
+            <div class="text-sm text-stone-600 dark:text-zinc-400">
+              Added {{ formatDate(item?.created_at) }}
+            </div>
+            <button
+              v-if="item"
+              @click="toggleFavorite"
+              :class="`liquid-favorite-btn p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
+              title="Favorite"
+            >
+              <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
+            </button>
+          </div>
+
           <!-- Privacy Setting -->
           <div>
             <label class="block text-base font-medium mb-2 text-stone-700 dark:text-zinc-300">
@@ -118,26 +133,6 @@
               <Trash2 class="w-5 h-5" />
               {{ isRemoving ? 'Removing...' : 'Remove Item' }}
             </button>
-          </div>
-
-          <!-- Meta Info -->
-          <div class="pt-4 border-t border-stone-200 dark:border-zinc-800">
-            <div class="flex items-center justify-between gap-4">
-              <div class="text-xs text-stone-500 dark:text-zinc-500">
-                <p>Added {{ formatDate(item?.created_at) }}</p>
-                <p v-if="item?.updated_at && item.updated_at !== item.created_at">
-                  Updated {{ formatDate(item.updated_at) }}
-                </p>
-              </div>
-              <button
-                v-if="item"
-                @click="toggleFavorite"
-                :class="`liquid-favorite-btn p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
-                title="Favorite"
-              >
-                <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
-              </button>
-            </div>
           </div>
         </div>
       </div>
