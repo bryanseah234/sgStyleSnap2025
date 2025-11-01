@@ -27,22 +27,22 @@
   >
     <!-- Navigation - Floating Pill Header (Always Visible) -->
     <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300">
-      <div class="flex items-center gap-4 py-2.5 px-5 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
+      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
         <!-- Logo and Brand -->
-        <div class="flex items-center gap-2 min-w-0">
+        <div class="flex items-center gap-2 min-w-0 flex-shrink-0">
           <div class="bg-black rounded-lg p-1.5 flex items-center justify-center">
             <Shirt class="w-4 h-4 text-white" />
           </div>
           <span class="font-bold text-base truncate">StyleSnap</span>
         </div>
 
-        <!-- Desktop Menu -->
-        <div class="hidden md:flex items-center gap-6">
-          <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Demo</a>
-        </div>
-      
-        <!-- Auth Buttons -->
-        <div class="flex items-center gap-2">
+        <!-- Desktop Menu and Auth Buttons - Right Side -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Desktop Menu -->
+          <div class="hidden md:flex items-center gap-6">
+            <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Demo</a>
+          </div>
+        
           <button
             @click="handleLogin"
             class="hidden md:inline-flex items-center justify-center text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition px-3 py-1.5"
@@ -51,9 +51,13 @@
           </button>
           <button
             @click="handleSignUp"
-            class="inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 px-4 py-1.5 rounded-full font-medium text-sm transition-all shadow-md hover:shadow-lg"
+            :class="`inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 py-1.5 rounded-full font-medium text-sm transition-all duration-300 shadow-md hover:shadow-lg overflow-hidden ${
+              showJoinButton 
+                ? 'opacity-100 px-4 ml-2 w-auto' 
+                : 'opacity-0 px-0 ml-0 w-0'
+            }`"
           >
-            Join for free
+            <span class="whitespace-nowrap">Join for free</span>
           </button>
 
           <!-- Mobile Menu Button -->
@@ -116,10 +120,11 @@
         <div class="flex justify-center">
           <button
             @click="handleSignUp"
-            class="group inline-flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-100 px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            class="group inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-100 px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            style="color: #000000 !important;"
           >
-            Get Started
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition text-black" />
+            <span style="color: #000000 !important;">Get Started</span>
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" style="color: #000000 !important;" />
           </button>
         </div>
       </div>
@@ -542,7 +547,7 @@
     
     <!-- CTA Section -->
     <section 
-      class="py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative overflow-hidden"
+      class="cta-card-section py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative"
     >
       <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
@@ -561,14 +566,8 @@
       </div>
     </section>
     
-    <!-- Cut-out Section (reveals footer on scroll) -->
+    <!-- Footer Section -->
     <div class="footer-reveal-section relative">
-      <!-- Content area with cut-out shape -->
-      <div class="content-with-cutout bg-white">
-        <div class="container py-8 sm:py-12">
-          <!-- Empty spacer - footer content is below -->
-        </div>
-      </div>
       
       <!-- Footer -->
       <footer 
@@ -686,6 +685,7 @@ const scrollY = ref(0)
 const lastScrollY = ref(0)
 const isScrollingDown = ref(false)
 const showFooter = ref(false)
+const showJoinButton = ref(false)
 const draggedItem = ref(null)
 const dragOffset = reactive({ x: 0, y: 0 })
 const canvasRef = ref(null)
@@ -1263,9 +1263,16 @@ onMounted(() => {
     isScrollingDown.value = currentScrollY > lastScrollY.value
     lastScrollY.value = currentScrollY
     
+    // Show "Join for free" button when user scrolls past hero section (about 80% of viewport height)
+    const windowHeight = window.innerHeight
+    if (currentScrollY > windowHeight * 0.8) {
+      showJoinButton.value = true
+    } else {
+      showJoinButton.value = false
+    }
+    
     // Show/hide footer based on scroll direction and position
     // Show footer when scrolling down and near bottom, hide when scrolling up
-    const windowHeight = window.innerHeight
     const documentHeight = document.documentElement.scrollHeight
     const scrollPercentage = (currentScrollY / (documentHeight - windowHeight)) * 100
     
@@ -1358,7 +1365,7 @@ const setScrollY = (value) => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #ffffff;
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1374,15 +1381,16 @@ const setScrollY = (value) => {
 .splash-title {
   font-size: 3.5rem;
   font-weight: 700;
-  color: #1d1d1f;
+  color: #ffffff;
   letter-spacing: -0.03em;
   text-align: center;
   padding: 0 2rem;
   transition: transform 1500ms cubic-bezier(0.4, 0, 0.2, 1),
-              font-size 1500ms cubic-bezier(0.4, 0, 0.2, 1);
+              font-size 1500ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 1500ms cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 90vw;
   transform-origin: center center;
-  will-change: transform, font-size;
+  will-change: transform, font-size, color;
 }
 
 @media (min-width: 768px) {
@@ -1399,8 +1407,8 @@ const setScrollY = (value) => {
 
 .splash-title-moving {
   /* Apply final styling that transitions smoothly - match hero title */
-  font-weight: 700 !important; /* font-bold matches "Powerful Features" */
-  color: inherit !important; /* Use normal text color, no gradient */
+  font-weight: 700 !important; /* font-bold matches hero title */
+  color: #ffffff !important; /* White text to match hero section */
   /* Lock position */
   position: fixed !important;
   z-index: 10001 !important;
@@ -1417,8 +1425,8 @@ const setScrollY = (value) => {
   will-change: auto !important;
   /* Lock size - use exact pixel value */
   font-size: 2.5625rem !important;
-  font-weight: 700 !important; /* font-bold matches "Powerful Features" */
-  color: inherit !important; /* Use normal text color, no gradient */
+  font-weight: 700 !important; /* font-bold matches hero title */
+  color: #ffffff !important; /* White text to match hero section */
   /* Lock position exactly where it is */
   position: fixed !important;
   /* Prevent ANY responsive behavior */
@@ -1432,7 +1440,7 @@ const setScrollY = (value) => {
 .typewriter-cursor-splash {
   animation: blink 1s step-end infinite;
   margin-left: 2px;
-  color: #1d1d1f;
+  color: #ffffff;
 }
 
 /* Landing page hidden/visible states */
@@ -1678,45 +1686,28 @@ const setScrollY = (value) => {
   z-index: 9999 !important;
 }
 
-/* Footer Reveal with Cut-out */
+/* CTA Card Section with Rounded Bottom */
+.cta-card-section {
+  margin-bottom: -40px;
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  position: relative;
+}
+
+/* Footer Reveal */
 .footer-reveal-section {
   position: relative;
   overflow: hidden;
-}
-
-.content-with-cutout {
-  position: relative;
-  margin-bottom: -80px;
-  padding-bottom: 80px;
-}
-
-.content-with-cutout::before,
-.content-with-cutout::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  width: 120px;
-  height: 120px;
-  background: white;
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.content-with-cutout::before {
-  left: -60px;
-  transform: translateY(50%);
-}
-
-.content-with-cutout::after {
-  right: -60px;
-  transform: translateY(50%);
+  z-index: 1;
 }
 
 .footer-reveal {
   position: relative;
-  z-index: 10;
+  z-index: 1;
   transform-origin: top center;
   will-change: transform;
+  margin-top: 40px;
 }
 </style>
