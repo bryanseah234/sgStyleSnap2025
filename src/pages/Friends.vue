@@ -120,7 +120,7 @@
               <div class="w-12 h-12 md:w-16 md:h-16 md:mx-auto rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                 <img
                   v-if="friend.avatar_url"
-                  :src="friend.avatar_url"
+                  :src="getProxiedImageUrl(friend.avatar_url)"
                   :alt="friend.name"
                   class="w-full h-full object-cover"
                   crossorigin="anonymous"
@@ -177,9 +177,11 @@
                 <div class="w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                   <img
                     v-if="request.requester?.avatar_url"
-                    :src="request.requester.avatar_url"
+                    :src="getProxiedImageUrl(request.requester.avatar_url)"
                     :alt="request.requester.name"
                     class="w-full h-full object-cover"
+                    crossorigin="anonymous"
+                    @error="handleImageError"
                   />
                   <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-zinc-700" v-else>
                     <span class="text-sm font-bold text-stone-500 dark:text-zinc-400">
@@ -246,7 +248,7 @@
                 <div class="w-12 h-12 md:w-12 md:h-12 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800">
                   <img
                     v-if="request.receiver?.avatar_url"
-                    :src="request.receiver.avatar_url"
+                    :src="getProxiedImageUrl(request.receiver.avatar_url)"
                     :alt="request.receiver.name"
                     class="w-full h-full object-cover"
                     crossorigin="anonymous"
@@ -332,7 +334,7 @@
                   <div class="w-8 h-8 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
                     <img
                       v-if="user.avatar_url"
-                      :src="user.avatar_url"
+                      :src="getProxiedImageUrl(user.avatar_url)"
                       :alt="user.name"
                       class="w-full h-full object-cover"
                       crossorigin="anonymous"
@@ -417,6 +419,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { FriendsService } from '@/services/friendsService'
 import { UserService } from '@/services/userService'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X } from 'lucide-vue-next'
 
 const router = useRouter()

@@ -84,10 +84,27 @@ export class FriendsService {
 
       // Map the data to extract friend information
       const friends = data.map(friendship => {
+        // Handle case where Supabase returns requester/receiver as array or object
+        let requester = friendship.requester
+        if (Array.isArray(requester)) {
+          requester = requester.length > 0 ? requester[0] : null
+        }
+        
+        let receiver = friendship.receiver
+        if (Array.isArray(receiver)) {
+          receiver = receiver.length > 0 ? receiver[0] : null
+        }
+        
         // Determine which user is the friend (not the current user)
         const friend = friendship.requester_id === user.id 
-          ? friendship.receiver 
-          : friendship.requester
+          ? receiver 
+          : requester
+
+        // Safety check
+        if (!friend) {
+          console.warn('⚠️ FriendsService: Friend data missing for friendship:', friendship.id)
+          return null
+        }
 
         return {
           id: friend.id,
@@ -98,7 +115,7 @@ export class FriendsService {
           created_at: friend.created_at,
           friendship_created_at: friendship.created_at
         }
-      })
+      }).filter(friend => friend !== null) // Filter out any null entries
 
       console.log('✅ FriendsService: Query successful, returning data:', friends.length, 'friends')
       return friends
@@ -538,18 +555,24 @@ export class FriendsService {
       // Map the data to match expected format
       console.log('📥 FriendsService: Processing friend requests data...')
       const requests = (data || []).map(request => {
+        // Handle case where Supabase returns requester as array or object
+        let requester = request.requester
+        if (Array.isArray(requester)) {
+          requester = requester.length > 0 ? requester[0] : null
+        }
+        
         console.log('📥 FriendsService: Processing request:', {
           request_id: request.id,
           requester_id: request.requester_id,
           receiver_id: request.receiver_id,
           status: request.status,
-          requester_name: request.requester?.name,
-          requester_username: request.requester?.username
+          requester_name: requester?.name,
+          requester_username: requester?.username
         })
         
         return {
           id: request.id,
-          requester: request.requester,
+          requester: requester || null,
           status: request.status,
           created_at: request.created_at
         }
@@ -698,12 +721,20 @@ export class FriendsService {
 
       if (error) throw error
 
-      return (data || []).map(req => ({
-        id: req.id,
-        receiver: req.receiver,
-        status: req.status,
-        created_at: req.created_at
-      }))
+      return (data || []).map(req => {
+        // Handle case where Supabase returns receiver as array or object
+        let receiver = req.receiver
+        if (Array.isArray(receiver)) {
+          receiver = receiver.length > 0 ? receiver[0] : null
+        }
+        
+        return {
+          id: req.id,
+          receiver: receiver || null,
+          status: req.status,
+          created_at: req.created_at
+        }
+      })
     } catch (error) {
       handleSupabaseError(error, 'get sent friend requests')
     }

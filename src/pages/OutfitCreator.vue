@@ -86,7 +86,7 @@
           <button
             @click="showVirtualTryOn"
             :disabled="!canShowVirtualTryOn || generatingTryOn"
-            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
               canShowVirtualTryOn && !generatingTryOn
                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                 : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
@@ -185,9 +185,9 @@
             <button
               @click="showVirtualTryOn"
               :disabled="!canShowVirtualTryOn || generatingTryOn"
-              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 gradient-button-shimmer ${
                 canShowVirtualTryOn && !generatingTryOn
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
                   : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
               }`"
               title="Show Outfit on AI Model Person"
@@ -290,9 +290,10 @@
             <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-stone-100 dark:bg-zinc-800">
               <img
                 v-if="friend.avatar_url"
-                :src="friend.avatar_url"
+                :src="getProxiedImageUrl(friend.avatar_url)"
                 :alt="friend.username"
                 class="w-full h-full object-cover"
+                crossorigin="anonymous"
               />
               <div class="w-full h-full flex items-center justify-center text-stone-400 dark:text-zinc-500">
                 <User class="w-8 h-8" />
@@ -471,8 +472,8 @@
                 :key="item.id"
                 :style="{
                   position: 'absolute',
-                  left: `${item.x}px`,
-                  top: `${item.y}px`,
+                  left: `${scalePosition(item.x, 'x')}px`,
+                  top: `${scalePosition(item.y, 'y')}px`,
                   zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : (item.z_index || 0),
                   transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                   transformOrigin: 'center center',
@@ -615,9 +616,9 @@
                   v-if="currentSubRoute === 'suggested'"
                   @click="generateAISuggestion"
                   :disabled="wardrobeItems.length === 0"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
                     wardrobeItems.length > 0
-                      ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 shadow-lg'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
                   title="Regenerate AI Outfit Suggestion"
@@ -630,7 +631,7 @@
                 <button
                   @click="showVirtualTryOn"
                   :disabled="!canShowVirtualTryOn || generatingTryOn"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
                     canShowVirtualTryOn && !generatingTryOn
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
@@ -838,6 +839,7 @@ import { VirtualTryOnService } from '@/services/virtualTryOnService'
 import { llamaDescriptionService } from '@/services/llamaDescriptionService'
 import { generateRecommendations, getCategoryDisplayName } from '@/services/recommendation-service.js'
 import { getFirstName } from '@/utils'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { 
   Undo, 
   Redo, 
@@ -906,6 +908,111 @@ const savingOutfit = ref(false)
 const scoringOutfit = ref(false)
 const outfitScore = ref(null)
 const canvasContainer = ref(null)
+
+// Reference canvas dimensions (desktop default)
+// These are used to normalize positions across different screen sizes
+const REFERENCE_CANVAS_WIDTH = 800
+const REFERENCE_CANVAS_HEIGHT = 600
+
+// Computed scale factors for responsive positioning
+const canvasScale = computed(() => {
+  if (!canvasContainer.value) return { x: 1, y: 1 }
+  const rect = canvasContainer.value.getBoundingClientRect()
+  return {
+    x: rect.width / REFERENCE_CANVAS_WIDTH,
+    y: rect.height / REFERENCE_CANVAS_HEIGHT
+  }
+})
+
+// Scale position from reference size to current canvas size
+const scalePosition = (position, axis = 'x') => {
+  const scale = canvasScale.value[axis]
+  return position * scale
+}
+
+// Normalize position from current canvas size to reference size
+const normalizePosition = (position, axis = 'x') => {
+  const scale = canvasScale.value[axis]
+  return scale > 0 ? position / scale : position
+}
+
+// Check if two rectangles overlap
+const rectsOverlap = (a, b) => {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  )
+}
+
+// Find a non-overlapping position for a new item
+// Returns { x, y, scale } - scale may be reduced if no space is found
+const findNonOverlappingPosition = (existingItems, itemSize, startX, startY) => {
+  const maxAttempts = 50
+  let currentScale = 1.0
+  let minScale = 0.3 // Minimum scale to try
+  
+  // Try different scales, starting from full size
+  while (currentScale >= minScale) {
+    const scaledSize = itemSize * currentScale
+    
+    // Try positions in a spiral pattern from the drop point
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const angleIndex = attempt % 8 // 8 directions (0-7)
+      const circleIndex = Math.floor(attempt / 8) // Which circle (0, 1, 2, ...)
+      const angle = (angleIndex * 45) * (Math.PI / 180) // Convert to radians
+      const radius = (circleIndex + 1) * (scaledSize * 0.6) // Increase radius each circle
+      
+      const x = startX + radius * Math.cos(angle) - (scaledSize / 2)
+      const y = startY + radius * Math.sin(angle) - (scaledSize / 2)
+      
+      // Check bounds (normalized to reference canvas)
+      if (x < 0 || y < 0 || x + scaledSize > REFERENCE_CANVAS_WIDTH || y + scaledSize > REFERENCE_CANVAS_HEIGHT) {
+        continue
+      }
+      
+      // Check for overlaps with existing items
+      const newRect = {
+        x: x,
+        y: y,
+        width: scaledSize,
+        height: scaledSize
+      }
+      
+      let overlaps = false
+      for (const existingItem of existingItems) {
+        // Existing items have their size already in reference coordinates
+        // itemSize here is the normalized item size (same for all items)
+        const existingRect = {
+          x: existingItem.x,
+          y: existingItem.y,
+          width: itemSize * (existingItem.scale || 1),
+          height: itemSize * (existingItem.scale || 1)
+        }
+        
+        if (rectsOverlap(newRect, existingRect)) {
+          overlaps = true
+          break
+        }
+      }
+      
+      if (!overlaps) {
+        return { x, y, scale: currentScale }
+      }
+    }
+    
+    // If no position found at current scale, try smaller scale
+    currentScale -= 0.1
+  }
+  
+  // If still no position found, place at center with minimum scale
+  return {
+    x: (REFERENCE_CANVAS_WIDTH / 2) - (itemSize * minScale / 2),
+    y: (REFERENCE_CANVAS_HEIGHT / 2) - (itemSize * minScale / 2),
+    scale: minScale
+  }
+}
 
 // State for recommendations
 const recommendingOutfits = ref(false)
@@ -1184,17 +1291,35 @@ const loadExistingOutfit = async (outfitId) => {
     currentOutfitName.value = outfit.outfit_name || outfit.name || 'Untitled Outfit'
     
     // Load outfit items onto the canvas
+    // Handle positions: if positions are > reference size, they were saved for a larger canvas
+    // Normalize them to reference size for consistent scaling
     if (outfit.outfit_items && outfit.outfit_items.length > 0) {
-      canvasItems.value = outfit.outfit_items.map(outfitItem => ({
-        ...outfitItem.clothing_item,
-        originalId: outfitItem.clothing_item.id, // Store original ID
-        id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
-        x: outfitItem.x_position || 100,
-        y: outfitItem.y_position || 100,
-        scale: outfitItem.scale || 1,
-        rotation: outfitItem.rotation || 0,
-        z_index: outfitItem.z_index || 0
-      }))
+      canvasItems.value = outfit.outfit_items.map((outfitItem, index) => {
+        let x = outfitItem.x_position || 100
+        let y = outfitItem.y_position || 100
+        
+        // If positions are larger than reference canvas, they were likely saved on a larger screen
+        // Normalize them to reference size (assume they were saved on a canvas ~800px wide)
+        // This is a heuristic - positions > 1000px are probably from a larger desktop canvas
+        if (x > REFERENCE_CANVAS_WIDTH * 1.2 || y > REFERENCE_CANVAS_HEIGHT * 1.2) {
+          // Assume they were saved on a canvas approximately this size, normalize proportionally
+          const assumedWidth = Math.max(x * 1.5, REFERENCE_CANVAS_WIDTH)
+          const assumedHeight = Math.max(y * 1.5, REFERENCE_CANVAS_HEIGHT)
+          x = (x / assumedWidth) * REFERENCE_CANVAS_WIDTH
+          y = (y / assumedHeight) * REFERENCE_CANVAS_HEIGHT
+        }
+        
+        return {
+          ...outfitItem.clothing_item,
+          originalId: outfitItem.clothing_item.id, // Store original ID
+          id: `canvas-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
+          x: Math.min(x, REFERENCE_CANVAS_WIDTH - 128), // Ensure within bounds
+          y: Math.min(y, REFERENCE_CANVAS_HEIGHT - 128), // Ensure within bounds
+          scale: outfitItem.scale || 1,
+          rotation: outfitItem.rotation || 0,
+          z_index: outfitItem.z_index || 0
+        }
+      })
       
       saveToHistory()
       console.log('OutfitCreator: Loaded', canvasItems.value.length, 'items onto canvas')
@@ -1285,17 +1410,38 @@ const generateAISuggestion = async () => {
       return
     }
     
-    // Place selected items on canvas
-    canvasItems.value = selectedItems.map((selected, index) => ({
-      ...selected.item,
-      originalId: selected.item.id, // Store original clothing item ID
-      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
-      x: 150 + (index * 20), // Slightly offset each item
-      y: selected.y,
-      scale: 1,
-      rotation: 0,
-      zIndex: index + 1
-    }))
+    // Place selected items on canvas with non-overlapping placement
+    canvasItems.value = []
+    const normalizedItemSize = normalizePosition(128, 'x') // 128px item size normalized
+    let currentX = 150
+    let currentY = 100
+    
+    selectedItems.forEach((selected, index) => {
+      // Find non-overlapping position for this item
+      const position = findNonOverlappingPosition(
+        canvasItems.value, // Existing items on canvas
+        normalizedItemSize,
+        currentX,
+        currentY || selected.y // Use selected.y as starting point if provided
+      )
+      
+      // Update current position for next item (spiral pattern)
+      currentX = position.x + normalizedItemSize * position.scale + 20
+      currentY = position.y + normalizedItemSize * position.scale + 20
+      
+      const newItem = {
+        ...selected.item,
+        originalId: selected.item.id, // Store original clothing item ID
+        id: `canvas-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
+        x: position.x,
+        y: position.y,
+        scale: position.scale,
+        rotation: 0,
+        z_index: index + 1
+      }
+      
+      canvasItems.value.push(newItem) // Add to canvas so next item can check for overlap
+    })
     
     saveToHistory()
     console.log('OutfitCreator: AI placed', canvasItems.value.length, 'items on canvas')
@@ -1350,19 +1496,39 @@ const loadRecommendation = (rec) => {
     // Clear current canvas
     canvasItems.value = []
     
-    // Add recommendation items to canvas
-    const items = rec.items.map((item, index) => ({
-      ...item,
-      originalId: item.id,
-      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      x: 150 + (index * 20),
-      y: 100 + (index * 50),
-      scale: 1,
-      rotation: 0,
-      zIndex: index + 1
-    }))
+    // Add recommendation items to canvas with non-overlapping placement
+    const normalizedItemSize = normalizePosition(128, 'x') // 128px item size normalized
+    let currentX = 100
+    let currentY = 100
     
-    canvasItems.value = items
+    const items = rec.items.map((item, index) => {
+      // Find non-overlapping position for this item
+      const position = findNonOverlappingPosition(
+        canvasItems.value, // Existing items on canvas
+        normalizedItemSize,
+        currentX,
+        currentY
+      )
+      
+      // Update current position for next item (spiral pattern)
+      currentX = position.x + normalizedItemSize * position.scale + 20
+      currentY = position.y + normalizedItemSize * position.scale + 20
+      
+      const newItem = {
+        ...item,
+        originalId: item.id,
+        id: `canvas-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+        x: position.x,
+        y: position.y,
+        scale: position.scale,
+        rotation: 0,
+        z_index: index + 1
+      }
+      
+      canvasItems.value.push(newItem) // Add to canvas so next item can check for overlap
+      return newItem
+    })
+    
     saveToHistory()
     
     // Close modal
@@ -1496,18 +1662,31 @@ const handleDrop = (event) => {
   if (item) {
     const rect = canvasContainer.value.getBoundingClientRect()
     const itemSize = 128
-    const x = event.clientX - rect.left - (itemSize / 2) // Center the item
-    const y = event.clientY - rect.top - (itemSize / 2)
+    const dropX = event.clientX - rect.left
+    const dropY = event.clientY - rect.top
+    
+    // Normalize drop position to reference canvas size
+    const normalizedDropX = normalizePosition(dropX, 'x')
+    const normalizedDropY = normalizePosition(dropY, 'y')
+    const normalizedItemSize = normalizePosition(itemSize, 'x') // Use x scale as item is square
+    
+    // Find a non-overlapping position (may reduce scale if needed)
+    const position = findNonOverlappingPosition(
+      canvasItems.value,
+      normalizedItemSize,
+      normalizedDropX,
+      normalizedDropY
+    )
     
     const newItem = {
       ...item,
       originalId: item.id, // Store original clothing item ID
       id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
-      x: Math.max(0, Math.min(x, rect.width - itemSize)),
-      y: Math.max(0, Math.min(y, rect.height - itemSize)),
+      x: Math.max(0, Math.min(position.x, REFERENCE_CANVAS_WIDTH - (normalizedItemSize * position.scale))),
+      y: Math.max(0, Math.min(position.y, REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale))),
       z_index: canvasItems.value.length,
       rotation: 0,
-      scale: 1
+      scale: position.scale
     }
     
     canvasItems.value.push(newItem)
@@ -1526,8 +1705,9 @@ const startDrag = (item, event) => {
   draggedItem.value = item.id
   if (canvasContainer.value) {
     const rect = canvasContainer.value.getBoundingClientRect()
-    dragOffset.x = event.clientX - rect.left - item.x
-    dragOffset.y = event.clientY - rect.top - item.y
+    // item.x and item.y are normalized, so we need to scale them for drag offset calculation
+    dragOffset.x = event.clientX - rect.left - scalePosition(item.x, 'x')
+    dragOffset.y = event.clientY - rect.top - scalePosition(item.y, 'y')
   }
 }
 
@@ -1540,8 +1720,9 @@ const handleMouseMove = (e) => {
   
   const item = canvasItems.value.find(i => i.id === draggedItem.value)
   if (item) {
-    item.x = Math.max(0, Math.min(x, rect.width - 128))
-    item.y = Math.max(0, Math.min(y, rect.height - 128))
+    // Normalize positions to reference canvas size for consistent storage
+    item.x = Math.max(0, Math.min(normalizePosition(x, 'x'), normalizePosition(rect.width - 128, 'x')))
+    item.y = Math.max(0, Math.min(normalizePosition(y, 'y'), normalizePosition(rect.height - 128, 'y')))
   }
 }
 
@@ -1732,14 +1913,16 @@ const saveOwnOutfit = async () => {
             description: 'Created in Outfit Creator',
             occasion: null,
             weather_condition: null,
-            items: canvasItems.value.map(item => ({
-              clothing_item_id: item.originalId || item.id, // Use stored original ID
-              x_position: item.x,
-              y_position: item.y,
-              z_index: item.z_index || 1,
-              rotation: item.rotation || 0,
-              scale: item.scale || 1
-            }))
+          items: canvasItems.value.map(item => ({
+            clothing_item_id: item.originalId || item.id, // Use stored original ID
+            // Positions are already normalized to reference canvas size
+            // If they were set on a different canvas size, normalize them
+            x_position: normalizePosition(item.x, 'x'),
+            y_position: normalizePosition(item.y, 'y'),
+            z_index: item.z_index || 1,
+            rotation: item.rotation || 0,
+            scale: item.scale || 1
+          }))
           }
           
           let result

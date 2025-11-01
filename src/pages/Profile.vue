@@ -133,7 +133,7 @@
                   </div>
                   <button
                     @click="toggleMasterEmail"
-                    :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                    :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                       preferences.email_enabled 
                         ? 'bg-green-500' 
                         : 'bg-gray-300 dark:bg-gray-500'
@@ -141,7 +141,7 @@
                   >
                     <span
                       :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        preferences.email_enabled ? 'translate-x-5' : 'translate-x-0'
+                        preferences.email_enabled ? 'translate-x-[22px]' : 'translate-x-0.5'
                       }`"
                     />
                   </button>
@@ -161,7 +161,7 @@
                     <button
                       @click="toggleNotificationType(type.key)"
                       :disabled="!preferences.email_enabled"
-                      :class="`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                      :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                         preferences.email_enabled && preferences[type.key]
                           ? 'bg-green-500'
                           : 'bg-gray-300 dark:bg-gray-500'
@@ -174,8 +174,8 @@
                       <span
                         :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                           preferences.email_enabled && preferences[type.key] 
-                            ? 'translate-x-5' 
-                            : 'translate-x-0'
+                            ? 'translate-x-[22px]' 
+                            : 'translate-x-0.5'
                         }`"
                       />
                     </button>
@@ -192,18 +192,53 @@
           
               <div class="space-y-3">
                 <!-- Theme Toggle Button -->
-                <button
-                  @click="handleThemeToggle"
-                  :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
-                  :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
-                >
-                  <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
-                  <Moon v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                  <Sun v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                  <span class="font-medium text-sm md:text-base">
-                    Toggle Theme
-                  </span>
-                </button>
+                <div class="relative">
+                  <button
+                    @click="showThemeDropdown = !showThemeDropdown"
+                    :class="`w-full flex items-center justify-between gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
+                    :title="getThemeLabel(theme.value)"
+                  >
+                    <div class="flex items-center gap-3">
+                      <Sun v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                      <Moon v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                      <Monitor v-else class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                      <span class="font-medium text-sm md:text-base">
+                        Theme
+                      </span>
+                    </div>
+                    <ChevronDown class="w-4 h-4 text-stone-800 dark:text-zinc-200" />
+                  </button>
+
+                  <!-- Theme Dropdown Menu -->
+                  <div
+                    v-if="showThemeDropdown"
+                    class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-50 overflow-hidden"
+                  >
+                    <button
+                      v-for="option in themeOptions"
+                      :key="option.value"
+                      @click.stop="selectTheme(option.value)"
+                      :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
+                        theme.value === option.value
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                      }`"
+                    >
+                      <component :is="option.icon" class="w-5 h-5" />
+                      <span class="font-medium text-sm">{{ option.label }}</span>
+                      <!-- Selected indicator checkmark -->
+                      <svg 
+                        v-if="theme.value === option.value" 
+                        class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
 
                 <!-- Logout Button -->
                 <button
@@ -247,22 +282,47 @@
  * @version 1.0.0
  */
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePopup } from '@/composables/usePopup'
 import { notificationsService } from '@/services/notificationsService'
-import { Sun, Moon, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
+import { Sun, Moon, Monitor, ChevronDown, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Composables and stores
-const { theme, toggleTheme } = useTheme()
+const { theme, toggleTheme, setTheme } = useTheme()
 const authStore = useAuthStore()
 const router = useRouter()
 const { showConfirm, showError, showSuccess } = usePopup()
+
+// Theme dropdown state
+const showThemeDropdown = ref(false)
+
+// Theme options with icons
+const themeOptions = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor }
+]
+
+// Get theme label
+const getThemeLabel = (themeValue) => {
+  const option = themeOptions.find(opt => opt.value === themeValue)
+  return option ? option.label : 'Theme'
+}
+
+// Select theme
+const selectTheme = async (themeValue) => {
+  // Close dropdown immediately for better UX
+  showThemeDropdown.value = false
+  // Then apply theme change
+  await setTheme(themeValue)
+}
 
 // Reactive state
 const loading = ref(false)
@@ -330,7 +390,7 @@ const notificationTypes = [
 // Prefer profile data (from database) over user data (from auth) for username and other profile fields
 const user = computed(() => authStore.profile || authStore.user)
 
-// Computed property for avatar URL with fallback logic
+// Computed property for avatar URL with fallback logic and proxy for Google images
 const avatarUrl = computed(() => {
   if (!user.value) return null
   
@@ -346,7 +406,9 @@ const avatarUrl = computed(() => {
   console.log('🖼️ Profile: Avatar URL sources:', sources)
   console.log('🖼️ Profile: Selected avatar URL:', validUrl)
   
-  return validUrl
+  // Proxy Google images to avoid CORS, return original for others
+  if (!validUrl) return null
+  return getProxiedImageUrl(validUrl)
 })
 
 const handleImageError = (event) => {
@@ -501,23 +563,49 @@ const toggleNotificationType = async (typeKey) => {
     return // Don't allow toggling individual types if master is disabled
   }
   
-  try {
-    preferences.value[typeKey] = !preferences.value[typeKey]
-    const result = await notificationsService.updateNotificationPreferences({
-      [typeKey]: preferences.value[typeKey]
-    })
-    
-    if (!result.success) {
-      // Revert on error
-      preferences.value[typeKey] = !preferences.value[typeKey]
-      showError('Failed to update notification preference', 'Error')
+  // Get the notification type info
+  const notificationType = notificationTypes.find(type => type.key === typeKey)
+  const currentValue = preferences.value[typeKey]
+  const newValue = !currentValue
+  
+  // Show confirmation popup before toggling
+  const actionText = newValue ? 'enable' : 'disable'
+  const message = `Are you sure you want to ${actionText} ${notificationType?.label || 'this notification'}?`
+  
+  showConfirm(
+    message,
+    'Confirm Notification Setting',
+    async () => {
+      // User confirmed - proceed with toggle
+      try {
+        preferences.value[typeKey] = newValue
+        const result = await notificationsService.updateNotificationPreferences({
+          [typeKey]: preferences.value[typeKey]
+        })
+        
+        if (result.success) {
+          // Show success popup
+          const successMessage = newValue 
+            ? `${notificationType?.label || 'Notification'} enabled`
+            : `${notificationType?.label || 'Notification'} disabled`
+          showSuccess(successMessage, 'Settings Updated')
+        } else {
+          // Revert on error
+          preferences.value[typeKey] = currentValue
+          showError('Failed to update notification preference', 'Error')
+        }
+      } catch (error) {
+        console.error('👤 Profile: Error toggling notification type:', error)
+        // Revert on error
+        preferences.value[typeKey] = currentValue
+        showError('Failed to update notification preference', 'Error')
+      }
+    },
+    () => {
+      // User cancelled - do nothing (toggle stays as it was)
+      console.log('👤 Profile: User cancelled notification toggle')
     }
-  } catch (error) {
-    console.error('👤 Profile: Error toggling notification type:', error)
-    // Revert on error
-    preferences.value[typeKey] = !preferences.value[typeKey]
-    showError('Failed to update notification preference', 'Error')
-  }
+  )
 }
 
 /**
@@ -570,7 +658,16 @@ const loadStats = async () => {
   }
 }
 
+// Handle click outside to close theme dropdown
+const handleClickOutside = (event) => {
+  const themeButton = event.target.closest('.relative')
+  if (themeButton && !themeButton.contains(event.target)) {
+    showThemeDropdown.value = false
+  }
+}
+
 onMounted(async () => {
+  document.addEventListener('click', handleClickOutside)
   console.log('👤 Profile: Component mounted')
   console.log('👤 Profile: Auth store user:', authStore.user)
   console.log('👤 Profile: Auth store profile:', authStore.profile)
@@ -607,5 +704,9 @@ onMounted(async () => {
   console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)
   console.log('👤 Profile: User metadata avatar:', user.value?.user_metadata?.avatar_url)
   console.log('👤 Profile: User metadata picture:', user.value?.user_metadata?.picture)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>

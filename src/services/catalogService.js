@@ -8,6 +8,71 @@ import { supabase } from '@/lib/supabase'
  */
 export class CatalogService {
   /**
+   * Get public catalog items (no authentication required)
+   * Directly queries catalog_items table - perfect for landing page
+   * 
+   * @param {Object} options - Filter options
+   * @param {string} options.category - Filter by category (e.g., 'top', 'bottom', etc.)
+   * @param {string} options.color - Filter by color
+   * @param {string} options.brand - Filter by brand
+   * @param {string} options.season - Filter by season
+   * @param {number} options.limit - Number of items per page (default: 20)
+   * @param {number} options.offset - Pagination offset (default: 0)
+   * @returns {Promise<Array>} Array of catalog items
+   */
+  async getPublicCatalogItems(options = {}) {
+    try {
+      const {
+        category = null,
+        color = null,
+        brand = null,
+        season = null,
+        limit = 20,
+        offset = 0
+      } = options
+
+      console.log('CatalogService: Fetching public catalog items (no auth required)')
+
+      // Build query directly on catalog_items table (RLS allows public read)
+      let query = supabase
+        .from('catalog_items')
+        .select('*')
+        .eq('is_active', true)
+        .eq('privacy', 'public')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      // Apply filters
+      if (category) {
+        query = query.eq('category', category)
+      }
+      if (color) {
+        query = query.eq('primary_color', color)
+      }
+      if (brand) {
+        query = query.eq('brand', brand)
+      }
+      if (season) {
+        query = query.eq('season', season)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        console.error('CatalogService: Error fetching public catalog items:', error)
+        throw error
+      }
+
+      console.log('CatalogService: Fetched', data?.length || 0, 'public catalog items')
+      return data || []
+
+    } catch (error) {
+      console.error('CatalogService: Error in getPublicCatalogItems:', error)
+      throw error
+    }
+  }
+
+  /**
    * Get catalog items excluding items the user already owns
    * Uses the get_catalog_excluding_owned Postgres function
    * 

@@ -5,8 +5,8 @@
       <!-- Friend Avatar -->
       <div class="w-12 h-12 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
         <img
-          v-if="suggestion.suggester?.avatar_url"
-          :src="suggestion.suggester.avatar_url"
+          v-if="proxiedAvatarUrl"
+          :src="proxiedAvatarUrl"
           :alt="suggestion.suggester.name"
           class="w-full h-full object-cover"
         />
@@ -95,12 +95,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { friendSuggestionsService } from '@/services/friendSuggestionsService'
 import { getFirstName } from '@/utils'
 import { Check, X, Shirt } from 'lucide-vue-next'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Props
 const props = defineProps({
@@ -119,6 +120,12 @@ const { showSuccess, showError } = usePopup()
 
 // State
 const processing = ref(false)
+
+// Computed property for proxied avatar URL (only proxies Google images)
+const proxiedAvatarUrl = computed(() => {
+  if (!props.suggestion?.suggester?.avatar_url) return null
+  return getProxiedImageUrl(props.suggestion.suggester.avatar_url)
+})
 
 // Format time ago
 const formatTimeAgo = (dateString) => {

@@ -5,7 +5,7 @@
     @click="$emit('close')"
   >
     <div
-      class="w-full max-w-4xl rounded-2xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto"
+      class="w-full max-w-4xl rounded-2xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
       @click.stop
     >
       <!-- Close Button -->
@@ -25,7 +25,7 @@
       </div>
 
       <!-- Header -->
-      <div class="mb-6">
+      <div class="mb-4 flex-shrink-0">
         <h3 class="text-2xl font-bold text-black dark:text-white flex items-center gap-3">
           <Sparkles class="w-7 h-7 text-purple-500" />
           Show Outfit on Model
@@ -74,61 +74,63 @@
       </div>
 
       <!-- Success State - Show Generated Image -->
-      <div v-else-if="generatedImageUrl" class="space-y-6">
-        <!-- Generated Image Display -->
-        <div class="rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700">
+      <div v-else-if="generatedImageUrl" class="flex-1 flex gap-4 overflow-hidden min-h-0">
+        <!-- Left: Image (60%) -->
+        <div class="w-[60%] flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700">
           <img
             :src="generatedImageUrl"
             alt="Virtual try-on result"
-            class="w-full h-auto object-contain"
-            style="max-height: 600px;"
+            class="w-full h-full object-contain max-h-full"
           />
         </div>
 
-        <!-- Image Info -->
-        <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
-              <Check class="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <p class="text-sm font-medium text-purple-900 dark:text-purple-100">
-                Virtual try-on generated successfully!
-              </p>
-              <p class="text-xs text-purple-700 dark:text-purple-300">
-                Powered by IDM-VTON AI model
-              </p>
+        <!-- Right: Content (40%) -->
+        <div class="w-[40%] flex-shrink-0 flex flex-col gap-3 overflow-y-auto min-h-0">
+          <!-- Image Info -->
+          <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800 flex-shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0">
+                <Check class="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p class="text-sm font-medium text-purple-900 dark:text-purple-100">
+                  Virtual try-on generated successfully!
+                </p>
+                <p class="text-xs text-purple-700 dark:text-purple-300">
+                  Powered by IDM-VTON AI model
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="flex gap-3">
-          <button
-            @click="downloadImage"
-            class="flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-500 text-white hover:bg-purple-600"
-          >
-            <Download class="w-5 h-5" />
-            Download Image
-          </button>
-          <button
-            @click="$emit('close')"
-            class="flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          >
-            Close
-          </button>
-        </div>
+          <!-- Action Buttons -->
+          <div class="flex flex-col gap-3 flex-shrink-0">
+            <button
+              @click="downloadImage"
+              class="w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-500 text-white hover:bg-purple-600"
+            >
+              <Download class="w-5 h-5" />
+              Download Image
+            </button>
+            <button
+              @click="$emit('close')"
+              class="w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            >
+              Close
+            </button>
+          </div>
 
-        <!-- Info Banner -->
-        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div class="flex gap-3">
-            <Info class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-            <div class="text-xs text-blue-800 dark:text-blue-200">
-              <p class="font-medium mb-1">About Virtual Try-On</p>
-              <p>
-                This image was generated using IDM-VTON, an AI model that composites clothing onto a model person. 
-                For best results, ensure your clothing items have clear, high-quality images.
-              </p>
+          <!-- Info Banner -->
+          <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 flex-shrink-0">
+            <div class="flex gap-3">
+              <Info class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div class="text-xs text-blue-800 dark:text-blue-200">
+                <p class="font-medium mb-1">About Virtual Try-On</p>
+                <p>
+                  This image was generated using IDM-VTON, an AI model that composites clothing onto a model person. 
+                  For best results, ensure your clothing items have clear, high-quality images.
+                </p>
+              </div>
             </div>
           </div>
         </div>

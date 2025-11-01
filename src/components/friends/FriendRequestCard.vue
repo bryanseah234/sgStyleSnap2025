@@ -7,8 +7,8 @@
         <!-- Avatar -->
         <div class="w-12 h-12 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
           <img
-            v-if="request.requester.avatar_url"
-            :src="request.requester.avatar_url"
+            v-if="proxiedAvatarUrl"
+            :src="proxiedAvatarUrl"
             :alt="request.requester.name"
             class="w-full h-full object-cover"
             crossorigin="anonymous"
@@ -57,10 +57,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { api } from '@/api/base44Client'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Props
 const props = defineProps({
@@ -79,6 +80,12 @@ const { showError } = usePopup()
 
 // State
 const processing = ref(false)
+
+// Computed property for proxied avatar URL (only proxies Google images)
+const proxiedAvatarUrl = computed(() => {
+  if (!props.request?.requester?.avatar_url) return null
+  return getProxiedImageUrl(props.request.requester.avatar_url)
+})
 
 // Handle image loading errors
 const handleImageError = (event) => {

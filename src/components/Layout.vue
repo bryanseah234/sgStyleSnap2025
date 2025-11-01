@@ -32,17 +32,20 @@
       @mouseleave="navbarHoverOut"
     >
       
-      <!-- Logo with liquid reveal -->
-      <div class="mb-12 text-center md:text-left liquid-reveal">
+      <!-- Logo with liquid reveal - clickable on desktop only -->
+      <router-link 
+        to="/home" 
+        class="mb-12 text-center md:text-left liquid-reveal block cursor-pointer hover:opacity-80 transition-opacity"
+      >
         <div class="flex items-center gap-3">
           <div :class="`w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white`">
             <Shirt :class="`w-5 h-5 text-white dark:text-black`"/>
           </div>
           <h1 class="text-2xl font-bold tracking-tight text-foreground">
-            StyleSnap
+            <StyleSnapBrand size="2xl" />
           </h1>
         </div>
-      </div>
+      </router-link>
 
       <!-- Navigation -->
       <nav class="flex-1 space-y-2">
@@ -71,22 +74,57 @@
 
       <!-- Theme Toggle & Logout -->
       <div class="space-y-2">
-        <button
-          ref="themeButtonRef"
-          @click="handleThemeToggle"
-          @mousedown="themePressIn"
-          @mouseup="themePressOut"
-          @mouseleave="themePressOut"
-          class="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
-          :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
-        >
-         <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
-         <Moon v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground" />
-         <Sun v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground" />
-          <span class="font-medium text-secondary-foreground">
-            Toggle Theme
-          </span>
-        </button>
+        <div class="relative">
+          <button
+            ref="themeButtonRef"
+            @click="showThemeDropdown = !showThemeDropdown"
+            @mousedown="themePressIn"
+            @mouseup="themePressOut"
+            @mouseleave="themePressOut"
+            class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
+            :title="getThemeLabel(theme.value)"
+          >
+            <div class="flex items-center gap-3">
+              <Sun v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground" />
+              <Moon v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground" />
+              <Monitor v-else class="w-5 h-5 text-secondary-foreground" />
+              <span class="font-medium text-secondary-foreground">
+                Theme
+              </span>
+            </div>
+            <ChevronDown class="w-4 h-4 text-secondary-foreground" />
+          </button>
+
+          <!-- Theme Dropdown Menu -->
+          <div
+            v-if="showThemeDropdown"
+            class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-50 overflow-hidden"
+          >
+            <button
+              v-for="option in themeOptions"
+              :key="option.value"
+              @click.stop="selectTheme(option.value)"
+              :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
+                theme.value === option.value
+                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
+              }`"
+            >
+              <component :is="option.icon" class="w-5 h-5" />
+              <span class="font-medium text-sm">{{ option.label }}</span>
+              <!-- Selected indicator checkmark -->
+              <svg 
+                v-if="theme.value === option.value" 
+                class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
         <button
           ref="logoutButtonRef"
@@ -121,23 +159,22 @@
             <Shirt class="w-4 h-4 text-white" />
           </div>
           <h1 class="text-xl font-bold tracking-tight text-black">
-            StyleSnap
+            <StyleSnapBrand size="xl" />
           </h1>
         </div>
       </div>
     </div>
 
-    <!-- Mobile Bottom Navigation with liquid glass -->
+    <!-- Mobile Bottom Navigation with pill shape -->
     <nav 
       v-if="!isLandingPage"
       ref="mobileNavRef"
-      class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-50 px-2 py-3 pb-safe"
+      class="md:hidden fixed bottom-4 left-0 right-0 z-50 px-4"
       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      
-      <div class="flex items-center justify-around max-w-md mx-auto">
+      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg max-w-md mx-auto w-full">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"
@@ -147,23 +184,23 @@
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               isActiveRoute(item.path)
-                ? 'bg-black scale-110 -translate-y-0.5'
+                ? 'bg-black dark:bg-white scale-110 -translate-y-0.5'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
                   isActiveRoute(item.path)
-                    ? 'text-white'
-                    : 'text-black'
+                    ? 'text-white dark:text-black'
+                    : 'text-gray-900 dark:text-white'
                 }`"
               />
             </div>
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
               isActiveRoute(item.path)
-                ? 'text-black opacity-100 scale-100'
-                : 'text-black opacity-60 scale-90'
+                ? 'text-gray-900 dark:text-black opacity-100 scale-100'
+                : 'text-gray-900 dark:text-white opacity-60 dark:opacity-80 scale-90'
             }`">
               {{ item.name }}
             </span>
@@ -201,7 +238,7 @@
  * Provides responsive navigation for both desktop and mobile devices.
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
@@ -210,6 +247,7 @@ import { createPageUrl } from '@/utils'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
+import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 import { NotificationsService } from '@/services/notificationsService'
 import { useNavbarLiquid, useLiquidPress, useLiquidHover, useReducedMotion } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -221,7 +259,9 @@ import {
   User as UserIcon,
   LogOut,
   Sun,
-  Moon
+  Moon,
+  Monitor,
+  ChevronDown
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
@@ -229,7 +269,7 @@ import GlobalPopup from './GlobalPopup.vue'
 // Router, theme, and auth composables
 const router = useRouter()
 const route = useRoute()
-const { theme, loadUser, refreshTheme, toggleTheme } = useTheme()
+const { theme, loadUser, refreshTheme, toggleTheme, setTheme } = useTheme()
 const { showConfirm } = usePopup()
 const authStore = useAuthStore()
 
@@ -263,6 +303,28 @@ const notificationsService = new NotificationsService()
 
 // Loading state for initial app setup
 const loading = ref(true)
+const showThemeDropdown = ref(false)
+
+// Theme options with icons
+const themeOptions = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor }
+]
+
+// Get theme label
+const getThemeLabel = (themeValue) => {
+  const option = themeOptions.find(opt => opt.value === themeValue)
+  return option ? option.label : 'Theme'
+}
+
+// Select theme
+const selectTheme = async (themeValue) => {
+  // Close dropdown immediately for better UX
+  showThemeDropdown.value = false
+  // Then apply theme change
+  await setTheme(themeValue)
+}
 
 // Cache for prefetched data
 const homeDataCache = ref({
@@ -403,6 +465,13 @@ const handleHomeHover = () => {
  * Loads user data and theme preferences when the component is mounted.
  * Sets loading state to false once initialization is complete.
  */
+// Handle click outside to close theme dropdown
+const handleClickOutside = (event) => {
+  if (themeButtonRef.value && !themeButtonRef.value.closest('.relative')?.contains(event.target)) {
+    showThemeDropdown.value = false
+  }
+}
+
 onMounted(async () => {
   // Load user data and theme preferences
   try {
@@ -418,6 +487,13 @@ onMounted(async () => {
 
   // Prefetch home data immediately after loading user
   prefetchHomeData()
+  
+  // Add click outside listener for theme dropdown
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 

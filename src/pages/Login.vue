@@ -35,7 +35,7 @@
           <Shirt class="w-10 h-10 text-white dark:text-black" />
         </div>
         <h1 class="text-4xl font-bold mb-2 text-foreground">
-          StyleSnap
+          <StyleSnapBrand size="4xl" />
         </h1>
         <p class="text-lg text-stone-600 dark:text-zinc-400">
           Your digital wardrobe awaits
@@ -47,12 +47,9 @@
         
         <!-- Welcome Message -->
         <div class="text-center mb-8">
-          <h2 class="text-2xl font-bold mb-2 text-foreground">
-            Welcome back
-          </h2>
-          <p class="text-lg text-stone-600 dark:text-zinc-400">
+          <h2 class="text-2xl font-bold text-foreground">
             {{ ctaText }}
-          </p>
+          </h2>
         </div>
 
         <!-- Google Sign In Button -->
@@ -170,6 +167,7 @@ import { Shirt, Palette, Users, AlertCircle } from 'lucide-vue-next'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
+import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -185,12 +183,25 @@ const showTerms = ref(false)
 const showPrivacy = ref(false)
 
 // Dynamic CTA text based on landing action
+// Security: Whitelist validation to prevent XSS
 const ctaText = computed(() => {
-  const mode = String(route.query.mode || '').toLowerCase()
+  const rawMode = route.query.mode
+  if (!rawMode) return 'Sign in to access'
+  
+  // Convert to string and lowercase, then validate against whitelist
+  const mode = String(rawMode).toLowerCase().trim()
+  
+  // Strict whitelist validation - only allow these exact values
+  const allowedModes = ['signup', 'login']
+  if (!allowedModes.includes(mode)) {
+    return 'Sign in to access'
+  }
+  
   if (mode === 'signup') return 'Sign up to access'
   if (mode === 'login') return 'Log in to access'
-  // Default
-  return 'Sign in to access your digital closet'
+  
+  // Default fallback
+  return 'Sign in to access'
 })
 
 const handleGoogleSignIn = async () => {

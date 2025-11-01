@@ -515,13 +515,22 @@ function isBrowserExtensionError(messageOrObj) {
     ? messageOrObj 
     : (messageOrObj?.message || String(messageOrObj || ''))
   
-  return message && (
-    message.includes('No tab with id') ||
-    message.includes('runtime.lastError') ||
-    message.includes('Extension context') ||
-    message.includes('message channel closed') ||
-    message.includes('chrome-extension://') ||
-    message.includes('moz-extension://')
+  // Common browser extension error patterns
+  const extensionErrorPatterns = [
+    'No tab with id',
+    'runtime.lastError',
+    'Extension context',
+    'message channel closed',
+    'chrome-extension://',
+    'moz-extension://',
+    'ERR_FILE_NOT_FOUND',
+    'utils.js',
+    'extensionState.js',
+    'heuristicsRedefinitions.js'
+  ]
+  
+  return message && extensionErrorPatterns.some(pattern => 
+    message.includes(pattern)
   )
 }
 
@@ -539,6 +548,11 @@ window.onerror = function(message, source, lineno, colno, error) {
   }
   return false
 }
+
+// Note: Network errors (like ERR_FILE_NOT_FOUND) from browser extensions
+// cannot be suppressed via JavaScript as they're resource loading failures.
+// These errors appear in the Network tab and console but don't affect app functionality.
+// They're safe to ignore - they're caused by browser extensions trying to load missing files.
 
 // Note: loadUser() is already called inside authInitPromise (line ~355)
 // No need to call it again here to avoid duplicate API requests

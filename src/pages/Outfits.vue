@@ -13,31 +13,15 @@
         <div class="relative">
           <button
             @click="showAddMenu = !showAddMenu"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800`"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             <Plus class="w-5 h-5" />
             Add
             <ChevronDown :class="`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`" />
           </button>
-          <!-- Dropdown Menu: Personal, Friend, then Suggested -->
+          <!-- Dropdown Menu: AI Suggestions first, then Personal, then Friend -->
           <div v-if="showAddMenu" class="absolute right-0 mt-2 w-64 rounded-xl shadow-xl border overflow-hidden z-50 bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800">
-            <!-- Personal first -->
-            <button @click="navigateToCreate('personal')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
-              <User class="w-5 h-5" />
-              <div>
-                <div class="font-medium">Personal creation</div>
-                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Create your own outfit combinations</div>
-              </div>
-            </button>
-            <!-- Friend second -->
-            <button @click="navigateToCreate('friend')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
-              <Users class="w-5 h-5" />
-              <div>
-                <div class="font-medium">Friend creation</div>
-                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Use items from friends' closets</div>
-              </div>
-            </button>
-            <!-- Suggested third -->
+            <!-- AI Suggestions first -->
             <button @click="navigateToCreate('suggested')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
               <Sparkles class="w-5 h-5" />
               <div>
@@ -45,28 +29,57 @@
                 <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Get AI-powered outfit recommendations</div>
               </div>
             </button>
+            <!-- Personal second -->
+            <button @click="navigateToCreate('personal')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
+              <User class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Personal creation</div>
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Create your own outfit combinations</div>
+              </div>
+            </button>
+            <!-- Friend third -->
+            <button @click="navigateToCreate('friend')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
+              <Users class="w-5 h-5" />
+              <div>
+                <div class="font-medium">Friend creation</div>
+                <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Use items from friends' closets</div>
+              </div>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap gap-3 md:gap-4 mb-6">
+      <div class="flex flex-wrap gap-2 mb-6">
+        <!-- Category Filters (All Outfits, Suggestions) -->
         <button
-          v-for="filter in filters"
+          v-for="filter in categoryFilters"
           :key="filter.value"
           @click="activeFilter = filter.value"
-          :class="filter.value === 'favorites' && activeFilter === filter.value
-            ? 'px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 bg-red-500 text-white dark:bg-red-600'
-            : activeFilter === filter.value ? 'btn-tab btn-tab--active' : 'btn-tab'"
+          :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
+            activeFilter === filter.value
+              ? 'bg-black text-white dark:bg-white dark:text-black'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+          }`"
         >
-          <template v-if="filter.value === 'favorites'">
-            <Heart :class="`w-5 h-5 ${activeFilter === 'favorites' ? 'fill-current' : ''}`" />
-          </template>
           {{ filter.label }}
           <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 
                 class="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white">
             {{ suggestionStats.pending }}
           </span>
+        </button>
+        
+        <!-- Favourites Button - Same style as Closet page, independent toggle -->
+        <button
+          @click="showFavoritesOnly = !showFavoritesOnly"
+          :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+            showFavoritesOnly
+              ? 'bg-red-500 text-white dark:bg-red-600'
+              : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+          }`"
+        >
+          <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+          Favourites
         </button>
       </div>
     </div>
@@ -236,31 +249,32 @@
     <Transition name="modal-backdrop">
       <div
         v-if="showOutfitDetail && selectedOutfit"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24 md:pb-4 bg-black/50 overflow-y-auto"
         @click="closeOutfitDetail"
       >
         <Transition name="modal" appear>
           <div
             v-if="showOutfitDetail && selectedOutfit"
-            class="relative w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden bg-white dark:bg-zinc-900"
+            class="relative w-full max-w-4xl max-h-[calc(100vh-6rem)] md:max-h-[90vh] rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 my-auto"
             @click.stop
           >
         <!-- Modal Header -->
-        <div class="p-6 border-b border-stone-200 dark:border-zinc-800">
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <h2 :class="`text-2xl font-bold mb-2 text-black dark:text-white`">
+        <div class="p-4 md:p-6 border-b border-stone-200 dark:border-zinc-800">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <h2 :class="`text-xl md:text-2xl font-bold mb-3 text-black dark:text-white`">
                 {{ selectedOutfit.outfit_name || selectedOutfit.name || 'Untitled Outfit' }}
               </h2>
-              <div class="flex items-center gap-4 text-sm">
-                <span class="text-stone-600 dark:text-zinc-400">
-                  {{ selectedOutfit.item_count || 0 }} items
+              <!-- Details stacked vertically on mobile, horizontal on desktop -->
+              <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm">
+                <span class="text-stone-600 dark:text-zinc-400 whitespace-nowrap">
+                  {{ selectedOutfit.item_count || (selectedOutfit.outfit_items?.length || 0) }} items
                 </span>
-                <span class="text-stone-600 dark:text-zinc-400">
+                <span class="text-stone-600 dark:text-zinc-400 whitespace-nowrap">
                   Created {{ formatDate(selectedOutfit.created_at) }}
                 </span>
-                <span v-if="selectedOutfit.description" class="text-stone-600 dark:text-zinc-400 truncate max-w-[50%]" title="Description">
-                  {{ selectedOutfit.description }}
+                <span v-if="getCreatedLocation(selectedOutfit)" class="text-stone-600 dark:text-zinc-400 whitespace-nowrap truncate md:max-w-[50%]">
+                  {{ getCreatedLocation(selectedOutfit) }}
                 </span>
               </div>
             </div>
@@ -279,7 +293,7 @@
         </div>
 
         <!-- Modal Content -->
-        <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 180px);">
+        <div class="p-4 md:p-6 overflow-y-auto" style="max-height: calc(100vh - 280px);">
           <!-- Description moved to header; keep space but no duplicate -->
           <div v-if="false" class="mb-6"></div>
 
@@ -351,7 +365,7 @@
         </div>
 
         <!-- Modal Footer with Actions -->
-        <div class="p-6 border-t flex items-center justify-end gap-3 border-stone-200 dark:border-zinc-800">
+        <div class="p-4 md:p-6 border-t flex items-center justify-end gap-3 border-stone-200 dark:border-zinc-800">
           <button
             @click="toggleFavorite(selectedOutfit)"
             :class="`p-3 rounded-xl transition-all duration-200 ${
@@ -411,6 +425,7 @@ const outfits = ref([])
 const loading = ref(true)
 const showAddMenu = ref(false)
 const activeFilter = ref('all')
+const showFavoritesOnly = ref(false) // Independent favorites toggle, same as Closet page
 const showOutfitDetail = ref(false)
 const selectedOutfit = ref(null)
 const searchTerm = ref('')
@@ -429,9 +444,9 @@ const suggestions = ref([])
 const suggestionsLoading = ref(false)
 const suggestionStats = ref({ pending: 0, approved: 0, rejected: 0, total: 0 })
 
-const filters = [
+// Category filters (All Outfits, Suggestions) - separate from favorites toggle
+const categoryFilters = [
   { value: 'all', label: 'All Outfits' },
-  { value: 'favorites', label: 'Favourites' },
   { value: 'suggestions', label: 'Suggestions' }
 ]
 
@@ -471,8 +486,8 @@ const filteredOutfits = computed(() => {
     })
   }
 
-  // Apply favorites filter
-  if (activeFilter.value === 'favorites') {
+  // Apply favorites filter (independent toggle, same as Closet page)
+  if (showFavoritesOnly.value) {
     filtered = filtered.filter(outfit => outfit.is_favorite)
   }
 
@@ -605,6 +620,24 @@ const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Get where the outfit was created
+const getCreatedLocation = (outfit) => {
+  if (!outfit) return null
+  
+  // Check if description contains location info
+  if (outfit.description && outfit.description.includes('Created in')) {
+    // Extract location from description (e.g., "Created in Outfit Creator")
+    const match = outfit.description.match(/Created in (.+)/i)
+    if (match && match[1]) {
+      return `Created in ${match[1]}`
+    }
+    return outfit.description
+  }
+  
+  // Default fallback - if no description, assume it was created in Outfits page
+  return 'Created in Outfits'
 }
 
 const handleSearch = () => {

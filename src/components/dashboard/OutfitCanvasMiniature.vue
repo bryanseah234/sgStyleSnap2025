@@ -82,9 +82,23 @@ const props = defineProps({
   }
 })
 
+// Reference canvas dimensions (same as OutfitCreator)
+const REFERENCE_CANVAS_WIDTH = 800
+const REFERENCE_CANVAS_HEIGHT = 600
+
 // Scale positions proportionally for miniature view
+// First normalize to reference size, then apply scale factor
 const scalePosition = (position) => {
-  return position * props.scaleFactor
+  // If position is larger than reference, assume it was from a larger canvas
+  // Normalize it first, then scale
+  let normalized = position
+  if (position > REFERENCE_CANVAS_WIDTH * 1.2) {
+    // Assume it was from a larger canvas, normalize proportionally
+    const assumedSize = Math.max(position * 1.5, REFERENCE_CANVAS_WIDTH)
+    normalized = (position / assumedSize) * REFERENCE_CANVAS_WIDTH
+  }
+  // Then apply the miniature scale factor
+  return normalized * props.scaleFactor
 }
 </script>
 

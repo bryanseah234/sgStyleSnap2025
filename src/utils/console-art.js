@@ -244,69 +244,69 @@ function getRandomLogo() {
  */
 export const PAGE_NAVIGATION_ART = [
   {
-    name: 'Wardrobe',
+    name: 'Dash',
     art: `
-  ┌───────────────────┐
-  │   👔   👗   👕   
-  │   📿   👠   👟  
-  │                   
-  └───────────────────┘
+    -----------------------------
     `
   },
   {
-    name: 'Inverse Star Tree',
+    name: 'Star',
     art: `
-    | ⭐ |
-    | ╲ ╱ |
-    | ✨ |
-    | ╲ ╱ |
-    | ⭐ |
+    ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
     `
   },
   {
-    name: 'Fashion Rocket',
+    name: 'Triangle',
     art: `
-        ▲
-       ▲ ▲
-      ▲ ▲ ▲
-     ▲ ▲ ▲ ▲
+    ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     `
   },
   {
-    name: 'Wardrobe Peep Hole',
+    name: 'Shoe',
     art: `
-    ┌─────────────┐
-    │  🎩        
-    │  👔  👗    │
-    │  👠  👟    │
-    │             │
-    └─────────────┘
+    👟👟👟👟👟👟👟👟👟👟👟👟
     `
   },
   {
-    name: 'Sparkly',
+    name: 'Dress',
     art: `
-    ✨     ✨
-      Style
-    ✨     ✨
+    👗👗👗👗👗👗👗👗👗👗👗👗
     `
   },
   {
-    name: 'Hearts',
+    name: 'Hat',
     art: `
-      💚💚💚💚
-    ┌─────┐
-    │Style│
-    └─────┘
-      💚💚💚💚
+    🎩🎩🎩🎩🎩🎩🎩🎩🎩🎩🎩🎩
     `
   },
   {
-    name: 'Fashion Forward',
+    name: 'Pants',
     art: `
-    ──────►
-     StyleSnap
-    ──────►
+    👖👖👖👖👖👖👖👖👖👖👖👖
+    `
+  },
+  {
+    name: 'Blazer',
+    art: `
+    🧥🧥🧥🧥🧥🧥🧥🧥🧥🧥🧥🧥
+    `
+  },
+  {
+    name: 'Heels',
+    art: `
+    👠👠👠👠👠👠👠👠👠👠👠👠
+    `
+  },
+  {
+    name: 'Suit',
+    art: `
+    👔👔👔👔👔👔👔👔👔👔👔👔
+    `
+  },
+  {
+    name: 'Waves',
+    art: `
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     `
   }
 ]

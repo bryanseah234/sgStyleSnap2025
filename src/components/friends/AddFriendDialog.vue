@@ -57,7 +57,7 @@
               <div class="w-8 h-8 rounded-full overflow-hidden bg-stone-200 dark:bg-zinc-700">
                 <img
                   v-if="user.avatar_url"
-                  :src="user.avatar_url"
+                  :src="getProxiedImageUrl(user.avatar_url)"
                   :alt="user.name"
                   class="w-full h-full object-cover"
                 />
@@ -127,6 +127,7 @@ import { useSanitize } from '@/composables/useSanitize'
 import { UserService } from '@/services/userService'
 import { FriendsService } from '@/services/friendsService'
 import { X } from 'lucide-vue-next'
+import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Service instances
 const userService = new UserService()
