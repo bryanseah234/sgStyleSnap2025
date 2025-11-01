@@ -37,7 +37,7 @@
         </div>
 
         <!-- Desktop Menu and Auth Buttons - Right Side -->
-        <div class="flex items-center gap-2 flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0 ml-8 md:ml-12">
           <!-- Desktop Menu -->
           <div class="hidden md:flex items-center gap-6">
             <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Demo</a>
@@ -167,7 +167,7 @@
                 transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
                 '--item-index': idx
               }"
-              @click="isCardFrontFacing(idx) && toggleFeatureExpand(feature.id)"
+              @click.stop="handleCardClick(idx, feature.id)"
             >
               <div 
                 class="carousel-card-wrapper"
@@ -175,7 +175,7 @@
               >
                 <!-- Front Face -->
                 <div class="carousel-card-face carousel-card-front bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
-                  <div class="flex flex-col items-center text-center space-y-2 sm:space-y-2.5 flex-1">
+                  <div class="flex flex-col items-center justify-center text-center space-y-2 sm:space-y-2.5 flex-1">
                     <component 
                       :is="feature.icon" 
                       class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 flex-shrink-0"
@@ -187,7 +187,7 @@
                 <!-- Back Face -->
                 <div class="carousel-card-face carousel-card-back bg-black rounded-xl border border-gray-800 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
                   <div class="flex flex-col items-center text-center space-y-3 sm:space-y-4 flex-1 justify-center">
-                    <p class="text-xs sm:text-sm text-white leading-relaxed">
+                    <p class="text-xs sm:text-sm text-white leading-relaxed" style="color: #ffffff !important;">
                       {{ feature.expandedDescription }}
                     </p>
                   </div>
@@ -572,7 +572,10 @@
       <!-- Footer -->
       <footer 
         class="footer-reveal bg-black text-white transition-transform duration-500 ease-out overflow-hidden relative"
-        :class="{ 'translate-y-0': showFooter, '-translate-y-full': !showFooter }"
+        :class="{ 
+          'translate-y-0 footer-revealed': showFooter, 
+          '-translate-y-full': !showFooter 
+        }"
       >
         <div class="container py-12 sm:py-16 relative z-10">
           <!-- Top Section: Branding and Links -->
@@ -828,10 +831,17 @@ const handleSignUp = () => {
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
+// Handle card click
+const handleCardClick = (index, featureId) => {
+  // Only allow clicks on front-facing cards
+  if (!isCardFrontFacing(index)) return
+  toggleFeatureExpand(featureId)
+}
+
 // Toggle feature flip on click
 const toggleFeatureExpand = (featureId) => {
   const feature = features.value.find(f => f.id === featureId)
-  if (!feature || !isCardFrontFacing(features.value.findIndex(f => f.id === featureId))) return
+  if (!feature) return
   
   // If card is already flipped, flip it back immediately and resume
   if (feature.flipped) {
@@ -1691,7 +1701,6 @@ const setScrollY = (value) => {
   margin-bottom: -40px;
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   z-index: 2;
   position: relative;
 }
@@ -1709,5 +1718,13 @@ const setScrollY = (value) => {
   transform-origin: top center;
   will-change: transform;
   margin-top: 40px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  transition: transform 0.5s ease-out, border-top-left-radius 0.5s ease-out, border-top-right-radius 0.5s ease-out;
+}
+
+.footer-reveal.footer-revealed {
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
 }
 </style>
