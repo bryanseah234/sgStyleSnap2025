@@ -29,7 +29,10 @@
     <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 landing-nav-pill">
       <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/95 border border-gray-200/50 shadow-lg">
         <!-- Logo and Brand -->
-        <div class="flex items-center gap-2 min-w-0 flex-shrink-0">
+        <div 
+          @click="scrollToTop"
+          class="flex items-center gap-2 min-w-0 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <div class="bg-black rounded-lg p-1.5 flex items-center justify-center">
             <Shirt class="w-4 h-4 text-white" />
           </div>
@@ -51,13 +54,14 @@
           </button>
           <button
             @click="handleSignUp"
-            :class="`inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 py-1.5 rounded-full font-medium text-sm transition-all duration-300 shadow-md hover:shadow-lg overflow-hidden ${
+            :class="`join-for-free-btn inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 py-1.5 rounded-full font-medium text-sm shadow-md hover:shadow-lg overflow-hidden ${
               showJoinButton 
-                ? 'opacity-100 px-4 ml-2 w-auto' 
-                : 'opacity-0 px-0 ml-0 w-0'
+                ? 'join-button-enter' 
+                : 'join-button-exit'
             }`"
+            style="color: #ffffff !important;"
           >
-            <span class="whitespace-nowrap !text-white">Join for free</span>
+            <span class="whitespace-nowrap !text-white" style="color: #ffffff !important;">Join for free</span>
           </button>
 
           <!-- Mobile Menu Button -->
@@ -221,7 +225,7 @@
               <!-- Category Filters -->
               <div v-if="catalogueItems.length > 0" class="flex flex-wrap gap-2 mb-4">
                 <button
-                  v-for="category in categoryOptions"
+                  v-for="category in availableCategories"
                   :key="category"
                   @click="activeCategory = category"
                   :class="`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
@@ -628,15 +632,6 @@
     <TermsOfServiceModal :isOpen="showTerms" @close="showTerms = false" />
     <PrivacyPolicyModal :isOpen="showPrivacy" @close="showPrivacy = false" />
 
-    <!-- Scroll to Top Button -->
-    <button
-      v-if="showScrollToTop"
-      @click="scrollToTop"
-      class="scroll-to-top-button bg-black text-white hover:bg-gray-900 p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300"
-      aria-label="Scroll to top"
-    >
-      <ArrowUp class="w-6 h-6" />
-    </button>
   </div>
 </template>
 
@@ -654,7 +649,6 @@ import {
   Menu, 
   X, 
   Trash2,
-  ArrowUp,
   Palette,
   Camera,
   Heart,
@@ -688,7 +682,6 @@ const draggedItem = ref(null)
 const dragOffset = reactive({ x: 0, y: 0 })
 const canvasRef = ref(null)
 const isPageLoaded = ref(false)
-const showScrollToTop = ref(false)
 const displayedTitle = ref('')
 const showTypewriterCursor = ref(true)
 const showSplash = ref(true)
@@ -732,6 +725,26 @@ const filteredCatalogueItems = computed(() => {
   }
   
   return filtered
+})
+
+// Categories with items (only show categories that have at least 1 item)
+const availableCategories = computed(() => {
+  const categoriesWithItems = ['all'] // Always show "all"
+  
+  categoryOptions.forEach(category => {
+    if (category === 'all') return
+    
+    const count = catalogueItems.value.filter(item => {
+      const itemCategory = (item.category || '').toLowerCase()
+      return itemCategory === category.toLowerCase()
+    }).length
+    
+    if (count > 0) {
+      categoriesWithItems.push(category)
+    }
+  })
+  
+  return categoriesWithItems
 })
 
 // Features data - Photo Capture first
@@ -828,10 +841,25 @@ const handleSignUp = () => {
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
-// Handle card click
+// Handle card click - improved to handle edge cases
 const handleCardClick = (index, featureId) => {
-  // Only allow clicks on front-facing cards
-  if (!isCardFrontFacing(index)) return
+  // Check if card is reasonably front-facing (within 45 degrees)
+  // Also allow clicks during transition for better UX
+  if (!isCardFrontFacing(index)) {
+    // If not perfectly front-facing, check if it's close enough
+    const totalCards = features.value.length
+    const cardAngle = index * (360 / totalCards)
+    let currentRotation = carouselRotation.value % 360
+    if (currentRotation < 0) currentRotation += 360
+    let effectiveAngle = (cardAngle - currentRotation) % 360
+    if (effectiveAngle < 0) effectiveAngle += 360
+    
+    // Allow clicks if within 60 degrees (even more lenient for better UX)
+    const withinClickRange = effectiveAngle <= 60 || effectiveAngle >= 300
+    if (!withinClickRange) return
+  }
+  
+  // Proceed with toggle
   toggleFeatureExpand(featureId)
 }
 
@@ -874,31 +902,47 @@ const toggleFeatureExpand = (featureId) => {
   }, 5000)
 }
 
-// Check if a card is facing forward (within 30 degrees of center)
+// Check if a card is facing forward (within 45 degrees of center for better click detection)
 const isCardFrontFacing = (index) => {
   const totalCards = features.value.length
   const cardAngle = index * (360 / totalCards)
-  const currentRotation = carouselRotation.value % 360
-  const normalizedRotation = currentRotation < 0 ? currentRotation + 360 : currentRotation
+  
+  // Normalize rotation to 0-360 range
+  let currentRotation = carouselRotation.value % 360
+  if (currentRotation < 0) currentRotation += 360
   
   // Calculate the effective angle of this card after rotation
-  const effectiveAngle = (cardAngle - normalizedRotation + 360) % 360
+  let effectiveAngle = (cardAngle - currentRotation) % 360
+  if (effectiveAngle < 0) effectiveAngle += 360
   
-  // Card is front-facing if it's within 30 degrees of 0 (center front)
-  const isFront = effectiveAngle <= 30 || effectiveAngle >= 330
+  // Card is front-facing if it's within 45 degrees of 0 (center front)
+  // This is more lenient than 30 degrees for better click detection
+  const isFront = effectiveAngle <= 45 || effectiveAngle >= 315
   return isFront
 }
 
 // Carousel rotation functions
 const startCarousel = () => {
-  if (carouselInterval.value) return
+  // Clear any existing interval first
+  if (carouselInterval.value) {
+    clearInterval(carouselInterval.value)
+    carouselInterval.value = null
+  }
   
-  // Initial delay before first rotation
+  // Start rotating after initial delay (3 seconds)
   setTimeout(() => {
+    // Double-check interval wasn't created elsewhere
+    if (carouselInterval.value) return
+    
+    // Do first rotation immediately after delay
+    const rotationStep = 360 / features.value.length
+    carouselRotation.value -= rotationStep
+    
+    // Then set up interval for subsequent rotations
     carouselInterval.value = setInterval(() => {
       if (!isCarouselPaused.value) {
         const rotationStep = 360 / features.value.length
-        carouselRotation.value -= rotationStep // Changed to negative for counter-clockwise
+        carouselRotation.value -= rotationStep // Counter-clockwise rotation
       }
     }, 5000) // Rotate every 5 seconds
   }, 3000) // Start rotating after 3 seconds
@@ -961,6 +1005,82 @@ const loadCatalogueItems = async () => {
   }
 }
 
+// Check if two rectangles overlap
+const rectsOverlap = (a, b) => {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  )
+}
+
+// Find a non-overlapping position for a new item
+// Returns { x, y, scale } - scale may be reduced if no space is found
+const findNonOverlappingPosition = (existingItems, itemSize, startX, startY, canvasWidth, canvasHeight) => {
+  const maxAttempts = 50
+  let currentScale = 1.0
+  const minScale = 0.3 // Minimum scale to try
+  
+  // Try different scales, starting from full size
+  while (currentScale >= minScale) {
+    const scaledSize = itemSize * currentScale
+    
+    // Try positions in a spiral pattern from the drop point
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const angleIndex = attempt % 8 // 8 directions (0-7)
+      const circleIndex = Math.floor(attempt / 8) // Which circle (0, 1, 2, ...)
+      const angle = (angleIndex * 45) * (Math.PI / 180) // Convert to radians
+      const radius = (circleIndex + 1) * (scaledSize * 0.6) // Increase radius each circle
+      
+      const x = startX + radius * Math.cos(angle) - (scaledSize / 2)
+      const y = startY + radius * Math.sin(angle) - (scaledSize / 2)
+      
+      // Check bounds
+      if (x < 0 || y < 0 || x + scaledSize > canvasWidth || y + scaledSize > canvasHeight) {
+        continue
+      }
+      
+      // Check for overlaps with existing items
+      const newRect = {
+        x: x,
+        y: y,
+        width: scaledSize,
+        height: scaledSize
+      }
+      
+      let overlaps = false
+      for (const existingItem of existingItems) {
+        const existingRect = {
+          x: existingItem.x,
+          y: existingItem.y,
+          width: itemSize * (existingItem.scale || 1),
+          height: itemSize * (existingItem.scale || 1)
+        }
+        
+        if (rectsOverlap(newRect, existingRect)) {
+          overlaps = true
+          break
+        }
+      }
+      
+      if (!overlaps) {
+        return { x, y, scale: currentScale }
+      }
+    }
+    
+    // If no position found at current scale, try smaller scale
+    currentScale -= 0.1
+  }
+  
+  // If still no position found, place at center with minimum scale
+  return {
+    x: (canvasWidth / 2) - (itemSize * minScale / 2),
+    y: (canvasHeight / 2) - (itemSize * minScale / 2),
+    scale: minScale
+  }
+}
+
 // Add item to canvas from catalogue
 const addCatalogueItemToCanvas = (item) => {
   if (!canvasRef.value) return
@@ -970,12 +1090,22 @@ const addCatalogueItemToCanvas = (item) => {
   const centerX = rect.width / 2
   const centerY = rect.height / 2
   
+  // Find a non-overlapping position
+  const position = findNonOverlappingPosition(
+    outfitItems.value,
+    itemSize,
+    centerX,
+    centerY,
+    rect.width,
+    rect.height
+  )
+  
   const newItem = {
     ...item,
     id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    x: centerX - itemSize / 2 + (Math.random() * 40 - 20),
-    y: centerY - itemSize / 2 + (Math.random() * 40 - 20),
-    scale: 1,
+    x: position.x,
+    y: position.y,
+    scale: position.scale,
     rotation: 0,
     z_index: outfitItems.value.length,
   }
@@ -1001,17 +1131,27 @@ const handleDrop = (event) => {
     
     const rect = canvasRef.value.getBoundingClientRect()
     const itemSize = 128
-    const x = event.clientX - rect.left - (itemSize / 2)
-    const y = event.clientY - rect.top - (itemSize / 2)
+    const dropX = event.clientX - rect.left
+    const dropY = event.clientY - rect.top
+    
+    // Find a non-overlapping position
+    const position = findNonOverlappingPosition(
+      outfitItems.value,
+      itemSize,
+      dropX,
+      dropY,
+      rect.width,
+      rect.height
+    )
     
     const newItem = {
       ...item,
       id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      x: Math.max(0, Math.min(x, rect.width - itemSize)),
-      y: Math.max(0, Math.min(y, rect.height - itemSize)),
-      z_index: outfitItems.value.length,
+      x: Math.max(0, Math.min(position.x, rect.width - (itemSize * position.scale))),
+      y: Math.max(0, Math.min(position.y, rect.height - (itemSize * position.scale))),
+      scale: position.scale,
       rotation: 0,
-      scale: 1
+      z_index: outfitItems.value.length
     }
     
     outfitItems.value.push(newItem)
@@ -1289,8 +1429,7 @@ onMounted(() => {
       showFooter.value = false
     }
     
-    // Show scroll to top button when scrolled down more than 300px
-    showScrollToTop.value = currentScrollY > 300
+    // Removed scroll to top button - functionality moved to logo click
   }
   window.addEventListener('scroll', handleScroll, { passive: true })
   
@@ -1531,9 +1670,20 @@ const setScrollY = (value) => {
   color: rgb(17, 24, 39) !important;
 }
 
+/* Exception for "Join for free" button - keep white text */
+.landing-nav-pill button[class*="bg-black"] span,
+.landing-nav-pill button[class*="bg-black"] {
+  color: #ffffff !important;
+}
+
 .landing-nav-pill a:hover,
 .landing-nav-pill button:hover {
   color: rgb(75, 85, 99) !important;
+}
+
+/* Exception for "Join for free" button hover */
+.landing-nav-pill button[class*="bg-black"]:hover {
+  color: #ffffff !important;
 }
 
 /* Ensure mobile menu also stays light */
@@ -1608,11 +1758,8 @@ const setScrollY = (value) => {
   cursor: pointer;
 }
 
-.carousel-3d-item:not(.front-facing) {
-  pointer-events: none;
-}
-
-.carousel-3d-item.front-facing {
+/* Enable pointer events for all cards - click detection handled by JS */
+.carousel-3d-item {
   pointer-events: auto;
 }
 
@@ -1713,12 +1860,31 @@ const setScrollY = (value) => {
   }
 }
 
-/* Scroll to Top Button - Fixed bottom right */
-.scroll-to-top-button {
-  position: fixed !important;
-  bottom: 24px !important;
-  right: 24px !important;
-  z-index: 9999 !important;
+
+/* Join for free button animations */
+.join-for-free-btn {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.join-button-enter {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: 0.5rem;
+  width: auto;
+  max-width: 200px;
+}
+
+.join-button-exit {
+  opacity: 0;
+  transform: translateX(20px) scale(0.8);
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  width: 0;
+  max-width: 0;
+  pointer-events: none;
 }
 
 /* CTA Card Section with Rounded Bottom */
