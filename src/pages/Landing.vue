@@ -26,26 +26,26 @@
     :class="{ 'page-hidden': !isTransitioning && showSplash, 'page-visible': isTransitioning || !showSplash }"
   >
     <!-- Navigation - Floating Pill Header (Always Visible) -->
-    <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300">
-      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
+    <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 landing-nav-pill">
+      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/80 backdrop-blur-md border border-gray-200/50 shadow-lg">
         <!-- Logo and Brand -->
         <div class="flex items-center gap-2 min-w-0 flex-shrink-0">
           <div class="bg-black rounded-lg p-1.5 flex items-center justify-center">
             <Shirt class="w-4 h-4 text-white" />
           </div>
-          <span class="font-bold text-base truncate">StyleSnap</span>
+          <span class="font-bold text-base truncate text-gray-900">StyleSnap</span>
         </div>
 
         <!-- Desktop Menu and Auth Buttons - Right Side -->
         <div class="flex items-center gap-2 flex-shrink-0 ml-8 md:ml-12">
           <!-- Desktop Menu -->
           <div class="hidden md:flex items-center gap-6">
-            <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Demo</a>
+            <a href="#demo" class="text-sm font-medium text-gray-900 hover:text-gray-600 transition">Demo</a>
           </div>
         
           <button
             @click="handleLogin"
-            class="hidden md:inline-flex items-center justify-center text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition px-3 py-1.5"
+            class="hidden md:inline-flex items-center justify-center text-sm font-medium text-gray-900 hover:text-gray-600 transition px-3 py-1.5"
           >
             Log In
           </button>
@@ -65,27 +65,21 @@
             class="md:hidden"
             @click="isMenuOpen = !isMenuOpen"
           >
-            <X v-if="isMenuOpen" class="w-5 h-5 text-gray-900 dark:text-gray-100" />
-            <Menu v-else class="w-5 h-5 text-gray-900 dark:text-gray-100" />
+            <X v-if="isMenuOpen" class="w-5 h-5 text-gray-900" />
+            <Menu v-else class="w-5 h-5 text-gray-900" />
           </button>
         </div>
       </div>
       
       <!-- Mobile Menu -->
-      <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/95 dark:bg-zinc-900/95 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg animate-slideInDown">
+      <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/95 backdrop-blur-md border border-gray-200/50 shadow-lg animate-slideInDown">
         <div class="py-4 px-4 flex flex-col gap-3">
-          <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2">Demo</a>
+          <a href="#demo" @click="isMenuOpen = false" class="text-sm font-medium text-gray-900 hover:text-gray-600 transition py-2">Demo</a>
           <button
             @click="handleLogin"
-            class="text-left text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2"
+            class="text-left text-sm font-medium text-gray-900 hover:text-gray-600 transition py-2"
           >
             Log In
-          </button>
-          <button
-            @click="handleSignUp"
-            class="text-left text-sm font-medium bg-black text-white hover:bg-gray-900 px-4 py-2 rounded-full transition-all mt-2"
-          >
-            Join for free
           </button>
         </div>
       </div>
@@ -131,7 +125,7 @@
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
+    <section id="features" class="landing-section py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute top-10 left-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" />
         <div class="absolute bottom-10 right-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s" />
@@ -200,7 +194,7 @@
     </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="py-6 sm:py-12 md:py-20 relative overflow-hidden bg-white">
+    <section id="demo" class="landing-section py-6 sm:py-12 md:py-20 relative overflow-hidden bg-white">
       <div class="absolute inset-0 opacity-5">
         <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
       </div>
@@ -499,7 +493,7 @@
     </section>
 
     <!-- Why Choose Section -->
-    <section id="why" class="py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
+    <section id="why" class="landing-section py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s" />
           </div>
@@ -547,7 +541,7 @@
     
     <!-- CTA Section -->
     <section 
-      class="cta-card-section py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative"
+      class="landing-section cta-card-section py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative"
     >
       <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
@@ -613,16 +607,16 @@
             </p>
             <div class="flex items-center gap-6">
               <button
-                @click="showPrivacy = true"
-                class="text-xs text-gray-400 hover:text-gray-300 transition"
-              >
-                Privacy policy
-              </button>
-              <button
                 @click="showTerms = true"
-                class="text-xs text-gray-400 hover:text-gray-300 transition"
+                class="text-xs text-gray-400 hover:text-gray-300 transition whitespace-nowrap"
               >
                 Terms
+              </button>
+              <button
+                @click="showPrivacy = true"
+                class="text-xs text-gray-400 hover:text-gray-300 transition whitespace-nowrap"
+              >
+                Privacy policy
               </button>
             </div>
           </div>
@@ -746,7 +740,7 @@ const features = ref([
     icon: Camera,
     title: 'Photo Capture',
     description: 'Instantly capture and catalog your clothing items with smart photo recognition.',
-    expandedDescription: 'Simply snap a photo and watch our advanced image recognition technology automatically identify clothing items, extract colors, patterns, and details. No more manual data entry - just point, shoot, and your items are instantly added to your digital closet.',
+    expandedDescription: 'Snap photos to automatically identify clothing items, extract colors and patterns. No manual entry needed - items instantly added to your digital closet.',
     flipped: false,
     expanded: false,
   },
@@ -755,7 +749,7 @@ const features = ref([
     icon: Shirt,
     title: 'Digital Closet',
     description: 'Organise all your clothing items by category. Track what you own and never lose track of your favourite pieces.',
-    expandedDescription: 'Transform your messy wardrobe into an organized digital catalog with categorization by type, color, season, and occasion. Use advanced search and filter options to quickly find exactly what you\'re looking for, and add tags and outfit history to each piece.',
+    expandedDescription: 'Organize your wardrobe into a digital catalog by type, color, and occasion. Search and filter to find items quickly with tags and outfit history.',
     flipped: false,
     expanded: false,
   },
@@ -764,7 +758,7 @@ const features = ref([
     icon: Zap,
     title: 'Outfit Creator',
     description: 'Drag and drop to create stunning outfits. Get AI-powered suggestions for perfect combinations.',
-    expandedDescription: 'Create unlimited outfit combinations with our intuitive drag-and-drop interface and visualize how pieces work together before you wear them. Our AI analyzes color theory, style matching, and current fashion trends to suggest perfect pairings.',
+    expandedDescription: 'Create unlimited outfit combinations with drag-and-drop. AI analyzes color theory and trends to suggest perfect style pairings.',
     flipped: false,
     expanded: false,
   },
@@ -773,7 +767,7 @@ const features = ref([
     icon: Users,
     title: 'Share & Connect',
     description: 'Share your outfits with friends, get feedback, and discover inspiration from their styles.',
-    expandedDescription: 'Build your fashion community by sharing daily outfits, special event looks, and style experiments with friends. Get real-time feedback, browse friends\' outfit collections for inspiration, and create style challenges together.',
+    expandedDescription: 'Build your fashion community by sharing outfits with friends. Get feedback and browse collections for endless style inspiration.',
     flipped: false,
     expanded: false,
   },
@@ -782,7 +776,7 @@ const features = ref([
     icon: Palette,
     title: 'Style Analyzer',
     description: 'Analyze your fashion choices and discover your unique style profile.',
-    expandedDescription: 'Uncover your personal style DNA as our AI examines your wardrobe choices, color preferences, and outfit patterns to create a comprehensive style profile. Discover if you lean towards minimalist, boho, classic, or trendy aesthetics and get personalized recommendations based on your preferences.',
+    expandedDescription: 'Discover your style DNA as AI examines your wardrobe choices. Get personalized recommendations for minimalist, boho, classic, or trendy aesthetics.',
     flipped: false,
     expanded: false,
   },
@@ -791,7 +785,7 @@ const features = ref([
     icon: Heart,
     title: 'Favorites & Collections',
     description: 'Save your favorite pieces, create wishlists, and build curated collections.',
-    expandedDescription: 'Create unlimited collections for different occasions, seasons, or style goals and save items from your closet, friends\' outfits, or shopping sites. Organize collections like "Date Night Looks" or "Summer Essentials" and get reminders for items you haven\'t worn in a while.',
+    expandedDescription: 'Create collections for occasions and seasons. Save items from your closet, friends\' outfits, or shopping sites with smart reminders.',
     flipped: false,
     expanded: false,
   },
@@ -824,10 +818,12 @@ const whyChooseItems = [
 
 // Auth handlers - Navigate to login page
 const handleLogin = () => {
+  isMenuOpen.value = false
   router.push({ path: '/login', query: { mode: 'login' } })
 }
 
 const handleSignUp = () => {
+  isMenuOpen.value = false
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
@@ -1522,6 +1518,36 @@ const setScrollY = (value) => {
   color-scheme: light only;
 }
 
+/* Force navigation pill to always use light mode */
+.landing-nav-pill,
+.landing-nav-pill * {
+  background-color: rgba(243, 244, 246, 0.8) !important;
+  border-color: rgba(229, 231, 235, 0.5) !important;
+  color: rgb(17, 24, 39) !important;
+}
+
+.landing-nav-pill a,
+.landing-nav-pill button,
+.landing-nav-pill span {
+  color: rgb(17, 24, 39) !important;
+}
+
+.landing-nav-pill a:hover,
+.landing-nav-pill button:hover {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Ensure mobile menu also stays light */
+.landing-nav-pill .md\\:hidden {
+  background-color: rgba(243, 244, 246, 0.95) !important;
+  border-color: rgba(229, 231, 235, 0.5) !important;
+}
+
+/* Make all landing sections the same height */
+.landing-section {
+  min-height: 100vh;
+}
+
 .landing-page h1,
 .landing-page h2,
 .landing-page h3,
@@ -1720,11 +1746,6 @@ const setScrollY = (value) => {
   margin-top: 40px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  transition: transform 0.5s ease-out, border-top-left-radius 0.5s ease-out, border-top-right-radius 0.5s ease-out;
-}
-
-.footer-reveal.footer-revealed {
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
+  transition: transform 0.5s ease-out;
 }
 </style>

@@ -192,18 +192,43 @@
           
               <div class="space-y-3">
                 <!-- Theme Toggle Button -->
-                <button
-                  @click="handleThemeToggle"
-                  :class="`w-full flex items-center justify-start gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
-                  :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
-                >
-                  <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
-                  <Moon v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                  <Sun v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                  <span class="font-medium text-sm md:text-base">
-                    Toggle Theme
-                  </span>
-                </button>
+                <div class="relative">
+                  <button
+                    @click="showThemeDropdown = !showThemeDropdown"
+                    :class="`w-full flex items-center justify-between gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
+                    :title="getThemeLabel(theme.value)"
+                  >
+                    <div class="flex items-center gap-3">
+                      <Sun v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                      <Moon v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                      <Monitor v-else class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
+                      <span class="font-medium text-sm md:text-base">
+                        Theme
+                      </span>
+                    </div>
+                    <ChevronDown class="w-4 h-4 text-stone-800 dark:text-zinc-200" />
+                  </button>
+
+                  <!-- Theme Dropdown Menu -->
+                  <div
+                    v-if="showThemeDropdown"
+                    class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-50 overflow-hidden"
+                  >
+                    <button
+                      v-for="option in themeOptions"
+                      :key="option.value"
+                      @click="selectTheme(option.value)"
+                      :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                        theme.value === option.value
+                          ? 'bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-zinc-100'
+                          : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                      }`"
+                    >
+                      <component :is="option.icon" class="w-5 h-5" />
+                      <span class="font-medium text-sm">{{ option.label }}</span>
+                    </button>
+                  </div>
+                </div>
 
                 <!-- Logout Button -->
                 <button
@@ -247,23 +272,45 @@
  * @version 1.0.0
  */
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePopup } from '@/composables/usePopup'
 import { notificationsService } from '@/services/notificationsService'
-import { Sun, Moon, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
+import { Sun, Moon, Monitor, ChevronDown, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Composables and stores
-const { theme, toggleTheme } = useTheme()
+const { theme, toggleTheme, setTheme } = useTheme()
 const authStore = useAuthStore()
 const router = useRouter()
 const { showConfirm, showError, showSuccess } = usePopup()
+
+// Theme dropdown state
+const showThemeDropdown = ref(false)
+
+// Theme options with icons
+const themeOptions = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor }
+]
+
+// Get theme label
+const getThemeLabel = (themeValue) => {
+  const option = themeOptions.find(opt => opt.value === themeValue)
+  return option ? option.label : 'Theme'
+}
+
+// Select theme
+const selectTheme = async (themeValue) => {
+  await setTheme(themeValue)
+  showThemeDropdown.value = false
+}
 
 // Reactive state
 const loading = ref(false)
@@ -599,7 +646,16 @@ const loadStats = async () => {
   }
 }
 
+// Handle click outside to close theme dropdown
+const handleClickOutside = (event) => {
+  const themeButton = event.target.closest('.relative')
+  if (themeButton && !themeButton.contains(event.target)) {
+    showThemeDropdown.value = false
+  }
+}
+
 onMounted(async () => {
+  document.addEventListener('click', handleClickOutside)
   console.log('👤 Profile: Component mounted')
   console.log('👤 Profile: Auth store user:', authStore.user)
   console.log('👤 Profile: Auth store profile:', authStore.profile)
@@ -636,5 +692,9 @@ onMounted(async () => {
   console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)
   console.log('👤 Profile: User metadata avatar:', user.value?.user_metadata?.avatar_url)
   console.log('👤 Profile: User metadata picture:', user.value?.user_metadata?.picture)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>

@@ -74,22 +74,47 @@
 
       <!-- Theme Toggle & Logout -->
       <div class="space-y-2">
-        <button
-          ref="themeButtonRef"
-          @click="handleThemeToggle"
-          @mousedown="themePressIn"
-          @mouseup="themePressOut"
-          @mouseleave="themePressOut"
-          class="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
-          :title="theme.value === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
-        >
-         <!-- Show icon for the mode you can switch TO: Moon in light mode, Sun in dark mode -->
-         <Moon v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground" />
-         <Sun v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground" />
-          <span class="font-medium text-secondary-foreground">
-            Toggle Theme
-          </span>
-        </button>
+        <div class="relative">
+          <button
+            ref="themeButtonRef"
+            @click="showThemeDropdown = !showThemeDropdown"
+            @mousedown="themePressIn"
+            @mouseup="themePressOut"
+            @mouseleave="themePressOut"
+            class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
+            :title="getThemeLabel(theme.value)"
+          >
+            <div class="flex items-center gap-3">
+              <Sun v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground" />
+              <Moon v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground" />
+              <Monitor v-else class="w-5 h-5 text-secondary-foreground" />
+              <span class="font-medium text-secondary-foreground">
+                Theme
+              </span>
+            </div>
+            <ChevronDown class="w-4 h-4 text-secondary-foreground" />
+          </button>
+
+          <!-- Theme Dropdown Menu -->
+          <div
+            v-if="showThemeDropdown"
+            class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-50 overflow-hidden"
+          >
+            <button
+              v-for="option in themeOptions"
+              :key="option.value"
+              @click="selectTheme(option.value)"
+              :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                theme.value === option.value
+                  ? 'bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-zinc-100'
+                  : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
+              }`"
+            >
+              <component :is="option.icon" class="w-5 h-5" />
+              <span class="font-medium text-sm">{{ option.label }}</span>
+            </button>
+          </div>
+        </div>
 
         <button
           ref="logoutButtonRef"
@@ -130,17 +155,16 @@
       </div>
     </div>
 
-    <!-- Mobile Bottom Navigation with liquid glass -->
+    <!-- Mobile Bottom Navigation with pill shape -->
     <nav 
       v-if="!isLandingPage"
       ref="mobileNavRef"
-      class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-50 px-2 py-3 pb-safe"
+      class="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md mx-auto"
       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      
-      <div class="flex items-center justify-around max-w-md mx-auto">
+      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"
@@ -204,7 +228,7 @@
  * Provides responsive navigation for both desktop and mobile devices.
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
@@ -224,7 +248,9 @@ import {
   User as UserIcon,
   LogOut,
   Sun,
-  Moon
+  Moon,
+  Monitor,
+  ChevronDown
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
@@ -232,7 +258,7 @@ import GlobalPopup from './GlobalPopup.vue'
 // Router, theme, and auth composables
 const router = useRouter()
 const route = useRoute()
-const { theme, loadUser, refreshTheme, toggleTheme } = useTheme()
+const { theme, loadUser, refreshTheme, toggleTheme, setTheme } = useTheme()
 const { showConfirm } = usePopup()
 const authStore = useAuthStore()
 
@@ -266,6 +292,26 @@ const notificationsService = new NotificationsService()
 
 // Loading state for initial app setup
 const loading = ref(true)
+const showThemeDropdown = ref(false)
+
+// Theme options with icons
+const themeOptions = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor }
+]
+
+// Get theme label
+const getThemeLabel = (themeValue) => {
+  const option = themeOptions.find(opt => opt.value === themeValue)
+  return option ? option.label : 'Theme'
+}
+
+// Select theme
+const selectTheme = async (themeValue) => {
+  await setTheme(themeValue)
+  showThemeDropdown.value = false
+}
 
 // Cache for prefetched data
 const homeDataCache = ref({
@@ -406,6 +452,13 @@ const handleHomeHover = () => {
  * Loads user data and theme preferences when the component is mounted.
  * Sets loading state to false once initialization is complete.
  */
+// Handle click outside to close theme dropdown
+const handleClickOutside = (event) => {
+  if (themeButtonRef.value && !themeButtonRef.value.closest('.relative')?.contains(event.target)) {
+    showThemeDropdown.value = false
+  }
+}
+
 onMounted(async () => {
   // Load user data and theme preferences
   try {
@@ -421,6 +474,13 @@ onMounted(async () => {
 
   // Prefetch home data immediately after loading user
   prefetchHomeData()
+  
+  // Add click outside listener for theme dropdown
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 

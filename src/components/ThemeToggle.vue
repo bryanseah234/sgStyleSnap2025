@@ -24,12 +24,10 @@
       dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
       :title="getThemeLabel(theme.value)"
     >
-      <!-- Show icon for current theme -->
+      <!-- Show icon for current theme selection -->
       <Sun v-if="theme.value === 'light'" class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
       <Moon v-else-if="theme.value === 'dark'" class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
-      <Monitor v-else-if="theme.value === 'system'" class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
-      <!-- Fallback icon -->
-      <Sun v-else class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
+      <Monitor v-else class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
     </button>
 
     <!-- Dropdown menu -->
@@ -84,6 +82,10 @@ const effectiveTheme = computed(() => {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
   return theme.value
+})
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
 })
 
 // Get theme label
