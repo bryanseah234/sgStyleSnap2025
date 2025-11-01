@@ -25,47 +25,40 @@
     class="min-h-screen bg-white text-gray-900 overflow-hidden landing-page"
     :class="{ 'page-hidden': !isTransitioning && showSplash, 'page-visible': isTransitioning || !showSplash }"
   >
-    <!-- Navigation - Floating Pill Header -->
-  <nav :class="[
-        'fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-6xl mx-auto px-4 transition-all duration-300',
-        scrollY > 50 ? 'opacity-100' : 'opacity-0 pointer-events-none'
-      ]">
-      <div class="flex items-center justify-between py-3 px-6 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
+    <!-- Navigation - Floating Pill Header (Always Visible) -->
+    <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300">
+      <div class="flex items-center gap-4 py-2.5 px-5 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
         <!-- Logo and Brand -->
         <div class="flex items-center gap-2 min-w-0">
-          <div class="bg-black rounded-xl p-2 flex items-center justify-center">
-            <Shirt class="w-5 h-5 text-white" />
+          <div class="bg-black rounded-lg p-1.5 flex items-center justify-center">
+            <Shirt class="w-4 h-4 text-white" />
           </div>
-          <span class="font-bold text-lg sm:text-xl truncate">StyleSnap</span>
+          <span class="font-bold text-base truncate">StyleSnap</span>
         </div>
 
         <!-- Desktop Menu -->
-        <div class="hidden md:flex items-center gap-8">
-          <a href="#features" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Features</a>
+        <div class="hidden md:flex items-center gap-6">
           <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Demo</a>
-          <a href="#why" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition">Why Us</a>
         </div>
       
         <!-- Auth Buttons -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
           <button
             @click="handleLogin"
-            class="hidden md:inline-flex items-center justify-center text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition px-4 py-2"
+            class="hidden md:inline-flex items-center justify-center text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition px-3 py-1.5"
           >
             Log In
           </button>
           <button
             @click="handleSignUp"
-            :class="`inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 px-5 py-2 rounded-full font-medium text-sm transition-all shadow-md hover:shadow-lg ${
-              scrollY > 50 ? 'opacity-100' : 'opacity-0'
-            }`"
+            class="inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 px-4 py-1.5 rounded-full font-medium text-sm transition-all shadow-md hover:shadow-lg"
           >
             Join for free
           </button>
 
           <!-- Mobile Menu Button -->
           <button
-            class="md:hidden ml-2"
+            class="md:hidden"
             @click="isMenuOpen = !isMenuOpen"
           >
             <X v-if="isMenuOpen" class="w-5 h-5 text-gray-900 dark:text-gray-100" />
@@ -77,9 +70,7 @@
       <!-- Mobile Menu -->
       <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/95 dark:bg-zinc-900/95 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg animate-slideInDown">
         <div class="py-4 px-4 flex flex-col gap-3">
-          <a href="#features" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2">Features</a>
           <a href="#demo" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2">Demo</a>
-          <a href="#why" class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2">Why Us</a>
           <button
             @click="handleLogin"
             class="text-left text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition py-2"
@@ -96,71 +87,9 @@
       </div>
     </nav>
 
-    <!-- Static Initial Navigation (shown when not scrolled) -->
-    <nav v-if="scrollY <= 50" :class="[
-        'sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 animate-fadeInDown',
-        authStore.isAuthenticated ? 'md:[box-shadow:8px_2px_14px_-6px_rgba(0,0,0,0.15)]' : ''
-      ]">
-      <div class="container flex items-center justify-between py-4 sm:py-5">
-        <div class="flex items-center gap-2 min-w-0">
-          <div class="bg-black rounded-xl p-2 flex items-center justify-center">
-            <Shirt class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          </div>
-          <span class="font-bold text-2xl sm:text-3xl truncate">StyleSnap</span>
-        </div>
-
-        <!-- Desktop Menu -->
-        <div class="hidden md:flex items-center gap-10">
-          <a href="#features" class="text-base font-medium hover:text-gray-600 transition">Features</a>
-          <a href="#demo" class="text-base font-medium hover:text-gray-600 transition">Demo</a>
-          <a href="#why" class="text-base font-medium hover:text-gray-600 transition">Why Us</a>
-        </div>
-      
-        <!-- Auth Buttons -->
-        <div class="flex items-center gap-3 sm:gap-4">
-          <button
-            @click="handleLogin"
-            class="hidden md:inline-flex items-center justify-center text-base font-medium text-gray-900 hover:text-gray-600 transition px-4 py-2"
-          >
-            Log In
-          </button>
-          <button
-            @click="handleSignUp"
-            class="inline-flex items-center justify-center bg-black text-white hover:bg-gray-900 px-6 py-2.5 rounded-lg font-medium text-base transition-all hover:shadow-lg"
-          >
-            Sign Up
-          </button>
-
-          <!-- Mobile Menu Button -->
-          <button
-            class="md:hidden ml-2"
-            @click="isMenuOpen = !isMenuOpen"
-          >
-            <X v-if="isMenuOpen" class="w-5 h-5" />
-            <Menu v-else class="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-      
-      <!-- Mobile Menu -->
-      <div v-if="isMenuOpen" class="md:hidden border-t border-gray-200 bg-white animate-slideInDown">
-        <div class="container py-4 flex flex-col gap-4">
-          <a href="#features" class="text-base font-medium hover:text-gray-600 transition py-2">Features</a>
-          <a href="#demo" class="text-base font-medium hover:text-gray-600 transition py-2">Demo</a>
-          <a href="#why" class="text-base font-medium hover:text-gray-600 transition py-2">Why Us</a>
-          <button
-            @click="handleLogin"
-            class="text-left text-base font-medium text-gray-900 hover:text-gray-600 transition py-2"
-          >
-            Log In
-          </button>
-        </div>
-      </div>
-    </nav>
-
     <!-- Hero Section -->
     <section 
-      class="relative overflow-hidden min-h-screen flex items-center justify-center"
+      class="hero-section relative overflow-hidden min-h-screen flex items-center justify-center"
       :style="{
         backgroundImage: 'url(/images/hero-fashion-outfit.jpg)',
         backgroundSize: 'cover',
@@ -181,7 +110,7 @@
         >
           Transform Your Fashion Game
         </h1>
-        <p class="text-sm sm:text-base md:text-lg text-white max-w-2xl mx-auto">
+        <p class="text-sm sm:text-base md:text-lg text-white max-w-2xl mx-auto" style="color: #ffffff !important;">
           Organise your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
         </p>
         <div class="flex justify-center">
@@ -251,9 +180,9 @@
                 </div>
                 
                 <!-- Back Face -->
-                <div class="carousel-card-face carousel-card-back bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
+                <div class="carousel-card-face carousel-card-back bg-black rounded-xl border border-gray-800 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
                   <div class="flex flex-col items-center text-center space-y-3 sm:space-y-4 flex-1 justify-center">
-                    <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    <p class="text-xs sm:text-sm text-white leading-relaxed">
                       {{ feature.expandedDescription }}
                     </p>
                   </div>
@@ -643,10 +572,10 @@
       
       <!-- Footer -->
       <footer 
-        class="footer-reveal bg-black text-white transition-transform duration-500 ease-out"
+        class="footer-reveal bg-black text-white transition-transform duration-500 ease-out overflow-hidden relative"
         :class="{ 'translate-y-0': showFooter, '-translate-y-full': !showFooter }"
       >
-        <div class="container py-12 sm:py-16">
+        <div class="container py-12 sm:py-16 relative z-10">
           <!-- Top Section: Branding and Links -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
             <!-- Left: Logo and Tagline -->
@@ -814,7 +743,7 @@ const features = ref([
     icon: Camera,
     title: 'Photo Capture',
     description: 'Instantly capture and catalog your clothing items with smart photo recognition.',
-    expandedDescription: 'Simply snap a photo and watch the magic happen! Our advanced image recognition technology automatically identifies clothing items, extracts colors, patterns, and details. No more manual data entry - just point, shoot, and your items are instantly added to your digital closet. Edit photos with built-in filters and cropping tools. Organize by outfit photos, item photos, or style inspiration boards. Your fashion catalog has never been easier to build!',
+    expandedDescription: 'Simply snap a photo and watch our advanced image recognition technology automatically identify clothing items, extract colors, patterns, and details. No more manual data entry - just point, shoot, and your items are instantly added to your digital closet.',
     flipped: false,
     expanded: false,
   },
@@ -823,7 +752,7 @@ const features = ref([
     icon: Shirt,
     title: 'Digital Closet',
     description: 'Organise all your clothing items by category. Track what you own and never lose track of your favourite pieces.',
-    expandedDescription: 'Transform your messy wardrobe into an organized digital catalog. Categorize items by type, color, season, and occasion. Use advanced search and filter options to quickly find exactly what you\'re looking for. Add tags, notes, and outfit history to each piece. Never forget about that perfect item hiding in the back of your closet again!',
+    expandedDescription: 'Transform your messy wardrobe into an organized digital catalog with categorization by type, color, season, and occasion. Use advanced search and filter options to quickly find exactly what you\'re looking for, and add tags and outfit history to each piece.',
     flipped: false,
     expanded: false,
   },
@@ -832,7 +761,7 @@ const features = ref([
     icon: Zap,
     title: 'Outfit Creator',
     description: 'Drag and drop to create stunning outfits. Get AI-powered suggestions for perfect combinations.',
-    expandedDescription: 'Create unlimited outfit combinations with our intuitive drag-and-drop interface. Visualize how pieces work together before you wear them. Our AI analyzes color theory, style matching, and current fashion trends to suggest perfect pairings. Save your favorite combinations for quick access. Mix and match to discover styles you never knew you could create!',
+    expandedDescription: 'Create unlimited outfit combinations with our intuitive drag-and-drop interface and visualize how pieces work together before you wear them. Our AI analyzes color theory, style matching, and current fashion trends to suggest perfect pairings.',
     flipped: false,
     expanded: false,
   },
@@ -841,7 +770,7 @@ const features = ref([
     icon: Users,
     title: 'Share & Connect',
     description: 'Share your outfits with friends, get feedback, and discover inspiration from their styles.',
-    expandedDescription: 'Build your fashion community! Share your daily outfits, special event looks, and style experiments with friends. Get real-time feedback and styling tips from your network. Browse through your friends\' outfit collections for endless inspiration. Follow fashion influencers and discover trending styles. Create style challenges, share shopping finds, and celebrate each other\'s fashion journey together!',
+    expandedDescription: 'Build your fashion community by sharing daily outfits, special event looks, and style experiments with friends. Get real-time feedback, browse friends\' outfit collections for inspiration, and create style challenges together.',
     flipped: false,
     expanded: false,
   },
@@ -850,7 +779,7 @@ const features = ref([
     icon: Palette,
     title: 'Style Analyzer',
     description: 'Analyze your fashion choices and discover your unique style profile.',
-    expandedDescription: 'Uncover your personal style DNA with our advanced analytics! Our AI examines your wardrobe choices, color preferences, and outfit patterns to create a comprehensive style profile. Discover if you lean towards minimalist, boho, classic, or trendy aesthetics. Get personalized recommendations based on your style preferences. Track your fashion evolution over time and see how your taste develops. Perfect for understanding what truly represents you!',
+    expandedDescription: 'Uncover your personal style DNA as our AI examines your wardrobe choices, color preferences, and outfit patterns to create a comprehensive style profile. Discover if you lean towards minimalist, boho, classic, or trendy aesthetics and get personalized recommendations based on your preferences.',
     flipped: false,
     expanded: false,
   },
@@ -859,7 +788,7 @@ const features = ref([
     icon: Heart,
     title: 'Favorites & Collections',
     description: 'Save your favorite pieces, create wishlists, and build curated collections.',
-    expandedDescription: 'Never lose track of your dream items! Create unlimited collections for different occasions, seasons, or style goals. Save items from your closet, friend\'s outfits, or shopping sites. Build wishlists for special events, shopping trips, or seasonal updates. Organize collections like "Date Night Looks", "Work Wardrobe", or "Summer Essentials". Get reminders for items you haven\'t worn in a while. Your personal fashion curator at your fingertips!',
+    expandedDescription: 'Create unlimited collections for different occasions, seasons, or style goals and save items from your closet, friends\' outfits, or shopping sites. Organize collections like "Date Night Looks" or "Summer Essentials" and get reminders for items you haven\'t worn in a while.',
     flipped: false,
     expanded: false,
   },
@@ -1529,7 +1458,7 @@ const setScrollY = (value) => {
 /* Hero title styling */
 .hero-title {
   font-weight: 700; /* font-bold matches "Powerful Features" */
-  color: #ffffff; /* White text for better contrast */
+  color: #ffffff !important; /* White text for better contrast */
   position: relative;
   opacity: 0;
   transition: opacity 0.5s ease-in;
@@ -1537,6 +1466,17 @@ const setScrollY = (value) => {
 
 .hero-title-visible {
   opacity: 1 !important;
+}
+
+/* Hero section text - ensure white color */
+.hero-section h1,
+.hero-section p {
+  color: #ffffff !important;
+}
+
+/* Hero section container */
+.hero-section {
+  color: #ffffff !important;
 }
 
 /* Typewriter cursor animation */
@@ -1582,6 +1522,12 @@ const setScrollY = (value) => {
   .landing-page {
     background-color: white !important;
     color: rgb(17, 24, 39) !important;
+  }
+  
+  /* Ensure hero section stays white */
+  .landing-page .hero-section,
+  .landing-page .hero-section * {
+    color: #ffffff !important;
   }
 }
 
@@ -1740,8 +1686,8 @@ const setScrollY = (value) => {
 
 .content-with-cutout {
   position: relative;
-  margin-bottom: -150px;
-  padding-bottom: 150px;
+  margin-bottom: -80px;
+  padding-bottom: 80px;
 }
 
 .content-with-cutout::before,
@@ -1749,26 +1695,27 @@ const setScrollY = (value) => {
   content: '';
   position: absolute;
   bottom: 0;
-  width: 200px;
-  height: 200px;
+  width: 120px;
+  height: 120px;
   background: white;
   border-radius: 50%;
-  z-index: 2;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .content-with-cutout::before {
-  left: -100px;
+  left: -60px;
   transform: translateY(50%);
 }
 
 .content-with-cutout::after {
-  right: -100px;
+  right: -60px;
   transform: translateY(50%);
 }
 
 .footer-reveal {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   transform-origin: top center;
   will-change: transform;
 }
