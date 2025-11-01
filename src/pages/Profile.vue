@@ -218,14 +218,24 @@
                       v-for="option in themeOptions"
                       :key="option.value"
                       @click.stop="selectTheme(option.value)"
-                      :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                      :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
                         theme.value === option.value
-                          ? 'bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-zinc-100'
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
                           : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
                       }`"
                     >
                       <component :is="option.icon" class="w-5 h-5" />
                       <span class="font-medium text-sm">{{ option.label }}</span>
+                      <!-- Selected indicator checkmark -->
+                      <svg 
+                        v-if="theme.value === option.value" 
+                        class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
                     </button>
                   </div>
                 </div>

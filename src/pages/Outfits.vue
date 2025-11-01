@@ -13,7 +13,7 @@
         <div class="relative">
           <button
             @click="showAddMenu = !showAddMenu"
-            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800`"
+            :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
             <Plus class="w-5 h-5" />
             Add

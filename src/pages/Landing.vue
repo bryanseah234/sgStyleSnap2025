@@ -57,7 +57,7 @@
                 : 'opacity-0 px-0 ml-0 w-0'
             }`"
           >
-            <span class="whitespace-nowrap">Join for free</span>
+            <span class="whitespace-nowrap !text-white">Join for free</span>
           </button>
 
           <!-- Mobile Menu Button -->
@@ -554,7 +554,7 @@
             class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-10 py-5 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
         >
             Sign Up Now
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" style="color: #000000 !important;" />
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition text-white" style="color: #ffffff !important; stroke: #ffffff !important;" />
         </button>
         </div>
       </div>
