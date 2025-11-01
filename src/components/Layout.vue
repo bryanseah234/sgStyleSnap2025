@@ -32,8 +32,11 @@
       @mouseleave="navbarHoverOut"
     >
       
-      <!-- Logo with liquid reveal -->
-      <div class="mb-12 text-center md:text-left liquid-reveal">
+      <!-- Logo with liquid reveal - clickable on desktop only -->
+      <router-link 
+        to="/home" 
+        class="mb-12 text-center md:text-left liquid-reveal block cursor-pointer hover:opacity-80 transition-opacity"
+      >
         <div class="flex items-center gap-3">
           <div :class="`w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white`">
             <Shirt :class="`w-5 h-5 text-white dark:text-black`"/>
@@ -42,7 +45,7 @@
             StyleSnap
           </h1>
         </div>
-      </div>
+      </router-link>
 
       <!-- Navigation -->
       <nav class="flex-1 space-y-2">

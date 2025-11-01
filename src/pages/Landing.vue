@@ -438,7 +438,7 @@
                   <Trash2 class="w-3.5 h-3.5 mx-auto" />
                 </button>
               </div>
-            </div>
+                </div>
               </template>
               <template v-else>
                 <!-- Empty State -->
@@ -482,10 +482,11 @@
                     <Grid3X3 class="w-4 h-4" />
                   </button>
                 </div>
-          </div>
-                </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Why Choose Section -->
