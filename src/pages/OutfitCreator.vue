@@ -835,6 +835,7 @@ import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
 import { VirtualTryOnService } from '@/services/virtualTryOnService'
+import { llamaDescriptionService } from '@/services/llamaDescriptionService'
 import { generateRecommendations, getCategoryDisplayName } from '@/services/recommendation-service.js'
 import { getFirstName } from '@/utils'
 import { 
@@ -1909,10 +1910,52 @@ const showVirtualTryOn = async () => {
     console.log('🎨 OutfitCreator: Top item:', topItem.name)
     console.log('🎨 OutfitCreator: Bottom item:', bottomItem.name)
     
+    // Generate AI descriptions for top and bottom items using Llama-4-Scout
+    const topImageUrl = topItem.image_url || topItem.thumbnail_url
+    const bottomImageUrl = bottomItem.image_url || bottomItem.thumbnail_url
+    
+    // Generate description for top item
+    console.log('🤖 OutfitCreator: Generating AI description for top item...')
+    try {
+      const topDescriptionResult = await llamaDescriptionService.generateDescription(
+        topImageUrl,
+        'tops'
+      )
+      
+      if (topDescriptionResult.success && topDescriptionResult.description) {
+        console.log('✅ OutfitCreator: Top item AI description generated successfully')
+        console.log('📋 OutfitCreator: Top item description (JSON):', JSON.stringify(topDescriptionResult.description, null, 2))
+      } else {
+        console.warn('⚠️ OutfitCreator: Top item description generation returned no data')
+      }
+    } catch (topError) {
+      console.warn('⚠️ OutfitCreator: Failed to generate top item description:', topError.message)
+      // Continue with try-on even if description fails
+    }
+    
+    // Generate description for bottom item
+    console.log('🤖 OutfitCreator: Generating AI description for bottom item...')
+    try {
+      const bottomDescriptionResult = await llamaDescriptionService.generateDescription(
+        bottomImageUrl,
+        'bottoms'
+      )
+      
+      if (bottomDescriptionResult.success && bottomDescriptionResult.description) {
+        console.log('✅ OutfitCreator: Bottom item AI description generated successfully')
+        console.log('📋 OutfitCreator: Bottom item description (JSON):', JSON.stringify(bottomDescriptionResult.description, null, 2))
+      } else {
+        console.warn('⚠️ OutfitCreator: Bottom item description generation returned no data')
+      }
+    } catch (bottomError) {
+      console.warn('⚠️ OutfitCreator: Failed to generate bottom item description:', bottomError.message)
+      // Continue with try-on even if description fails
+    }
+    
     // Generate virtual try-on
     const result = await virtualTryOnService.generateTryOn({
-      topImageUrl: topItem.image_url || topItem.thumbnail_url,
-      bottomImageUrl: bottomItem.image_url || bottomItem.thumbnail_url
+      topImageUrl: topImageUrl,
+      bottomImageUrl: bottomImageUrl
     })
     
     if (result.success) {
