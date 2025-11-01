@@ -22,11 +22,11 @@
       @blur="handleBlur"
       :class="`p-2 rounded-lg transition-all duration-200 hover:scale-105 bg-stone-100 text-stone-700 hover:bg-stone-200
       dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700`"
-      :title="getThemeLabel(theme.value)"
+      :title="getThemeLabel(theme)"
     >
       <!-- Show icon for current theme selection -->
-      <Sun v-if="theme.value === 'light'" class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
-      <Moon v-else-if="theme.value === 'dark'" class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
+      <Sun v-if="theme === 'light'" class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
+      <Moon v-else-if="theme === 'dark'" class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
       <Monitor v-else class="w-5 h-5 text-stone-700 dark:text-zinc-300" />
     </button>
 
@@ -38,9 +38,9 @@
       <button
         v-for="option in themeOptions"
         :key="option.value"
-        @click="selectTheme(option.value)"
+        @click.stop="selectTheme(option.value)"
         :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-          theme.value === option.value
+          theme === option.value
             ? 'bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-zinc-100'
             : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
         }`"
@@ -60,12 +60,21 @@
  * Uses the useTheme composable to manage theme state and persistence.
  */
 
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useThemeStore } from '@/stores/theme-store'
 import { Sun, Moon, Monitor } from 'lucide-vue-next'
 
 // Get theme state and functions from composable
 const { theme, setTheme } = useTheme()
+
+// Also get direct store reference for reactivity
+const themeStore = useThemeStore()
+
+// Ensure icon updates when theme changes
+watch(() => themeStore.theme, (newTheme) => {
+  console.log('🎨 ThemeToggle: Theme changed to:', newTheme)
+}, { immediate: true })
 
 const showDropdown = ref(false)
 
@@ -78,10 +87,10 @@ const themeOptions = [
 
 // Get effective theme (resolved system theme)
 const effectiveTheme = computed(() => {
-  if (theme.value === 'system') {
+  if (theme === 'system') {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
-  return theme.value
+  return theme
 })
 
 onMounted(() => {
@@ -96,8 +105,10 @@ const getThemeLabel = (themeValue) => {
 
 // Select theme
 const selectTheme = async (themeValue) => {
-  await setTheme(themeValue)
+  // Close dropdown immediately for better UX
   showDropdown.value = false
+  // Then apply theme change
+  await setTheme(themeValue)
 }
 
 // Handle blur (close dropdown when clicking outside)

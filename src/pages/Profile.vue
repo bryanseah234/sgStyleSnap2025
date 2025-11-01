@@ -217,7 +217,7 @@
                     <button
                       v-for="option in themeOptions"
                       :key="option.value"
-                      @click="selectTheme(option.value)"
+                      @click.stop="selectTheme(option.value)"
                       :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                         theme.value === option.value
                           ? 'bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-zinc-100'
@@ -308,8 +308,10 @@ const getThemeLabel = (themeValue) => {
 
 // Select theme
 const selectTheme = async (themeValue) => {
-  await setTheme(themeValue)
+  // Close dropdown immediately for better UX
   showThemeDropdown.value = false
+  // Then apply theme change
+  await setTheme(themeValue)
 }
 
 // Reactive state

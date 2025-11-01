@@ -1,19 +1,19 @@
 <template>
   <!-- Modal Backdrop with Liquid Glass -->
   <Transition name="modal-backdrop">
-    <div
-      v-if="isOpen"
-      class="liquid-modal-backdrop fixed inset-0 z-[60] flex items-center justify-center p-4"
-      @click.self="closeModal"
-    >
-      <!-- Modal Card with Fluid Expansion -->
-      <Transition name="modal" appear>
-        <div
-          v-if="isOpen"
-          :class="`liquid-modal-card relative w-full max-w-2xl min-h-[420px] rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden`"
-          @click.stop
-        >
+      <div
+        v-if="isOpen"
+        class="liquid-modal-backdrop fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-4 pb-24 md:pb-4 overflow-y-auto"
+        @click.self="closeModal"
+      >
+        <!-- Modal Card with Fluid Expansion -->
+        <Transition name="modal" appear>
+          <div
+            v-if="isOpen"
+            :class="`liquid-modal-card relative w-full max-w-2xl min-h-[420px] max-h-[calc(100vh-2rem)] md:max-h-[90vh] rounded-2xl shadow-2xl bg-white border border-stone-200
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col`"
+            @click.stop
+          >
           <!-- Close Button with Liquid Press -->
           <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
             <!-- ESC Key Hint (Desktop only) -->
@@ -32,9 +32,9 @@
             </button>
           </div>
 
-      <div class="grid md:grid-cols-2 h-full min-h-[420px]">
+      <div class="grid md:grid-cols-2 min-h-[420px] flex-1 overflow-hidden">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800">
+        <div class="liquid-modal-image min-h-[200px] md:h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Right: Details with Liquid Reveal -->
-        <div class="liquid-modal-content p-6 space-y-6">
+        <div class="liquid-modal-content p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
           <!-- Item Name & Category -->
           <div>
             <h2 class="text-2xl font-bold mb-2 text-foreground">

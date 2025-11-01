@@ -249,31 +249,32 @@
     <Transition name="modal-backdrop">
       <div
         v-if="showOutfitDetail && selectedOutfit"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24 md:pb-4 bg-black/50 overflow-y-auto"
         @click="closeOutfitDetail"
       >
         <Transition name="modal" appear>
           <div
             v-if="showOutfitDetail && selectedOutfit"
-            class="relative w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden bg-white dark:bg-zinc-900"
+            class="relative w-full max-w-4xl max-h-[calc(100vh-6rem)] md:max-h-[90vh] rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 my-auto"
             @click.stop
           >
         <!-- Modal Header -->
-        <div class="p-6 border-b border-stone-200 dark:border-zinc-800">
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <h2 :class="`text-2xl font-bold mb-2 text-black dark:text-white`">
+        <div class="p-4 md:p-6 border-b border-stone-200 dark:border-zinc-800">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <h2 :class="`text-xl md:text-2xl font-bold mb-3 text-black dark:text-white`">
                 {{ selectedOutfit.outfit_name || selectedOutfit.name || 'Untitled Outfit' }}
               </h2>
-              <div class="flex items-center gap-4 text-sm">
-                <span class="text-stone-600 dark:text-zinc-400">
-                  {{ selectedOutfit.item_count || 0 }} items
+              <!-- Details stacked vertically on mobile, horizontal on desktop -->
+              <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm">
+                <span class="text-stone-600 dark:text-zinc-400 whitespace-nowrap">
+                  {{ selectedOutfit.item_count || (selectedOutfit.outfit_items?.length || 0) }} items
                 </span>
-                <span class="text-stone-600 dark:text-zinc-400">
+                <span class="text-stone-600 dark:text-zinc-400 whitespace-nowrap">
                   Created {{ formatDate(selectedOutfit.created_at) }}
                 </span>
-                <span v-if="selectedOutfit.description" class="text-stone-600 dark:text-zinc-400 truncate max-w-[50%]" title="Description">
-                  {{ selectedOutfit.description }}
+                <span v-if="getCreatedLocation(selectedOutfit)" class="text-stone-600 dark:text-zinc-400 whitespace-nowrap truncate md:max-w-[50%]">
+                  {{ getCreatedLocation(selectedOutfit) }}
                 </span>
               </div>
             </div>
@@ -292,7 +293,7 @@
         </div>
 
         <!-- Modal Content -->
-        <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 180px);">
+        <div class="p-4 md:p-6 overflow-y-auto" style="max-height: calc(100vh - 280px);">
           <!-- Description moved to header; keep space but no duplicate -->
           <div v-if="false" class="mb-6"></div>
 
@@ -364,7 +365,7 @@
         </div>
 
         <!-- Modal Footer with Actions -->
-        <div class="p-6 border-t flex items-center justify-end gap-3 border-stone-200 dark:border-zinc-800">
+        <div class="p-4 md:p-6 border-t flex items-center justify-end gap-3 border-stone-200 dark:border-zinc-800">
           <button
             @click="toggleFavorite(selectedOutfit)"
             :class="`p-3 rounded-xl transition-all duration-200 ${
@@ -619,6 +620,24 @@ const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Get where the outfit was created
+const getCreatedLocation = (outfit) => {
+  if (!outfit) return null
+  
+  // Check if description contains location info
+  if (outfit.description && outfit.description.includes('Created in')) {
+    // Extract location from description (e.g., "Created in Outfit Creator")
+    const match = outfit.description.match(/Created in (.+)/i)
+    if (match && match[1]) {
+      return `Created in ${match[1]}`
+    }
+    return outfit.description
+  }
+  
+  // Default fallback - if no description, assume it was created in Outfits page
+  return 'Created in Outfits'
 }
 
 const handleSearch = () => {

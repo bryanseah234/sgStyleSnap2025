@@ -27,13 +27,13 @@
   >
     <!-- Navigation - Floating Pill Header (Always Visible) -->
     <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 landing-nav-pill">
-      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/80 backdrop-blur-md border border-gray-200/50 shadow-lg">
+      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/95 border border-gray-200/50 shadow-lg">
         <!-- Logo and Brand -->
         <div class="flex items-center gap-2 min-w-0 flex-shrink-0">
           <div class="bg-black rounded-lg p-1.5 flex items-center justify-center">
             <Shirt class="w-4 h-4 text-white" />
           </div>
-          <span class="font-bold text-base truncate text-gray-900">StyleSnap</span>
+          <StyleSnapBrand class="font-bold text-base truncate text-gray-900" size="base" />
         </div>
 
         <!-- Desktop Menu and Auth Buttons - Right Side -->
@@ -118,7 +118,7 @@
             style="color: #000000 !important;"
           >
             <span style="color: #000000 !important;">Get Started</span>
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" style="color: #000000 !important;" />
+            <ArrowRight class="w-5 h-5 text-black group-hover:translate-x-1 transition" style="color: #000000 !important; stroke: #000000 !important;" />
           </button>
         </div>
       </div>
@@ -554,7 +554,7 @@
             class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-10 py-5 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
         >
             Sign Up Now
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" style="color: #000000 !important;" />
         </button>
         </div>
       </div>
@@ -580,7 +580,7 @@
                 <div class="bg-white rounded-xl p-2 flex items-center justify-center">
                   <Shirt class="w-6 h-6 text-black" />
                 </div>
-                <span class="font-bold text-xl text-white">StyleSnap</span>
+                <StyleSnapBrand class="font-bold text-xl text-white" size="xl" />
               </div>
               <p class="text-sm text-gray-400">
                 Transform your fashion game with StyleSnap.
@@ -666,6 +666,7 @@ import {
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
+import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 
 // Import landing page animations
 import '@/assets/css/landing-page-animations.css'
@@ -1519,11 +1520,9 @@ const setScrollY = (value) => {
 }
 
 /* Force navigation pill to always use light mode */
-.landing-nav-pill,
-.landing-nav-pill * {
-  background-color: rgba(243, 244, 246, 0.8) !important;
+.landing-nav-pill > div {
+  background-color: rgba(243, 244, 246, 0.95) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
-  color: rgb(17, 24, 39) !important;
 }
 
 .landing-nav-pill a,
@@ -1727,15 +1726,17 @@ const setScrollY = (value) => {
   margin-bottom: -40px;
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
-  z-index: 2;
+  z-index: 10;
   position: relative;
+  background-color: white;
 }
 
 /* Footer Reveal */
 .footer-reveal-section {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   z-index: 1;
+  margin-top: -40px;
 }
 
 .footer-reveal {
@@ -1747,5 +1748,6 @@ const setScrollY = (value) => {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   transition: transform 0.5s ease-out;
+  background-color: black;
 }
 </style>

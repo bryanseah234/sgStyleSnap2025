@@ -63,9 +63,11 @@
   }
   body {
     @apply bg-background text-foreground transition-colors duration-200;
+    overflow-x: hidden; /* Prevent horizontal scrolling that could shift nav bar */
   }
   html {
     @apply bg-background;
+    overflow-x: hidden; /* Prevent horizontal scrolling that could shift nav bar */
   }
   
   /* Force proper text contrast in both modes */

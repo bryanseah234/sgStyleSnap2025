@@ -42,7 +42,7 @@
             <Shirt :class="`w-5 h-5 text-white dark:text-black`"/>
           </div>
           <h1 class="text-2xl font-bold tracking-tight text-foreground">
-            StyleSnap
+            <StyleSnapBrand size="2xl" />
           </h1>
         </div>
       </router-link>
@@ -103,7 +103,7 @@
             <button
               v-for="option in themeOptions"
               :key="option.value"
-              @click="selectTheme(option.value)"
+              @click.stop="selectTheme(option.value)"
               :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                 theme.value === option.value
                   ? 'bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-zinc-100'
@@ -149,7 +149,7 @@
             <Shirt class="w-4 h-4 text-white" />
           </div>
           <h1 class="text-xl font-bold tracking-tight text-black">
-            StyleSnap
+            <StyleSnapBrand size="xl" />
           </h1>
         </div>
       </div>
@@ -159,12 +159,12 @@
     <nav 
       v-if="!isLandingPage"
       ref="mobileNavRef"
-      class="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md mx-auto"
+      class="md:hidden fixed bottom-4 left-0 right-0 z-50 px-4"
       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg">
+      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg max-w-md mx-auto w-full">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"
@@ -174,23 +174,23 @@
           <div class="flex flex-col items-center justify-center gap-1 py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               isActiveRoute(item.path)
-                ? 'bg-black scale-110 -translate-y-0.5'
+                ? 'bg-black dark:bg-white scale-110 -translate-y-0.5'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
                   isActiveRoute(item.path)
-                    ? 'text-white'
-                    : 'text-black'
+                    ? 'text-white dark:text-black'
+                    : 'text-gray-900 dark:text-white'
                 }`"
               />
             </div>
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
               isActiveRoute(item.path)
-                ? 'text-black opacity-100 scale-100'
-                : 'text-black opacity-60 scale-90'
+                ? 'text-gray-900 dark:text-black opacity-100 scale-100'
+                : 'text-gray-900 dark:text-white opacity-60 dark:opacity-80 scale-90'
             }`">
               {{ item.name }}
             </span>
@@ -237,6 +237,7 @@ import { createPageUrl } from '@/utils'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
+import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 import { NotificationsService } from '@/services/notificationsService'
 import { useNavbarLiquid, useLiquidPress, useLiquidHover, useReducedMotion } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -309,8 +310,10 @@ const getThemeLabel = (themeValue) => {
 
 // Select theme
 const selectTheme = async (themeValue) => {
-  await setTheme(themeValue)
+  // Close dropdown immediately for better UX
   showThemeDropdown.value = false
+  // Then apply theme change
+  await setTheme(themeValue)
 }
 
 // Cache for prefetched data
