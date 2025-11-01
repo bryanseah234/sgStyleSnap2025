@@ -3,7 +3,7 @@
  * 
  * Service for generating detailed JSON descriptions of clothing items
  * using Meta Llama-4-Scout-17B-16E-Instruct model via Hugging Face Inference Client
- * with Cerebras provider.
+ * with auto provider.
  * 
  * Generates structured JSON descriptions including color, material, style, and other attributes.
  */
@@ -28,7 +28,7 @@ export class LlamaDescriptionService {
     
     // Model configuration
     this.model = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'
-    this.provider = 'cerebras'
+    this.provider = 'auto'
   }
 
   /**
