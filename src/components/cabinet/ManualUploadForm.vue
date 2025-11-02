@@ -85,8 +85,11 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
+            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300 flex items-center gap-2`">
               Color
+              <span v-if="formData.color && detectedColor" class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                Auto-detected
+              </span>
             </label>
             <select
               v-model="formData.color"
@@ -225,6 +228,7 @@ const categoryTypeMapping = {
 const uploading = ref(false)
 const isSubmitting = ref(false)
 const previewUrl = ref('')
+const detectedColor = ref(false) // Track if color was auto-detected
 const formData = ref({
   name: '',
   category: '',
@@ -314,6 +318,22 @@ const handleFileUpload = async (e) => {
       if (classification.styleSnapCategory) {
         formData.value.category = classification.styleSnapCategory
       }
+      
+      // 4) Color detection
+      try {
+        const { detectColors } = await import('@/utils/color-detector')
+        const colors = await detectColors(processedFile)
+        if (colors && colors.primary) {
+          formData.value.color = colors.primary
+          detectedColor.value = true
+          console.log('🎨 ManualUploadForm: Detected color:', colors.primary, 'Secondary:', colors.secondary)
+        }
+      } catch (colorErr) {
+        console.warn('⚠️ ManualUploadForm: Color detection failed:', colorErr)
+        detectedColor.value = false
+        // Don't block upload if color detection fails, just log warning
+      }
+      
       // Store processed file for upload and show preview
       formData.value.image_file = processedFile
       const previewBlob = URL.createObjectURL(processedFile)
@@ -337,6 +357,8 @@ const clearImage = () => {
   previewUrl.value = ''
   formData.value.image_url = ''
   formData.value.image_file = null
+  formData.value.color = ''
+  detectedColor.value = false
 }
 
 const handleSubmit = async () => {

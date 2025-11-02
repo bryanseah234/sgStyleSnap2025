@@ -1553,7 +1553,10 @@ const generateAISuggestion = async () => {
         const cat = item.category?.toLowerCase()
         return cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt'
       }),
-      shoes: wardrobeItems.value.filter(item => item.category?.toLowerCase() === 'shoes'),
+      shoes: wardrobeItems.value.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'shoes' || cat === 'slippers'
+      }),
       hat: wardrobeItems.value.filter(item => item.category?.toLowerCase() === 'hat'),
       outerwear: wardrobeItems.value.filter(item => {
         const cat = item.category?.toLowerCase()
@@ -1726,13 +1729,28 @@ const generateWeatherBasedOutfit = async (fixedItem = null) => {
     }
     
     // Score and rank each outfit
-    const scoredOutfits = outfitCombinations.map(outfit => {
+    const scoredOutfits = outfitCombinations.map((outfit, index) => {
       const colorScore = calculateOutfitColorScore(outfit.items)
       const weatherScore = calculateWeatherFitScore(outfit.items, { temperature, condition })
       const completenessScore = calculateCompletenessScore(outfit.items)
       
       // Weighted total score: 40% color, 40% weather fit, 20% completeness
       const totalScore = (colorScore * 0.4) + (weatherScore * 0.4) + (completenessScore * 0.2)
+      
+      // Debug logging
+      if (index < 3) {
+        console.log(`Outfit ${index + 1} colors:`, outfit.items.map(i => ({ 
+          name: i.name, 
+          color: i.primary_color || i.color || 'none',
+          category: i.category 
+        })))
+        console.log(`Outfit ${index + 1} scores:`, {
+          color: Math.round(colorScore * 100) + '%',
+          weather: Math.round(weatherScore * 100) + '%',
+          completeness: Math.round(completenessScore * 100) + '%',
+          total: Math.round(totalScore * 100) + '%'
+        })
+      }
       
       return {
         ...outfit,
@@ -1792,8 +1810,12 @@ function generateWeatherOutfitCombinations(items, weather, fixedItem = null) {
       return cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt'
     }),
     shoes: items.filter(item => {
-      if (fixedItem && item.id === fixedItem.id && item.category?.toLowerCase() === 'shoes') return true
-      return item.category?.toLowerCase() === 'shoes'
+      if (fixedItem && item.id === fixedItem.id) {
+        const fixedCat = fixedItem.category?.toLowerCase()
+        if (fixedCat === 'shoes' || fixedCat === 'slippers') return true
+      }
+      const cat = item.category?.toLowerCase()
+      return cat === 'shoes' || cat === 'slippers'
     }),
     outerwear: items.filter(item => {
       if (fixedItem && item.id === fixedItem.id && (item.category?.toLowerCase() === 'outerwear' || item.category?.toLowerCase() === 'blazer')) return true
@@ -1812,7 +1834,9 @@ function generateWeatherOutfitCombinations(items, weather, fixedItem = null) {
   if (fixedItem) {
     if (isTopCategory(fixedItem)) fixedCategory = 'top'
     else if (isBottomCategory(fixedItem)) fixedCategory = 'bottom'
-    else if (fixedItem.category?.toLowerCase() === 'shoes') fixedCategory = 'shoes'
+      else if (fixedItem.category?.toLowerCase() === 'shoes' || fixedItem.category?.toLowerCase() === 'slippers') {
+        fixedCategory = 'shoes'
+      }
     else if (fixedItem.category?.toLowerCase() === 'outerwear' || fixedItem.category?.toLowerCase() === 'blazer') fixedCategory = 'outerwear'
     else if (fixedItem.category?.toLowerCase() === 'hat' || fixedItem.category?.toLowerCase() === 'accessory') fixedCategory = 'accessory'
   }
@@ -1888,7 +1912,26 @@ function calculateOutfitColorScore(items) {
   }).filter(c => c.length > 0)
   
   if (colors.length === 0) {
-    // If no colors, return a base score but add some variation based on item count
+    // If no colors, try to infer from item names/categories and add variation
+    // This gives different scores based on item combinations even without color data
+    const itemNames = items.map(item => (item.name || '').toLowerCase())
+    const hasRed = itemNames.some(name => name.includes('red') || name.includes('maroon') || name.includes('burgundy'))
+    const hasBlue = itemNames.some(name => name.includes('blue') || name.includes('navy') || name.includes('jeans'))
+    const hasNeutral = itemNames.some(name => 
+      name.includes('black') || name.includes('white') || name.includes('gray') || 
+      name.includes('grey') || name.includes('beige') || name.includes('tan')
+    )
+    
+    // Give better scores for likely neutral combinations
+    if (hasNeutral && !hasRed) {
+      return 0.65 + (items.length * 0.03) // Neutral items likely coordinate better
+    } else if (hasBlue && !hasRed) {
+      return 0.6 + (items.length * 0.02) // Blue items are versatile
+    } else if (hasRed) {
+      return 0.45 + (items.length * 0.02) // Red items are harder to coordinate
+    }
+    
+    // Default variation based on item count
     return 0.4 + (items.length * 0.02) // Slight variation: 0.44 for 2 items, 0.46 for 3, etc.
   }
   
@@ -2042,18 +2085,64 @@ function calculateOutfitColorScore(items) {
 /**
  * Calculate weather fit score (0-1)
  * Returns a score based on how well items match weather conditions
+ * Includes penalties for illogical combinations (e.g., shorts + long sleeves in hot weather)
  */
 function calculateWeatherFitScore(items, weather) {
   const { temperature, condition } = weather
   let totalScore = 0
-  let maxPossibleScore = 0
+  
+  // First, detect outfit combination issues
+  const hasShorts = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    return cat === 'shorts' || cat === 'skirt'
+  })
+  
+  const hasLongSleeves = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    const clothingType = item.clothing_type?.toLowerCase() || cat
+    return (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse' || 
+            cat === 'hoodie') && 
+           (clothingType.includes('long') || clothingType === 'longsleeve' || 
+            clothingType === 'hoodie' || cat === 'hoodie')
+  })
+  
+  const hasShortSleeves = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    const clothingType = item.clothing_type?.toLowerCase() || cat
+    return (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') &&
+           !(clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie')
+  })
+  
+  const hasPants = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    return cat === 'pants' || cat === 'bottom'
+  })
+  
+  // Combination penalty for illogical pairings
+  let combinationPenalty = 0
+  
+  if (temperature > 25) {
+    // Hot weather: shorts + long sleeves is illogical
+    if (hasShorts && hasLongSleeves) {
+      combinationPenalty += 0.4 // Heavy penalty for this illogical combination
+    }
+    // Shorts are great, but long sleeves cancel that out
+    if (hasShorts && !hasShortSleeves && !hasLongSleeves) {
+      // If shorts but no clear sleeve type, slight penalty
+      combinationPenalty += 0.1
+    }
+  } else if (temperature < 15) {
+    // Cool weather: shorts shouldn't be worn (already handled in item scoring)
+    if (hasShorts) {
+      combinationPenalty += 0.2
+    }
+  }
   
   items.forEach(item => {
     const cat = item.category?.toLowerCase()
     const clothingType = item.clothing_type?.toLowerCase() || cat
     const styleTags = item.style_tags || []
     let itemScore = 0
-    let itemMaxScore = 1
     
     // Temperature appropriateness scoring
     if (temperature > 30) {
@@ -2062,39 +2151,50 @@ function calculateWeatherFitScore(items, weather) {
         itemScore += 1.0
       } else if (cat === 'pants') {
         if (styleTags.includes('lightweight')) itemScore += 0.7
-        else itemScore += 0.3 // Heavy pants not ideal
+        else itemScore += 0.3
       } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
         if (clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie') {
-          itemScore += 0.2 // Long sleeves not ideal in very hot weather
+          itemScore += 0.15 // Long sleeves very bad in very hot weather
         } else {
-          itemScore += 0.9 // Short sleeves perfect
+          itemScore += 0.95 // Short sleeves perfect
         }
       } else if (cat === 'outerwear' || cat === 'blazer') {
-        itemScore += 0.1 // Outerwear not needed
+        itemScore += 0.1
       } else {
-        itemScore += 0.5 // Neutral for other items
+        itemScore += 0.5
       }
       
       if (styleTags.includes('winter')) itemScore -= 0.3
       if (styleTags.includes('summer')) itemScore += 0.2
     } else if (temperature > 25) {
-      // Hot - prefer light items
-      if (cat === 'shorts' || cat === 'skirt') itemScore += 0.9
-      else if (cat === 'pants') itemScore += 0.6
-      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') itemScore += 0.8
-      else if (cat === 'outerwear' && styleTags.includes('lightweight')) itemScore += 0.5
-      else if (cat === 'outerwear') itemScore += 0.2
-      else itemScore += 0.7
+      // Hot (25-30°C) - prefer shorts with short sleeves, not long sleeves
+      if (cat === 'shorts' || cat === 'skirt') {
+        itemScore += 0.95
+      } else if (cat === 'pants') {
+        itemScore += 0.6 // Pants are okay but shorts better
+      } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        if (clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie') {
+          itemScore += 0.4 // Long sleeves not good in hot weather
+        } else {
+          itemScore += 0.9 // Short sleeves perfect
+        }
+      } else if (cat === 'outerwear' && styleTags.includes('lightweight')) {
+        itemScore += 0.4
+      } else if (cat === 'outerwear') {
+        itemScore += 0.2
+      } else {
+        itemScore += 0.7
+      }
       
       if (styleTags.includes('winter')) itemScore -= 0.2
       if (styleTags.includes('summer')) itemScore += 0.2
     } else if (temperature < 15) {
       // Cool - prefer pants, outerwear, long sleeves
       if (cat === 'pants') itemScore += 0.9
-      else if (cat === 'shorts') itemScore += 0.2 // Shorts not ideal
+      else if (cat === 'shorts') itemScore += 0.15 // Shorts bad in cool weather
       else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
         if (clothingType.includes('long') || clothingType === 'longsleeve') itemScore += 0.9
-        else itemScore += 0.6 // Short sleeves okay but not ideal
+        else itemScore += 0.6
       } else if (cat === 'outerwear' || cat === 'blazer') itemScore += 0.9
       else itemScore += 0.7
       
@@ -2102,12 +2202,11 @@ function calculateWeatherFitScore(items, weather) {
       if (styleTags.includes('summer')) itemScore -= 0.2
     } else {
       // Moderate (15-25°C) - most items suitable, slight variations
-      if (cat === 'pants') itemScore += 0.7
-      else if (cat === 'shorts' || cat === 'skirt') itemScore += 0.6
+      if (cat === 'pants') itemScore += 0.75
+      else if (cat === 'shorts' || cat === 'skirt') itemScore += 0.65
       else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
         itemScore += 0.7
       } else if (cat === 'outerwear') {
-        // Outerwear optional in moderate weather, score varies
         itemScore += 0.4
       } else itemScore += 0.7
     }
@@ -2115,7 +2214,7 @@ function calculateWeatherFitScore(items, weather) {
     // Condition appropriateness scoring
     if (condition === 'rain') {
       if (styleTags.includes('waterproof') || styleTags.includes('water-resistant')) {
-        itemScore += 0.3 // Bonus for waterproof
+        itemScore += 0.3
       }
       if (cat === 'outerwear' || cat === 'shoes') itemScore += 0.1
       if (styleTags.includes('delicate') || styleTags.includes('silk')) itemScore -= 0.2
@@ -2128,11 +2227,14 @@ function calculateWeatherFitScore(items, weather) {
     // Clamp item score to 0-1 range
     itemScore = Math.max(0, Math.min(1, itemScore))
     totalScore += itemScore
-    maxPossibleScore += itemMaxScore
   })
   
   // Average score across all items
-  const avgScore = items.length > 0 ? totalScore / items.length : 0.5
+  let avgScore = items.length > 0 ? totalScore / items.length : 0.5
+  
+  // Apply combination penalty (subtract from average)
+  avgScore = Math.max(0, avgScore - combinationPenalty)
+  
   return avgScore
 }
 
@@ -2143,7 +2245,10 @@ function calculateCompletenessScore(items) {
   let score = 0.5 // Base score
   const hasTop = items.some(item => isTopCategory(item))
   const hasBottom = items.some(item => isBottomCategory(item))
-  const hasShoes = items.some(item => item.category?.toLowerCase() === 'shoes')
+  const hasShoes = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    return cat === 'shoes' || cat === 'slippers'
+  })
   const hasOuterwear = items.some(item => item.category?.toLowerCase() === 'outerwear' || item.category?.toLowerCase() === 'blazer')
   
   if (hasTop && hasBottom) score += 0.3
