@@ -2886,12 +2886,8 @@ const handleMouseUp = () => {
 }
 
 const selectItem = (itemId) => {
-  // Toggle selection: if clicking the same item, deselect it; otherwise select it
-  if (selectedItemId.value === itemId) {
-    selectedItemId.value = null
-  } else {
-    selectedItemId.value = itemId
-  }
+  // Select the item - stays selected until another item is selected or canvas is clicked
+  selectedItemId.value = itemId
 }
 
 const deselectItem = () => {
