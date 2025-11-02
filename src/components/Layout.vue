@@ -22,30 +22,57 @@
   </div>
 
   <div v-else class="min-h-screen text-foreground transition-colors duration-200">
-    
+
     <!-- Desktop Sidebar Navigation with Liquid Glass -->
     <aside 
       v-if="!isLandingPage"
       ref="navbarRef"
-      class="hidden md:flex fixed left-0 top-0 h-full w-64 navbar-glass flex-col items-stretch py-8 px-4 z-50 shadow-[12px_0_24px_-16px_rgba(0,0,0,0.25)] dark:shadow-[12px_0_28px_-18px_rgba(0,0,0,0.6)]"
+      :class="`hidden md:flex fixed left-0 top-0 h-full ${sidebarWidthClass} navbar-glass flex-col items-stretch py-8 px-4 z-50 shadow-[12px_0_24px_-16px_rgba(0,0,0,0.25)] dark:shadow-[12px_0_28px_-18px_rgba(0,0,0,0.6)] transition-all duration-300 ease-in-out`"
+      style="overflow: visible;"
       @mouseenter="navbarHoverIn"
       @mouseleave="navbarHoverOut"
     >
-      
-      <!-- Logo with liquid reveal - clickable on desktop only -->
-      <router-link 
-        to="/home" 
-        class="mb-12 text-center md:text-left liquid-reveal block cursor-pointer hover:opacity-80 transition-opacity"
+    <div class="fixed inset-0 z-[200] pointer-events-none">
+      <button
+        v-if="!isLandingPage && isSidebarCollapsed"
+        @click.stop="toggleSidebar"
+        class="absolute hidden md:flex top-9 left-14 w-8 h-8 pe-1 rounded-lg bg-secondary hover:bg-accent items-center justify-center shadow-sm transition-all duration-200 hover:scale-110 pointer-events-auto"
+        aria-label="Expand sidebar"
+        title="Expand sidebar"
       >
-        <div class="flex items-center gap-3">
-          <div :class="`w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white`">
-            <Shirt :class="`w-5 h-5 text-white dark:text-black`"/>
+        <PanelLeftOpen class="w-5 h-5 text-secondary-foreground" />
+      </button>
+    </div>
+    
+      <!-- Logo section with toggle button -->
+      <div class="mb-12 relative flex items-center justify-between transition-all duration-300 ease-in-out justify-start">
+        <!-- Logo with liquid reveal - only navigates to home -->
+        <router-link 
+          to="/home" 
+          class="liquid-reveal flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+          :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+        >
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
+            <Shirt class="w-5 h-5 text-white dark:text-black"/>
           </div>
-          <h1 class="text-2xl font-bold tracking-tight text-foreground">
+          <h1 
+            class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out"
+            :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
+          >
             <StyleSnapBrand size="2xl" />
           </h1>
-        </div>
-      </router-link>
+        </router-link>
+        
+        <!-- Toggle Button - always visible, positioned beside logo -->
+        <button
+          v-if="!isSidebarCollapsed"
+          @click.stop="toggleSidebar"
+          class="flex-shrink-0 w-8 h-8 rounded-lg bg-secondary hover:bg-accent flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-110"
+          :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        >
+          <PanelLeftClose v-if="!isSidebarCollapsed" class="w-5 h-5 text-secondary-foreground" />
+        </button>
+      </div>
 
       <!-- Navigation -->
       <nav class="flex-1 space-y-2">
@@ -58,14 +85,18 @@
           @touchstart="item.name === 'Home' ? handleHomeHover : undefined"
         >
           <div 
-            :class="`nav-item-liquid flex items-center justify-start gap-3 px-4 py-3 rounded-xl group relative ${
+            :class="`nav-item-liquid flex items-center justify-start ${isSidebarCollapsed ? '' : 'gap-3'} px-3 py-3 rounded-xl group relative transition-all duration-300 ease-in-out min-h-[44px] ${
               isActiveRoute(item.path)
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
             }`"
+            :title="isSidebarCollapsed ? item.name : undefined"
           >
-            <component :is="item.icon" class="w-5 h-5" />
-            <span class="font-medium">
+            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <span 
+              class="font-medium whitespace-nowrap transition-all duration-300 ease-in-out"
+              :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
+            >
               {{ item.name }}
             </span>
           </div>
@@ -74,31 +105,73 @@
 
       <!-- Theme Toggle & Logout -->
       <div class="space-y-2">
-        <div class="relative">
+        <div class="relative" style="overflow: visible;">
           <button
             ref="themeButtonRef"
-            @click="showThemeDropdown = !showThemeDropdown"
+            @click="handleThemeButtonClick"
             @mousedown="themePressIn"
             @mouseup="themePressOut"
             @mouseleave="themePressOut"
-            class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl liquid-press bg-secondary hover:bg-accent"
-            :title="getThemeLabel(theme.value)"
+            :class="`nav-item-liquid liquid-press w-full flex items-center justify-between  ${isSidebarCollapsed ? '' : 'gap-3'} px-3 py-3 rounded-xl bg-secondary hover:bg-accent group relative transition-all duration-300 ease-in-out min-h-[44px]`"
+            :title="isSidebarCollapsed ? `${getThemeLabel(theme.value)} Theme` : getThemeLabel(theme.value)"
           >
-            <div class="flex items-center gap-3">
-              <Sun v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground" />
-              <Moon v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground" />
-              <Monitor v-else class="w-5 h-5 text-secondary-foreground" />
-              <span class="font-medium text-secondary-foreground">
+            <div class="flex gap-3">
+              <Sun v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+              <Moon v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+              <Monitor v-else class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+              <span 
+                class="font-medium text-secondary-foreground whitespace-nowrap transition-all duration-300 ease-in-out flex-1"
+                :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
+              >
                 Theme
-              </span>
+              </span>              
             </div>
-            <ChevronDown class="w-4 h-4 text-secondary-foreground" />
+
+            <ChevronDown 
+              class="w-4 h-4 text-secondary-foreground flex-shrink-0 transition-all duration-300"
+              :class="[
+                showThemeDropdown ? 'opacity-100' : 'opacity-50',
+                isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : ''
+              ]"
+            />
           </button>
 
-          <!-- Theme Dropdown Menu -->
+          <!-- Theme Dropdown Menu - Tooltip style -->
+          <Teleport v-if="isSidebarCollapsed && showThemeDropdown" to="body">
+            <div
+              data-theme-dropdown
+              :class="`fixed bg-white rounded-lg shadow-xl border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-[9999] overflow-hidden min-w-[160px]`"
+              :style="themeDropdownStyle"
+            >
+              <button
+                v-for="option in themeOptions"
+                :key="option.value"
+                @click.stop="selectTheme(option.value)"
+                :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
+                  theme.value === option.value
+                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                }`"
+              >
+                <component :is="option.icon" class="w-5 h-5 flex-shrink-0" />
+                <span class="font-medium text-sm">{{ option.label }}</span>
+                <!-- Selected indicator checkmark -->
+                <svg 
+                  v-if="theme.value === option.value" 
+                  class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400 flex-shrink-0" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </button>
+            </div>
+          </Teleport>
           <div
-            v-if="showThemeDropdown"
-            class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-50 overflow-hidden"
+            v-if="!isSidebarCollapsed && showThemeDropdown"
+            data-theme-dropdown
+            class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-[100] overflow-hidden"
           >
             <button
               v-for="option in themeOptions"
@@ -110,12 +183,12 @@
                   : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
               }`"
             >
-              <component :is="option.icon" class="w-5 h-5" />
+              <component :is="option.icon" class="w-5 h-5 flex-shrink-0" />
               <span class="font-medium text-sm">{{ option.label }}</span>
               <!-- Selected indicator checkmark -->
               <svg 
                 v-if="theme.value === option.value" 
-                class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400" 
+                class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400 flex-shrink-0" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -134,15 +207,21 @@
           @mouseleave="logoutPressOut"
           :disabled="loading"
           :class="[
-            'w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl liquid-press bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300',
+            `nav-item-liquid w-full flex items-center liquid-press justify-start ${isSidebarCollapsed ? '' : 'gap-3'} px-3 py-3 rounded-xl liquid-press bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-all duration-300 ease-in-out min-h-[44px]`,
             {
               'opacity-50 cursor-not-allowed text-muted-foreground': loading,
             }
           ]"
+          :title="isSidebarCollapsed ? 'Logout' : undefined"
         >
-          <LogOut v-if="!loading" class="w-5 h-5" />
-          <div v-else class="w-5 h-5 spinner-modern" />
-          <span class="font-medium">{{ loading ? 'Logging out...' : 'Logout' }}</span>
+          <LogOut v-if="!loading" class="w-5 h-5 flex-shrink-0" />
+          <div v-else class="w-5 h-5 spinner-modern flex-shrink-0" />
+          <span 
+            class="font-medium whitespace-nowrap transition-all duration-300 ease-in-out"
+            :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
+          >
+            {{ loading ? 'Logging out...' : 'Logout' }}
+          </span>
         </button>
       </div>
     </aside>
@@ -216,7 +295,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main :class="`${isLandingPage ? '' : 'md:ml-64'} ${isLandingPage ? '' : 'pt-16 pb-24 md:pt-0 md:pb-0'} min-h-screen`">
+    <main :class="`${isLandingPage ? '' : isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} ${isLandingPage ? '' : 'pt-16 pb-24 md:pt-0 md:pb-0'} min-h-screen transition-all duration-300 ease-in-out`">
       <transition
         :name="'page'"
         mode="out-in"
@@ -238,7 +317,7 @@
  * Provides responsive navigation for both desktop and mobile devices.
  */
 
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
@@ -261,10 +340,15 @@ import {
   Sun,
   Moon,
   Monitor,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
+import { PanelLeft } from 'lucide-vue-next'
+import { PanelLeftClose } from 'lucide-vue-next'
+import { PanelLeftOpen } from 'lucide-vue-next'
 
 // Router, theme, and auth composables
 const router = useRouter()
@@ -304,6 +388,33 @@ const notificationsService = new NotificationsService()
 // Loading state for initial app setup
 const loading = ref(true)
 const showThemeDropdown = ref(false)
+const themeDropdownStyle = ref('')
+
+// Sidebar collapsed state - persist in localStorage
+const isSidebarCollapsed = ref(false)
+
+// Load sidebar state from localStorage on mount
+const loadSidebarState = () => {
+  const saved = localStorage.getItem('sidebarCollapsed')
+  if (saved !== null) {
+    isSidebarCollapsed.value = saved === 'true'
+  }
+}
+
+// Toggle sidebar collapsed state
+const toggleSidebar = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+  localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.value.toString())
+  // Close theme dropdown when collapsing
+  if (isSidebarCollapsed.value) {
+    showThemeDropdown.value = false
+  }
+}
+
+// Computed sidebar width class
+const sidebarWidthClass = computed(() => {
+  return isSidebarCollapsed.value ? 'w-20' : 'w-64'
+})
 
 // Theme options with icons
 const themeOptions = [
@@ -312,6 +423,7 @@ const themeOptions = [
   { value: 'system', label: 'System', icon: Monitor }
 ]
 
+console.log("THEME VALUE IS: ", theme.value)
 // Get theme label
 const getThemeLabel = (themeValue) => {
   const option = themeOptions.find(opt => opt.value === themeValue)
@@ -325,6 +437,35 @@ const selectTheme = async (themeValue) => {
   // Then apply theme change
   await setTheme(themeValue)
 }
+
+// Handle theme button click
+const handleThemeButtonClick = async () => {
+  showThemeDropdown.value = !showThemeDropdown.value
+  
+  // Update position when collapsed and opening
+  if (isSidebarCollapsed.value && showThemeDropdown.value) {
+    await nextTick()
+    updateThemeDropdownPosition()
+  }
+}
+
+// Update dropdown position when collapsed
+const updateThemeDropdownPosition = () => {
+  if (themeButtonRef.value) {
+    const rect = themeButtonRef.value.getBoundingClientRect()
+    themeDropdownStyle.value = `left: ${rect.right + 8}px; top: ${rect.top}px;`
+  }
+}
+
+// Update position when sidebar state changes while dropdown is open
+watch(isSidebarCollapsed, async () => {
+  if (isSidebarCollapsed.value && showThemeDropdown.value) {
+    await nextTick()
+    updateThemeDropdownPosition()
+  } else {
+    themeDropdownStyle.value = ''
+  }
+})
 
 // Cache for prefetched data
 const homeDataCache = ref({
@@ -467,12 +608,24 @@ const handleHomeHover = () => {
  */
 // Handle click outside to close theme dropdown
 const handleClickOutside = (event) => {
-  if (themeButtonRef.value && !themeButtonRef.value.closest('.relative')?.contains(event.target)) {
+  if (!themeButtonRef.value || !showThemeDropdown.value) return
+  
+  const button = themeButtonRef.value
+  const dropdown = document.querySelector('[data-theme-dropdown]')
+  
+  // Check if click is outside both button and dropdown
+  const isClickOutsideButton = !button.contains(event.target)
+  const isClickOutsideDropdown = !dropdown?.contains(event.target)
+  
+  if (isClickOutsideButton && isClickOutsideDropdown) {
     showThemeDropdown.value = false
   }
 }
 
 onMounted(async () => {
+  // Load sidebar state from localStorage
+  loadSidebarState()
+  
   // Load user data and theme preferences
   try {
     await loadUser() // This calls the theme store's loadUser method
