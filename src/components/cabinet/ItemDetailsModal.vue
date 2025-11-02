@@ -258,15 +258,21 @@ const removeItem = async () => {
     async () => {
       isRemoving.value = true
       try {
-        await clothesService.deleteClothes(props.item.id)
+        const result = await clothesService.deleteClothes(props.item.id)
         
-        console.log('✅ Item removed successfully')
-        showSuccess('Item removed successfully!')
-        emit('item-removed', props.item.id)
-        closeModal()
+        if (result && result.success) {
+          console.log('✅ Item removed successfully')
+          showSuccess('Item removed successfully!')
+          emit('item-removed', props.item.id)
+          closeModal()
+        } else {
+          console.error('❌ Delete returned unsuccessful result:', result)
+          showError('Failed to remove item. Please try again.')
+        }
       } catch (error) {
         console.error('❌ Error removing item:', error)
-        showError('Failed to remove item')
+        const errorMessage = error?.message || 'Failed to remove item'
+        showError(errorMessage)
       } finally {
         isRemoving.value = false
       }
