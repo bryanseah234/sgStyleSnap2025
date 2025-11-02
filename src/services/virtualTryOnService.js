@@ -13,12 +13,14 @@ import { sanitizeToken, sanitizeUrl, safeLog, safeError, safeWarn } from '@/util
 
 export class VirtualTryOnService {
   constructor() {
-    // Google Gemini API key
-    this.apiKey = "AIzaSyAuOczcUZ3GdwSfCXRwBEKi2hjiqqa6oLY"
+    // Google Gemini API key from environment variables
+    // Get your API key from: https://ai.google.dev/
+    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || ''
     
     // Initialize Google GenAI Client
     if (!this.apiKey) {
-      safeWarn('⚠️ Google Gemini API key is not set')
+      safeWarn('⚠️ VITE_GEMINI_API_KEY is not set')
+      safeWarn('⚠️ Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
       this.client = null
     } else {
       this.client = new GoogleGenAI(this.apiKey)

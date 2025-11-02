@@ -483,7 +483,17 @@ async function logApiConfiguration() {
   } catch (e) {
     console.log(`   Llama Service: ⚠️  Could not check initialization`)
   }
+  console.log('')
   
+  // Google Gemini Configuration
+  const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY
+  const isGeminiConfigured = !!geminiApiKey
+  
+  console.log(`🌟 Google Gemini:`)
+  console.log(`   API Key: ${geminiApiKey ? `✅ Set (length: ${geminiApiKey.length})` : '❌ Not set'}`)
+  console.log(`   Status: ${isGeminiConfigured ? '✅ Configured' : '❌ Not configured'}`)
+  
+  // Check if Google Gemini services are initialized
   try {
     const { virtualTryOnService } = await import('@/services/virtualTryOnService')
     console.log(`   Virtual Try-On Service: ${virtualTryOnService.client ? '✅ Initialized' : '❌ Not initialized'}`)
@@ -508,10 +518,11 @@ async function logApiConfiguration() {
   const totalConfigured = [
     isSupabaseConfigured,
     isCloudinaryConfigured,
-    isHuggingFaceConfigured
+    isHuggingFaceConfigured,
+    isGeminiConfigured
   ].filter(Boolean).length
   
-  console.log(`📊 Summary: ${totalConfigured}/3 core APIs configured`)
+  console.log(`📊 Summary: ${totalConfigured}/4 core APIs configured`)
   console.log('')
 }
 
