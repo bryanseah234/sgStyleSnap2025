@@ -6,22 +6,33 @@
  * 
  * Generates realistic images of people wearing specified clothing items
  * by taking garment images as input and generating a person wearing them.
- * 
- * Uses a serverless function proxy to keep the API key secure (GEMINI_API_KEY without VITE_ prefix).
  */
 
+import { GoogleGenAI } from "@google/genai"
 import { sanitizeToken, sanitizeUrl, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
 
 export class VirtualTryOnService {
   constructor() {
-    // Use proxy endpoint instead of direct API calls
-    // This allows using GEMINI_API_KEY (without VITE_ prefix) in Vercel for better security
-    this.proxyEndpoint = '/api/gemini-proxy'
-    this.model = 'imagen-4.0-generate-001'
+    // Google Gemini API key from environment variables
+    // Get your API key from: https://ai.google.dev/
+    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || ''
     
-    safeLog('✅ VirtualTryOnService initialized with Google Gemini Imagen API (via proxy)')
-    safeLog('🔍 Using server-side proxy:', this.proxyEndpoint)
-    safeLog('💡 API key is stored server-side as GEMINI_API_KEY (not exposed to client)')
+    // Initialize Google GenAI Client
+    if (!this.apiKey) {
+      safeWarn('⚠️ VITE_GEMINI_API_KEY is not set')
+      safeWarn('⚠️ Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
+      safeWarn('⚠️ NOTE: If you added this to Vercel, you must REDEPLOY for it to take effect!')
+      safeWarn('⚠️ Vite env vars are bundled at BUILD TIME, not runtime.')
+      this.client = null
+    } else {
+      this.client = new GoogleGenAI(this.apiKey)
+      safeLog('✅ VirtualTryOnService initialized with Google Gemini Imagen API')
+      safeLog('🔍 apiKey exists:', !!this.apiKey)
+      safeLog('🔍 apiKey:', sanitizeToken(this.apiKey))
+    }
+    
+    // Model configuration
+    this.model = 'imagen-4.0-generate-001'
   }
 
   /**
@@ -44,6 +55,15 @@ export class VirtualTryOnService {
         throw new Error('At least one clothing item (top or bottom) is required')
       }
 
+      // Check if client is initialized
+      if (!this.client) {
+        const errorMsg = 'Google Gemini API key is required. Please set VITE_GEMINI_API_KEY in your environment variables.\n' +
+          '⚠️ IMPORTANT: If you just added the variable to Vercel, you must redeploy for it to take effect!\n' +
+          'Environment variables are bundled at build time, not runtime.\n' +
+          'Go to Vercel → Your Project → Deployments → Redeploy'
+        throw new Error(errorMsg)
+      }
+
       // Convert image URLs to base64 for analysis
       let topImageBase64 = null
       let bottomImageBase64 = null
@@ -62,42 +82,31 @@ export class VirtualTryOnService {
       // Create a descriptive prompt based on the analyzed images
       const prompt = this.createTryOnPrompt(clothingDescription, topImageBase64, bottomImageBase64)
 
-      safeLog('📤 Generating image with Imagen 4.0 via proxy...')
+      safeLog('📤 Generating image with Imagen 4.0...')
       safeLog('📝 Prompt:', prompt.substring(0, 200) + '...')
 
-      // Call Google Gemini Imagen API through proxy
-      const response = await this.callImagenViaProxy(prompt)
+      // Call Google Gemini Imagen API
+      const response = await this.client.models.generateImages({
+        model: this.model,
+        prompt: prompt,
+        config: {
+          numberOfImages: 1,
+          aspectRatio: "3:4", // Good for full-body fashion images
+          personGeneration: "allow_adult", // Allow generating images of adults
+        },
+      })
 
       safeLog('✅ Received response from Imagen API')
 
-      // Extract the generated image from REST API response format
-      // REST API returns: { predictions: [{ bytesBase64Encoded: "...", mimeType: "..." }] }
-      const predictions = response.predictions || []
-      if (predictions.length === 0) {
-        // Try SDK format as fallback: { generatedImages: [{ image: { imageBytes: "..." } }] }
-        if (response.generatedImages && response.generatedImages.length > 0) {
-          const generatedImage = response.generatedImages[0]
-          const imageBlob = await this.base64ToBlob(generatedImage.image.imageBytes)
-          const imageUrl = URL.createObjectURL(imageBlob)
-          return {
-            success: true,
-            imageUrl: imageUrl,
-            imageBlob: imageBlob
-          }
-        }
+      // Extract the generated image
+      if (!response.generatedImages || response.generatedImages.length === 0) {
         throw new Error('No images generated in response')
       }
 
-      // REST API format: use bytesBase64Encoded
-      const prediction = predictions[0]
-      const imageBytes = prediction.bytesBase64Encoded || prediction.imageBytes
-      
-      if (!imageBytes) {
-        throw new Error('Image data not found in response')
-      }
+      const generatedImage = response.generatedImages[0]
       
       // Convert base64 image to blob
-      const imageBlob = await this.base64ToBlob(imageBytes)
+      const imageBlob = await this.base64ToBlob(generatedImage.image.imageBytes)
       const imageUrl = URL.createObjectURL(imageBlob)
 
       console.log('✅ VirtualTryOnService: Try-on generated successfully')
@@ -125,6 +134,9 @@ export class VirtualTryOnService {
    */
   async analyzeClothingImages(topImageBase64, bottomImageBase64) {
     try {
+      // Get Gemini model for vision analysis
+      const model = this.client.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
+      
       let prompt = "Describe these clothing items in detail. Focus on: "
       prompt += "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) "
       prompt += "2. Colors and patterns "
@@ -163,78 +175,15 @@ export class VirtualTryOnService {
       
       parts.push({ text: prompt })
       
-      // Call Gemini vision API through proxy
-      const response = await this.callGeminiViaProxy('models/gemini-2.0-flash-exp:generateContent', {
-        contents: [{
-          role: "user",
-          parts: parts
-        }]
-      })
+      const result = await model.generateContent({ contents: [{ role: "user", parts }] })
+      const description = result.response.text()
       
-      const description = response.candidates?.[0]?.content?.parts?.[0]?.text || ''
-      
-      if (description) {
-        safeLog('📝 Clothing analysis:', description.substring(0, 150) + '...')
-        return description
-      }
-      
-      throw new Error('No description returned from Gemini vision')
+      safeLog('📝 Clothing analysis:', description.substring(0, 150) + '...')
+      return description
     } catch (error) {
       safeWarn('⚠️ Failed to analyze clothing images with Gemini vision, using default description')
-      safeError('Vision analysis error:', error)
       return null
     }
-  }
-
-  /**
-   * Call Gemini API via serverless proxy
-   * 
-   * @param {string} endpoint - Gemini API endpoint (e.g., 'models/gemini-2.0-flash-exp:generateContent')
-   * @param {Object} body - Request body
-   * @returns {Promise<Object>} API response
-   */
-  async callGeminiViaProxy(endpoint, body) {
-    const response = await fetch(this.proxyEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ endpoint, body })
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-      throw new Error(errorData.error || `Proxy request failed: ${response.status}`)
-    }
-
-    return await response.json()
-  }
-
-  /**
-   * Call Imagen API via serverless proxy
-   * 
-   * @param {string} prompt - Image generation prompt
-   * @returns {Promise<Object>} Imagen API response
-   */
-  async callImagenViaProxy(prompt) {
-    // Use REST API format: models/{model}:predict
-    const endpoint = `models/${this.model}:predict`
-    
-    // REST API expects instances and parameters format
-    const body = {
-      instances: [
-        {
-          prompt: prompt
-        }
-      ],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio: "3:4",
-        personGeneration: "allow_adult"
-      }
-    }
-
-    return await this.callGeminiViaProxy(endpoint, body)
   }
 
   /**
