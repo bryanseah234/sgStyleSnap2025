@@ -1,6 +1,6 @@
 /**
  * Color Detection Utility
- * Detects dominant colors from clothing item images using HTML5 Canvas
+ * Detects dominant color from clothing item images by counting pixels
  */
 
 // Standard color palette mapping (RGB values)
@@ -67,94 +67,7 @@ function findClosestColor(rgb) {
 }
 
 /**
- * Extract dominant color from center region of image
- * This focuses on the main item rather than background
- */
-function getCenterColor(imageData, width, height) {
-  const centerX = Math.floor(width / 2)
-  const centerY = Math.floor(height / 2)
-  const sampleSize = Math.min(50, Math.floor(width / 10), Math.floor(height / 10))
-  
-  let rSum = 0, gSum = 0, bSum = 0, count = 0
-  
-  for (let y = centerY - sampleSize; y < centerY + sampleSize; y += 2) {
-    for (let x = centerX - sampleSize; x < centerX + sampleSize; x += 2) {
-      if (x >= 0 && x < width && y >= 0 && y < height) {
-        const idx = (y * width + x) * 4
-        rSum += imageData[idx]
-        gSum += imageData[idx + 1]
-        bSum += imageData[idx + 2]
-        count++
-      }
-    }
-  }
-  
-  if (count === 0) return null
-  
-  return [
-    Math.round(rSum / count),
-    Math.round(gSum / count),
-    Math.round(bSum / count)
-  ]
-}
-
-/**
- * Get dominant colors from image using simplified k-means clustering
- */
-function getDominantColors(imageData, width, height, colorCount = 3) {
-  // Sample pixels (every 10th pixel for performance)
-  const pixels = []
-  const step = 10
-  
-  for (let y = 0; y < height; y += step) {
-    for (let x = 0; x < width; x += step) {
-      const idx = (y * width + x) * 4
-      pixels.push([
-        imageData[idx],
-        imageData[idx + 1],
-        imageData[idx + 2]
-      ])
-    }
-  }
-  
-  if (pixels.length === 0) return []
-  
-  // Simple clustering: group similar colors
-  const clusters = []
-  const clusterThreshold = 50
-  
-  for (const pixel of pixels) {
-    let assigned = false
-    for (const cluster of clusters) {
-      if (colorDistance(pixel, cluster.center) < clusterThreshold) {
-        cluster.pixels.push(pixel)
-        // Update cluster center (running average)
-        const n = cluster.pixels.length
-        cluster.center = [
-          Math.round((cluster.center[0] * (n - 1) + pixel[0]) / n),
-          Math.round((cluster.center[1] * (n - 1) + pixel[1]) / n),
-          Math.round((cluster.center[2] * (n - 1) + pixel[2]) / n)
-        ]
-        assigned = true
-        break
-      }
-    }
-    if (!assigned) {
-      clusters.push({
-        center: [...pixel],
-        pixels: [pixel]
-      })
-    }
-  }
-  
-  // Sort by cluster size (largest first) and return top colors
-  clusters.sort((a, b) => b.pixels.length - a.pixels.length)
-  
-  return clusters.slice(0, colorCount).map(cluster => cluster.center)
-}
-
-/**
- * Detect colors from an image file
+ * Detect colors from an image file by counting pixels
  * @param {File|string} imageSource - Image file or data URL
  * @returns {Promise<{primary: string, secondary: string[]}>}
  */
@@ -169,8 +82,8 @@ export async function detectColors(imageSource) {
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         
-        // Resize to max 400px for performance
-        const maxSize = 400
+        // Resize to max 600px for performance (larger sample size)
+        const maxSize = 600
         let width = img.width
         let height = img.height
         
@@ -188,54 +101,52 @@ export async function detectColors(imageSource) {
         
         // Get image data
         const imageData = ctx.getImageData(0, 0, width, height)
+        const data = imageData.data
         
-        // Get center color (primary focus)
-        const centerColor = getCenterColor(imageData.data, width, height)
+        // Count pixels by color (quantize to closest standard color)
+        const colorCounts = {}
+        const totalPixels = width * height
         
-        // Get dominant colors from full image
-        const dominantColors = getDominantColors(imageData.data, width, height, 3)
+        // Process every pixel (or sample for very large images)
+        const step = totalPixels > 100000 ? 2 : 1 // Sample every other pixel if > 100k pixels
         
-        // Combine and map to color names
-        const allColors = []
-        if (centerColor) {
-          allColors.push(centerColor)
+        for (let i = 0; i < data.length; i += 4 * step) {
+          const r = data[i]
+          const g = data[i + 1]
+          const b = data[i + 2]
+          const a = data[i + 3]
+          
+          // Skip transparent pixels
+          if (a < 128) continue
+          
+          // Find closest color name for this pixel
+          const colorName = findClosestColor([r, g, b])
+          
+          // Count pixels for each color
+          colorCounts[colorName] = (colorCounts[colorName] || 0) + 1
         }
-        dominantColors.forEach(color => {
-          // Avoid duplicates
-          const isDuplicate = allColors.some(existing => 
-            colorDistance(existing, color) < 30
-          )
-          if (!isDuplicate) {
-            allColors.push(color)
-          }
-        })
         
-        // Map to color names and filter out pure white/black as primary (unless it's the only option)
-        const colorNames = allColors.map(findClosestColor)
+        // Sort colors by pixel count (most common first)
+        const sortedColors = Object.entries(colorCounts)
+          .sort((a, b) => b[1] - a[1])
         
-        // Filter out white/black from primary unless it's the only option
-        let primaryColor = colorNames[0] || 'gray'
-        const secondaryColors = []
-        
-        for (const colorName of colorNames) {
-          if (colorName === 'white' || colorName === 'black') {
-            if (colorNames.length === 1) {
-              primaryColor = colorName
-            } else {
-              secondaryColors.push(colorName)
-            }
-          } else {
-            if (primaryColor === 'white' || primaryColor === 'black') {
-              primaryColor = colorName
-            } else {
-              secondaryColors.push(colorName)
-            }
-          }
+        if (sortedColors.length === 0) {
+          resolve({ primary: 'gray', secondary: [] })
+          return
         }
+        
+        // Get primary color (most pixels)
+        const primaryColor = sortedColors[0][0]
+        
+        // Get secondary colors (skip primary, take next 3)
+        const secondaryColors = sortedColors
+          .slice(1, 4)
+          .map(([color]) => color)
+          .filter((color, index, arr) => arr.indexOf(color) === index)
         
         resolve({
           primary: primaryColor,
-          secondary: secondaryColors.slice(0, 3).filter((c, i, arr) => arr.indexOf(c) === i)
+          secondary: secondaryColors
         })
       } catch (error) {
         console.error('Color detection error:', error)
