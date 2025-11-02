@@ -219,9 +219,9 @@ const emit = defineEmits(['item-added'])
 // Category to clothing type mapping
 const categoryTypeMapping = {
   top: ['Blouse', 'Body', 'Dress', 'Hoodie', 'Longsleeve', 'Polo', 'Shirt', 'T-Shirt', 'Top', 'Undershirt'],
-  bottom: ['Pants', 'Shorts', 'Skirt'],
+  bottom: ['Pants'],
   outerwear: ['Blazer', 'Outwear'],
-  shoes: ['Shoes', 'Slippers'],
+  shoes: ['Shoes'],
   accessory: ['Hat']
 }
 
@@ -390,10 +390,34 @@ const handleSubmit = async () => {
   console.log('📝 ManualUploadForm: Form submission in progress...')
   
   try {
+    // Map clothing type to database format (capitalized, matching database constraint)
+    const clothingTypeMap = {
+      'blouse': 'Blouse',
+      'body': 'Body',
+      'hoodie': 'Hoodie',
+      'longsleeve': 'Longsleeve',
+      'polo': 'Polo',
+      'shirt': 'Shirt',
+      't-shirt': 'T-Shirt',
+      'top': 'Top',
+      'undershirt': 'Undershirt',
+      'pants': 'Pants',
+      'dress': 'Dress',
+      'blazer': 'Blazer',
+      'outwear': 'Outwear',
+      'shoes': 'Shoes',
+      'hat': 'Hat',
+      'other': 'Other'
+    }
+    
+    const clothingType = formData.value.type 
+      ? (clothingTypeMap[formData.value.type.toLowerCase()] || formData.value.type)
+      : null
+    
     const serviceData = {
       name: formData.value.name,
       category: formData.value.category,
-      clothing_type: formData.value.type ? formData.value.type.toLowerCase() : null,
+      clothing_type: clothingType,
       color: formData.value.color || null,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
