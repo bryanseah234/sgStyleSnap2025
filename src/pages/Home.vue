@@ -127,7 +127,7 @@
         </div>
       </div>
       <!-- Body - Scrollable Content -->
-      <div class="p-4 overflow-y-auto overflow-x-hidden flex-1" style="scroll-behavior: smooth; overscroll-behavior: contain;">
+      <div class="p-4 overflow-y-auto overflow-x-hidden flex-1 custom-scrollbar" style="scroll-behavior: smooth; overscroll-behavior: contain;">
         <div v-if="loadingNotifications" class="flex flex-col items-center justify-center py-12">
           <div class="w-12 h-12 spinner-modern mb-4"></div>
           <p class="text-sm text-stone-600 dark:text-zinc-400">Loading notifications...</p>
