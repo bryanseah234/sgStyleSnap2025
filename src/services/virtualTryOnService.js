@@ -2,34 +2,21 @@
  * Virtual Try-On Service
  * 
  * Service for generating images of people wearing specified clothing items
- * using Google Gemini Imagen 4.0 API
+ * using Google Gemini Imagen 4.0 API via server-side proxy
  * 
  * Generates realistic images of people wearing specified clothing items
  * by taking garment images as input and generating a person wearing them.
  */
 
-import { GoogleGenAI } from "@google/genai"
-import { sanitizeToken, sanitizeUrl, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
+import { sanitizeUrl, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
 
 export class VirtualTryOnService {
   constructor() {
-    // Google Gemini API key from environment variables
-    // Get your API key from: https://ai.google.dev/
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || ''
-    
-    // Initialize Google GenAI Client
-    if (!this.apiKey) {
-      safeWarn('⚠️ VITE_GEMINI_API_KEY is not set')
-      safeWarn('⚠️ Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
-      safeWarn('⚠️ NOTE: If you added this to Vercel, you must REDEPLOY for it to take effect!')
-      safeWarn('⚠️ Vite env vars are bundled at BUILD TIME, not runtime.')
-      this.client = null
-    } else {
-      this.client = new GoogleGenAI(this.apiKey)
-      safeLog('✅ VirtualTryOnService initialized with Google Gemini Imagen API')
-      safeLog('🔍 apiKey exists:', !!this.apiKey)
-      safeLog('🔍 apiKey:', sanitizeToken(this.apiKey))
-    }
+    // Google Gemini API key is stored server-side as GEMINI_API_KEY
+    // All API calls go through /api/gemini-proxy endpoint
+    this.proxyUrl = '/api/gemini-proxy'
+    safeLog('✅ VirtualTryOnService initialized (using server-side proxy)')
+    safeLog('📡 Proxy endpoint:', this.proxyUrl)
     
     // Model configuration
     this.model = 'imagen-4.0-generate-001'
@@ -55,15 +42,6 @@ export class VirtualTryOnService {
         throw new Error('At least one clothing item (top or bottom) is required')
       }
 
-      // Check if client is initialized
-      if (!this.client) {
-        const errorMsg = 'Google Gemini API key is required. Please set VITE_GEMINI_API_KEY in your environment variables.\n' +
-          '⚠️ IMPORTANT: If you just added the variable to Vercel, you must redeploy for it to take effect!\n' +
-          'Environment variables are bundled at build time, not runtime.\n' +
-          'Go to Vercel → Your Project → Deployments → Redeploy'
-        throw new Error(errorMsg)
-      }
-
       // Convert image URLs to base64 for analysis
       let topImageBase64 = null
       let bottomImageBase64 = null
@@ -82,19 +60,39 @@ export class VirtualTryOnService {
       // Create a descriptive prompt based on the analyzed images
       const prompt = this.createTryOnPrompt(clothingDescription, topImageBase64, bottomImageBase64)
 
-      safeLog('📤 Generating image with Imagen 4.0...')
+      safeLog('📤 Generating image with Imagen 4.0 via proxy...')
       safeLog('📝 Prompt:', prompt.substring(0, 200) + '...')
 
-      // Call Google Gemini Imagen API
-      const response = await this.client.models.generateImages({
-        model: this.model,
-        prompt: prompt,
-        config: {
-          numberOfImages: 1,
-          aspectRatio: "3:4", // Good for full-body fashion images
-          personGeneration: "allow_adult", // Allow generating images of adults
+      // Call Google Gemini Imagen API through proxy
+      const proxyResponse = await fetch(this.proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          operation: 'generateImage',
+          payload: {
+            model: this.model,
+            prompt: prompt,
+            config: {
+              numberOfImages: 1,
+              aspectRatio: "3:4", // Good for full-body fashion images
+              personGeneration: "allow_adult", // Allow generating images of adults
+            },
+          },
+        }),
       })
+
+      if (!proxyResponse.ok) {
+        const errorData = await proxyResponse.json().catch(() => ({}))
+        throw new Error(errorData.message || `Proxy request failed: ${proxyResponse.statusText}`)
+      }
+
+      const { success, result: response } = await proxyResponse.json()
+
+      if (!success || !response) {
+        throw new Error('Invalid response from proxy')
+      }
 
       safeLog('✅ Received response from Imagen API')
 
@@ -134,9 +132,10 @@ export class VirtualTryOnService {
    */
   async analyzeClothingImages(topImageBase64, bottomImageBase64) {
     try {
-      // Get Gemini model for vision analysis
-      const model = this.client.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
-      
+      if (!topImageBase64 && !bottomImageBase64) {
+        return null
+      }
+
       let prompt = "Describe these clothing items in detail. Focus on: "
       prompt += "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) "
       prompt += "2. Colors and patterns "
@@ -174,14 +173,34 @@ export class VirtualTryOnService {
       }
       
       parts.push({ text: prompt })
-      
-      const result = await model.generateContent({ contents: [{ role: "user", parts }] })
-      const description = result.response.text()
-      
+
+      // Call proxy for vision analysis
+      const proxyResponse = await fetch(this.proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          operation: 'analyzeClothing',
+          payload: { parts },
+        }),
+      })
+
+      if (!proxyResponse.ok) {
+        throw new Error(`Proxy request failed: ${proxyResponse.statusText}`)
+      }
+
+      const { success, result } = await proxyResponse.json()
+
+      if (!success || !result) {
+        throw new Error('Invalid response from proxy')
+      }
+
+      const description = result.description
       safeLog('📝 Clothing analysis:', description.substring(0, 150) + '...')
       return description
     } catch (error) {
-      safeWarn('⚠️ Failed to analyze clothing images with Gemini vision, using default description')
+      safeWarn('⚠️ Failed to analyze clothing images with Gemini vision, using default description:', error.message)
       return null
     }
   }
@@ -279,6 +298,16 @@ export class VirtualTryOnService {
     }
     const byteArray = new Uint8Array(byteNumbers)
     return new Blob([byteArray], { type: 'image/png' })
+  }
+
+  /**
+   * Check if service is available (client is initialized)
+   * For proxy-based implementation, this always returns true
+   */
+  get client() {
+    // Proxy-based implementation doesn't need a client
+    // Return a truthy value to indicate service is available
+    return { available: true }
   }
 }
 
