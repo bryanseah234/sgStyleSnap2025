@@ -1870,16 +1870,25 @@ function isBottomCategory(item) {
 
 /**
  * Calculate color harmony score for an outfit (0-1)
+ * More nuanced scoring based on actual color combinations
  */
 function calculateOutfitColorScore(items) {
   if (items.length < 2) return 0.5
   
   const NEUTRAL = ['black', 'white', 'gray', 'grey', 'beige', 'navy', 'tan', 'ivory', 'cream', 'charcoal']
-  const WARM = ['red', 'orange', 'yellow', 'pink', 'burgundy', 'coral', 'peach', 'salmon']
+  const WARM = ['red', 'orange', 'yellow', 'pink', 'burgundy', 'coral', 'peach', 'salmon', 'maroon']
   const COOL = ['blue', 'green', 'purple', 'teal', 'turquoise', 'mint', 'lavender', 'indigo']
   
-  const colors = items.map(item => (item.primary_color || item.color || '').toLowerCase()).filter(Boolean)
-  if (colors.length === 0) return 0.5
+  const colors = items.map(item => {
+    // Try primary_color first, then color, fallback to empty string
+    const color = (item.primary_color || item.color || '').toLowerCase().trim()
+    return color
+  }).filter(c => c.length > 0)
+  
+  if (colors.length === 0) {
+    // If no colors, return a base score but add some variation based on item count
+    return 0.4 + (items.length * 0.02) // Slight variation: 0.44 for 2 items, 0.46 for 3, etc.
+  }
   
   const uniqueColors = [...new Set(colors)]
   
@@ -1887,77 +1896,179 @@ function calculateOutfitColorScore(items) {
   if (uniqueColors.length === 1) return 1.0
   
   // All neutrals - very high score
-  if (uniqueColors.every(c => NEUTRAL.includes(c))) return 0.95
+  if (uniqueColors.every(c => NEUTRAL.some(n => c.includes(n) || c === n))) return 0.95
   
-  // One neutral with others - good score
-  const hasNeutral = uniqueColors.some(c => NEUTRAL.includes(c))
-  if (hasNeutral) {
-    const nonNeutrals = uniqueColors.filter(c => !NEUTRAL.includes(c))
-    if (nonNeutrals.length <= 2) return 0.85
-    return 0.7
+  // Calculate pair-wise color compatibility
+  let compatibilitySum = 0
+  let comparisonCount = 0
+  
+  for (let i = 0; i < uniqueColors.length; i++) {
+    for (let j = i + 1; j < uniqueColors.length; j++) {
+      comparisonCount++
+      const color1 = uniqueColors[i]
+      const color2 = uniqueColors[j]
+      
+      // Same color - perfect match
+      if (color1 === color2) {
+        compatibilitySum += 1.0
+        continue
+      }
+      
+      // Both neutral - high compatibility
+      if (NEUTRAL.some(n => color1.includes(n) || color1 === n) && 
+          NEUTRAL.some(n => color2.includes(n) || color2 === n)) {
+        compatibilitySum += 0.95
+        continue
+      }
+      
+      // One neutral - good compatibility
+      if (NEUTRAL.some(n => color1.includes(n) || color1 === n) || 
+          NEUTRAL.some(n => color2.includes(n) || color2 === n)) {
+        compatibilitySum += 0.85
+        continue
+      }
+      
+      // Both warm colors
+      if (WARM.some(w => color1.includes(w)) && WARM.some(w => color2.includes(w))) {
+        compatibilitySum += 0.8
+        continue
+      }
+      
+      // Both cool colors
+      if (COOL.some(c => color1.includes(c)) && COOL.some(c => color2.includes(c))) {
+        compatibilitySum += 0.8
+        continue
+      }
+      
+      // Complementary colors (simplified) - moderate score
+      const complementaryPairs = [
+        ['red', 'green'], ['blue', 'orange'], ['yellow', 'purple'],
+        ['navy', 'beige'], ['teal', 'burgundy']
+      ]
+      const isComplementary = complementaryPairs.some(pair => 
+        (color1.includes(pair[0]) || color2.includes(pair[0])) &&
+        (color1.includes(pair[1]) || color2.includes(pair[1]))
+      )
+      if (isComplementary) {
+        compatibilitySum += 0.7
+        continue
+      }
+      
+      // Mixed warm and cool - lower score
+      if ((WARM.some(w => color1.includes(w)) && COOL.some(c => color2.includes(c))) ||
+          (COOL.some(c => color1.includes(c)) && WARM.some(w => color2.includes(w)))) {
+        compatibilitySum += 0.5
+        continue
+      }
+      
+      // Default moderate score for unknown combinations
+      compatibilitySum += 0.6
+    }
   }
   
-  // All warm colors
-  if (uniqueColors.every(c => WARM.some(w => c.includes(w)))) return 0.8
+  // Average compatibility across all pairs
+  const avgCompatibility = comparisonCount > 0 ? compatibilitySum / comparisonCount : 0.6
   
-  // All cool colors
-  if (uniqueColors.every(c => COOL.some(cool => c.includes(cool)))) return 0.8
-  
-  // Mixed warm and cool - lower score
-  const hasWarm = uniqueColors.some(c => WARM.some(w => c.includes(w)))
-  const hasCool = uniqueColors.some(c => COOL.some(cool => c.includes(cool)))
-  if (hasWarm && hasCool) return 0.5
-  
-  return 0.6
+  // Adjust based on number of colors (more colors = harder to coordinate)
+  const colorPenalty = uniqueColors.length > 3 ? 0.05 : 0
+  return Math.max(0, Math.min(1, avgCompatibility - colorPenalty))
 }
 
 /**
  * Calculate weather fit score (0-1)
+ * Returns a score based on how well items match weather conditions
  */
 function calculateWeatherFitScore(items, weather) {
   const { temperature, condition } = weather
-  let score = 0.5 // Base score
-  let itemCount = 0
+  let totalScore = 0
+  let maxPossibleScore = 0
   
   items.forEach(item => {
-    itemCount++
     const cat = item.category?.toLowerCase()
+    const clothingType = item.clothing_type?.toLowerCase() || cat
     const styleTags = item.style_tags || []
+    let itemScore = 0
+    let itemMaxScore = 1
     
-    // Temperature appropriateness
+    // Temperature appropriateness scoring
     if (temperature > 30) {
-      // Very hot - prefer shorts, short sleeves
-      if (cat === 'shorts' || cat === 'skirt') score += 0.15
-      else if (cat === 'pants' && styleTags.includes('lightweight')) score += 0.1
-      else if (cat === 'pants') score -= 0.05
-      if (cat === 'outerwear') score -= 0.2
-      if (styleTags.includes('winter')) score -= 0.15
+      // Very hot - prefer shorts, short sleeves, light fabrics
+      if (cat === 'shorts' || cat === 'skirt') {
+        itemScore += 1.0
+      } else if (cat === 'pants') {
+        if (styleTags.includes('lightweight')) itemScore += 0.7
+        else itemScore += 0.3 // Heavy pants not ideal
+      } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        if (clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie') {
+          itemScore += 0.2 // Long sleeves not ideal in very hot weather
+        } else {
+          itemScore += 0.9 // Short sleeves perfect
+        }
+      } else if (cat === 'outerwear' || cat === 'blazer') {
+        itemScore += 0.1 // Outerwear not needed
+      } else {
+        itemScore += 0.5 // Neutral for other items
+      }
+      
+      if (styleTags.includes('winter')) itemScore -= 0.3
+      if (styleTags.includes('summer')) itemScore += 0.2
+    } else if (temperature > 25) {
+      // Hot - prefer light items
+      if (cat === 'shorts' || cat === 'skirt') itemScore += 0.9
+      else if (cat === 'pants') itemScore += 0.6
+      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') itemScore += 0.8
+      else if (cat === 'outerwear' && styleTags.includes('lightweight')) itemScore += 0.5
+      else if (cat === 'outerwear') itemScore += 0.2
+      else itemScore += 0.7
+      
+      if (styleTags.includes('winter')) itemScore -= 0.2
+      if (styleTags.includes('summer')) itemScore += 0.2
     } else if (temperature < 15) {
-      // Cool - prefer pants, outerwear
-      if (cat === 'pants' || cat === 'outerwear') score += 0.15
-      if (cat === 'shorts') score -= 0.2
-      if (styleTags.includes('winter') || styleTags.includes('warm')) score += 0.1
-      if (styleTags.includes('summer')) score -= 0.15
+      // Cool - prefer pants, outerwear, long sleeves
+      if (cat === 'pants') itemScore += 0.9
+      else if (cat === 'shorts') itemScore += 0.2 // Shorts not ideal
+      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        if (clothingType.includes('long') || clothingType === 'longsleeve') itemScore += 0.9
+        else itemScore += 0.6 // Short sleeves okay but not ideal
+      } else if (cat === 'outerwear' || cat === 'blazer') itemScore += 0.9
+      else itemScore += 0.7
+      
+      if (styleTags.includes('winter') || styleTags.includes('warm')) itemScore += 0.2
+      if (styleTags.includes('summer')) itemScore -= 0.2
     } else {
-      // Moderate - most items suitable
-      score += 0.1
+      // Moderate (15-25°C) - most items suitable, slight variations
+      if (cat === 'pants') itemScore += 0.7
+      else if (cat === 'shorts' || cat === 'skirt') itemScore += 0.6
+      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        itemScore += 0.7
+      } else if (cat === 'outerwear') {
+        // Outerwear optional in moderate weather, score varies
+        itemScore += 0.4
+      } else itemScore += 0.7
     }
     
-    // Condition appropriateness
+    // Condition appropriateness scoring
     if (condition === 'rain') {
-      if (styleTags.includes('waterproof') || styleTags.includes('water-resistant')) score += 0.15
-      if (cat === 'outerwear' || cat === 'shoes') score += 0.1
-      if (styleTags.includes('delicate')) score -= 0.1
+      if (styleTags.includes('waterproof') || styleTags.includes('water-resistant')) {
+        itemScore += 0.3 // Bonus for waterproof
+      }
+      if (cat === 'outerwear' || cat === 'shoes') itemScore += 0.1
+      if (styleTags.includes('delicate') || styleTags.includes('silk')) itemScore -= 0.2
     } else if (condition === 'snow') {
-      if (styleTags.includes('winter') || styleTags.includes('waterproof')) score += 0.15
-      if (cat === 'outerwear') score += 0.1
-      if (styleTags.includes('summer')) score -= 0.15
+      if (styleTags.includes('winter') || styleTags.includes('waterproof')) itemScore += 0.3
+      if (cat === 'outerwear') itemScore += 0.2
+      if (styleTags.includes('summer')) itemScore -= 0.3
     }
+    
+    // Clamp item score to 0-1 range
+    itemScore = Math.max(0, Math.min(1, itemScore))
+    totalScore += itemScore
+    maxPossibleScore += itemMaxScore
   })
   
-  // Normalize score
-  const normalizedScore = Math.max(0, Math.min(1, score / Math.max(1, itemCount * 0.1)))
-  return normalizedScore
+  // Average score across all items
+  const avgScore = items.length > 0 ? totalScore / items.length : 0.5
+  return avgScore
 }
 
 /**
