@@ -2,9 +2,9 @@
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
-      <div class="flex items-start justify-between mb-8">
-        <div>
-          <h1 class="text-4xl font-bold text-foreground">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div class="flex-1 min-w-0">
+          <h1 class="text-4xl font-bold text-foreground break-words">
             Friends
           </h1>
         </div>
@@ -12,7 +12,7 @@
         <!-- Add Friend Button -->
         <button
           @click="showAddFriendModal = true"
-          class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 flex-shrink-0"
         >
           <UserPlus class="w-5 h-5" />
           Add Your Friend

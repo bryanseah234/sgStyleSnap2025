@@ -32,46 +32,48 @@
       @mouseenter="navbarHoverIn"
       @mouseleave="navbarHoverOut"
     >
-    <div class="fixed inset-0 z-[200] pointer-events-none">
-      <button
-        v-if="!isLandingPage && isSidebarCollapsed"
-        @click.stop="toggleSidebar"
-        class="absolute hidden md:flex top-9 left-14 w-8 h-8 pe-1 rounded-lg bg-secondary hover:bg-accent items-center justify-center shadow-sm transition-all duration-200 hover:scale-110 pointer-events-auto"
-        aria-label="Expand sidebar"
-        title="Expand sidebar"
-      >
-        <PanelLeftOpen class="w-5 h-5 text-secondary-foreground" />
-      </button>
-    </div>
-    
       <!-- Logo section with toggle button -->
-      <div class="mb-12 relative flex items-center justify-between transition-all duration-300 ease-in-out justify-start">
+      <div class="mb-12 relative flex flex-col transition-all duration-300 ease-in-out" :class="isSidebarCollapsed ? 'items-center gap-4' : 'items-start'">
         <!-- Logo with liquid reveal - only navigates to home -->
-        <router-link 
-          to="/home" 
-          class="liquid-reveal flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
-          :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-        >
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
-            <Shirt class="w-5 h-5 text-white dark:text-black"/>
-          </div>
-          <h1 
-            class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out"
-            :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
+        <div class="flex items-center w-full" :class="isSidebarCollapsed ? 'justify-center' : 'justify-between'">
+          <router-link 
+            to="/home" 
+            class="liquid-reveal flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+            :class="isSidebarCollapsed ? 'justify-center mx-auto' : 'gap-2 justify-start flex-shrink-0'"
           >
-            <StyleSnapBrand size="2xl" />
-          </h1>
-        </router-link>
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
+              <Shirt class="w-5 h-5 text-white dark:text-black"/>
+            </div>
+            <h1 
+              class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out"
+              :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
+            >
+              <StyleSnapBrand size="2xl" />
+            </h1>
+          </router-link>
+          
+          <!-- Toggle Button - positioned beside logo when expanded -->
+          <button
+            v-if="!isSidebarCollapsed"
+            @click.stop="toggleSidebar"
+            class="flex-shrink-0 w-[44px] h-[44px] rounded-lg bg-secondary hover:bg-accent flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-110"
+            :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+          >
+            <PanelLeftClose v-if="!isSidebarCollapsed" class="w-5 h-5 text-secondary-foreground" />
+          </button>
+        </div>
         
-        <!-- Toggle Button - always visible, positioned beside logo -->
-        <button
-          v-if="!isSidebarCollapsed"
-          @click.stop="toggleSidebar"
-          class="flex-shrink-0 w-8 h-8 rounded-lg bg-secondary hover:bg-accent flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-110"
-          :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        >
-          <PanelLeftClose v-if="!isSidebarCollapsed" class="w-5 h-5 text-secondary-foreground" />
-        </button>
+        <!-- View Tab Button - shown below logo when sidebar is collapsed -->
+        <div v-if="!isLandingPage && isSidebarCollapsed" class="w-full">
+          <button
+            @click.stop="toggleSidebar"
+            class="nav-item-liquid flex items-center justify-start px-3 py-3 rounded-xl bg-secondary hover:bg-accent transition-all duration-300 ease-in-out min-h-[44px] w-full"
+            aria-label="Expand sidebar"
+            title="Expand sidebar"
+          >
+            <PanelLeftOpen class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+          </button>
+        </div>
       </div>
 
       <!-- Navigation -->

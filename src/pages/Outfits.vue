@@ -2,15 +2,15 @@
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <!-- Header -->
     <div class="max-w-6xl mx-auto mb-8">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-4xl font-bold text-foreground">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="flex-1 min-w-0">
+          <h1 class="text-4xl font-bold text-foreground break-words">
             Your Outfits
           </h1>
         </div>
         
         <!-- Add Outfit Dropdown Button -->
-        <div class="relative">
+        <div class="relative flex-shrink-0">
           <button
             @click="showAddMenu = !showAddMenu"
             :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"

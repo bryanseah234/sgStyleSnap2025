@@ -35,24 +35,25 @@
       @mousemove="handleHeroMouseMove"
       @mouseleave="handleHeroMouseLeave"
     >
-      <div class="flex items-start gap-4 flex-wrap">
-        <h1 class="text-4xl font-bold text-foreground break-words">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <h1 class="text-[3.375rem] md:text-[3.375rem] font-bold text-foreground">
           Welcome back{{ userName }}
         </h1>
-      <button
-          class="inline-flex items-center px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-        @click="showNotificationsModal = true"
-        :disabled="loadingAll || loadingNotifications"
-        :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
-        title="View notifications"
-      >
-        <div class="relative">
-        <Bell class="w-5 h-5" />
-          <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
-          {{ unreadCount }}
-        </span>
-        </div>
-      </button>
+        <button
+          class="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-black text-white hover:bg-zinc-800 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed w-[160px] min-w-[160px] max-w-[160px] flex-shrink-0 self-start md:self-auto"
+          @click="showNotificationsModal = true"
+          :disabled="loadingAll || loadingNotifications"
+          :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
+          title="View notifications"
+        >
+          <div class="relative flex-shrink-0">
+            <Bell class="w-5 h-5" />
+            <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
+              {{ unreadCount }}
+            </span>
+          </div>
+          <span class="font-medium whitespace-nowrap">Notifications</span>
+        </button>
       </div>
       <p 
         class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
@@ -100,9 +101,9 @@
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40" @click="showNotificationsModal = false" />
     <!-- Modal Content -->
-    <div class="relative z-10 w-[92%] sm:w-[560px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+    <div class="relative z-10 w-[480px] max-w-[92vw] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
       <!-- Header -->
-      <div class="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-zinc-800">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-zinc-800 flex-shrink-0">
         <div class="flex items-center gap-2">
           <Bell class="w-5 h-5" />
           <h3 class="text-lg font-semibold">Notifications</h3>
@@ -125,8 +126,8 @@
           </button>
         </div>
       </div>
-      <!-- Body -->
-      <div class="p-4 overflow-y-auto" style="max-height: calc(80vh - 64px);">
+      <!-- Body - Scrollable Content -->
+      <div class="p-4 overflow-y-auto overflow-x-hidden flex-1" style="scroll-behavior: smooth; overscroll-behavior: contain;">
         <div v-if="loadingNotifications" class="flex flex-col items-center justify-center py-12">
           <div class="w-12 h-12 spinner-modern mb-4"></div>
           <p class="text-sm text-stone-600 dark:text-zinc-400">Loading notifications...</p>
