@@ -36,9 +36,9 @@
       @mouseleave="handleHeroMouseLeave"
     >
       <div class="flex items-start gap-4 flex-wrap">
-        <h1 class="text-4xl font-bold mb-4 text-foreground break-words">
-        Welcome back{{ userName }}
-      </h1>
+        <h1 class="text-4xl font-bold text-foreground break-words">
+          Welcome back{{ userName }}
+        </h1>
       <button
           class="inline-flex items-center px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mt-1"
         @click="showNotificationsModal = true"
