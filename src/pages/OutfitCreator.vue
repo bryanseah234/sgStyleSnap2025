@@ -509,7 +509,7 @@
                   position: 'absolute',
                   left: `${scalePosition(item.x, 'x')}px`,
                   top: `${scalePosition(item.y, 'y')}px`,
-                  zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : (item.z_index || 0),
+                  zIndex: draggedItem === item.id ? 50 : (item.z_index || 0) + (selectedItemId === item.id ? 1000 : 0),
                   transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                   transformOrigin: 'center center',
                   transition: draggedItem === item.id ? 'none' : 'all duration-200'
@@ -2929,36 +2929,80 @@ const moveSelectedItemForward = () => {
   if (!selectedItemId.value) return
   
   const item = canvasItems.value.find(i => i.id === selectedItemId.value)
-  if (item) {
-    const maxZIndex = Math.max(...canvasItems.value.map(i => i.z_index || 0))
-    if (item.z_index < maxZIndex) {
-      // Find item with next z-index and swap
-      const nextItem = canvasItems.value.find(i => i.z_index === (item.z_index || 0) + 1)
-      if (nextItem) {
-        nextItem.z_index = item.z_index
-      }
-      item.z_index = (item.z_index || 0) + 1
-      saveToHistory()
+  if (!item) return
+  
+  // Get max z-index among all items
+  const maxZIndex = Math.max(...canvasItems.value.map(i => i.z_index || 0), -1)
+  const currentZIndex = item.z_index || 0
+  
+  // If already at max, do nothing
+  if (currentZIndex >= maxZIndex) return
+  
+  // Find all items with z-index greater than current
+  const itemsAbove = canvasItems.value.filter(i => (i.z_index || 0) > currentZIndex)
+  
+  if (itemsAbove.length > 0) {
+    // Find the item with the smallest z-index above current
+    const minAboveZIndex = Math.min(...itemsAbove.map(i => i.z_index || 0))
+    const swapItem = itemsAbove.find(i => (i.z_index || 0) === minAboveZIndex)
+    
+    if (swapItem) {
+      // Swap z-indexes
+      const tempZIndex = swapItem.z_index || 0
+      swapItem.z_index = currentZIndex
+      item.z_index = tempZIndex
+    } else {
+      // Just increment
+      item.z_index = currentZIndex + 1
     }
+  } else {
+    // No items above, just increment
+    item.z_index = currentZIndex + 1
   }
+  
+  // Force reactivity update
+  canvasItems.value = [...canvasItems.value]
+  saveToHistory()
 }
 
 const moveSelectedItemBackward = () => {
   if (!selectedItemId.value) return
   
   const item = canvasItems.value.find(i => i.id === selectedItemId.value)
-  if (item) {
-    const minZIndex = Math.min(...canvasItems.value.map(i => i.z_index || 0))
-    if ((item.z_index || 0) > minZIndex) {
-      // Find item with previous z-index and swap
-      const prevItem = canvasItems.value.find(i => i.z_index === (item.z_index || 0) - 1)
-      if (prevItem) {
-        prevItem.z_index = item.z_index
-      }
-      item.z_index = (item.z_index || 0) - 1
-      saveToHistory()
+  if (!item) return
+  
+  // Get min z-index among all items
+  const minZIndex = Math.min(...canvasItems.value.map(i => i.z_index || 0), 0)
+  const currentZIndex = item.z_index || 0
+  
+  // If already at min, do nothing
+  if (currentZIndex <= minZIndex) return
+  
+  // Find all items with z-index less than current
+  const itemsBelow = canvasItems.value.filter(i => (i.z_index || 0) < currentZIndex)
+  
+  if (itemsBelow.length > 0) {
+    // Find the item with the largest z-index below current
+    const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.z_index || 0))
+    const swapItem = itemsBelow.find(i => (i.z_index || 0) === maxBelowZIndex)
+    
+    if (swapItem) {
+      // Swap z-indexes
+      const tempZIndex = swapItem.z_index || 0
+      swapItem.z_index = currentZIndex
+      item.z_index = tempZIndex
+    } else {
+      // Just decrement
+      item.z_index = currentZIndex - 1
     }
+  } else {
+    // No items below, just decrement
+    item.z_index = Math.max(0, currentZIndex - 1)
   }
+  
+  // Force reactivity update
+  canvasItems.value = [...canvasItems.value]
+  saveToHistory()
 }
 
 const deleteSelectedItem = () => {
