@@ -1870,14 +1870,16 @@ function isBottomCategory(item) {
 
 /**
  * Calculate color harmony score for an outfit (0-1)
- * More nuanced scoring based on actual color combinations
+ * More nuanced scoring based on actual color combinations with penalties for clashing colors
  */
 function calculateOutfitColorScore(items) {
   if (items.length < 2) return 0.5
   
   const NEUTRAL = ['black', 'white', 'gray', 'grey', 'beige', 'navy', 'tan', 'ivory', 'cream', 'charcoal']
+  const NEUTRAL_BLUE = ['blue', 'navy'] // Blue jeans are essentially neutral
   const WARM = ['red', 'orange', 'yellow', 'pink', 'burgundy', 'coral', 'peach', 'salmon', 'maroon']
-  const COOL = ['blue', 'green', 'purple', 'teal', 'turquoise', 'mint', 'lavender', 'indigo']
+  const COOL = ['green', 'purple', 'teal', 'turquoise', 'mint', 'lavender', 'indigo']
+  const BOLD_CLASHING = ['red', 'orange', 'yellow', 'purple', 'pink'] // Bold colors that are harder to pair
   
   const colors = items.map(item => {
     // Try primary_color first, then color, fallback to empty string
@@ -1895,8 +1897,16 @@ function calculateOutfitColorScore(items) {
   // Monochromatic (all same color) - perfect score
   if (uniqueColors.length === 1) return 1.0
   
-  // All neutrals - very high score
-  if (uniqueColors.every(c => NEUTRAL.some(n => c.includes(n) || c === n))) return 0.95
+  // All neutrals (including blue/navy which are effectively neutral) - very high score
+  const allNeutralOrBlue = uniqueColors.every(c => 
+    NEUTRAL.some(n => c.includes(n) || c === n) || 
+    NEUTRAL_BLUE.some(b => c.includes(b))
+  )
+  if (allNeutralOrBlue) return 0.95
+  
+  // Check if we have bold/clashing colors that make coordination harder
+  const hasBoldColor = uniqueColors.some(c => BOLD_CLASHING.some(b => c.includes(b)))
+  const boldColorCount = uniqueColors.filter(c => BOLD_CLASHING.some(b => c.includes(b))).length
   
   // Calculate pair-wise color compatibility
   let compatibilitySum = 0
@@ -1914,6 +1924,10 @@ function calculateOutfitColorScore(items) {
         continue
       }
       
+      // Blue/navy is essentially neutral - works with everything
+      const color1IsBlue = NEUTRAL_BLUE.some(b => color1.includes(b))
+      const color2IsBlue = NEUTRAL_BLUE.some(b => color2.includes(b))
+      
       // Both neutral - high compatibility
       if (NEUTRAL.some(n => color1.includes(n) || color1 === n) && 
           NEUTRAL.some(n => color2.includes(n) || color2 === n)) {
@@ -1921,16 +1935,48 @@ function calculateOutfitColorScore(items) {
         continue
       }
       
-      // One neutral - good compatibility
+      // Blue/navy with neutral - excellent (blue jeans are versatile)
+      if ((color1IsBlue && NEUTRAL.some(n => color2.includes(n) || color2 === n)) ||
+          (color2IsBlue && NEUTRAL.some(n => color1.includes(n) || color1 === n))) {
+        compatibilitySum += 0.92
+        continue
+      }
+      
+      // Blue/navy with any color - good (blue is versatile)
+      if (color1IsBlue || color2IsBlue) {
+        // But penalize if the other color is bold/clashing
+        if (BOLD_CLASHING.some(b => color1.includes(b) || color2.includes(b))) {
+          compatibilitySum += 0.65 // Blue with bold colors = moderate
+        } else {
+          compatibilitySum += 0.85 // Blue with other colors = good
+        }
+        continue
+      }
+      
+      // One neutral with colored - good compatibility
       if (NEUTRAL.some(n => color1.includes(n) || color1 === n) || 
           NEUTRAL.some(n => color2.includes(n) || color2 === n)) {
-        compatibilitySum += 0.85
+        // BUT: If the colored item is bold (like bright red), penalize more
+        const otherColor = NEUTRAL.some(n => color1.includes(n) || color1 === n) ? color2 : color1
+        if (BOLD_CLASHING.some(b => otherColor.includes(b))) {
+          // Bright red/bold colors with neutrals are harder to pull off
+          compatibilitySum += 0.65 // Penalize bold + neutral combinations
+        } else {
+          compatibilitySum += 0.85
+        }
         continue
       }
       
       // Both warm colors
       if (WARM.some(w => color1.includes(w)) && WARM.some(w => color2.includes(w))) {
-        compatibilitySum += 0.8
+        // Check if both are bold - this can clash
+        const bothBold = BOLD_CLASHING.some(b => color1.includes(b)) && 
+                         BOLD_CLASHING.some(b => color2.includes(b))
+        if (bothBold) {
+          compatibilitySum += 0.5 // Two bold warm colors can clash (e.g., red + orange)
+        } else {
+          compatibilitySum += 0.75 // Warm colors together = okay
+        }
         continue
       }
       
@@ -1954,10 +2000,16 @@ function calculateOutfitColorScore(items) {
         continue
       }
       
-      // Mixed warm and cool - lower score
+      // Mixed warm and cool - lower score (especially if one is bold)
       if ((WARM.some(w => color1.includes(w)) && COOL.some(c => color2.includes(c))) ||
           (COOL.some(c => color1.includes(c)) && WARM.some(w => color2.includes(w)))) {
-        compatibilitySum += 0.5
+        // Extra penalty if one is a bold color
+        const oneIsBold = BOLD_CLASHING.some(b => color1.includes(b) || color2.includes(b))
+        if (oneIsBold) {
+          compatibilitySum += 0.35 // Bold warm with cool = clashes badly
+        } else {
+          compatibilitySum += 0.5 // Regular warm/cool mix
+        }
         continue
       }
       
@@ -1969,9 +2021,22 @@ function calculateOutfitColorScore(items) {
   // Average compatibility across all pairs
   const avgCompatibility = comparisonCount > 0 ? compatibilitySum / comparisonCount : 0.6
   
+  // Penalties for having bold/clashing colors
+  let totalPenalty = 0
+  if (hasBoldColor) {
+    // The more bold colors, the harder to coordinate
+    if (boldColorCount === 1) {
+      totalPenalty += 0.08 // Single bold color (like red pants) makes it harder
+    } else if (boldColorCount >= 2) {
+      totalPenalty += 0.2 // Multiple bold colors = much harder
+    }
+  }
+  
   // Adjust based on number of colors (more colors = harder to coordinate)
-  const colorPenalty = uniqueColors.length > 3 ? 0.05 : 0
-  return Math.max(0, Math.min(1, avgCompatibility - colorPenalty))
+  const colorCountPenalty = uniqueColors.length > 3 ? 0.05 : 0
+  
+  const finalScore = Math.max(0, Math.min(1, avgCompatibility - totalPenalty - colorCountPenalty))
+  return finalScore
 }
 
 /**
