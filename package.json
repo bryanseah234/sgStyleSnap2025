@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
-    "@google/genai": "^1.28.0",
     "@huggingface/inference": "^4.13.0",
     "@studio-freight/lenis": "^1.0.42",
     "@supabase/supabase-js": "^2.38.4",
