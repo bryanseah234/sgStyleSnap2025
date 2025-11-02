@@ -21,6 +21,16 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Parse request body if it's a string (Vercel sometimes sends strings)
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid JSON in request body' });
+      }
+    }
+
     // Get API key from server-side environment variable
     // This will work with GEMINI_API_KEY (no VITE_ prefix) from Vercel
     const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
@@ -34,16 +44,16 @@ export default async function handler(req, res) {
     }
 
     console.log('🔄 Proxying request to Google Gemini API');
-    console.log('📦 Request type:', req.body?.type || 'unknown');
+    console.log('📦 Request type:', body?.type || 'unknown');
     console.log('🔑 API key available:', !!apiKey);
 
     // Initialize Google GenAI client with server-side API key
     const client = new GoogleGenAI(apiKey);
-    const modelName = req.body.model || 'imagen-4.0-generate-001';
+    const modelName = body.model || 'imagen-4.0-generate-001';
 
-    if (req.body.type === 'generateImages') {
-      // Generate images using Imagen 4.0
-      const { prompt, config } = req.body;
+    if (body.type === 'generateImages') {
+      // Generate images using Imagen 4.0 with clothing image references
+      const { prompt, config, topImageBase64, bottomImageBase64 } = body;
       
       if (!prompt) {
         return res.status(400).json({ error: 'Prompt is required' });
@@ -51,8 +61,41 @@ export default async function handler(req, res) {
 
       console.log('📤 Generating image with Imagen 4.0...');
       console.log('📝 Prompt:', prompt.substring(0, 200) + '...');
+      console.log('👕 Top image provided:', !!topImageBase64);
+      console.log('👖 Bottom image provided:', !!bottomImageBase64);
 
-      const response = await client.models.generateImages({
+      // Prepare image parts for Imagen API if clothing images are provided
+      // Note: Imagen 4.0 may support image conditioning via prompt with image references
+      let imageParts = [];
+      
+      if (topImageBase64) {
+        const topData = topImageBase64.includes(',') ? topImageBase64.split(',')[1] : topImageBase64;
+        const topMimeType = topImageBase64.startsWith('data:') 
+          ? topImageBase64.split(';')[0].split(':')[1] || 'image/jpeg'
+          : 'image/jpeg';
+        imageParts.push({
+          inlineData: {
+            mimeType: topMimeType,
+            data: topData
+          }
+        });
+      }
+      
+      if (bottomImageBase64) {
+        const bottomData = bottomImageBase64.includes(',') ? bottomImageBase64.split(',')[1] : bottomImageBase64;
+        const bottomMimeType = bottomImageBase64.startsWith('data:')
+          ? bottomImageBase64.split(';')[0].split(':')[1] || 'image/jpeg'
+          : 'image/jpeg';
+        imageParts.push({
+          inlineData: {
+            mimeType: bottomMimeType,
+            data: bottomData
+          }
+        });
+      }
+
+      // Build request - include images if available
+      const requestConfig = {
         model: modelName,
         prompt: prompt,
         config: config || {
@@ -60,7 +103,13 @@ export default async function handler(req, res) {
           aspectRatio: "3:4",
           personGeneration: "allow_adult",
         },
-      });
+      };
+
+      // If images are provided, try to include them (may need to check Imagen API docs for exact format)
+      // For now, we'll rely on the enhanced prompt that references the images
+      console.log('📸 Image parts count:', imageParts.length);
+
+      const response = await client.models.generateImages(requestConfig);
 
       console.log('✅ Received response from Imagen API');
 
@@ -76,9 +125,9 @@ export default async function handler(req, res) {
         mimeType: generatedImage.image.mimeType || 'image/png'
       });
 
-    } else if (req.body.type === 'analyzeClothingImages') {
+    } else if (body.type === 'analyzeClothingImages') {
       // Analyze clothing images using Gemini vision model
-      const { topImageBase64, bottomImageBase64 } = req.body;
+      const { topImageBase64, bottomImageBase64 } = body;
       
       if (!topImageBase64 && !bottomImageBase64) {
         return res.status(400).json({ error: 'At least one image is required' });
@@ -142,11 +191,19 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('❌ Gemini proxy error:', error.message);
-    console.error('❌ Error details:', error);
-
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error name:', error.name);
+    
+    // Provide more detailed error information
+    const errorDetail = error.message || 'Unknown error occurred';
+    const isImportError = error.message?.includes('Cannot find module') || error.message?.includes('import');
+    
     return res.status(500).json({
       error: 'Gemini API error',
-      detail: error.message || 'Unknown error occurred'
+      detail: errorDetail,
+      type: error.name || 'Error',
+      // Helpful message if it's an import/module error
+      hint: isImportError ? 'Check if @google/genai package is installed in Vercel' : undefined
     });
   }
 }

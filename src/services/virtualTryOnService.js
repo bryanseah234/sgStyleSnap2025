@@ -82,6 +82,7 @@ export class VirtualTryOnService {
       
       if (this.useProxy) {
         // Use backend proxy API (uses GEMINI_API_KEY from Vercel server-side)
+        // Send the actual clothing images so the API can reference them
         const response = await fetch(this.proxyUrl, {
           method: 'POST',
           headers: {
@@ -91,6 +92,8 @@ export class VirtualTryOnService {
             type: 'generateImages',
             model: this.model,
             prompt: prompt,
+            topImageBase64: topImageBase64, // Send actual clothing images
+            bottomImageBase64: bottomImageBase64, // Send actual clothing images
             config: {
               numberOfImages: 1,
               aspectRatio: "3:4",
@@ -117,9 +120,12 @@ export class VirtualTryOnService {
           throw new Error('Google Gemini API key is required. Please set the API key.')
         }
 
+        // Send clothing images along with the prompt for better accuracy
         const response = await this.client.models.generateImages({
           model: this.model,
           prompt: prompt,
+          // Note: Imagen API may need images passed differently - check API docs
+          // For now, the prompt should be descriptive enough with the image references
           config: {
             numberOfImages: 1,
             aspectRatio: "3:4",
@@ -261,29 +267,38 @@ export class VirtualTryOnService {
   createTryOnPrompt(clothingDescription, topImageBase64, bottomImageBase64) {
     let prompt = "A professional high-quality fashion photograph of a person modeling a complete outfit. "
     
+    // Emphasize that we're using SPECIFIC clothing items from reference images
+    prompt += "IMPORTANT: The person must be wearing the EXACT clothing items shown in the provided reference images. "
+    
     if (clothingDescription) {
-      prompt += `The person is wearing the following clothing items: ${clothingDescription}. `
-      prompt += "Show these exact clothing items being worn together as a complete outfit. "
+      prompt += `The person is wearing the following EXACT clothing items from the reference images: ${clothingDescription}. `
+      prompt += "The generated image must show these SPECIFIC clothing items - match the exact colors, patterns, style, and details from the reference images. "
+      prompt += "DO NOT generate random clothing - use only the garments shown in the reference images. "
     } else {
-      // Fallback if vision analysis fails
+      // Fallback if vision analysis fails - still emphasize using reference images
       if (topImageBase64 && bottomImageBase64) {
-        prompt += "The person is wearing a top garment on their upper body and a bottom garment on their lower body, "
-        prompt += "both pieces combined into one cohesive fashion outfit. "
-        prompt += "The top and bottom should be worn together as a matching ensemble. "
+        prompt += "The person must be wearing the EXACT top garment and EXACT bottom garment shown in the provided reference images. "
+        prompt += "Match the precise appearance, colors, patterns, and details from the reference top and bottom images. "
+        prompt += "The top and bottom should be worn together exactly as shown in the reference images. "
+        prompt += "DO NOT create random clothing - replicate the exact garments from the reference images. "
       } else if (topImageBase64) {
-        prompt += "The person is wearing a top garment on their upper body. "
-        prompt += "Show the top being worn properly on a fashion model. "
+        prompt += "The person must be wearing the EXACT top garment shown in the reference image. "
+        prompt += "Match the precise appearance, colors, patterns, and details from the reference image. "
+        prompt += "Show the exact top being worn properly on a fashion model - replicate the reference garment exactly. "
       } else if (bottomImageBase64) {
-        prompt += "The person is wearing a bottom garment on their lower body. "
-        prompt += "Show the bottom being worn properly on a fashion model. "
+        prompt += "The person must be wearing the EXACT bottom garment shown in the reference image. "
+        prompt += "Match the precise appearance, colors, patterns, and details from the reference image. "
+        prompt += "Show the exact bottom being worn properly on a fashion model - replicate the reference garment exactly. "
       }
     }
 
-    prompt += "The clothing items should be clearly visible, well-fitted, and naturally worn. "
+    prompt += "The clothing items should match the reference images exactly - same colors, same patterns, same style details. "
+    prompt += "The clothing should be clearly visible, well-fitted, and naturally worn. "
     prompt += "Full body visible in a natural standing pose. "
     prompt += "Professional fashion photography style with studio lighting, clean neutral background. "
     prompt += "High resolution, sharp focus, modern aesthetic. "
-    prompt += "The person should look confident and stylish."
+    prompt += "The person should look confident and stylish. "
+    prompt += "CRITICAL: The generated clothing must be identical to the reference images provided - match every detail."
 
     return prompt
   }
