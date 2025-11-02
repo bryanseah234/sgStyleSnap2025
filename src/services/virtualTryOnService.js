@@ -17,10 +17,19 @@ export class VirtualTryOnService {
     // Get your API key from: https://ai.google.dev/
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || ''
     
+    // Debug: Log all VITE_ environment variables (helps troubleshoot Vercel deployment)
+    const viteEnvVars = Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'))
+    safeLog('🔍 Available VITE_ env vars:', viteEnvVars)
+    safeLog('🔍 VITE_GEMINI_API_KEY exists:', 'VITE_GEMINI_API_KEY' in import.meta.env)
+    safeLog('🔍 VITE_GEMINI_API_KEY value:', import.meta.env.VITE_GEMINI_API_KEY ? sanitizeToken(import.meta.env.VITE_GEMINI_API_KEY) : 'NOT SET')
+    
     // Initialize Google GenAI Client
     if (!this.apiKey) {
       safeWarn('⚠️ VITE_GEMINI_API_KEY is not set')
-      safeWarn('⚠️ Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
+      safeWarn('⚠️ If you set this in Vercel, make sure to:')
+      safeWarn('   1. Variable name is exactly: VITE_GEMINI_API_KEY (case-sensitive)')
+      safeWarn('   2. It is set for the correct environment (Production/Preview/Development)')
+      safeWarn('   3. You have redeployed after adding the variable')
       this.client = null
     } else {
       this.client = new GoogleGenAI(this.apiKey)
