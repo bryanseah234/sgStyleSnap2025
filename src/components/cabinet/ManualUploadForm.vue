@@ -221,7 +221,7 @@ const categoryTypeMapping = {
   top: ['Blouse', 'Body', 'Dress', 'Hoodie', 'Longsleeve', 'Polo', 'Shirt', 'T-Shirt', 'Top', 'Undershirt'],
   bottom: ['Pants', 'Shorts', 'Skirt'],
   outerwear: ['Blazer', 'Outwear'],
-  shoes: ['Shoes'],
+  shoes: ['Shoes', 'Slippers'],
   accessory: ['Hat']
 }
 
@@ -393,7 +393,7 @@ const handleSubmit = async () => {
     const serviceData = {
       name: formData.value.name,
       category: formData.value.category,
-      clothing_type: formData.value.type || null,
+      clothing_type: formData.value.type ? formData.value.type.toLowerCase() : null,
       color: formData.value.color || null,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
