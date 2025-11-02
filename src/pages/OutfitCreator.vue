@@ -474,11 +474,11 @@
 
         <!-- Right Area - Outfit Canvas -->
         <div class="lg:col-span-3">
-          <div class="rounded-xl overflow-hidden bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
+          <div class="rounded-xl overflow-visible bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
             <!-- Canvas Area -->
             <div
               ref="canvasContainer"
-              class="relative w-full rounded-lg overflow-hidden bg-stone-50 dark:bg-zinc-800"
+              class="relative w-full rounded-lg overflow-visible bg-stone-50 dark:bg-zinc-800"
               style="height: 600px;"
               @drop="handleDrop"
               @dragover.prevent
@@ -536,10 +536,10 @@
                   </div>
                 </div>
 
-                <!-- Toolkit (shown on hover) -->
+                <!-- Toolkit (shown when item is selected) -->
                 <div
                   v-if="selectedItemId === item.id"
-                  class="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-stone-200 dark:bg-zinc-800/95 dark:border-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  class="absolute -top-14 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-stone-200 dark:bg-zinc-800/95 dark:border-zinc-700 opacity-100 transition-opacity duration-200 z-[100] pointer-events-auto"
                   @mousedown.stop
                   @click.stop
                 >
@@ -2886,7 +2886,12 @@ const handleMouseUp = () => {
 }
 
 const selectItem = (itemId) => {
-  selectedItemId.value = itemId
+  // Toggle selection: if clicking the same item, deselect it; otherwise select it
+  if (selectedItemId.value === itemId) {
+    selectedItemId.value = null
+  } else {
+    selectedItemId.value = itemId
+  }
 }
 
 const deselectItem = () => {
