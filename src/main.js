@@ -485,16 +485,27 @@ async function logApiConfiguration() {
   }
   console.log('')
   
-  // Google Gemini Configuration (server-side only)
-  // API key is stored as GEMINI_API_KEY (without VITE_ prefix) on server
+  // Google Gemini Configuration
+  const viteGeminiKey = import.meta.env.VITE_GEMINI_API_KEY
+  const isGeminiConfigured = !!viteGeminiKey
+  
   console.log(`🌟 Google Gemini:`)
-  console.log(`   API Key: ⚠️  Server-side only (GEMINI_API_KEY in Vercel)`)
-  console.log(`   Status: ✅ Using secure proxy endpoint (/api/gemini-proxy)`)
+  if (viteGeminiKey) {
+    console.log(`   Local API Key: ✅ Set (length: ${viteGeminiKey.length})`)
+    console.log(`   Mode: Direct API client (local development)`)
+  } else {
+    console.log(`   Local API Key: ⚠️  Not set (will use backend proxy)`)
+    console.log(`   Mode: Backend proxy (uses GEMINI_API_KEY from Vercel server-side)`)
+  }
+  console.log(`   Status: ${isGeminiConfigured ? '✅ Configured (local)' : '✅ Configured (via proxy)'}`)
   
   // Check if Google Gemini services are initialized
   try {
     const { virtualTryOnService } = await import('@/services/virtualTryOnService')
-    console.log(`   Virtual Try-On Service: ${virtualTryOnService.client ? '✅ Initialized (proxy mode)' : '❌ Not initialized'}`)
+    const serviceStatus = virtualTryOnService.useProxy 
+      ? '✅ Using backend proxy'
+      : (virtualTryOnService.client ? '✅ Initialized (direct)' : '❌ Not initialized')
+    console.log(`   Virtual Try-On Service: ${serviceStatus}`)
   } catch (e) {
     console.log(`   Virtual Try-On Service: ⚠️  Could not check initialization`)
   }
@@ -516,10 +527,11 @@ async function logApiConfiguration() {
   const totalConfigured = [
     isSupabaseConfigured,
     isCloudinaryConfigured,
-    isHuggingFaceConfigured
+    isHuggingFaceConfigured,
+    isGeminiConfigured
   ].filter(Boolean).length
   
-  console.log(`📊 Summary: ${totalConfigured}/3 core APIs configured (Gemini uses server-side proxy)`)
+  console.log(`📊 Summary: ${totalConfigured}/4 core APIs configured`)
   console.log('')
 }
 
