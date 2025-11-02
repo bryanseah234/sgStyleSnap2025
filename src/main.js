@@ -485,18 +485,15 @@ async function logApiConfiguration() {
   }
   console.log('')
   
-  // Google Gemini Configuration
-  const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY
-  const isGeminiConfigured = !!geminiApiKey
-  
+  // Google Gemini Configuration (using server-side proxy with GEMINI_API_KEY)
   console.log(`🌟 Google Gemini:`)
-  console.log(`   API Key: ${geminiApiKey ? `✅ Set (length: ${geminiApiKey.length})` : '❌ Not set'}`)
-  console.log(`   Status: ${isGeminiConfigured ? '✅ Configured' : '❌ Not configured'}`)
+  console.log(`   API Key: ⚠️  Server-side only (GEMINI_API_KEY in Vercel)`)
+  console.log(`   Status: ✅ Using secure proxy endpoint (/api/gemini-proxy)`)
   
   // Check if Google Gemini services are initialized
   try {
     const { virtualTryOnService } = await import('@/services/virtualTryOnService')
-    console.log(`   Virtual Try-On Service: ${virtualTryOnService.client ? '✅ Initialized' : '❌ Not initialized'}`)
+    console.log(`   Virtual Try-On Service: ✅ Initialized (proxy mode)`)
   } catch (e) {
     console.log(`   Virtual Try-On Service: ⚠️  Could not check initialization`)
   }
