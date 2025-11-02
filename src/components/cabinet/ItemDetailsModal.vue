@@ -32,9 +32,9 @@
             </button>
           </div>
 
-      <div class="flex flex-col md:flex-row md:max-h-[calc(90vh-2rem)]">
+      <div class="flex flex-col md:flex-row flex-1 min-h-0">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image w-full md:w-1/2 md:max-h-[calc(90vh-2rem)] min-h-[250px] md:min-h-0 relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
+        <div class="liquid-modal-image w-full md:w-1/2 h-[250px] md:h-auto md:max-h-full min-h-[200px] md:min-h-0 relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Right: Details with Liquid Reveal -->
-        <div class="liquid-modal-content w-full md:w-1/2 p-6 space-y-6 overflow-y-auto flex-1 min-h-0 max-h-[calc(90vh-2rem)]">
+        <div class="liquid-modal-content w-full md:w-1/2 p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
           <!-- Item Name & Category -->
           <div>
             <h2 class="text-2xl font-bold mb-2 text-foreground">
