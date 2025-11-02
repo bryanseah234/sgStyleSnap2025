@@ -113,11 +113,11 @@
             @mouseup="themePressOut"
             @mouseleave="themePressOut"
             :class="`nav-item-liquid liquid-press w-full flex items-center justify-between  ${isSidebarCollapsed ? '' : 'gap-3'} px-3 py-3 rounded-xl bg-secondary hover:bg-accent group relative transition-all duration-300 ease-in-out min-h-[44px]`"
-            :title="isSidebarCollapsed ? `${getThemeLabel(theme.value)} Theme` : getThemeLabel(theme.value)"
+            :title="isSidebarCollapsed ? `${getThemeLabel(currentTheme)} Theme` : getThemeLabel(currentTheme)"
           >
             <div class="flex gap-3">
-              <Sun v-if="theme.value === 'light'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-              <Moon v-else-if="theme.value === 'dark'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+              <Sun v-if="currentTheme === 'light'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+              <Moon v-else-if="currentTheme === 'dark'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
               <Monitor v-else class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
               <span 
                 class="font-medium text-secondary-foreground whitespace-nowrap transition-all duration-300 ease-in-out flex-1"
@@ -148,7 +148,7 @@
                 :key="option.value"
                 @click.stop="selectTheme(option.value)"
                 :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
-                  theme.value === option.value
+                  currentTheme === option.value
                     ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
                     : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
                 }`"
@@ -157,7 +157,7 @@
                 <span class="font-medium text-sm">{{ option.label }}</span>
                 <!-- Selected indicator checkmark -->
                 <svg 
-                  v-if="theme.value === option.value" 
+                  v-if="currentTheme === option.value" 
                   class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400 flex-shrink-0" 
                   fill="none" 
                   stroke="currentColor" 
@@ -178,7 +178,7 @@
               :key="option.value"
               @click.stop="selectTheme(option.value)"
               :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
-                theme.value === option.value
+                currentTheme === option.value
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
                   : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
               }`"
@@ -187,7 +187,7 @@
               <span class="font-medium text-sm">{{ option.label }}</span>
               <!-- Selected indicator checkmark -->
               <svg 
-                v-if="theme.value === option.value" 
+                v-if="currentTheme === option.value" 
                 class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400 flex-shrink-0" 
                 fill="none" 
                 stroke="currentColor" 
@@ -318,6 +318,8 @@
  */
 
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useThemeStore } from '@/stores/theme-store'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
@@ -353,7 +355,9 @@ import { PanelLeftOpen } from 'lucide-vue-next'
 // Router, theme, and auth composables
 const router = useRouter()
 const route = useRoute()
-const { theme, loadUser, refreshTheme, toggleTheme, setTheme } = useTheme()
+const { loadUser, refreshTheme, toggleTheme, setTheme } = useTheme()
+const themeStore = useThemeStore()
+const { theme: themeFromStore } = storeToRefs(themeStore)
 const { showConfirm } = usePopup()
 const authStore = useAuthStore()
 
@@ -416,6 +420,9 @@ const sidebarWidthClass = computed(() => {
   return isSidebarCollapsed.value ? 'w-20' : 'w-64'
 })
 
+// Use store ref directly - storeToRefs already gives us a reactive ref
+const currentTheme = themeFromStore
+
 // Theme options with icons
 const themeOptions = [
   { value: 'light', label: 'Light', icon: Sun },
@@ -423,7 +430,6 @@ const themeOptions = [
   { value: 'system', label: 'System', icon: Monitor }
 ]
 
-console.log("THEME VALUE IS: ", theme.value)
 // Get theme label
 const getThemeLabel = (themeValue) => {
   const option = themeOptions.find(opt => opt.value === themeValue)
@@ -436,6 +442,10 @@ const selectTheme = async (themeValue) => {
   showThemeDropdown.value = false
   // Then apply theme change
   await setTheme(themeValue)
+  // Wait for DOM update
+  await nextTick()
+  // Force refresh to ensure UI updates
+  refreshTheme()
 }
 
 // Handle theme button click
