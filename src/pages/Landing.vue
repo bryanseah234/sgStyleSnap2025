@@ -543,11 +543,11 @@
       </div>
     </section>
     
-    <!-- CTA Section -->
+    <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="landing-section cta-card-section py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative"
+      class="cta-card-section py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative"
     >
-      <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
         <p class="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-gray-800/95">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
@@ -575,9 +575,9 @@
           '-translate-y-full': !showFooter 
         }"
       >
-        <div class="container py-12 sm:py-16 relative z-10">
+        <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
           <!-- Top Section: Branding and Links -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-12">
             <!-- Left: Logo and Tagline -->
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-3">
@@ -586,21 +586,44 @@
                 </div>
                 <StyleSnapBrand class="font-bold text-xl text-white" size="xl" />
               </div>
-              <p class="text-sm text-gray-400">
+              <p class="text-sm text-gray-400 max-w-xs">
                 Transform your fashion game with StyleSnap.
               </p>
             </div>
             
-            <!-- Right: Navigation Links Column -->
+            <!-- Right: Navigation Links in 2-3 Columns -->
             <div class="flex justify-start md:justify-end">
-              <ul class="space-y-3">
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Contact</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Help center</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Merch</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">X (Twitter)</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">LinkedIn</a></li>
-              </ul>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 w-full md:w-auto">
+                <!-- Column 1: Explore -->
+                <div>
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Explore</h3>
+                  <ul class="space-y-3">
+                    <li><a href="#features" class="text-sm text-white hover:text-gray-300 transition">Features</a></li>
+                    <li><a href="#demo" class="text-sm text-white hover:text-gray-300 transition">Demo</a></li>
+                    <li><a href="#why" class="text-sm text-white hover:text-gray-300 transition">Why StyleSnap</a></li>
+                  </ul>
+                </div>
+                
+                <!-- Column 2: Contact -->
+                <div>
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Contact</h3>
+                  <ul class="space-y-3">
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Help Center</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Support</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Contact Us</a></li>
+                  </ul>
+                </div>
+                
+                <!-- Column 3: Careers -->
+                <div>
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Company</h3>
+                  <ul class="space-y-3">
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Merch</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Social</a></li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -1889,12 +1912,19 @@ const setScrollY = (value) => {
 
 /* CTA Card Section with Rounded Bottom */
 .cta-card-section {
-  margin-bottom: -40px;
-  border-bottom-left-radius: 32px;
-  border-bottom-right-radius: 32px;
+  margin-bottom: -48px;
+  border-bottom-left-radius: 28px;
+  border-bottom-right-radius: 28px;
   z-index: 10;
   position: relative;
   background-color: white;
+}
+
+@media (min-width: 768px) {
+  .cta-card-section {
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+  }
 }
 
 /* Footer Reveal */
@@ -1902,7 +1932,7 @@ const setScrollY = (value) => {
   position: relative;
   overflow: visible;
   z-index: 1;
-  margin-top: -40px;
+  margin-top: -48px;
 }
 
 .footer-reveal {
@@ -1910,7 +1940,7 @@ const setScrollY = (value) => {
   z-index: 1;
   transform-origin: top center;
   will-change: transform;
-  margin-top: 40px;
+  margin-top: 48px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   transition: transform 0.5s ease-out;
