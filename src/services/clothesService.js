@@ -451,7 +451,11 @@ export class ClothesService {
   async deleteClothes(id) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
+      if (userError || !user) {
+        throw new Error('Not authenticated')
+      }
+
+      console.log('🗑️ ClothesService: Deleting item with id:', id)
 
       // Soft delete by setting removed_at
       const { data, error } = await supabase
@@ -462,11 +466,23 @@ export class ClothesService {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ ClothesService: Delete error:', error)
+        throw error
+      }
 
+      if (!data) {
+        console.error('❌ ClothesService: No data returned from delete')
+        throw new Error('Item not found or you do not have permission to delete it')
+      }
+
+      console.log('✅ ClothesService: Item deleted successfully:', data.id)
       return { success: true, data }
     } catch (error) {
+      console.error('❌ ClothesService: Delete failed:', error)
       handleSupabaseError(error, 'delete clothes')
+      // Re-throw so caller can catch it
+      throw error
     }
   }
 

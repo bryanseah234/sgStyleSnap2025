@@ -115,6 +115,23 @@
             <span class="hidden sm:inline">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
           </button>
           
+          <!-- Weather Recommended button (only shown on suggested route) -->
+          <button
+            v-if="currentSubRoute === 'suggested'"
+            @click="generateWeatherBasedOutfit"
+            :disabled="generatingWeatherOutfit || wardrobeItems.length < 2"
+            :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              !generatingWeatherOutfit && wardrobeItems.length >= 2
+                ? 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500'
+                : 'opacity-50 cursor-not-allowed'
+            }`"
+            title="Generate Weather-Based Outfit Recommendations"
+          >
+            <CloudSun v-if="!generatingWeatherOutfit" class="w-5 h-5" />
+            <div v-else class="w-5 h-5 spinner-modern"></div>
+            <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading Weather...' : 'Weather Recommended' }}</span>
+          </button>
+          
         </div>
         </div>
 
@@ -212,6 +229,23 @@
               <Sparkles v-if="!recommendingOutfits" class="w-4 h-4" />
               <div v-else class="w-4 h-4 spinner-modern"></div>
               <span class="text-xs">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
+            </button>
+            
+            <!-- Weather Recommended button (only in AI mode) -->
+            <button
+              v-if="currentSubRoute === 'suggested'"
+              @click="generateWeatherBasedOutfit"
+              :disabled="generatingWeatherOutfit || wardrobeItems.length < 2"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
+                !generatingWeatherOutfit && wardrobeItems.length >= 2
+                  ? 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500'
+                  : 'opacity-50 cursor-not-allowed'
+              }`"
+              title="Generate Weather-Based Outfit Recommendations"
+            >
+              <CloudSun v-if="!generatingWeatherOutfit" class="w-4 h-4" />
+              <div v-else class="w-4 h-4 spinner-modern"></div>
+              <span class="text-xs">{{ generatingWeatherOutfit ? 'Loading...' : 'Weather' }}</span>
             </button>
             
             <button
@@ -381,7 +415,8 @@
                 draggable="true"
                 @dragstart="handleDragStart(item, $event)"
                 @click="addItemToCanvas(item)"
-                class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600"
+                @contextmenu.prevent="showItemContextMenu(item, $event)"
+                class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600 relative"
               >
                 <div class="flex items-center gap-3">
                   <!-- Item Image -->
@@ -627,6 +662,23 @@
                   <span class="hidden sm:inline">Regenerate</span>
                 </button>
                 
+                <!-- Weather Recommended Button - Only for suggested route -->
+                <button
+                  v-if="currentSubRoute === 'suggested'"
+                  @click="generateWeatherBasedOutfit"
+                  :disabled="generatingWeatherOutfit || wardrobeItems.length < 2"
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
+                    !generatingWeatherOutfit && wardrobeItems.length >= 2
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 shadow-lg'
+                      : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
+                  }`"
+                  title="Generate Weather-Based Outfit"
+                >
+                  <CloudSun v-if="!generatingWeatherOutfit" class="w-4 h-4" />
+                  <div v-else class="w-4 h-4 spinner-modern"></div>
+                  <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading...' : 'Weather Recommended' }}</span>
+                </button>
+                
                 <!-- Show on Model Button -->
                 <button
                   @click="showVirtualTryOn"
@@ -821,6 +873,141 @@
         </div>
       </div>
     </div>
+    
+    <!-- Weather Recommendations Modal -->
+    <div
+      v-if="showWeatherRecommendationsModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      @click.self="showWeatherRecommendationsModal = false"
+    >
+      <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-stone-200 dark:border-zinc-800">
+          <div>
+            <h2 class="text-2xl font-bold text-black dark:text-white flex items-center gap-2">
+              <CloudSun class="w-6 h-6 text-blue-500" />
+              Weather-Based Outfit Recommendations
+            </h2>
+            <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">
+              <span v-if="weatherRecommendations.length > 0 && weatherRecommendations[0].weatherInfo">
+                {{ weatherRecommendations[0].weatherInfo.location }}: {{ weatherRecommendations[0].weatherInfo.temperature }}°C, {{ weatherRecommendations[0].weatherInfo.description }}
+              </span>
+              <span v-else>Based on current weather conditions</span>
+            </p>
+          </div>
+          <button
+            @click="showWeatherRecommendationsModal = false"
+            class="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <X class="w-5 h-5 text-stone-600 dark:text-zinc-400" />
+          </button>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <div v-if="weatherRecommendations.length === 0 && !generatingWeatherOutfit" class="text-center py-12">
+            <CloudSun class="w-16 h-16 mx-auto mb-4 text-stone-300 dark:text-zinc-700" />
+            <p class="text-stone-600 dark:text-zinc-400">No weather recommendations found</p>
+          </div>
+          
+          <div v-else-if="generatingWeatherOutfit" class="text-center py-12">
+            <div class="w-16 h-16 mx-auto mb-4 spinner-modern"></div>
+            <p class="text-stone-600 dark:text-zinc-400">Fetching weather and analyzing your closet...</p>
+          </div>
+          
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              v-for="rec in weatherRecommendations"
+              :key="rec.id"
+              class="border border-stone-200 dark:border-zinc-800 rounded-xl p-4 hover:border-blue-300 dark:hover:border-blue-700 transition-colors bg-white dark:bg-zinc-900"
+            >
+              <!-- Score Badge -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    #{{ rec.rank }}
+                  </span>
+                  <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" title="Color Match">
+                    🎨 {{ rec.colorScore }}%
+                  </span>
+                  <span class="text-xs px-2 py-1 rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300" title="Weather Fit">
+                    🌤️ {{ rec.weatherScore }}%
+                  </span>
+                </div>
+                <span class="text-sm font-bold text-stone-700 dark:text-zinc-300">
+                  {{ rec.totalScore }}%
+                </span>
+              </div>
+              
+              <!-- Items Grid -->
+              <div class="grid grid-cols-2 gap-2 mb-3">
+                <div
+                  v-for="item in rec.items"
+                  :key="item.id"
+                  class="aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-800"
+                >
+                  <img
+                    :src="item.image_url || item.thumbnail_url"
+                    :alt="item.name"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              
+              <!-- Item Names -->
+              <div class="space-y-1 mb-3">
+                <p
+                  v-for="item in rec.items"
+                  :key="item.id"
+                  class="text-xs text-stone-600 dark:text-zinc-400 truncate"
+                >
+                  {{ item.name }}
+                </p>
+              </div>
+              
+              <!-- Load Button -->
+              <button
+                @click="loadWeatherRecommendation(rec)"
+                class="w-full py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              >
+                <Check class="w-4 h-4" />
+                Load to Canvas
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-4 border-t border-stone-200 dark:border-zinc-800 text-center">
+          <p class="text-xs text-stone-500 dark:text-zinc-500">
+            Outfits ranked by color harmony, weather fit, and completeness
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Item Context Menu -->
+    <div
+      v-if="showItemContextMenuState && contextMenuItem"
+      class="fixed z-[100] bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-stone-200 dark:border-zinc-800 py-2 min-w-[200px]"
+      :style="{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }"
+      @click.stop
+    >
+      <button
+        @click="generateWeatherOutfitsWithItem(contextMenuItem)"
+        class="w-full px-4 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 text-black dark:text-white"
+      >
+        <CloudSun class="w-4 h-4 text-blue-500" />
+        Generate Weather Outfits
+      </button>
+      <button
+        @click="addItemToCanvas(contextMenuItem); closeContextMenu()"
+        class="w-full px-4 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 text-black dark:text-white"
+      >
+        <Plus class="w-4 h-4" />
+        Add to Canvas
+      </button>
+    </div>
   </div>
 </template>
 
@@ -838,6 +1025,7 @@ import { NotificationsService } from '@/services/notificationsService'
 import { VirtualTryOnService } from '@/services/virtualTryOnService'
 import { llamaDescriptionService } from '@/services/llamaDescriptionService'
 import { generateRecommendations, getCategoryDisplayName } from '@/services/recommendation-service.js'
+import { weatherService } from '@/services/weatherService'
 import { getFirstName } from '@/utils'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { 
@@ -852,7 +1040,8 @@ import {
   Plus,
   Users,
   X,
-  Check
+  Check,
+  CloudSun
 } from 'lucide-vue-next'
 import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
 import ShareOutfitDialog from '@/components/dashboard/ShareOutfitDialog.vue'
@@ -1016,9 +1205,20 @@ const findNonOverlappingPosition = (existingItems, itemSize, startX, startY) => 
 
 // State for recommendations
 const recommendingOutfits = ref(false)
+const generatingWeatherOutfit = ref(false)
 const showRecommendationsModal = ref(false)
 const recommendations = ref([])
 const selectedRecommendation = ref(null)
+
+// Weather recommendations state
+const showWeatherRecommendationsModal = ref(false)
+const weatherRecommendations = ref([])
+const selectedWardrobeItemForWeather = ref(null)
+
+// Context menu state
+const showItemContextMenuState = ref(false)
+const contextMenuPosition = reactive({ x: 0, y: 0 })
+const contextMenuItem = ref(null)
 
 // State for friend data
 const friendProfile = ref(null)
@@ -1353,7 +1553,10 @@ const generateAISuggestion = async () => {
         const cat = item.category?.toLowerCase()
         return cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt'
       }),
-      shoes: wardrobeItems.value.filter(item => item.category?.toLowerCase() === 'shoes'),
+      shoes: wardrobeItems.value.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'shoes' || cat === 'slippers'
+      }),
       hat: wardrobeItems.value.filter(item => item.category?.toLowerCase() === 'hat'),
       outerwear: wardrobeItems.value.filter(item => {
         const cat = item.category?.toLowerCase()
@@ -1452,6 +1655,874 @@ const generateAISuggestion = async () => {
 }
 
 // ============================================
+// Weather-Based Outfit Generation
+// ============================================
+
+/**
+ * Generate weather-based outfit recommendations
+ * Filters clothing by weather conditions and applies color theory matching
+ * Generates multiple outfits and ranks them
+ */
+const generateWeatherBasedOutfit = async (fixedItem = null) => {
+  try {
+    console.log('OutfitCreator: Generating weather-based outfit recommendations...')
+    
+    if (wardrobeItems.value.length < 2) {
+      showWarning('You need at least 2 items in your closet for weather recommendations')
+      return
+    }
+    
+    generatingWeatherOutfit.value = true
+    showWeatherRecommendationsModal.value = true
+    
+    // Fetch current weather (default to Singapore, could prompt user for location in future)
+    const location = 'Singapore'
+    let weatherData = null
+    
+    try {
+      weatherData = await weatherService.getCurrentWeather(location)
+      console.log('OutfitCreator: Weather data received:', weatherData)
+      showInfo(`Current weather in ${weatherData.location}: ${weatherData.temperature}°C, ${weatherData.description}`)
+    } catch (error) {
+      console.warn('OutfitCreator: Weather API unavailable, using default weather conditions')
+      // Fallback to moderate weather if API is unavailable
+      weatherData = {
+        temperature: 25,
+        condition: 'clear',
+        location: location
+      }
+    }
+    
+    const { temperature, condition } = weatherData
+    
+    // Filter items based on weather conditions
+    let weatherFilteredItems = filterItemsByWeather(wardrobeItems.value, { temperature, condition })
+    
+    // If a fixed item is provided, ensure it's included and available
+    if (fixedItem) {
+      const fixedItemInList = weatherFilteredItems.find(item => item.id === fixedItem.id)
+      if (!fixedItemInList) {
+        // If fixed item doesn't pass weather filter, add it anyway (user wants it)
+        weatherFilteredItems = [fixedItem, ...weatherFilteredItems]
+      }
+    }
+    
+    if (weatherFilteredItems.length < 2) {
+      showWarning('Not enough weather-appropriate items in your closet for current conditions')
+      generatingWeatherOutfit.value = false
+      showWeatherRecommendationsModal.value = false
+      return
+    }
+    
+    // Generate multiple outfit combinations
+    const outfitCombinations = generateWeatherOutfitCombinations(
+      weatherFilteredItems,
+      { temperature, condition },
+      fixedItem
+    )
+    
+    if (outfitCombinations.length === 0) {
+      showWarning('Unable to generate weather-appropriate outfits with available items')
+      generatingWeatherOutfit.value = false
+      showWeatherRecommendationsModal.value = false
+      return
+    }
+    
+    // Score and rank each outfit
+    const scoredOutfits = outfitCombinations.map((outfit, index) => {
+      const colorScore = calculateOutfitColorScore(outfit.items)
+      const weatherScore = calculateWeatherFitScore(outfit.items, { temperature, condition })
+      const completenessScore = calculateCompletenessScore(outfit.items)
+      
+      // Weighted total score: 40% color, 40% weather fit, 20% completeness
+      const totalScore = (colorScore * 0.4) + (weatherScore * 0.4) + (completenessScore * 0.2)
+      
+      // Debug logging
+      if (index < 3) {
+        console.log(`Outfit ${index + 1} colors:`, outfit.items.map(i => ({ 
+          name: i.name, 
+          color: i.primary_color || i.color || 'none',
+          category: i.category 
+        })))
+        console.log(`Outfit ${index + 1} scores:`, {
+          color: Math.round(colorScore * 100) + '%',
+          weather: Math.round(weatherScore * 100) + '%',
+          completeness: Math.round(completenessScore * 100) + '%',
+          total: Math.round(totalScore * 100) + '%'
+        })
+      }
+      
+      return {
+        ...outfit,
+        colorScore: Math.round(colorScore * 100),
+        weatherScore: Math.round(weatherScore * 100),
+        completenessScore: Math.round(completenessScore * 100),
+        totalScore: Math.round(totalScore * 100)
+      }
+    })
+    
+    // Sort by total score (highest first)
+    scoredOutfits.sort((a, b) => b.totalScore - a.totalScore)
+    
+    // Add rank and format for display
+    weatherRecommendations.value = scoredOutfits.map((outfit, index) => ({
+      id: `weather-${Date.now()}-${index}`,
+      items: outfit.items,
+      colorScore: outfit.colorScore,
+      weatherScore: outfit.weatherScore,
+      completenessScore: outfit.completenessScore,
+      totalScore: outfit.totalScore,
+      rank: index + 1,
+      weatherInfo: weatherData
+    }))
+    
+    generatingWeatherOutfit.value = false
+    console.log(`OutfitCreator: Generated ${weatherRecommendations.value.length} weather-based outfit recommendations`)
+    
+  } catch (error) {
+    console.error('OutfitCreator: Error generating weather-based outfits:', error)
+    showError('Failed to generate weather-based outfit recommendations. Please try again.')
+    generatingWeatherOutfit.value = false
+    showWeatherRecommendationsModal.value = false
+  }
+}
+
+/**
+ * Generate multiple outfit combinations based on weather
+ */
+function generateWeatherOutfitCombinations(items, weather, fixedItem = null) {
+  const { temperature, condition } = weather
+  const combinations = []
+  const maxCombinations = 20 // Generate up to 20 combinations
+  
+  // Categorize items
+  const categories = {
+    top: items.filter(item => {
+      if (fixedItem && item.id === fixedItem.id && isTopCategory(fixedItem)) return true
+      const cat = item.category?.toLowerCase()
+      return cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse' || 
+             cat === 'hoodie' || cat === 'longsleeve' || cat === 'polo' || cat === 'body' || 
+             cat === 'undershirt'
+    }),
+    bottom: items.filter(item => {
+      if (fixedItem && item.id === fixedItem.id && isBottomCategory(fixedItem)) return true
+      const cat = item.category?.toLowerCase()
+      return cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt'
+    }),
+    shoes: items.filter(item => {
+      if (fixedItem && item.id === fixedItem.id) {
+        const fixedCat = fixedItem.category?.toLowerCase()
+        if (fixedCat === 'shoes' || fixedCat === 'slippers') return true
+      }
+      const cat = item.category?.toLowerCase()
+      return cat === 'shoes' || cat === 'slippers'
+    }),
+    outerwear: items.filter(item => {
+      if (fixedItem && item.id === fixedItem.id && (item.category?.toLowerCase() === 'outerwear' || item.category?.toLowerCase() === 'blazer')) return true
+      const cat = item.category?.toLowerCase()
+      return cat === 'outerwear' || cat === 'blazer'
+    }),
+    accessory: items.filter(item => {
+      if (fixedItem && item.id === fixedItem.id && (item.category?.toLowerCase() === 'hat' || item.category?.toLowerCase() === 'accessory')) return true
+      const cat = item.category?.toLowerCase()
+      return cat === 'hat' || cat === 'accessory'
+    })
+  }
+  
+  // Determine which category the fixed item belongs to
+  let fixedCategory = null
+  if (fixedItem) {
+    if (isTopCategory(fixedItem)) fixedCategory = 'top'
+    else if (isBottomCategory(fixedItem)) fixedCategory = 'bottom'
+      else if (fixedItem.category?.toLowerCase() === 'shoes' || fixedItem.category?.toLowerCase() === 'slippers') {
+        fixedCategory = 'shoes'
+      }
+    else if (fixedItem.category?.toLowerCase() === 'outerwear' || fixedItem.category?.toLowerCase() === 'blazer') fixedCategory = 'outerwear'
+    else if (fixedItem.category?.toLowerCase() === 'hat' || fixedItem.category?.toLowerCase() === 'accessory') fixedCategory = 'accessory'
+  }
+  
+  // Generate combinations
+  const tops = fixedCategory === 'top' ? [fixedItem] : categories.top
+  const bottoms = fixedCategory === 'bottom' ? [fixedItem] : categories.bottom
+  const shoesList = fixedCategory === 'shoes' ? [fixedItem] : categories.shoes
+  const outerwearList = fixedCategory === 'outerwear' ? [fixedItem] : categories.outerwear
+  const accessoriesList = fixedCategory === 'accessory' ? [fixedItem] : categories.accessory
+  
+  // Generate base combinations (top + bottom)
+  for (const top of tops.slice(0, 5)) { // Limit tops to avoid too many combinations
+    for (const bottom of bottoms.slice(0, 5)) {
+      if (combinations.length >= maxCombinations) break
+      
+      const outfitItems = [top, bottom]
+      
+      // Add shoes (try to match color)
+      if (shoesList.length > 0) {
+        const matchedShoes = selectItemWithColorMatching(shoesList, outfitItems)
+        if (matchedShoes) outfitItems.push(matchedShoes)
+      }
+      
+      // Conditionally add outerwear
+      if ((temperature < 15 || condition === 'rain') && outerwearList.length > 0) {
+        const matchedOuterwear = selectItemWithColorMatching(outerwearList, outfitItems)
+        if (matchedOuterwear) outfitItems.push(matchedOuterwear)
+      }
+      
+      // Conditionally add accessory
+      if (temperature < 5 && accessoriesList.length > 0 && Math.random() > 0.7) {
+        const matchedAccessory = selectItemWithColorMatching(accessoriesList, outfitItems)
+        if (matchedAccessory) outfitItems.push(matchedAccessory)
+      }
+      
+      combinations.push({ items: outfitItems })
+    }
+  }
+  
+  return combinations
+}
+
+function isTopCategory(item) {
+  const cat = item.category?.toLowerCase()
+  return cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse' || 
+         cat === 'hoodie' || cat === 'longsleeve' || cat === 'polo' || cat === 'body' || 
+         cat === 'undershirt' || cat === 'outerwear' || cat === 'blazer'
+}
+
+function isBottomCategory(item) {
+  const cat = item.category?.toLowerCase()
+  return cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt'
+}
+
+/**
+ * Calculate color harmony score for an outfit (0-1)
+ * More nuanced scoring based on actual color combinations with penalties for clashing colors
+ */
+function calculateOutfitColorScore(items) {
+  if (items.length < 2) return 0.5
+  
+  const NEUTRAL = ['black', 'white', 'gray', 'grey', 'beige', 'navy', 'tan', 'ivory', 'cream', 'charcoal']
+  const NEUTRAL_BLUE = ['blue', 'navy'] // Blue jeans are essentially neutral
+  const WARM = ['red', 'orange', 'yellow', 'pink', 'burgundy', 'coral', 'peach', 'salmon', 'maroon']
+  const COOL = ['green', 'purple', 'teal', 'turquoise', 'mint', 'lavender', 'indigo']
+  const BOLD_CLASHING = ['red', 'orange', 'yellow', 'purple', 'pink'] // Bold colors that are harder to pair
+  
+  const colors = items.map(item => {
+    // Try primary_color first, then color field, then infer from name
+    let color = (item.primary_color || item.color || '').toLowerCase().trim()
+    
+    // If no color field but name suggests a color, use that
+    if (!color) {
+      const itemName = (item.name || '').toLowerCase()
+      if (itemName.includes('red') || itemName.includes('maroon') || itemName.includes('burgundy')) {
+        color = 'red'
+      } else if (itemName.includes('blue') || itemName.includes('navy') || itemName.includes('jeans') || itemName.includes('denim')) {
+        color = 'blue'
+      } else if (itemName.includes('black')) {
+        color = 'black'
+      } else if (itemName.includes('white')) {
+        color = 'white'
+      } else if (itemName.includes('gray') || itemName.includes('grey')) {
+        color = 'gray'
+      } else if (itemName.includes('beige') || itemName.includes('tan')) {
+        color = 'beige'
+      }
+    }
+    
+    return color
+  }).filter(c => c.length > 0)
+  
+  if (colors.length === 0) {
+    // If no colors, try to infer from item names/categories and add variation
+    // This gives different scores based on item combinations even without color data
+    const itemNames = items.map(item => (item.name || '').toLowerCase())
+    
+    // Also check category for clues (e.g., if category suggests color)
+    const categories = items.map(item => (item.category || '').toLowerCase())
+    
+    // Check for red in names or labels (be more aggressive in detection)
+    const hasRed = itemNames.some(name => 
+      name.includes('red') || name.includes('maroon') || name.includes('burgundy') || 
+      name.includes('crimson') || name.includes('scarlet')
+    ) || categories.some(cat => cat === 'red')
+    
+    // Check for blue/denim
+    const hasBlue = itemNames.some(name => 
+      name.includes('blue') || name.includes('navy') || name.includes('jeans') ||
+      name.includes('denim') || name.includes('indigo')
+    ) || categories.some(cat => cat === 'blue')
+    
+    // Check for neutrals
+    const hasNeutral = itemNames.some(name => 
+      name.includes('black') || name.includes('white') || name.includes('gray') || 
+      name.includes('grey') || name.includes('beige') || name.includes('tan') ||
+      name.includes('charcoal') || name.includes('ivory')
+    )
+    
+    // Count how many items have red vs blue vs neutral
+    const redCount = itemNames.filter(name => 
+      name.includes('red') || name.includes('maroon') || name.includes('burgundy')
+    ).length
+    const blueCount = itemNames.filter(name => 
+      name.includes('blue') || name.includes('navy') || name.includes('jeans')
+    ).length
+    
+    // Give better scores for likely neutral combinations
+    if (hasNeutral && !hasRed) {
+      return 0.75 + (items.length * 0.02) // Neutral items likely coordinate well
+    } else if (hasBlue && !hasRed && blueCount >= 1) {
+      return 0.70 + (items.length * 0.02) // Blue items are versatile
+    } else if (hasRed && redCount >= 1) {
+      // Red items are harder to coordinate - penalize more
+      return 0.55 - (redCount * 0.05) // Each red item makes it harder
+    } else if (hasNeutral) {
+      return 0.65 + (items.length * 0.02)
+    }
+    
+    // Default variation based on item count and mix
+    const itemMixScore = (hasBlue ? 0.1 : 0) - (hasRed ? 0.15 : 0)
+    return 0.50 + (items.length * 0.02) + itemMixScore
+  }
+  
+  const uniqueColors = [...new Set(colors)]
+  
+  // Monochromatic (all same color) - perfect score
+  if (uniqueColors.length === 1) return 1.0
+  
+  // All neutrals (including blue/navy which are effectively neutral) - very high score
+  const allNeutralOrBlue = uniqueColors.every(c => 
+    NEUTRAL.some(n => c.includes(n) || c === n) || 
+    NEUTRAL_BLUE.some(b => c.includes(b))
+  )
+  if (allNeutralOrBlue) return 0.95
+  
+  // Check if we have bold/clashing colors that make coordination harder
+  const hasBoldColor = uniqueColors.some(c => BOLD_CLASHING.some(b => c.includes(b)))
+  const boldColorCount = uniqueColors.filter(c => BOLD_CLASHING.some(b => c.includes(b))).length
+  
+  // Calculate pair-wise color compatibility
+  let compatibilitySum = 0
+  let comparisonCount = 0
+  
+  for (let i = 0; i < uniqueColors.length; i++) {
+    for (let j = i + 1; j < uniqueColors.length; j++) {
+      comparisonCount++
+      const color1 = uniqueColors[i]
+      const color2 = uniqueColors[j]
+      
+      // Same color - perfect match
+      if (color1 === color2) {
+        compatibilitySum += 1.0
+        continue
+      }
+      
+      // Blue/navy is essentially neutral - works with everything
+      const color1IsBlue = NEUTRAL_BLUE.some(b => color1.includes(b))
+      const color2IsBlue = NEUTRAL_BLUE.some(b => color2.includes(b))
+      
+      // Both neutral - high compatibility
+      if (NEUTRAL.some(n => color1.includes(n) || color1 === n) && 
+          NEUTRAL.some(n => color2.includes(n) || color2 === n)) {
+        compatibilitySum += 0.95
+        continue
+      }
+      
+      // Blue/navy with neutral - excellent (blue jeans are versatile)
+      if ((color1IsBlue && NEUTRAL.some(n => color2.includes(n) || color2 === n)) ||
+          (color2IsBlue && NEUTRAL.some(n => color1.includes(n) || color1 === n))) {
+        compatibilitySum += 0.92
+        continue
+      }
+      
+      // Blue/navy with any color - good (blue is versatile)
+      if (color1IsBlue || color2IsBlue) {
+        // But penalize if the other color is bold/clashing
+        if (BOLD_CLASHING.some(b => color1.includes(b) || color2.includes(b))) {
+          compatibilitySum += 0.65 // Blue with bold colors = moderate
+        } else {
+          compatibilitySum += 0.85 // Blue with other colors = good
+        }
+        continue
+      }
+      
+      // One neutral with colored - good compatibility
+      if (NEUTRAL.some(n => color1.includes(n) || color1 === n) || 
+          NEUTRAL.some(n => color2.includes(n) || color2 === n)) {
+        // BUT: If the colored item is bold (like bright red), penalize more
+        const otherColor = NEUTRAL.some(n => color1.includes(n) || color1 === n) ? color2 : color1
+        if (BOLD_CLASHING.some(b => otherColor.includes(b))) {
+          // Bright red/bold colors with neutrals are harder to pull off
+          compatibilitySum += 0.65 // Penalize bold + neutral combinations
+        } else {
+          compatibilitySum += 0.85
+        }
+        continue
+      }
+      
+      // Both warm colors
+      if (WARM.some(w => color1.includes(w)) && WARM.some(w => color2.includes(w))) {
+        // Check if both are bold - this can clash
+        const bothBold = BOLD_CLASHING.some(b => color1.includes(b)) && 
+                         BOLD_CLASHING.some(b => color2.includes(b))
+        if (bothBold) {
+          compatibilitySum += 0.5 // Two bold warm colors can clash (e.g., red + orange)
+        } else {
+          compatibilitySum += 0.75 // Warm colors together = okay
+        }
+        continue
+      }
+      
+      // Both cool colors
+      if (COOL.some(c => color1.includes(c)) && COOL.some(c => color2.includes(c))) {
+        compatibilitySum += 0.8
+        continue
+      }
+      
+      // Complementary colors (simplified) - moderate score
+      const complementaryPairs = [
+        ['red', 'green'], ['blue', 'orange'], ['yellow', 'purple'],
+        ['navy', 'beige'], ['teal', 'burgundy']
+      ]
+      const isComplementary = complementaryPairs.some(pair => 
+        (color1.includes(pair[0]) || color2.includes(pair[0])) &&
+        (color1.includes(pair[1]) || color2.includes(pair[1]))
+      )
+      if (isComplementary) {
+        compatibilitySum += 0.7
+        continue
+      }
+      
+      // Mixed warm and cool - lower score (especially if one is bold)
+      if ((WARM.some(w => color1.includes(w)) && COOL.some(c => color2.includes(c))) ||
+          (COOL.some(c => color1.includes(c)) && WARM.some(w => color2.includes(w)))) {
+        // Extra penalty if one is a bold color
+        const oneIsBold = BOLD_CLASHING.some(b => color1.includes(b) || color2.includes(b))
+        if (oneIsBold) {
+          compatibilitySum += 0.35 // Bold warm with cool = clashes badly
+        } else {
+          compatibilitySum += 0.5 // Regular warm/cool mix
+        }
+        continue
+      }
+      
+      // Default moderate score for unknown combinations
+      compatibilitySum += 0.6
+    }
+  }
+  
+  // Average compatibility across all pairs
+  const avgCompatibility = comparisonCount > 0 ? compatibilitySum / comparisonCount : 0.6
+  
+  // Penalties for having bold/clashing colors
+  let totalPenalty = 0
+  if (hasBoldColor) {
+    // The more bold colors, the harder to coordinate
+    if (boldColorCount === 1) {
+      totalPenalty += 0.08 // Single bold color (like red pants) makes it harder
+    } else if (boldColorCount >= 2) {
+      totalPenalty += 0.2 // Multiple bold colors = much harder
+    }
+  }
+  
+  // Adjust based on number of colors (more colors = harder to coordinate)
+  const colorCountPenalty = uniqueColors.length > 3 ? 0.05 : 0
+  
+  const finalScore = Math.max(0, Math.min(1, avgCompatibility - totalPenalty - colorCountPenalty))
+  return finalScore
+}
+
+/**
+ * Calculate weather fit score (0-1)
+ * Returns a score based on how well items match weather conditions
+ * Includes penalties for illogical combinations (e.g., shorts + long sleeves in hot weather)
+ */
+function calculateWeatherFitScore(items, weather) {
+  const { temperature, condition } = weather
+  let totalScore = 0
+  
+  // First, detect outfit combination issues
+  const hasShorts = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    return cat === 'shorts' || cat === 'skirt'
+  })
+  
+  const hasLongSleeves = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    const clothingType = item.clothing_type?.toLowerCase() || ''
+    const itemName = (item.name || '').toLowerCase()
+    
+    // Explicit long sleeve indicators
+    if (clothingType.includes('long') || clothingType === 'longsleeve' || 
+        clothingType === 'hoodie' || cat === 'hoodie') {
+      return true
+    }
+    
+    // If it's a shirt/blouse (not t-shirt or polo), in hot weather, assume long sleeves
+    // unless explicitly marked as short sleeve
+    if (temperature > 25 && (cat === 'shirt' || cat === 'blouse')) {
+      // Check if name suggests short sleeves
+      const hasShortSleeveName = itemName.includes('short') || itemName.includes('t-shirt') || 
+                                itemName.includes('tee') || itemName.includes('sleeveless')
+      // If no short sleeve indicator, assume it's long-sleeved in this context
+      return !hasShortSleeveName
+    }
+    
+    return false
+  })
+  
+  const hasShortSleeves = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    const clothingType = item.clothing_type?.toLowerCase() || cat
+    return (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') &&
+           !(clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie')
+  })
+  
+  const hasPants = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    return cat === 'pants' || cat === 'bottom'
+  })
+  
+  // Combination penalty for illogical pairings
+  let combinationPenalty = 0
+  let combinationMultiplier = 1.0 // Use multiplier for severe mismatches
+  
+  if (temperature > 25) {
+    // Hot weather: shorts + long sleeves is VERY illogical
+    if (hasShorts && hasLongSleeves) {
+      // This is a severe mismatch - heavily penalize
+      combinationPenalty += 0.5 // Heavy penalty
+      combinationMultiplier = 0.5 // Also multiply score to really bring it down
+    }
+    // Shorts are great, but long sleeves cancel that out
+    if (hasShorts && !hasShortSleeves && !hasLongSleeves) {
+      // If shorts but no clear sleeve type, slight penalty
+      combinationPenalty += 0.15
+    }
+  } else if (temperature < 15) {
+    // Cool weather: shorts shouldn't be worn (already handled in item scoring)
+    if (hasShorts) {
+      combinationPenalty += 0.3
+      combinationMultiplier = 0.7
+    }
+  }
+  
+  items.forEach(item => {
+    const cat = item.category?.toLowerCase()
+    const clothingType = item.clothing_type?.toLowerCase() || cat
+    const styleTags = item.style_tags || []
+    let itemScore = 0
+    
+    // Temperature appropriateness scoring
+    if (temperature > 30) {
+      // Very hot - prefer shorts, short sleeves, light fabrics
+      if (cat === 'shorts' || cat === 'skirt') {
+        itemScore += 1.0
+      } else if (cat === 'pants') {
+        if (styleTags.includes('lightweight')) itemScore += 0.7
+        else itemScore += 0.3
+      } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        if (clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie') {
+          itemScore += 0.15 // Long sleeves very bad in very hot weather
+        } else {
+          itemScore += 0.95 // Short sleeves perfect
+        }
+      } else if (cat === 'outerwear' || cat === 'blazer') {
+        itemScore += 0.1
+      } else {
+        itemScore += 0.5
+      }
+      
+      if (styleTags.includes('winter')) itemScore -= 0.3
+      if (styleTags.includes('summer')) itemScore += 0.2
+    } else if (temperature > 25) {
+      // Hot (25-30°C) - prefer shorts with short sleeves, not long sleeves
+      if (cat === 'shorts' || cat === 'skirt') {
+        itemScore += 0.95
+      } else if (cat === 'pants') {
+        itemScore += 0.6 // Pants are okay but shorts better
+      } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        // Check for explicit long sleeves or infer from category
+        const isLongSleeve = clothingType.includes('long') || clothingType === 'longsleeve' || 
+                            clothingType === 'hoodie' ||
+                            (cat === 'shirt' && !clothingType.includes('short') && 
+                             !clothingType.includes('t-shirt') && !clothingType.includes('polo'))
+        
+        if (isLongSleeve) {
+          itemScore += 0.35 // Long sleeves not good in hot weather - more penalty
+        } else {
+          itemScore += 0.9 // Short sleeves perfect
+        }
+      } else if (cat === 'outerwear' && styleTags.includes('lightweight')) {
+        itemScore += 0.4
+      } else if (cat === 'outerwear') {
+        itemScore += 0.2
+      } else {
+        itemScore += 0.7
+      }
+      
+      if (styleTags.includes('winter')) itemScore -= 0.2
+      if (styleTags.includes('summer')) itemScore += 0.2
+    } else if (temperature < 15) {
+      // Cool - prefer pants, outerwear, long sleeves
+      if (cat === 'pants') itemScore += 0.9
+      else if (cat === 'shorts') itemScore += 0.15 // Shorts bad in cool weather
+      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        if (clothingType.includes('long') || clothingType === 'longsleeve') itemScore += 0.9
+        else itemScore += 0.6
+      } else if (cat === 'outerwear' || cat === 'blazer') itemScore += 0.9
+      else itemScore += 0.7
+      
+      if (styleTags.includes('winter') || styleTags.includes('warm')) itemScore += 0.2
+      if (styleTags.includes('summer')) itemScore -= 0.2
+    } else {
+      // Moderate (15-25°C) - most items suitable, slight variations
+      if (cat === 'pants') itemScore += 0.75
+      else if (cat === 'shorts' || cat === 'skirt') itemScore += 0.65
+      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        itemScore += 0.7
+      } else if (cat === 'outerwear') {
+        itemScore += 0.4
+      } else itemScore += 0.7
+    }
+    
+    // Condition appropriateness scoring
+    if (condition === 'rain') {
+      if (styleTags.includes('waterproof') || styleTags.includes('water-resistant')) {
+        itemScore += 0.3
+      }
+      if (cat === 'outerwear' || cat === 'shoes') itemScore += 0.1
+      if (styleTags.includes('delicate') || styleTags.includes('silk')) itemScore -= 0.2
+    } else if (condition === 'snow') {
+      if (styleTags.includes('winter') || styleTags.includes('waterproof')) itemScore += 0.3
+      if (cat === 'outerwear') itemScore += 0.2
+      if (styleTags.includes('summer')) itemScore -= 0.3
+    }
+    
+    // Clamp item score to 0-1 range
+    itemScore = Math.max(0, Math.min(1, itemScore))
+    totalScore += itemScore
+  })
+  
+  // Average score across all items
+  let avgScore = items.length > 0 ? totalScore / items.length : 0.5
+  
+  // Apply combination penalty (subtract from average AND multiply for severe mismatches)
+  avgScore = (avgScore - combinationPenalty) * combinationMultiplier
+  
+  // Ensure score is in valid range
+  avgScore = Math.max(0, Math.min(1, avgScore))
+  
+  return avgScore
+}
+
+/**
+ * Calculate completeness score (0-1)
+ */
+function calculateCompletenessScore(items) {
+  let score = 0.5 // Base score
+  const hasTop = items.some(item => isTopCategory(item))
+  const hasBottom = items.some(item => isBottomCategory(item))
+  const hasShoes = items.some(item => {
+    const cat = item.category?.toLowerCase()
+    return cat === 'shoes' || cat === 'slippers'
+  })
+  const hasOuterwear = items.some(item => item.category?.toLowerCase() === 'outerwear' || item.category?.toLowerCase() === 'blazer')
+  
+  if (hasTop && hasBottom) score += 0.3
+  if (hasShoes) score += 0.15
+  if (hasOuterwear) score += 0.05
+  
+  return Math.min(1, score)
+}
+
+/**
+ * Filter clothing items based on weather conditions
+ */
+function filterItemsByWeather(items, weather) {
+  const { temperature, condition } = weather
+  
+  return items.filter(item => {
+    const cat = item.category?.toLowerCase()
+    const clothingType = item.clothing_type?.toLowerCase() || cat
+    const styleTags = item.style_tags || []
+    
+    // Temperature-based filtering
+    if (temperature > 30) {
+      // Very hot - prefer short sleeves, shorts, light fabrics
+      if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        // Prefer short sleeves
+        if (clothingType.includes('long') || clothingType === 'longsleeve' || 
+            clothingType === 'hoodie' || styleTags.includes('winter')) {
+          return false
+        }
+        return true
+      }
+      if (cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt') {
+        // Prefer shorts over long pants in very hot weather
+        if (cat === 'shorts' || cat === 'skirt') return true
+        if (cat === 'pants' && styleTags.includes('lightweight')) return true
+        return false // Avoid heavy pants
+      }
+      if (cat === 'outerwear' || cat === 'blazer') {
+        // Avoid outerwear in very hot weather
+        return false
+      }
+      return true
+    } else if (temperature > 25) {
+      // Hot - prefer light items, can include short sleeves and shorts
+      if (cat === 'outerwear' && !styleTags.includes('lightweight')) {
+        return false // Avoid heavy outerwear
+      }
+      if (styleTags.includes('winter') || styleTags.includes('heavy')) {
+        return false // Avoid winter items
+      }
+      return true
+    } else if (temperature < 15) {
+      // Cool - prefer long sleeves, pants, outerwear
+      if (cat === 'top') {
+        if (clothingType === 't-shirt' && !styleTags.includes('long') && 
+            !clothingType.includes('long')) {
+          // Allow t-shirts only if layered with outerwear
+          return true
+        }
+        return true
+      }
+      if (cat === 'shorts') {
+        // Avoid shorts in cool weather
+        return false
+      }
+      return true // Allow most items, including outerwear
+    } else if (temperature < 5) {
+      // Very cold - prefer warm items, avoid shorts and short sleeves
+      if (cat === 'shorts' || cat === 'skirt') {
+        return false
+      }
+      if (cat === 'top' && clothingType === 't-shirt' && !styleTags.includes('winter')) {
+        return false // Avoid light t-shirts
+      }
+      if (styleTags.includes('summer')) {
+        return false
+      }
+      return true
+    } else {
+      // Moderate temperature (15-25°C) - most items suitable
+      return true
+    }
+  }).filter(item => {
+    // Weather condition filtering
+    if (condition === 'rain') {
+      const cat = item.category?.toLowerCase()
+      const styleTags = item.style_tags || []
+      // Prefer water-resistant items
+      if (styleTags.includes('waterproof') || styleTags.includes('water-resistant')) {
+        return true
+      }
+      // Outerwear and shoes are usually okay in rain
+      if (cat === 'outerwear' || cat === 'shoes') {
+        return true
+      }
+      // Avoid very light fabrics
+      if (styleTags.includes('delicate') || styleTags.includes('silk')) {
+        return false
+      }
+      return true
+    } else if (condition === 'snow') {
+      const styleTags = item.style_tags || []
+      // Prefer warm, water-resistant items
+      if (styleTags.includes('winter') || styleTags.includes('waterproof')) {
+        return true
+      }
+      const cat = item.category?.toLowerCase()
+      if (cat === 'outerwear') return true
+      // Avoid summer items
+      if (styleTags.includes('summer')) return false
+      return true
+    }
+    // Clear, clouds, etc. - most items suitable
+    return true
+  })
+}
+
+/**
+ * Select item with best color matching using color theory
+ * Uses the color compatibility rules from recommendation-service
+ */
+function selectItemWithColorMatching(candidates, existingItems) {
+  if (candidates.length === 0) return null
+  if (existingItems.length === 0) {
+    // No existing items, return random item
+    return candidates[Math.floor(Math.random() * candidates.length)]
+  }
+  
+  // Color compatibility groups
+  const NEUTRAL = ['black', 'white', 'gray', 'grey', 'beige', 'navy', 'tan', 'ivory', 'cream', 'charcoal']
+  const WARM = ['red', 'orange', 'yellow', 'pink', 'burgundy', 'coral', 'peach', 'salmon']
+  const COOL = ['blue', 'green', 'purple', 'teal', 'turquoise', 'mint', 'lavender', 'indigo']
+  
+  // Score each candidate based on color compatibility
+  const scored = candidates.map(candidate => {
+    const candidateColor = (candidate.primary_color || candidate.color || '').toLowerCase()
+    if (!candidateColor) return { item: candidate, score: 0.5 }
+    
+    let totalScore = 0
+    let comparisons = 0
+    
+    existingItems.forEach(existing => {
+      const existingColor = (existing.primary_color || existing.color || '').toLowerCase()
+      if (!existingColor) {
+        totalScore += 0.5
+        comparisons++
+        return
+      }
+      
+      // Same color - high score
+      if (candidateColor === existingColor) {
+        totalScore += 0.9
+        comparisons++
+        return
+      }
+      
+      // Both neutral - high score
+      if (NEUTRAL.includes(candidateColor) && NEUTRAL.includes(existingColor)) {
+        totalScore += 0.95
+        comparisons++
+        return
+      }
+      
+      // One neutral - good score
+      if (NEUTRAL.includes(candidateColor) || NEUTRAL.includes(existingColor)) {
+        totalScore += 0.85
+        comparisons++
+        return
+      }
+      
+      // Both warm - good score
+      if (WARM.some(c => candidateColor.includes(c)) && WARM.some(c => existingColor.includes(c))) {
+        totalScore += 0.8
+        comparisons++
+        return
+      }
+      
+      // Both cool - good score
+      if (COOL.some(c => candidateColor.includes(c)) && COOL.some(c => existingColor.includes(c))) {
+        totalScore += 0.8
+        comparisons++
+        return
+      }
+      
+      // Default moderate score
+      totalScore += 0.5
+      comparisons++
+    })
+    
+    const avgScore = comparisons > 0 ? totalScore / comparisons : 0.5
+    return { item: candidate, score: avgScore }
+  })
+  
+  // Sort by score and return best match
+  scored.sort((a, b) => b.score - a.score)
+  return scored[0].item
+}
+
+// ============================================
 // Recommendation Functions
 // ============================================
 
@@ -1540,6 +2611,87 @@ const loadRecommendation = (rec) => {
     console.error('OutfitCreator: Error loading recommendation:', error)
     showError('Failed to load outfit. Please try again.')
   }
+}
+
+/**
+ * Load weather recommendation to canvas
+ */
+const loadWeatherRecommendation = (rec) => {
+  try {
+    console.log('OutfitCreator: Loading weather recommendation:', rec)
+    
+    // Clear current canvas
+    canvasItems.value = []
+    
+    // Add recommendation items to canvas with non-overlapping placement
+    const normalizedItemSize = normalizePosition(128, 'x')
+    let currentX = 100
+    let currentY = 100
+    
+    rec.items.map((item, index) => {
+      const position = findNonOverlappingPosition(
+        canvasItems.value,
+        normalizedItemSize,
+        currentX,
+        currentY
+      )
+      
+      currentX = position.x + normalizedItemSize * position.scale + 20
+      currentY = position.y + normalizedItemSize * position.scale + 20
+      
+      const newItem = {
+        ...item,
+        originalId: item.id,
+        id: `canvas-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+        x: position.x,
+        y: position.y,
+        scale: position.scale,
+        rotation: 0,
+        z_index: index + 1
+      }
+      
+      canvasItems.value.push(newItem)
+      return newItem
+    })
+    
+    saveToHistory()
+    
+    // Close modal
+    showWeatherRecommendationsModal.value = false
+    
+    const weatherInfo = rec.weatherInfo
+    showSuccess(`Weather outfit loaded! ${weatherInfo ? `Perfect for ${weatherInfo.temperature}°C in ${weatherInfo.location}` : ''}`)
+  } catch (error) {
+    console.error('OutfitCreator: Error loading weather recommendation:', error)
+    showError('Failed to load weather recommendation')
+  }
+}
+
+/**
+ * Generate weather outfits with a specific item
+ */
+const generateWeatherOutfitsWithItem = (item) => {
+  selectedWardrobeItemForWeather.value = item
+  showItemContextMenuState.value = false
+  generateWeatherBasedOutfit(item)
+}
+
+/**
+ * Show context menu for wardrobe item
+ */
+const showItemContextMenu = (item, event) => {
+  contextMenuItem.value = item
+  contextMenuPosition.x = event.clientX
+  contextMenuPosition.y = event.clientY
+  showItemContextMenuState.value = true
+}
+
+/**
+ * Close context menu
+ */
+const closeContextMenu = () => {
+  showItemContextMenuState.value = false
+  contextMenuItem.value = null
 }
 
 const scoreOutfitAI = async () => {
@@ -2365,6 +3517,9 @@ onMounted(async () => {
 
   // Setup keyboard event listener for arrow keys and Esc
   window.addEventListener('keydown', handleKeydown)
+  
+  // Setup click handler to close context menu
+  window.addEventListener('click', closeContextMenu)
 
   // Register canvas items for keyboard navigation
   registerCanvasItems(canvasItems.value)
@@ -2461,6 +3616,7 @@ onMounted(async () => {
   onUnmounted(() => {
     // Remove arrow key and Esc handlers
     window.removeEventListener('keydown', handleKeydown)
+    window.removeEventListener('click', closeContextMenu)
     
     // Remove other keyboard event listeners
     window.removeEventListener('keyboard-select-item', handleKeyboardEvent)

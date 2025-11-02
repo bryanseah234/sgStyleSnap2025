@@ -31,6 +31,7 @@ export const CLOTHING_TYPES = [
   { value: 'blazer', label: 'Blazer', category: 'outerwear' },
   { value: 'outwear', label: 'Outerwear', category: 'outerwear' },
   { value: 'shoes', label: 'Shoes', category: 'shoes' },
+  { value: 'slippers', label: 'Slippers', category: 'shoes' },
   { value: 'hat', label: 'Hat', category: 'accessory' },
   { value: 'other', label: 'Other', category: 'accessory' }
 ]

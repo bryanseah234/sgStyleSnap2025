@@ -216,7 +216,7 @@ const emit = defineEmits(['item-added'])
 // Category to clothing type mapping
 const categoryTypeMapping = {
   top: ['Blouse', 'Body', 'Dress', 'Hoodie', 'Longsleeve', 'Polo', 'Shirt', 'T-Shirt', 'Top', 'Undershirt'],
-  bottom: ['Pants', 'Shorts', 'Skirt'],
+  bottom: ['Pants'],
   outerwear: ['Blazer', 'Outwear'],
   shoes: ['Shoes'],
   accessory: ['Hat']
@@ -314,6 +314,20 @@ const handleFileUpload = async (e) => {
       if (classification.styleSnapCategory) {
         formData.value.category = classification.styleSnapCategory
       }
+      
+      // 4) Color detection
+      try {
+        const { detectColors } = await import('@/utils/color-detector')
+        const colors = await detectColors(processedFile)
+        if (colors && colors.primary) {
+          formData.value.color = colors.primary
+          console.log('🎨 ManualUploadForm: Detected color:', colors.primary, 'Secondary:', colors.secondary)
+        }
+      } catch (colorErr) {
+        console.warn('⚠️ ManualUploadForm: Color detection failed:', colorErr)
+        // Don't block upload if color detection fails, just log warning
+      }
+      
       // Store processed file for upload and show preview
       formData.value.image_file = processedFile
       const previewBlob = URL.createObjectURL(processedFile)
@@ -337,6 +351,7 @@ const clearImage = () => {
   previewUrl.value = ''
   formData.value.image_url = ''
   formData.value.image_file = null
+  formData.value.color = ''
 }
 
 const handleSubmit = async () => {
@@ -368,10 +383,34 @@ const handleSubmit = async () => {
   console.log('📝 ManualUploadForm: Form submission in progress...')
   
   try {
+    // Map clothing type to database format (capitalized, matching database constraint)
+    const clothingTypeMap = {
+      'blouse': 'Blouse',
+      'body': 'Body',
+      'hoodie': 'Hoodie',
+      'longsleeve': 'Longsleeve',
+      'polo': 'Polo',
+      'shirt': 'Shirt',
+      't-shirt': 'T-Shirt',
+      'top': 'Top',
+      'undershirt': 'Undershirt',
+      'pants': 'Pants',
+      'dress': 'Dress',
+      'blazer': 'Blazer',
+      'outwear': 'Outwear',
+      'shoes': 'Shoes',
+      'hat': 'Hat',
+      'other': 'Other'
+    }
+    
+    const clothingType = formData.value.type 
+      ? (clothingTypeMap[formData.value.type.toLowerCase()] || formData.value.type)
+      : null
+    
     const serviceData = {
       name: formData.value.name,
       category: formData.value.category,
-      clothing_type: formData.value.type || null,
+      clothing_type: clothingType,
       color: formData.value.color || null,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
