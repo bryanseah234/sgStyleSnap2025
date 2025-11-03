@@ -31,7 +31,7 @@
           Show Outfit on Model
         </h3>
         <p class="text-sm text-stone-600 dark:text-zinc-400 mt-2">
-          AI-powered virtual try-on using IDM-VTON technology
+          AI-powered virtual try-on using Google Gemini API
         </p>
       </div>
 
@@ -97,7 +97,7 @@
                   Virtual try-on generated successfully!
                 </p>
                 <p class="text-xs text-purple-700 dark:text-purple-300">
-                  Powered by IDM-VTON AI model
+                  Powered by Google Gemini Imagen
                 </p>
               </div>
             </div>
@@ -127,7 +127,7 @@
               <div class="text-xs text-blue-800 dark:text-blue-200">
                 <p class="font-medium mb-1">About Virtual Try-On</p>
                 <p>
-                  This image was generated using IDM-VTON, an AI model that composites clothing onto a model person. 
+                  This image was generated using Google Gemini API with Imagen 4.0, which creates realistic images of models wearing your clothing items. 
                   For best results, ensure your clothing items have clear, high-quality images.
                 </p>
               </div>
