@@ -535,27 +535,30 @@
           <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
         </div>
 
-        <!-- 3D Avatar Display -->
-        <div class="flex justify-center mb-8 sm:mb-12 w-full">
-          <div class="w-full max-w-md mx-auto">
-            <SingleAvatar3D :avatar-url="selectedAvatarUrl" />
-          </div>
-        </div>
-
-        <!-- Three Cards in Horizontal Row -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          <div
-            v-for="(item, idx) in whyChooseItems"
-            :key="idx"
-            class="flex flex-col gap-4 p-6 sm:p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 animate-staggeredFadeIn group cursor-pointer hover:-translate-y-2"
-            :style="{ animationDelay: `${idx * 0.1}s` }"
-          >
-            <div class="flex-shrink-0">
-              <component :is="item.icon" class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 group-hover:scale-125 transition duration-300" />
+        <!-- Avatar and Cards Layout -->
+        <div class="flex flex-col md:flex-row gap-6 sm:gap-8 items-stretch">
+          <!-- 3D Avatar on Left -->
+          <div class="w-full md:w-1/2 flex items-center justify-center">
+            <div class="w-full h-full min-h-[400px] md:min-h-0">
+              <SingleAvatar3D :avatar-url="selectedAvatarUrl" />
             </div>
-            <div class="flex-1">
-              <h3 class="font-bold text-base sm:text-lg md:text-xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
-              <p class="text-sm sm:text-base text-gray-600">{{ item.description }}</p>
+          </div>
+
+          <!-- Three Cards Stacked on Right -->
+          <div class="w-full md:w-1/2 flex flex-col gap-6 sm:gap-8">
+            <div
+              v-for="(item, idx) in whyChooseItems"
+              :key="idx"
+              class="flex flex-col gap-4 p-6 sm:p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 animate-staggeredFadeIn group cursor-pointer hover:-translate-y-2 flex-grow"
+              :style="{ animationDelay: `${idx * 0.1}s` }"
+            >
+              <div class="flex-shrink-0">
+                <component :is="item.icon" class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 group-hover:scale-125 transition duration-300" />
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-base sm:text-lg md:text-xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
+                <p class="text-sm sm:text-base text-gray-600">{{ item.description }}</p>
+              </div>
             </div>
           </div>
         </div>
