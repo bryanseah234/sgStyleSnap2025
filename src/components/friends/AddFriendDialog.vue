@@ -16,9 +16,13 @@
         </div>
         <button
           @click="$emit('close')"
-          class="p-2 rounded-lg transition-all bg-white/90 shadow-lg
-                hover:bg-stone-100 text-stone-500 hover:text-black 
-                dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
+          class="p-2 rounded-lg transition-all shadow-lg
+                bg-white border border-stone-300 text-stone-700
+                hover:bg-stone-100 hover:text-black 
+                dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 
+                dark:hover:bg-zinc-700 dark:hover:text-white
+                active:scale-95"
+          aria-label="Close dialog"
         >
           <X class="w-5 h-5" />
         </button>

@@ -305,10 +305,24 @@
         @click="showAddFriendModal = false"
       >
         <div
-          class="w-full max-w-md rounded-xl p-6 bg-white dark:bg-zinc-900"
+          class="w-full max-w-md rounded-xl p-6 relative bg-white dark:bg-zinc-900"
           @click.stop
         >
-          <h3 class="text-xl font-bold mb-4 text-black dark:text-white">
+          <!-- Close Button -->
+          <button
+            @click="showAddFriendModal = false"
+            class="absolute top-4 right-4 p-2 rounded-lg transition-all shadow-lg
+                  bg-white border border-stone-300 text-stone-700
+                  hover:bg-stone-100 hover:text-black 
+                  dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 
+                  dark:hover:bg-zinc-700 dark:hover:text-white
+                  active:scale-95 z-50"
+            aria-label="Close dialog"
+          >
+            <X class="w-5 h-5" />
+          </button>
+          
+          <h3 class="text-xl font-bold mb-4 text-black dark:text-white pr-8">
             Add Your Friend
           </h3>
           
@@ -322,11 +336,26 @@
                 type="text"
                 placeholder="Enter at least 4 characters (username or name)"
                 class="w-full px-3 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
-                @keyup.enter="addFriendSearch.trim().length >= 4 && searchAndAddFriend()"
+                @keyup.enter="addFriendSearch && addFriendSearch.trim().length >= 4 && searchAndAddFriend()"
               />
+              <!-- Results count / No results message - shown below input -->
+              <div class="mt-2">
+                <p v-if="!addFriendSearch || addFriendSearch.length < 4" class="text-xs text-stone-400 dark:text-zinc-500">
+                  Type at least 4 characters to search
+                </p>
+                <p v-else-if="isSearchingFriends" class="text-xs text-stone-500 dark:text-zinc-400">
+                  Searching...
+                </p>
+                <p v-else-if="friendSearchPerformed && addFriendResults && addFriendResults.length > 0" class="text-xs text-stone-600 dark:text-zinc-400">
+                  {{ addFriendResults.length }} {{ addFriendResults.length === 1 ? 'result' : 'results' }} found
+                </p>
+                <p v-else-if="friendSearchPerformed && (!addFriendResults || addFriendResults.length === 0)" class="text-xs text-stone-600 dark:text-zinc-400">
+                  No results found
+                </p>
+              </div>
             </div>
             
-            <div v-if="addFriendResults.length > 0" class="space-y-2 max-h-40 overflow-y-auto">
+            <div v-if="addFriendResults && addFriendResults.length > 0" class="space-y-2 max-h-40 overflow-y-auto">
               <div
                 v-for="user in addFriendResults"
                 :key="user.id"
@@ -379,8 +408,8 @@
             </button>
             <button
               @click="searchAndAddFriend"
-              :disabled="addFriendSearch.trim().length < 4"
-              :class="addFriendSearch.trim().length < 4
+              :disabled="!addFriendSearch || addFriendSearch.trim().length < 4"
+              :class="!addFriendSearch || addFriendSearch.trim().length < 4
                 ? 'flex-1 px-4 py-2 rounded-lg font-medium bg-zinc-600 text-zinc-300 cursor-not-allowed'
                 : 'flex-1 px-4 py-2 rounded-lg font-medium bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'"
             >
@@ -413,7 +442,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useSanitize } from '@/composables/useSanitize'
@@ -447,6 +476,8 @@ const sentRequests = ref([])
 const showAddFriendModal = ref(false)
 const addFriendSearch = ref('')
 const addFriendResults = ref([])
+const isSearchingFriends = ref(false)
+const friendSearchPerformed = ref(false)
 const isLoading = ref(true)
 
 // Computed
@@ -503,12 +534,19 @@ const handleImageError = (event) => {
 
 const searchAndAddFriend = async () => {
   const raw = addFriendSearch.value.trim()
-  if (!raw || raw.length < 4) return
+  if (!raw || raw.length < 4) {
+    addFriendResults.value = []
+    friendSearchPerformed.value = false
+    return
+  }
 
   // Only allow username searches; strip leading '@' if present
   const usernameQuery = raw.startsWith('@') ? raw.slice(1) : raw
 
   console.log('🔧 Friends: Searching for users by username:', usernameQuery)
+  
+  isSearchingFriends.value = true
+  friendSearchPerformed.value = false
   
   try {
     const result = await userService.searchUsersByUsername(usernameQuery)
@@ -525,9 +563,13 @@ const searchAndAddFriend = async () => {
     }
     
     addFriendResults.value = filteredResults
+    friendSearchPerformed.value = true
   } catch (error) {
     console.error('❌ Friends: Error searching users:', error)
     addFriendResults.value = []
+    friendSearchPerformed.value = true
+  } finally {
+    isSearchingFriends.value = false
   }
 }
 
@@ -663,6 +705,24 @@ const { registerSearchInput } = useKeyboardShortcuts()
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
 
+// Handle ESC key to close modal
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && showAddFriendModal.value) {
+    showAddFriendModal.value = false
+  }
+}
+
+// Reset search state when modal closes
+watch(showAddFriendModal, (isOpen) => {
+  if (!isOpen) {
+    // Reset search state when modal closes
+    addFriendSearch.value = ''
+    addFriendResults.value = []
+    friendSearchPerformed.value = false
+    isSearchingFriends.value = false
+  }
+})
+
 // Lifecycle
 onMounted(() => {
   // Detect Mac OS
@@ -673,6 +733,9 @@ onMounted(() => {
     registerSearchInput(searchInputRef.value)
   }
   loadFriendsData()
+  
+  // Add ESC key listener for modal
+  window.addEventListener('keydown', handleEsc)
   
   // Add test function to window for debugging
   window.testFriendSearch = async (query) => {
@@ -686,6 +749,11 @@ onMounted(() => {
       return null
     }
   }
+})
+
+onUnmounted(() => {
+  // Clean up ESC key listener
+  window.removeEventListener('keydown', handleEsc)
 })
 
 // Removed auto-search on keypress; search happens on explicit action only

@@ -190,7 +190,7 @@ export const useThemeStore = defineStore('theme', {
     /**
      * Handles system theme changes
      */
-    handleSystemThemeChange(event) {
+    handleSystemThemeChange() {
       if (this.theme === 'system') {
         console.log('🎨 ThemeStore: System theme changed, updating...')
         this.applyTheme('system')

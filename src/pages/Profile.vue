@@ -316,7 +316,7 @@ import { FriendsService } from '@/services/friendsService'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Composables and stores
-const { theme, toggleTheme, setTheme, refreshTheme } = useTheme()
+const { toggleTheme, setTheme, refreshTheme } = useTheme()
 const themeStore = useThemeStore()
 const { theme: themeFromStore } = storeToRefs(themeStore)
 // Use computed to ensure reactivity - watch for theme changes
@@ -500,21 +500,6 @@ const getUsername = () => {
   return 'Not provided'
 }
 
-/**
- * Handles theme toggle functionality
- * 
- * Properly handles the async theme toggle operation and provides
- * user feedback during the process.
- */
-const handleThemeToggle = async () => {
-  try {
-    console.log('🎨 Profile: Toggling theme...')
-    await toggleTheme()
-    console.log('✅ Profile: Theme toggled successfully')
-  } catch (error) {
-    console.error('❌ Profile: Theme toggle error:', error)
-  }
-}
 
 /**
  * Handles user logout functionality

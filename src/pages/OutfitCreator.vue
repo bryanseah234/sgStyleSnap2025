@@ -1073,7 +1073,8 @@ import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
 import ShareOutfitDialog from '@/components/dashboard/ShareOutfitDialog.vue'
 import VirtualTryOnModal from '@/components/dashboard/VirtualTryOnModal.vue'
 
-// Theme is not used in this component
+// Theme for grid display
+const { theme } = useTheme()
 const { showError, showSuccess, showWarning, showInfo, showPrompt } = usePopup()
 const authStore = useAuthStore()
 const route = useRoute()
@@ -1174,6 +1175,7 @@ const findNonOverlappingPosition = (existingItems, itemSize, startX, startY) => 
   
   // Ensure startY is below button area if it's too high
   const safeStartY = Math.max(startY, normalizedButtonArea + (itemSize / 2))
+  const safeStartX = startX // Use startX directly (already safe)
   
   // Try different scales, starting from full size
   while (currentScale >= minScale) {

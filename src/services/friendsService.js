@@ -1,6 +1,6 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 import { authService } from '@/services/authService'
-import { sanitizeEmail, safeLog, safeError } from '@/utils/log-sanitizer'
+import { sanitizeEmail, safeLog } from '@/utils/log-sanitizer'
 
 export class FriendsService {
   async getFriends(filters = {}) {

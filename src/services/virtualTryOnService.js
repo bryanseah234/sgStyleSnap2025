@@ -9,7 +9,7 @@
  */
 
 import { GoogleGenAI } from "@google/genai"
-import { sanitizeToken, sanitizeUrl, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
+import { sanitizeUrl, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
 
 export class VirtualTryOnService {
   constructor() {
@@ -43,10 +43,9 @@ export class VirtualTryOnService {
    * @param {Object} options - Try-on options
    * @param {string} options.topImageUrl - URL of the top/shirt image
    * @param {string} options.bottomImageUrl - URL of the bottom/pants image
-   * @param {string} options.modelImageUrl - Optional: Custom model person image (not used with Imagen)
    * @returns {Promise<Object>} Result with generated image
    */
-  async generateTryOn({ topImageUrl, bottomImageUrl, modelImageUrl = null }) {
+  async generateTryOn({ topImageUrl, bottomImageUrl }) {
     try {
       console.log('🎨 VirtualTryOnService: Starting try-on generation with Google Gemini Imagen...')
       safeLog('🎨 Top image:', sanitizeUrl(topImageUrl))

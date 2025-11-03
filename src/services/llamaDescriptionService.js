@@ -9,7 +9,7 @@
  */
 
 import { InferenceClient } from '@huggingface/inference'
-import { sanitizeToken, safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
+import { safeLog, safeError, safeWarn } from '@/utils/log-sanitizer'
 
 export class LlamaDescriptionService {
   constructor() {

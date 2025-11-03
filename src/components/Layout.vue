@@ -103,21 +103,6 @@
             </span>
           </div>
         </router-link>
-        
-        <!-- Temporary: Icon Preview Section for Outfits -->
-        <div v-if="!isSidebarCollapsed" class="mt-8 pt-6 border-t border-stone-200 dark:border-zinc-800">
-          <div class="text-xs font-semibold text-muted-foreground mb-3 px-3">Icon Preview (6-9):</div>
-          <div class="space-y-2">
-            <div 
-              v-for="option in outfitIconOptions"
-              :key="option.name"
-              class="nav-item-liquid flex items-center justify-start gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-secondary-foreground transition-all"
-            >
-              <component :is="option.icon" class="w-5 h-5 flex-shrink-0" />
-              <span class="text-sm font-medium">{{ option.name }}</span>
-            </div>
-          </div>
-        </div>
       </nav>
 
       <!-- Theme Toggle & Logout -->
@@ -349,7 +334,6 @@ import {
   Home, 
   Shirt, 
   Users, 
-  Palette, 
   User as UserIcon,
   LogOut,
   Sun,
@@ -358,10 +342,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Layers,
-  Heart,
-  Camera,
-  Grid3X3
+  Layers
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
@@ -509,16 +490,6 @@ const homeDataCache = ref({
 })
 
 /**
- * Icon preview options for Outfits tab (temporary - user wants to see samples 6-9)
- */
-const outfitIconOptions = [
-  { name: "Layers", icon: Layers },
-  { name: "Heart", icon: Heart },
-  { name: "Camera", icon: Camera },
-  { name: "Grid3X3", icon: Grid3X3 },
-]
-
-/**
  * Navigation items configuration
  * 
  * Defines the main navigation items with their display names,
@@ -529,7 +500,7 @@ const outfitIconOptions = [
 const navigationItems = [
   { name: "Home", path: "/home", icon: Home },
   { name: "Closet", path: "/closet", icon: Shirt },
-  { name: "Outfits", path: "/outfits", icon: Palette },
+  { name: "Outfits", path: "/outfits", icon: Layers },
   { name: "Friends", path: "/friends", icon: Users },
   { name: "Profile", path: "/profile", icon: UserIcon },
 ]

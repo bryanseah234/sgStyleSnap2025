@@ -42,7 +42,7 @@ import {
   clearActiveSession, 
   removeUserSession 
 } from '@/services/session-service'
-import { sanitizeEmail, sanitizeUser, sanitizeSession, sanitizeUrl, safeLog, safeError } from '@/utils/log-sanitizer'
+import { sanitizeEmail, sanitizeUser, sanitizeUrl, safeLog, safeError } from '@/utils/log-sanitizer'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
