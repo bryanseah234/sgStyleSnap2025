@@ -139,7 +139,7 @@
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="landing-section py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
+    <section id="features" class="landing-section py-[10vh] bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute top-10 left-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" />
         <div class="absolute bottom-10 right-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s" />
@@ -150,6 +150,14 @@
           <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Powerful Features for Your Style</h2>
           <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             Everything you need to manage, create, and share your fashion effortlessly
+          </p>
+          <p class="text-xs sm:text-sm text-gray-500 mt-4">
+            <span class="inline-flex items-center gap-1">
+              <MousePointer class="w-4 h-4" />
+              Click the front-facing card to learn more
+            </span>
+            <span class="hidden sm:inline"> • </span>
+            <span class="hidden sm:inline">The carousel rotates automatically</span>
           </p>
         </div>
           
@@ -176,7 +184,8 @@
               }"
               :style="{
                 transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
-                '--item-index': idx
+                '--item-index': idx,
+                cursor: isCardFrontFacing(idx) ? 'pointer' : 'default'
               }"
               @click="handleCardClick(idx, feature.id, $event)"
               @mousedown.stop="handleCardClick(idx, feature.id, $event)"
@@ -195,13 +204,13 @@
                     />
                     <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
                   </div>
-                  <!-- Tap indicator - only show when card is front-facing and not flipped -->
+                  <!-- Tap indicator - only show on front-facing cards when not flipped -->
                   <div 
                     v-if="!feature.flipped && isCardFrontFacing(idx)"
-                    class="flex flex-col items-center justify-center pt-2 pb-1 opacity-60 hover:opacity-100 transition-opacity"
+                    class="flex flex-col items-center justify-center pt-2 pb-1 opacity-100 transition-opacity"
                   >
                     <ChevronUp class="w-5 h-5 text-gray-600 animate-bounce" />
-                    <span class="text-xs text-gray-500 mt-0.5">Tap to flip</span>
+                    <span class="text-xs text-gray-500 mt-0.5">Click to learn more</span>
                   </div>
                 </div>
                 
@@ -221,7 +230,7 @@
     </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="landing-section py-6 sm:py-12 md:py-20 relative overflow-hidden bg-white">
+    <section id="demo" class="landing-section py-[10vh] relative overflow-hidden bg-white">
       <div class="absolute inset-0 opacity-5">
         <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
       </div>
@@ -521,7 +530,7 @@
     </section>
 
     <!-- Why Choose Section -->
-    <section id="why" class="landing-section py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
+    <section id="why" class="landing-section py-[5vh] bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s" />
           </div>
@@ -530,19 +539,6 @@
         <!-- Centered Title -->
         <div class="text-center mb-8 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="why-content">
           <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
-        </div>
-
-        <!-- Centered Rectangle Image -->
-        <div class="flex justify-center mb-8 sm:mb-12">
-          <div class="relative w-full max-w-4xl">
-            <div class="aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 shadow-2xl">
-              <img 
-                src="/images/wardrobe-organization.jpg" 
-                alt="Wardrobe organisation showcase"
-                class="w-full h-full object-cover"
-              />
-            </div>
-          </div>
         </div>
 
         <!-- Three Cards in Horizontal Row -->
@@ -567,7 +563,7 @@
     
     <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="cta-card-section py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative"
+      class="cta-card-section py-[10vh] bg-white text-gray-900 relative"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
@@ -703,7 +699,8 @@ import {
   Save,
   Plus,
   ChevronUp,
-  ArrowDown
+  ArrowDown,
+  MousePointer
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
@@ -888,7 +885,7 @@ const handleSignUp = () => {
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
-// Handle card click - improved to handle edge cases
+// Handle card click - only allow clicks on front-facing cards
 const handleCardClick = (index, featureId, event) => {
   // Prevent event propagation
   if (event) {
@@ -896,8 +893,11 @@ const handleCardClick = (index, featureId, event) => {
     event.preventDefault()
   }
   
-  // Always allow clicks - removed restrictive front-facing check
-  // The carousel will pause automatically when card is flipped
+  // Only allow clicks on front-facing cards
+  if (!isCardFrontFacing(index)) {
+    return
+  }
+  
   toggleFeatureExpand(featureId)
 }
 
@@ -953,16 +953,19 @@ const toggleFeatureExpand = (featureId) => {
   const feature = features.value.find(f => f.id === featureId)
   if (!feature) return
   
-  // If card is already flipped, flip it back immediately and resume
+  // If card is already flipped, flip it back immediately and resume rotation
   if (feature.flipped) {
     feature.flipped = false
     clearTimeout(flipTimers.value[featureId])
     delete flipTimers.value[featureId]
-    resumeCarousel()
+    // Resume rotation only if no other cards are flipped
+    if (!features.value.some(f => f.flipped)) {
+      resumeCarousel()
+    }
     return
   }
   
-  // Close all other flipped features
+  // Close all other flipped features (only one card can flip at a time)
   features.value.forEach(f => {
     if (f.id !== featureId && f.flipped) {
       f.flipped = false
@@ -973,17 +976,20 @@ const toggleFeatureExpand = (featureId) => {
     }
   })
   
-  // Pause rotation
+  // Pause rotation while card is flipped
   pauseCarousel()
   
   // Flip the card
   feature.flipped = true
   
-  // Auto-flip back after 5 seconds
+  // Auto-flip back after 5 seconds and then resume rotation
   flipTimers.value[featureId] = setTimeout(() => {
     feature.flipped = false
     delete flipTimers.value[featureId]
-    resumeCarousel()
+    // Only resume if no cards are flipped
+    if (!features.value.some(f => f.flipped)) {
+      resumeCarousel()
+    }
   }, 5000)
 }
 
@@ -1019,13 +1025,16 @@ const startCarousel = () => {
     // Double-check interval wasn't created elsewhere
     if (carouselInterval.value) return
     
-    // Do first rotation immediately after delay
-    const rotationStep = 360 / features.value.length
-    carouselRotation.value -= rotationStep
+    // Do first rotation immediately after delay (only if no cards are flipped)
+    if (!features.value.some(f => f.flipped)) {
+      const rotationStep = 360 / features.value.length
+      carouselRotation.value -= rotationStep
+    }
     
     // Then set up interval for subsequent rotations
     carouselInterval.value = setInterval(() => {
-      if (!isCarouselPaused.value) {
+      // Only rotate if carousel is not paused AND no cards are currently flipped
+      if (!isCarouselPaused.value && !features.value.some(f => f.flipped)) {
         const rotationStep = 360 / features.value.length
         carouselRotation.value -= rotationStep // Counter-clockwise rotation
       }
@@ -1956,8 +1965,7 @@ const setScrollY = (value) => {
 .landing-section,
 .cta-card-section {
   /* Height will be set dynamically by normalizeSectionHeights() */
-  /* Keep a reasonable minimum for initial render */
-  min-height: 100vh;
+  /* Sections now use 10% viewport height padding on top and bottom (10vh each) */
 }
 
 .landing-page h1,
