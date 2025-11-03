@@ -36,7 +36,7 @@
       @mouseleave="handleHeroMouseLeave"
     >
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <h1 class="text-[3.375rem] md:text-[3.375rem] font-bold text-foreground">
+        <h1 class="text-[3.375rem] md:text-[3.375rem] font-bold text-foreground text-left">
           Welcome back{{ userName }}
         </h1>
         <button
@@ -489,6 +489,9 @@ const handleNotificationClick = async (notification) => {
   // Mark as read first
   await markNotificationAsRead(notification)
   
+  // Close notifications modal
+  showNotificationsModal.value = false
+  
   // Navigate based on notification type
   switch (notification.type) {
     case 'friend_request':
@@ -496,8 +499,13 @@ const handleNotificationClick = async (notification) => {
       router.push('/friends/requests/received')
       break
     case 'friend_request_accepted':
-      // Navigate to friends page
-      router.push('/friends')
+      // Navigate to friend's profile page if username is available
+      if (notification.actor_username) {
+        router.push(`/friend/${notification.actor_username}/profile`)
+      } else {
+        // Fallback to friends page if no username
+        router.push('/friends')
+      }
       break
     case 'outfit_shared':
       // Navigate to outfits page

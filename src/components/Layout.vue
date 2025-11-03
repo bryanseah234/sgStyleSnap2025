@@ -103,6 +103,21 @@
             </span>
           </div>
         </router-link>
+        
+        <!-- Temporary: Icon Preview Section for Outfits -->
+        <div v-if="!isSidebarCollapsed" class="mt-8 pt-6 border-t border-stone-200 dark:border-zinc-800">
+          <div class="text-xs font-semibold text-muted-foreground mb-3 px-3">Icon Preview (6-9):</div>
+          <div class="space-y-2">
+            <div 
+              v-for="option in outfitIconOptions"
+              :key="option.name"
+              class="nav-item-liquid flex items-center justify-start gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-secondary-foreground transition-all"
+            >
+              <component :is="option.icon" class="w-5 h-5 flex-shrink-0" />
+              <span class="text-sm font-medium">{{ option.name }}</span>
+            </div>
+          </div>
+        </div>
       </nav>
 
       <!-- Theme Toggle & Logout -->
@@ -235,14 +250,14 @@
       style="padding-top: calc(0.75rem + env(safe-area-inset-top))"
     >
       <div class="flex items-center justify-center">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
-            <Shirt class="w-4 h-4 text-white" />
-          </div>
+        <button
+          @click="scrollToTop"
+          class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <h1 class="text-xl font-bold tracking-tight text-black">
             <StyleSnapBrand size="xl" />
           </h1>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -262,7 +277,7 @@
           :to="item.path"
           class="relative flex-1"
         >
-          <div class="flex flex-col items-center justify-center gap-1 py-2">
+          <div class="flex flex-col items-center justify-center py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               isActiveRoute(item.path)
                 ? 'bg-black dark:bg-white scale-110 -translate-y-0.5'
@@ -278,11 +293,7 @@
               />
             </div>
             
-            <span :class="`text-xs font-medium transition-all duration-200 ${
-              isActiveRoute(item.path)
-                ? 'text-gray-900 dark:text-black opacity-100 scale-100'
-                : 'text-gray-900 dark:text-white opacity-60 dark:opacity-80 scale-90'
-            }`">
+            <span class="hidden text-xs font-medium transition-all duration-200">
               {{ item.name }}
             </span>
 
@@ -346,7 +357,11 @@ import {
   Monitor,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Layers,
+  Box,
+  SquareStack,
+  Gallery
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
@@ -438,6 +453,11 @@ const getThemeLabel = (themeValue) => {
   return option ? option.label : 'Theme'
 }
 
+// Scroll to top of page
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // Select theme
 const selectTheme = async (themeValue) => {
   // Close dropdown immediately for better UX
@@ -487,6 +507,16 @@ const homeDataCache = ref({
   notifications: null,
   timestamp: null
 })
+
+/**
+ * Icon preview options for Outfits tab (temporary - user wants to see samples 6-9)
+ */
+const outfitIconOptions = [
+  { name: "Layers", icon: Layers },
+  { name: "Box", icon: Box },
+  { name: "SquareStack", icon: SquareStack },
+  { name: "Gallery", icon: Gallery },
+]
 
 /**
  * Navigation items configuration

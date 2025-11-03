@@ -19,6 +19,16 @@
     >
       {{ displayedTitle }}<span v-if="showTypewriterCursor" class="typewriter-cursor-splash">|</span>
     </h1>
+    
+    <!-- Skip Animation Button -->
+    <button
+      v-if="!isTransitioning && !animationComplete"
+      @click="skipAnimation"
+      class="skip-animation-btn"
+      title="Skip animation"
+    >
+      <ArrowDown class="w-4 h-4" />
+    </button>
   </div>
 
   <div 
@@ -148,6 +158,9 @@
           class="carousel-3d-wrapper"
           @mouseenter="pauseCarousel"
           @mouseleave="resumeCarousel"
+          @wheel.prevent="handleCarouselWheel"
+          @touchmove="handleCarouselTouchMove"
+          @touchstart="handleCarouselTouchStart"
         >
           <div 
             class="carousel-3d-container"
@@ -166,8 +179,8 @@
                 '--item-index': idx
               }"
               @click="handleCardClick(idx, feature.id, $event)"
-              @mousedown="handleCardClick(idx, feature.id, $event)"
-              @touchstart="handleCardClick(idx, feature.id, $event)"
+              @mousedown.stop="handleCardClick(idx, feature.id, $event)"
+              @touchstart.stop="handleCardClick(idx, feature.id, $event)"
             >
               <div 
                 class="carousel-card-wrapper"
@@ -182,8 +195,11 @@
                     />
                     <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
                   </div>
-                  <!-- Tap indicator -->
-                  <div class="flex flex-col items-center justify-center pt-2 pb-1 opacity-60 hover:opacity-100 transition-opacity">
+                  <!-- Tap indicator - only show when card is front-facing and not flipped -->
+                  <div 
+                    v-if="!feature.flipped && isCardFrontFacing(idx)"
+                    class="flex flex-col items-center justify-center pt-2 pb-1 opacity-60 hover:opacity-100 transition-opacity"
+                  >
                     <ChevronUp class="w-5 h-5 text-gray-600 animate-bounce" />
                     <span class="text-xs text-gray-500 mt-0.5">Tap to flip</span>
                   </div>
@@ -210,7 +226,7 @@
         <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
       </div>
 
-      <div class="container relative z-10">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center space-y-2 sm:space-y-4 mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="demo-header">
           <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Try the Outfit Creator</h2>
           <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
@@ -218,7 +234,7 @@
           </p>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-6">
           <!-- Left Sidebar - Catalogue Items -->
           <div class="lg:col-span-2">
             <div class="rounded-xl p-4 sm:p-6 bg-white border border-gray-200">
@@ -510,42 +526,40 @@
         <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s" />
           </div>
 
-      <div class="container grid md:grid-cols-2 gap-6 sm:gap-12 items-center relative z-10">
-        <div class="relative animate-parallaxFloat hidden sm:block">
-          <div class="aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-2xl">
-            <img 
-              src="/images/wardrobe-organization.jpg" 
-              alt="Wardrobe organisation showcase"
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <div class="absolute -bottom-6 -left-6 w-32 h-32 bg-gray-900/10 rounded-full blur-3xl" />
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <!-- Centered Title -->
+        <div class="text-center mb-8 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="why-content">
+          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
         </div>
 
-        <div class="relative animate-slideInRight sm:hidden">
-          <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-lg">
-            <img 
-              src="/images/wardrobe-organization.jpg" 
-              alt="Wardrobe organisation showcase"
-              class="w-full h-full object-cover"
-            />
+        <!-- Centered Rectangle Image -->
+        <div class="flex justify-center mb-8 sm:mb-12">
+          <div class="relative w-full max-w-4xl">
+            <div class="aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 shadow-2xl">
+              <img 
+                src="/images/wardrobe-organization.jpg" 
+                alt="Wardrobe organisation showcase"
+                class="w-full h-full object-cover"
+              />
+            </div>
           </div>
         </div>
 
-        <div class="space-y-6 sm:space-y-8 scroll-hidden animate-slideInFromLeft" id="why-content">
-          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Why Choose StyleSnap?</h2>
-
+        <!-- Three Cards in Horizontal Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div
             v-for="(item, idx) in whyChooseItems"
             :key="idx"
-            class="flex gap-3 sm:gap-4 animate-staggeredFadeIn group cursor-pointer"
+            class="flex flex-col gap-4 p-6 sm:p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 animate-staggeredFadeIn group cursor-pointer hover:-translate-y-2"
             :style="{ animationDelay: `${idx * 0.1}s` }"
           >
-            <component :is="item.icon" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 flex-shrink-0 mt-1 group-hover:scale-125 transition duration-300" />
-            <div>
-              <h3 class="font-bold text-sm sm:text-base md:text-lg mb-1 group-hover:text-gray-600 transition">{{ item.title }}</h3>
-              <p class="text-xs sm:text-sm md:text-base text-gray-600">{{ item.description }}</p>
-                </div>
+            <div class="flex-shrink-0">
+              <component :is="item.icon" class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 group-hover:scale-125 transition duration-300" />
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-base sm:text-lg md:text-xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
+              <p class="text-sm sm:text-base text-gray-600">{{ item.description }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -688,7 +702,8 @@ import {
   Grid3X3,
   Save,
   Plus,
-  ChevronUp
+  ChevronUp,
+  ArrowDown
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
@@ -884,6 +899,53 @@ const handleCardClick = (index, featureId, event) => {
   // Always allow clicks - removed restrictive front-facing check
   // The carousel will pause automatically when card is flipped
   toggleFeatureExpand(featureId)
+}
+
+// Prevent wheel scrolling from affecting carousel
+const handleCarouselWheel = (event) => {
+  event.preventDefault()
+  event.stopPropagation()
+}
+
+// Prevent swipe gestures on carousel - only allow taps
+const touchStartPosition = ref({ x: 0, y: 0 })
+const touchStartTime = ref(0)
+
+const handleCarouselTouchStart = (event) => {
+  // Only track touch start on the wrapper itself, not on cards
+  // This allows taps on cards to work normally
+  if (event.target === event.currentTarget || event.target.closest('.carousel-3d-wrapper')) {
+    if (event.touches.length === 1) {
+      touchStartPosition.value = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY
+      }
+      touchStartTime.value = Date.now()
+    }
+  }
+}
+
+const handleCarouselTouchMove = (event) => {
+  // Only prevent swipe if it's on the wrapper background, not on cards
+  if (event.target === event.currentTarget || event.target.closest('.carousel-3d-wrapper')) {
+    // If it's a significant movement, it's a swipe - prevent it
+    if (event.touches.length === 1 && touchStartPosition.value.x !== 0) {
+      const deltaX = Math.abs(event.touches[0].clientX - touchStartPosition.value.x)
+      const deltaY = Math.abs(event.touches[0].clientY - touchStartPosition.value.y)
+      
+      // If movement is more than 10px, it's a swipe - prevent it
+      if (deltaX > 10 || deltaY > 10) {
+        event.preventDefault()
+        event.stopPropagation()
+        // Reset touch position to prevent further movement
+        touchStartPosition.value = { x: 0, y: 0 }
+      }
+    } else {
+      // Prevent any touch move on the wrapper
+      event.preventDefault()
+      event.stopPropagation()
+    }
+  }
 }
 
 // Toggle feature flip on click
@@ -1425,6 +1487,32 @@ const typewriterEffect = () => {
   typeChar()
 }
 
+// Skip animation function
+const skipAnimation = () => {
+  // Stop all animations immediately
+  showTypewriterCursor.value = false
+  displayedTitle.value = 'Transform Your Fashion Game'
+  
+  // Calculate and apply final transform immediately
+  nextTick(() => {
+    calculateSplashTransform()
+    
+    // Set transition state
+    isTransitioning.value = true
+    
+    // After a brief moment, hide splash and show page
+    setTimeout(() => {
+      animationComplete.value = true
+      enableBodyScroll()
+      
+      setTimeout(() => {
+        showSplash.value = false
+        showHeroTitle.value = true
+      }, 100)
+    }, 200)
+  })
+}
+
 // Prevent body scrolling when splash screen is displayed
 const disableBodyScroll = () => {
   document.body.style.overflow = 'hidden'
@@ -1722,6 +1810,36 @@ const setScrollY = (value) => {
   animation: blink 1s step-end infinite;
   margin-left: 2px;
   color: #ffffff;
+}
+
+/* Skip Animation Button */
+.skip-animation-btn {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10001;
+}
+
+.skip-animation-btn:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.skip-animation-btn:active {
+  transform: translateX(-50%) scale(0.95);
 }
 
 /* Landing page hidden/visible states */

@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div class="flex-1 min-w-0">
-          <h1 class="text-4xl font-bold text-foreground break-words">
+        <div class="flex-1 min-w-0 w-full md:w-auto">
+          <h1 class="text-4xl font-bold text-foreground break-words text-left">
             Your Outfits
           </h1>
         </div>

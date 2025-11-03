@@ -143,7 +143,7 @@
 
         <!-- Mobile Layout -->
         <div class="md:hidden">
-          <h1 class="text-3xl font-bold mb-2 text-foreground">
+          <h1 class="text-3xl font-bold mb-2 text-foreground text-center">
             {{ subRouteTitle }}
           </h1>
           <p v-if="currentSubRoute === 'edit'" class="text-base mb-4 text-stone-600 dark:text-zinc-400">
@@ -277,40 +277,43 @@
       </div>
       
       <!-- Sub-route Navigation -->
-      <div v-if="currentSubRoute !== 'default'" class="mb-8 flex flex-wrap gap-3">
-        <button
-          @click="$router.push('/outfits/add/suggested')"
-          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-            currentSubRoute === 'suggested'
-              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
-              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
-          }`"
-        >
-          <Sparkles class="w-4 h-4" />
-          AI Suggestions
-        </button>
-        <button
-          @click="$router.push('/outfits/add/personal')"
-          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-            currentSubRoute === 'personal'
-              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
-              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
-          }`"
-        >
-          <User class="w-4 h-4" />
-          Personal Creation
-        </button>
-        <button
-          @click="$router.push('/outfits/add/friend')"
-          :class="`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-            currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
-              ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
-              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
-          }`"
-        >
-          <Users class="w-4 h-4" />
-          Friend Creation
-        </button>
+      <div v-if="currentSubRoute !== 'default'" class="mb-8">
+        <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <button
+            @click="$router.push('/outfits/add/suggested')"
+            :class="`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              currentSubRoute === 'suggested'
+                ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+                : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+            }`"
+          >
+            <Sparkles class="w-4 h-4" />
+            AI Suggestions
+          </button>
+          <button
+            @click="$router.push('/outfits/add/personal')"
+            :class="`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              currentSubRoute === 'personal'
+                ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+                : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+            }`"
+          >
+            <User class="w-4 h-4" />
+            Personal Creation
+          </button>
+          <button
+            @click="$router.push('/outfits/add/friend')"
+            :class="`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
+                ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+                : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+            }`"
+          >
+            <Users class="w-4 h-4" />
+            Friend Creation
+          </button>
+        </div>
       </div>
       
       <!-- Sub-route Content (removed for cleaner UI) -->
@@ -381,7 +384,7 @@
             class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 mx-auto bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             <Plus class="w-5 h-5" />
-            Add Your Friend
+            Add
           </button>
           </div>
         </div>
@@ -1165,6 +1168,13 @@ const findNonOverlappingPosition = (existingItems, itemSize, startX, startY) => 
   let currentScale = 1.0
   let minScale = 0.3 // Minimum scale to try
   
+  // Define button area exclusion zone (top 80px to prevent overlap with centered buttons)
+  const BUTTON_AREA_HEIGHT = 80
+  const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
+  
+  // Ensure startY is below button area if it's too high
+  const safeStartY = Math.max(startY, normalizedButtonArea + (itemSize / 2))
+  
   // Try different scales, starting from full size
   while (currentScale >= minScale) {
     const scaledSize = itemSize * currentScale
@@ -1176,11 +1186,11 @@ const findNonOverlappingPosition = (existingItems, itemSize, startX, startY) => 
       const angle = (angleIndex * 45) * (Math.PI / 180) // Convert to radians
       const radius = (circleIndex + 1) * (scaledSize * 0.6) // Increase radius each circle
       
-      const x = startX + radius * Math.cos(angle) - (scaledSize / 2)
-      const y = startY + radius * Math.sin(angle) - (scaledSize / 2)
+      const x = safeStartX + radius * Math.cos(angle) - (scaledSize / 2)
+      const y = safeStartY + radius * Math.sin(angle) - (scaledSize / 2)
       
-      // Check bounds (normalized to reference canvas)
-      if (x < 0 || y < 0 || x + scaledSize > REFERENCE_CANVAS_WIDTH || y + scaledSize > REFERENCE_CANVAS_HEIGHT) {
+      // Check bounds (normalized to reference canvas) and ensure item is below button area
+      if (x < 0 || y < normalizedButtonArea || x + scaledSize > REFERENCE_CANVAS_WIDTH || y + scaledSize > REFERENCE_CANVAS_HEIGHT) {
         continue
       }
       
@@ -1218,10 +1228,10 @@ const findNonOverlappingPosition = (existingItems, itemSize, startX, startY) => 
     currentScale -= 0.1
   }
   
-  // If still no position found, place at center with minimum scale
+  // If still no position found, place below button area with minimum scale
   return {
     x: (REFERENCE_CANVAS_WIDTH / 2) - (itemSize * minScale / 2),
-    y: (REFERENCE_CANVAS_HEIGHT / 2) - (itemSize * minScale / 2),
+    y: Math.max(normalizedButtonArea + 10, (REFERENCE_CANVAS_HEIGHT / 2) - (itemSize * minScale / 2)),
     scale: minScale
   }
 }
@@ -1645,8 +1655,10 @@ const generateAISuggestion = async () => {
     // Place selected items on canvas with non-overlapping placement
     canvasItems.value = []
     const normalizedItemSize = normalizePosition(128, 'x') // 128px item size normalized
+    const BUTTON_AREA_HEIGHT = 80
+    const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
     let currentX = 150
-    let currentY = 100
+    let currentY = Math.max(100, normalizedButtonArea + 50) // Ensure below button area
     
     selectedItems.forEach((selected, index) => {
       // Find non-overlapping position for this item
@@ -2597,8 +2609,10 @@ const loadRecommendation = (rec) => {
     
     // Add recommendation items to canvas with non-overlapping placement
     const normalizedItemSize = normalizePosition(128, 'x') // 128px item size normalized
+    const BUTTON_AREA_HEIGHT = 80
+    const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
     let currentX = 100
-    let currentY = 100
+    let currentY = Math.max(100, normalizedButtonArea + 50) // Ensure below button area
     
     const items = rec.items.map((item, index) => {
       // Find non-overlapping position for this item
@@ -2653,8 +2667,10 @@ const loadWeatherRecommendation = (rec) => {
     
     // Add recommendation items to canvas with non-overlapping placement
     const normalizedItemSize = normalizePosition(128, 'x')
+    const BUTTON_AREA_HEIGHT = 80
+    const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
     let currentX = 100
-    let currentY = 100
+    let currentY = Math.max(100, normalizedButtonArea + 50) // Ensure below button area
     
     rec.items.map((item, index) => {
       const position = findNonOverlappingPosition(
@@ -2806,10 +2822,28 @@ const addItemToCanvas = (item) => {
     return
   }
   
-  // Define button area exclusion zone (top 80px to prevent overlap with centered buttons)
+  if (!canvasContainer.value) return
+  
+  const rect = canvasContainer.value.getBoundingClientRect()
+  const itemSize = 128
+  const normalizedItemSize = normalizePosition(itemSize, 'x') // Use x scale as item is square
+  
+  // Start position: center of canvas, but below button area
   const BUTTON_AREA_HEIGHT = 80
   const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
-  const baseY = Math.max(normalizedButtonArea, normalizePosition(50 + (canvasItems.value.length * 20), 'y'))
+  const centerX = REFERENCE_CANVAS_WIDTH / 2
+  const centerY = Math.max(
+    (REFERENCE_CANVAS_HEIGHT / 2),
+    normalizedButtonArea + 100 // Ensure below button area
+  )
+  
+  // Find a non-overlapping position (may reduce scale if needed)
+  const position = findNonOverlappingPosition(
+    canvasItems.value,
+    normalizedItemSize,
+    centerX,
+    centerY
+  )
   
   // Ensure new items start with z_index >= 2 (above grid)
   const baseZIndex = Math.max(2, canvasItems.value.length + 2)
@@ -2818,11 +2852,11 @@ const addItemToCanvas = (item) => {
     ...item,
     originalId: item.id, // Store original clothing item ID
     id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
-    x: 50 + (canvasItems.value.length * 20),
-    y: baseY,
+    x: Math.max(0, Math.min(position.x, REFERENCE_CANVAS_WIDTH - (normalizedItemSize * position.scale))),
+    y: Math.max(normalizedButtonArea, Math.min(position.y, REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale))),
     z_index: baseZIndex,
     rotation: 0,
-    scale: 1
+    scale: position.scale // Use scaled size from findNonOverlappingPosition
   }
   
   canvasItems.value.push(newItem)

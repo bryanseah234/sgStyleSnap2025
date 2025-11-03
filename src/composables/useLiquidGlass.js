@@ -105,23 +105,48 @@ export function useLiquidHover() {
 
       // Apply liquid glass hover effect with spring physics
       if (animate && spring && typeof animate === 'function' && typeof spring === 'function') {
-        animate(
-          elementRef.value,
-          {
-            scale: 1.05,                    // Slight scale increase
-            rotateX: 2,                     // Subtle X-axis rotation
-            rotateY: 1,                     // Subtle Y-axis rotation
-            translateZ: 10,                  // Lift element in 3D space
-            filter: 'blur(0px) brightness(1.1)' // Enhance brightness
-          },
-          {
-            duration: 0.3,                  // Quick animation duration
-            easing: spring({ 
-              stiffness: 300,               // High stiffness for snappy feel
-              damping: 20                   // Moderate damping for smooth motion
-            })
+        try {
+          const springEasing = spring({ 
+            stiffness: 300,               // High stiffness for snappy feel
+            damping: 20                   // Moderate damping for smooth motion
+          })
+          
+          // Extract the easing function with proper error handling
+          let easingFunction = null
+          
+          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+            // Safely access array index
+            easingFunction = springEasing[0]
+          } else if (springEasing && typeof springEasing === 'function') {
+            easingFunction = springEasing
+          } else {
+            // If spring return is invalid, throw to trigger fallback
+            throw new Error('Invalid spring easing return value')
           }
-        )
+          
+          // Only animate if we have a valid easing function
+          if (easingFunction && typeof easingFunction === 'function') {
+            animate(
+              elementRef.value,
+              {
+                scale: 1.05,                    // Slight scale increase
+                rotateX: 2,                     // Subtle X-axis rotation
+                rotateY: 1,                     // Subtle Y-axis rotation
+                translateZ: 10,                  // Lift element in 3D space
+                filter: 'blur(0px) brightness(1.1)' // Enhance brightness
+              },
+              {
+                duration: 0.3,                  // Quick animation duration
+                easing: easingFunction
+              }
+            )
+          } else {
+            throw new Error('Easing function is not valid')
+          }
+        } catch (springError) {
+          // If spring function fails, use CSS fallback
+          throw new Error(`Spring easing failed: ${springError?.message || 'unknown error'}`)
+        }
       } else {
         // Fallback CSS animation when Motion library unavailable
         elementRef.value.style.transform = 'scale(1.05) translateZ(10px)'
@@ -571,20 +596,55 @@ export function useNavbarLiquid() {
     isHovering.value = true
     await loadMotionOne()
 
-    // Glass thickening effect
-    animate(
-      navbarRef.value,
-      {
-        backdropFilter: 'blur(16px)',
-        background: 'rgba(255, 255, 255, 0.2)',
-        translateY: -2,
-        scale: 1.01
-      },
-      {
-        duration: 0.3,
-        easing: spring({ stiffness: 250, damping: 20 })
+    try {
+      // Safely create spring easing function
+      let easingFunction = null
+      if (spring && typeof spring === 'function') {
+        try {
+          const springEasing = spring({ stiffness: 250, damping: 20 })
+          
+          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+            easingFunction = springEasing[0]
+          } else if (springEasing && typeof springEasing === 'function') {
+            easingFunction = springEasing
+          }
+        } catch (springError) {
+          console.warn('⚠️ Navbar spring easing failed:', springError)
+        }
       }
-    )
+
+      // Glass thickening effect
+      if (animate && easingFunction && typeof easingFunction === 'function') {
+        animate(
+          navbarRef.value,
+          {
+            backdropFilter: 'blur(16px)',
+            background: 'rgba(255, 255, 255, 0.2)',
+            translateY: -2,
+            scale: 1.01
+          },
+          {
+            duration: 0.3,
+            easing: easingFunction
+          }
+        )
+      } else {
+        // Fallback CSS animation
+        navbarRef.value.style.backdropFilter = 'blur(16px)'
+        navbarRef.value.style.background = 'rgba(255, 255, 255, 0.2)'
+        navbarRef.value.style.transform = 'translateY(-2px) scale(1.01)'
+        navbarRef.value.style.transition = 'all 0.3s ease-out'
+      }
+    } catch (error) {
+      console.warn('⚠️ Error in navbar hoverIn animation:', error)
+      // Fallback CSS animation on error
+      if (navbarRef.value) {
+        navbarRef.value.style.backdropFilter = 'blur(16px)'
+        navbarRef.value.style.background = 'rgba(255, 255, 255, 0.2)'
+        navbarRef.value.style.transform = 'translateY(-2px) scale(1.01)'
+        navbarRef.value.style.transition = 'all 0.3s ease-out'
+      }
+    }
   }
 
   const hoverOut = async () => {
@@ -593,20 +653,59 @@ export function useNavbarLiquid() {
     isHovering.value = false
     await loadMotionOne()
 
-    // Return to base state
-    animate(
-      navbarRef.value,
-      {
-        backdropFilter: isScrolled.value ? 'blur(12px)' : 'blur(8px)',
-        background: isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
-        translateY: 0,
-        scale: 1
-      },
-      {
-        duration: 0.4,
-        easing: spring({ stiffness: 200, damping: 25 })
+    try {
+      // Safely create spring easing function
+      let easingFunction = null
+      if (spring && typeof spring === 'function') {
+        try {
+          const springEasing = spring({ stiffness: 200, damping: 25 })
+          
+          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+            easingFunction = springEasing[0]
+          } else if (springEasing && typeof springEasing === 'function') {
+            easingFunction = springEasing
+          }
+        } catch (springError) {
+          console.warn('⚠️ Navbar spring easing failed:', springError)
+        }
       }
-    )
+
+      // Return to base state
+      if (animate && easingFunction && typeof easingFunction === 'function') {
+        animate(
+          navbarRef.value,
+          {
+            backdropFilter: isScrolled.value ? 'blur(12px)' : 'blur(8px)',
+            background: isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+            translateY: 0,
+            scale: 1
+          },
+          {
+            duration: 0.4,
+            easing: easingFunction
+          }
+        )
+      } else {
+        // Fallback CSS animation
+        const blurValue = isScrolled.value ? 'blur(12px)' : 'blur(8px)'
+        const bgValue = isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
+        navbarRef.value.style.backdropFilter = blurValue
+        navbarRef.value.style.background = bgValue
+        navbarRef.value.style.transform = 'translateY(0) scale(1)'
+        navbarRef.value.style.transition = 'all 0.4s ease-out'
+      }
+    } catch (error) {
+      console.warn('⚠️ Error in navbar hoverOut animation:', error)
+      // Fallback CSS animation on error
+      if (navbarRef.value) {
+        const blurValue = isScrolled.value ? 'blur(12px)' : 'blur(8px)'
+        const bgValue = isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
+        navbarRef.value.style.backdropFilter = blurValue
+        navbarRef.value.style.background = bgValue
+        navbarRef.value.style.transform = 'translateY(0) scale(1)'
+        navbarRef.value.style.transition = 'all 0.4s ease-out'
+      }
+    }
   }
 
   const updateScrollState = async () => {
@@ -614,19 +713,58 @@ export function useNavbarLiquid() {
     
     await loadMotionOne()
 
-    // Responsive to scroll state
-    animate(
-      navbarRef.value,
-      {
-        backdropFilter: isScrolled.value ? 'blur(12px)' : 'blur(8px)',
-        background: isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
-        translateY: isScrolled.value ? -1 : 0
-      },
-      {
-        duration: 0.3,
-        easing: spring({ stiffness: 250, damping: 20 })
+    try {
+      // Safely create spring easing function
+      let easingFunction = null
+      if (spring && typeof spring === 'function') {
+        try {
+          const springEasing = spring({ stiffness: 250, damping: 20 })
+          
+          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+            easingFunction = springEasing[0]
+          } else if (springEasing && typeof springEasing === 'function') {
+            easingFunction = springEasing
+          }
+        } catch (springError) {
+          console.warn('⚠️ Navbar scroll spring easing failed:', springError)
+        }
       }
-    )
+
+      // Responsive to scroll state
+      if (animate && easingFunction && typeof easingFunction === 'function') {
+        animate(
+          navbarRef.value,
+          {
+            backdropFilter: isScrolled.value ? 'blur(12px)' : 'blur(8px)',
+            background: isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+            translateY: isScrolled.value ? -1 : 0
+          },
+          {
+            duration: 0.3,
+            easing: easingFunction
+          }
+        )
+      } else {
+        // Fallback CSS animation
+        const blurValue = isScrolled.value ? 'blur(12px)' : 'blur(8px)'
+        const bgValue = isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
+        navbarRef.value.style.backdropFilter = blurValue
+        navbarRef.value.style.background = bgValue
+        navbarRef.value.style.transform = isScrolled.value ? 'translateY(-1px)' : 'translateY(0)'
+        navbarRef.value.style.transition = 'all 0.3s ease-out'
+      }
+    } catch (error) {
+      console.warn('⚠️ Error in navbar updateScrollState animation:', error)
+      // Fallback CSS animation on error
+      if (navbarRef.value) {
+        const blurValue = isScrolled.value ? 'blur(12px)' : 'blur(8px)'
+        const bgValue = isScrolled.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
+        navbarRef.value.style.backdropFilter = blurValue
+        navbarRef.value.style.background = bgValue
+        navbarRef.value.style.transform = isScrolled.value ? 'translateY(-1px)' : 'translateY(0)'
+        navbarRef.value.style.transition = 'all 0.3s ease-out'
+      }
+    }
   }
 
   onMounted(() => {

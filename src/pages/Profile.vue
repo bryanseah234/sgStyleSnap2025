@@ -3,7 +3,7 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-foreground">
+        <h1 class="text-4xl font-bold text-foreground text-center md:text-left">
           Profile Settings
         </h1>
       </div>
@@ -79,7 +79,7 @@
               </div>
 
               <!-- Additional Info -->
-              <div class="text-center mt-auto">
+              <div class="text-center mt-auto flex flex-col justify-center">
                 <p class="text-sm text-stone-600 dark:text-zinc-400 mb-6">
                   Profile information is managed through your Google account.
                   <br>
@@ -90,7 +90,7 @@
                 <div v-if="!loadingStats" class="grid grid-cols-3 gap-3 pt-4 border-t border-stone-200 dark:border-zinc-700">
                   <button
                     @click="navigateToCloset"
-                    class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 h-full"
                     title="View your closet"
                   >
                     <Shirt class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
@@ -99,7 +99,7 @@
                   </button>
                   <button
                     @click="navigateToOutfits"
-                    class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 h-full"
                     title="View your outfits"
                   >
                     <Palette class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
@@ -108,7 +108,7 @@
                   </button>
                   <button
                     @click="navigateToFriends"
-                    class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 h-full"
                     title="View your friends"
                   >
                     <Users class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />

@@ -70,6 +70,18 @@
     overflow-x: hidden; /* Prevent horizontal scrolling that could shift nav bar */
   }
   
+  /* Hide scrollbar on desktop while maintaining scroll functionality */
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  @media (min-width: 1024px) {
+    html::-webkit-scrollbar {
+      display: none;
+    }
+    html {
+      -ms-overflow-style: none; /* IE and old Edge */
+      scrollbar-width: none; /* Firefox */
+    }
+  }
+  
   /* Force proper text contrast in both modes */
   html, body {
     color: hsl(var(--foreground));

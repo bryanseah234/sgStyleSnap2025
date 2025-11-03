@@ -42,7 +42,7 @@
               @keyup="handleInputKeyup"
             />
             <!-- Small keyboard hint for search suggestions -->
-            <div class="keyboard-hint" style="font-size: 10px; padding: 3px 6px;">
+            <div v-if="isDesktop" class="keyboard-hint" style="font-size: 10px; padding: 3px 6px;">
               <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
               <span>+</span>
               <span class="keyboard-hint-key">K</span>

@@ -3,8 +3,8 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <div class="flex-1 min-w-0">
-          <h1 class="text-4xl font-bold text-foreground break-words">
+        <div class="flex-1 min-w-0 w-full md:w-auto">
+          <h1 class="text-4xl font-bold text-foreground break-words text-left">
             Friends
           </h1>
         </div>
@@ -14,8 +14,8 @@
           @click="showAddFriendModal = true"
           class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 flex-shrink-0"
         >
-          <UserPlus class="w-5 h-5" />
-          Add Your Friend
+          <Plus class="w-5 h-5" />
+          Add
         </button>
       </div>
 
@@ -82,7 +82,7 @@
             @blur="handleSearchBlur"
           />
           <!-- Raycast-style keyboard hint -->
-          <div class="keyboard-hint">
+          <div class="keyboard-hint hidden md:block">
             <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
             <span>+</span>
             <span class="keyboard-hint-key">K</span>
@@ -422,7 +422,7 @@ import { FriendsService } from '@/services/friendsService'
 import { UserService } from '@/services/userService'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
-import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X, Check } from 'lucide-vue-next'
+import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X, Check, Plus } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
