@@ -107,12 +107,17 @@ export default async function handler(req, res) {
       };
 
       // Pass images to the API if provided
-      // Imagen API supports passing images as base64 inlineData in the request
+      // Note: Imagen API structure - images may need to be passed differently
+      // Attempt to include images - the SDK will handle validation
       if (imageParts.length > 0) {
-        // Include image parts in the request
-        // The API should accept images as part of the multimodal input
+        // Try adding images to the request config
+        // The Google GenAI SDK may support this or we may need to adjust based on API response
         requestConfig.images = imageParts;
         console.log('📸 Including', imageParts.length, 'image(s) in request');
+        console.log('📋 Top image present:', !!topImageBase64);
+        console.log('📋 Bottom image present:', !!bottomImageBase64);
+      } else {
+        console.warn('⚠️ No images to include in request');
       }
 
       console.log('📸 Image parts count:', imageParts.length);
@@ -147,15 +152,14 @@ export default async function handler(req, res) {
 
       console.log('👁️ Analyzing clothing images with Gemini vision...');
 
-      const model = client.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-      
-      let prompt = "Describe these clothing items in detail. Focus on: ";
-      prompt += "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) ";
-      prompt += "2. Colors and patterns ";
-      prompt += "3. Style and fit (e.g., casual, formal, loose, fitted) ";
-      prompt += "4. Notable features (e.g., buttons, pockets, collar type, sleeves) ";
-      prompt += "5. Material appearance (if visible). ";
-      prompt += "Provide a concise but detailed description that would help generate an image of someone wearing these items.";
+      // Build request payload for Gemini REST API (since SDK method may not work)
+      const prompt = "Describe these clothing items in detail. Focus on: " +
+        "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) " +
+        "2. Colors and patterns " +
+        "3. Style and fit (e.g., casual, formal, loose, fitted) " +
+        "4. Notable features (e.g., buttons, pockets, collar type, sleeves) " +
+        "5. Material appearance (if visible). " +
+        "Provide a concise but detailed description that would help generate an image of someone wearing these items.";
       
       const parts = [];
       
@@ -187,8 +191,34 @@ export default async function handler(req, res) {
       
       parts.push({ text: prompt });
       
-      const result = await model.generateContent({ contents: [{ role: "user", parts }] });
-      const description = result.response.text();
+      // Use REST API directly to avoid SDK method issues
+      const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+      
+      const geminiResponse = await fetch(geminiApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            role: "user",
+            parts: parts
+          }]
+        })
+      });
+
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`);
+      }
+
+      const geminiResult = await geminiResponse.json();
+      
+      if (!geminiResult.candidates || !geminiResult.candidates[0] || !geminiResult.candidates[0].content) {
+        throw new Error('Invalid response from Gemini API');
+      }
+      
+      const description = geminiResult.candidates[0].content.parts[0].text;
       
       console.log('✅ Clothing analysis completed');
       

@@ -239,19 +239,18 @@ export class VirtualTryOnService {
         return description
       } else {
         // Direct API call (local development with VITE_GEMINI_API_KEY)
-        if (!this.client) {
+        if (!this.apiKey) {
           return null
         }
 
-        const model = this.client.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
-        
-        let prompt = "Describe these clothing items in detail. Focus on: "
-        prompt += "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) "
-        prompt += "2. Colors and patterns "
-        prompt += "3. Style and fit (e.g., casual, formal, loose, fitted) "
-        prompt += "4. Notable features (e.g., buttons, pockets, collar type, sleeves) "
-        prompt += "5. Material appearance (if visible). "
-        prompt += "Provide a concise but detailed description that would help generate an image of someone wearing these items."
+        // Use REST API directly to avoid SDK method issues
+        const prompt = "Describe these clothing items in detail. Focus on: " +
+          "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) " +
+          "2. Colors and patterns " +
+          "3. Style and fit (e.g., casual, formal, loose, fitted) " +
+          "4. Notable features (e.g., buttons, pockets, collar type, sleeves) " +
+          "5. Material appearance (if visible). " +
+          "Provide a concise but detailed description that would help generate an image of someone wearing these items."
         
         const parts = []
         
@@ -283,8 +282,34 @@ export class VirtualTryOnService {
         
         parts.push({ text: prompt })
         
-        const result = await model.generateContent({ contents: [{ role: "user", parts }] })
-        const description = result.response.text()
+        // Use REST API directly
+        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${this.apiKey}`
+        
+        const geminiResponse = await fetch(geminiApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              role: "user",
+              parts: parts
+            }]
+          })
+        })
+
+        if (!geminiResponse.ok) {
+          const errorText = await geminiResponse.text()
+          throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`)
+        }
+
+        const geminiResult = await geminiResponse.json()
+        
+        if (!geminiResult.candidates || !geminiResult.candidates[0] || !geminiResult.candidates[0].content) {
+          throw new Error('Invalid response from Gemini API')
+        }
+        
+        const description = geminiResult.candidates[0].content.parts[0].text
         
         safeLog('📝 Clothing analysis:', description.substring(0, 150) + '...')
         return description
