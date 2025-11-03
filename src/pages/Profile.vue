@@ -102,7 +102,7 @@
                     class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 h-full"
                     title="View your outfits"
                   >
-                    <Palette class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
+                    <Layers class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
                     <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.outfits }}</span>
                     <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Outfits</span>
                   </button>
@@ -309,7 +309,7 @@ import { useThemeStore } from '@/stores/theme-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePopup } from '@/composables/usePopup'
 import { notificationsService } from '@/services/notificationsService'
-import { Sun, Moon, Monitor, ChevronDown, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
+import { Sun, Moon, Monitor, ChevronDown, LogOut, Shirt, Palette, Layers, Users } from 'lucide-vue-next'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'

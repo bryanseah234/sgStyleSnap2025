@@ -72,7 +72,7 @@ let animationStartTime = 0
 let animationDuration = 2000 // 2 seconds
 let currentAnimationType = null
 let originalBoneStates = null
-const ANIMATION_TYPES = ['wave', 'jump', 'nod', 'tpose', 'bounce']
+const ANIMATION_TYPES = ['wave', 'nod', 'tpose', 'bounce']
 let currentAnimationIndex = 0
 
 // Initialize Three.js scene
@@ -534,9 +534,6 @@ onUnmounted(() => {
   outline: none;
   width: 100%;
   height: 100%;
-}
-
-.avatar-canvas:hover {
   filter: brightness(1.1);
 }
 

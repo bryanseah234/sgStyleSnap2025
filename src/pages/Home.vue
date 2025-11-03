@@ -199,7 +199,7 @@ import { NotificationsService } from '@/services/notificationsService'
 import { UserService } from '@/services/userService'
 import { vScrollAnimate } from '@/composables/useScrollAnimation'
 import { useLiquidReveal } from '@/composables/useLiquidGlass'
-import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck, X } from 'lucide-vue-next'
+import { Shirt, Palette, Layers, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck, X } from 'lucide-vue-next'
 
 // Theme and auth composables
 const { theme } = useTheme()
@@ -294,7 +294,7 @@ const handleEsc = (e) => {
  */
 const stats = computed(() => [
   { label: 'Closet', value: totalItemsCount.value, icon: Shirt, route: '/closet' },
-  { label: 'Outfits', value: outfits.value.length, icon: Palette, route: '/outfits' },
+  { label: 'Outfits', value: outfits.value.length, icon: Layers, route: '/outfits' },
   { label: 'Friends', value: friends.value.length, icon: Users, route: '/friends' },
 ])
 

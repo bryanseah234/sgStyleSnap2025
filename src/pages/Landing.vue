@@ -567,7 +567,7 @@
     
     <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="cta-card-section py-12 sm:py-16 md:py-20 bg-white text-gray-900 relative"
+      class="cta-card-section min-h-screen flex items-center justify-center bg-white text-gray-900 relative pt-20 sm:pt-24 md:pt-32"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
