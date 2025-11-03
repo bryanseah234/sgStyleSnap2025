@@ -1354,12 +1354,17 @@ const handleTouchEnd = (event) => {
 }
 
 const handleWheel = (event) => {
+  // Always prevent default to stop page scrolling that could move avatar out of view
   event.preventDefault()
+  event.stopPropagation()
   
+  // Only handle horizontal scrolling for carousel navigation
   if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+    // Vertical scroll - ignore but prevent page scroll
     return
   }
   
+  // Horizontal scroll - handle carousel navigation
   const delta = event.deltaX * 0.001
   targetOffset -= delta
   
@@ -1566,6 +1571,9 @@ watch(currentIndex, () => {
   min-height: 350px;
   overflow: hidden;
   border-radius: 1rem;
+  /* Prevent scroll-related position shifts */
+  isolation: isolate;
+  contain: layout style paint;
 }
 
 @media (min-width: 768px) {
@@ -1583,6 +1591,9 @@ watch(currentIndex, () => {
   cursor: grab;
   outline: none;
   touch-action: pan-y;
+  position: relative;
+  /* Prevent scroll-related position shifts - create new stacking context */
+  transform: translateZ(0);
 }
 
 .avatar-canvas:focus {
