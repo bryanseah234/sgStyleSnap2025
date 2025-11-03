@@ -535,6 +535,13 @@
           <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
         </div>
 
+        <!-- 3D Avatar Display -->
+        <div class="flex justify-center mb-8 sm:mb-12 w-full">
+          <div class="w-full max-w-md mx-auto">
+            <SingleAvatar3D :avatar-url="selectedAvatarUrl" />
+          </div>
+        </div>
+
         <!-- Three Cards in Horizontal Row -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div
@@ -698,6 +705,7 @@ import {
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
+import SingleAvatar3D from '@/components/SingleAvatar3D.vue'
 
 // Import landing page animations
 import '@/assets/css/landing-page-animations.css'
@@ -847,6 +855,24 @@ const carouselRotation = ref(0)
 const carouselInterval = ref(null)
 const isCarouselPaused = ref(false)
 const flipTimers = ref({}) // Track timers for auto-flip back
+
+// Avatar URLs for random selection
+const avatarUrls = [
+  'https://models.readyplayer.me/690030c2657a118475704718.glb',
+  'https://models.readyplayer.me/690030eb16afa77eb4fbeb91.glb',
+  'https://models.readyplayer.me/6900316350f0151f18f12166.glb',
+  'https://models.readyplayer.me/690031b503a04907a7367d03.glb',
+  'https://models.readyplayer.me/6900321e03a04907a73686be.glb',
+  'https://models.readyplayer.me/6900328321aeaea077d3f32e.glb',
+  'https://models.readyplayer.me/690032b5cc76da0daf9b671c.glb',
+  'https://models.readyplayer.me/690032ff08032bae29097e9b.glb',
+  'https://models.readyplayer.me/6900333003a04907a7369c05.glb',
+  'https://models.readyplayer.me/69003054afd9f514ac528c56.glb',
+  'https://models.readyplayer.me/690026ea4e683ec207c58310.glb'
+]
+
+// Randomly select one avatar on page load
+const selectedAvatarUrl = ref('')
 
 // Why choose items data
 const whyChooseItems = [
@@ -1648,6 +1674,10 @@ const normalizeSectionHeights = () => {
 onMounted(() => {
   // Set page as loaded immediately to prevent flicker
   isPageLoaded.value = true
+  
+  // Randomly select an avatar
+  const randomIndex = Math.floor(Math.random() * avatarUrls.length)
+  selectedAvatarUrl.value = avatarUrls[randomIndex]
   
   // Start typewriter effect
   typewriterEffect()
