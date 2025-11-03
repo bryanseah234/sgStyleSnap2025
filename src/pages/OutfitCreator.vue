@@ -876,10 +876,9 @@
               <!-- Load Button -->
               <button
                 @click="loadRecommendation(rec)"
-                class="w-full py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                class="w-full py-2 rounded-lg bg-black text-white hover:bg-zinc-800 transition-colors text-sm font-medium"
               >
-                <Check class="w-4 h-4" />
-                Load to Canvas
+                See on canvas
               </button>
             </div>
           </div>
@@ -994,10 +993,9 @@
               <!-- Load Button -->
               <button
                 @click="loadWeatherRecommendation(rec)"
-                class="w-full py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                class="w-full py-2 rounded-lg bg-black text-white hover:bg-zinc-800 transition-colors text-sm font-medium"
               >
-                <Check class="w-4 h-4" />
-                Load to Canvas
+                See on canvas
               </button>
             </div>
           </div>
@@ -1066,7 +1064,6 @@ import {
   Plus,
   Users,
   X,
-  Check,
   CloudSun
 } from 'lucide-vue-next'
 import AddFriendDialog from '@/components/friends/AddFriendDialog.vue'
@@ -3040,11 +3037,12 @@ const moveSelectedItemForward = () => {
   
   // Find all items with z-index greater than current
   const itemsAbove = normalizedItems.filter(i => i.id !== item.id && i.normalizedZ > currentZIndex)
+  let swapItem = null
   
   if (itemsAbove.length > 0) {
     // Find the item with the smallest z-index above current
     const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
-    const swapItem = canvasItems.value.find(i => i.id === itemsAbove.find(ai => ai.normalizedZ === minAboveZIndex)?.id)
+    swapItem = canvasItems.value.find(i => i.id === itemsAbove.find(ai => ai.normalizedZ === minAboveZIndex)?.id)
     
     if (swapItem) {
       // Swap z-indexes
@@ -3063,8 +3061,17 @@ const moveSelectedItemForward = () => {
     console.log(`Moved to front: ${item.id} now ${item.z_index}`)
   }
   
-  // Force reactivity update
-  canvasItems.value = [...canvasItems.value]
+  // Force reactivity update by creating new array with updated items
+  const updatedItems = canvasItems.value.map(i => 
+    i.id === item.id ? { ...i, z_index: item.z_index } : i
+  )
+  if (swapItem) {
+    canvasItems.value = updatedItems.map(i => 
+      i.id === swapItem.id ? { ...i, z_index: swapItem.z_index } : i
+    )
+  } else {
+    canvasItems.value = updatedItems
+  }
   saveToHistory()
 }
 
@@ -3092,11 +3099,12 @@ const moveSelectedItemBackward = () => {
   
   // Find all items with z-index less than current
   const itemsBelow = normalizedItems.filter(i => i.id !== item.id && i.normalizedZ < currentZIndex)
+  let swapItem = null
   
   if (itemsBelow.length > 0) {
     // Find the item with the largest z-index below current
     const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.normalizedZ))
-    const swapItem = canvasItems.value.find(i => i.id === itemsBelow.find(bi => bi.normalizedZ === maxBelowZIndex)?.id)
+    swapItem = canvasItems.value.find(i => i.id === itemsBelow.find(bi => bi.normalizedZ === maxBelowZIndex)?.id)
     
     if (swapItem) {
       // Swap z-indexes
@@ -3115,8 +3123,17 @@ const moveSelectedItemBackward = () => {
     console.log(`Moved backward: ${item.id} now ${item.z_index}`)
   }
   
-  // Force reactivity update
-  canvasItems.value = [...canvasItems.value]
+  // Force reactivity update by creating new array with updated items
+  const updatedItems = canvasItems.value.map(i => 
+    i.id === item.id ? { ...i, z_index: item.z_index } : i
+  )
+  if (swapItem) {
+    canvasItems.value = updatedItems.map(i => 
+      i.id === swapItem.id ? { ...i, z_index: swapItem.z_index } : i
+    )
+  } else {
+    canvasItems.value = updatedItems
+  }
   saveToHistory()
 }
 
@@ -3459,14 +3476,14 @@ const showVirtualTryOn = async () => {
       console.log('✅ OutfitCreator: Virtual try-on generated')
     } else {
       virtualTryOnError.value = result.error || 'Failed to generate virtual try-on'
-      showError(virtualTryOnError.value)
+      // Error will be shown in the modal, no need for separate pop-up
       console.error('❌ OutfitCreator: Virtual try-on failed:', result.error)
     }
     
   } catch (error) {
     console.error('❌ OutfitCreator: Error showing virtual try-on:', error)
     virtualTryOnError.value = error.message || 'An unexpected error occurred'
-    showError(virtualTryOnError.value)
+    // Error will be shown in the modal, no need for separate pop-up
   } finally {
     generatingTryOn.value = false
   }

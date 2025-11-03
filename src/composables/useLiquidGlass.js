@@ -603,13 +603,17 @@ export function useNavbarLiquid() {
         try {
           const springEasing = spring({ stiffness: 250, damping: 20 })
           
-          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
-            easingFunction = springEasing[0]
-          } else if (springEasing && typeof springEasing === 'function') {
-            easingFunction = springEasing
+          // Safely check and extract easing function
+          if (springEasing !== null && springEasing !== undefined) {
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              easingFunction = springEasing[0]
+            } else if (typeof springEasing === 'function') {
+              easingFunction = springEasing
+            }
           }
         } catch (springError) {
           console.warn('⚠️ Navbar spring easing failed:', springError)
+          easingFunction = null
         }
       }
 
@@ -660,13 +664,17 @@ export function useNavbarLiquid() {
         try {
           const springEasing = spring({ stiffness: 200, damping: 25 })
           
-          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
-            easingFunction = springEasing[0]
-          } else if (springEasing && typeof springEasing === 'function') {
-            easingFunction = springEasing
+          // Safely check and extract easing function
+          if (springEasing !== null && springEasing !== undefined) {
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              easingFunction = springEasing[0]
+            } else if (typeof springEasing === 'function') {
+              easingFunction = springEasing
+            }
           }
         } catch (springError) {
           console.warn('⚠️ Navbar spring easing failed:', springError)
+          easingFunction = null
         }
       }
 
@@ -720,13 +728,17 @@ export function useNavbarLiquid() {
         try {
           const springEasing = spring({ stiffness: 250, damping: 20 })
           
-          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
-            easingFunction = springEasing[0]
-          } else if (springEasing && typeof springEasing === 'function') {
-            easingFunction = springEasing
+          // Safely check and extract easing function
+          if (springEasing !== null && springEasing !== undefined) {
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              easingFunction = springEasing[0]
+            } else if (typeof springEasing === 'function') {
+              easingFunction = springEasing
+            }
           }
         } catch (springError) {
           console.warn('⚠️ Navbar scroll spring easing failed:', springError)
+          easingFunction = null
         }
       }
 

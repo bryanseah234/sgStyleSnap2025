@@ -151,14 +151,6 @@
           <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             Everything you need to manage, create, and share your fashion effortlessly
           </p>
-          <p class="text-xs sm:text-sm text-gray-500 mt-4">
-            <span class="inline-flex items-center gap-1">
-              <MousePointer class="w-4 h-4" />
-              Click the front-facing card to learn more
-            </span>
-            <span class="hidden sm:inline"> • </span>
-            <span class="hidden sm:inline">The carousel rotates automatically</span>
-          </p>
         </div>
           
         <!-- 3D Carousel Container -->
@@ -189,7 +181,8 @@
               }"
               @click="handleCardClick(idx, feature.id, $event)"
               @mousedown.stop="handleCardClick(idx, feature.id, $event)"
-              @touchstart.stop="handleCardClick(idx, feature.id, $event)"
+              @touchstart.stop="handleCardTouchStart(idx, feature.id, $event)"
+              @touchend.stop="handleCardTouchEnd(idx, feature.id, $event)"
             >
               <div 
                 class="carousel-card-wrapper"
@@ -204,10 +197,11 @@
                     />
                     <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
                   </div>
-                  <!-- Tap indicator - only show on front-facing cards when not flipped -->
+                  <!-- Tap indicator - always show on front-facing cards when not flipped -->
                   <div 
-                    v-if="!feature.flipped && isCardFrontFacing(idx)"
-                    class="flex flex-col items-center justify-center pt-2 pb-1 opacity-100 transition-opacity"
+                    v-show="!feature.flipped && isCardFrontFacing(idx)"
+                    class="flex flex-col items-center justify-center pt-2 pb-1 transition-opacity duration-300"
+                    style="opacity: 1;"
                   >
                     <ChevronUp class="w-5 h-5 text-gray-600 animate-bounce" />
                     <span class="text-xs text-gray-500 mt-0.5">Click to learn more</span>
@@ -563,7 +557,7 @@
     
     <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="cta-card-section py-[10vh] bg-white text-gray-900 relative"
+      class="cta-card-section py-12 sm:py-16 md:py-20 bg-white text-gray-900 relative"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
@@ -699,8 +693,7 @@ import {
   Save,
   Plus,
   ChevronUp,
-  ArrowDown,
-  MousePointer
+  ArrowDown
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
@@ -885,12 +878,66 @@ const handleSignUp = () => {
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
+// Touch tracking for cards
+const cardTouchData = ref({ startX: 0, startY: 0, startTime: 0, cardIndex: null })
+
+// Handle card touch start
+const handleCardTouchStart = (index, featureId, event) => {
+  if (!isCardFrontFacing(index)) {
+    return
+  }
+  
+  // Track touch start for tap detection
+  if (event.touches && event.touches.length > 0) {
+    cardTouchData.value = {
+      startX: event.touches[0].clientX,
+      startY: event.touches[0].clientY,
+      startTime: Date.now(),
+      cardIndex: index,
+      featureId: featureId
+    }
+  }
+}
+
+// Handle card touch end (mobile tap)
+const handleCardTouchEnd = (index, featureId, event) => {
+  // Only process if this is the same card we started touching
+  if (cardTouchData.value.cardIndex !== index || !isCardFrontFacing(index)) {
+    return
+  }
+  
+  // Check if this was a tap (not a swipe)
+  let moved = false
+  if (event.changedTouches && event.changedTouches.length > 0) {
+    const deltaX = Math.abs(event.changedTouches[0].clientX - cardTouchData.value.startX)
+    const deltaY = Math.abs(event.changedTouches[0].clientY - cardTouchData.value.startY)
+    const deltaTime = Date.now() - cardTouchData.value.startTime
+    
+    // If moved more than 10px or took longer than 300ms, it's a swipe/drag, not a tap
+    if (deltaX > 10 || deltaY > 10 || deltaTime > 300) {
+      moved = true
+    }
+  }
+  
+  if (!moved) {
+    event.preventDefault()
+    event.stopPropagation()
+    toggleFeatureExpand(featureId)
+  }
+  
+  // Reset touch data
+  cardTouchData.value = { startX: 0, startY: 0, startTime: 0, cardIndex: null }
+}
+
 // Handle card click - only allow clicks on front-facing cards
 const handleCardClick = (index, featureId, event) => {
   // Prevent event propagation
   if (event) {
     event.stopPropagation()
-    event.preventDefault()
+    // Don't prevent default on click - let it work normally
+    if (event.type !== 'click') {
+      event.preventDefault()
+    }
   }
   
   // Only allow clicks on front-facing cards
@@ -927,7 +974,9 @@ const handleCarouselTouchStart = (event) => {
 
 const handleCarouselTouchMove = (event) => {
   // Only prevent swipe if it's on the wrapper background, not on cards
-  if (event.target === event.currentTarget || event.target.closest('.carousel-3d-wrapper')) {
+  // Allow card touches to work normally
+  if (event.target === event.currentTarget || 
+      (event.target.closest('.carousel-3d-wrapper') && !event.target.closest('.carousel-3d-item'))) {
     // If it's a significant movement, it's a swipe - prevent it
     if (event.touches.length === 1 && touchStartPosition.value.x !== 0) {
       const deltaX = Math.abs(event.touches[0].clientX - touchStartPosition.value.x)
@@ -940,8 +989,8 @@ const handleCarouselTouchMove = (event) => {
         // Reset touch position to prevent further movement
         touchStartPosition.value = { x: 0, y: 0 }
       }
-    } else {
-      // Prevent any touch move on the wrapper
+    } else if (!event.target.closest('.carousel-3d-item')) {
+      // Only prevent touch move on wrapper background, not on cards
       event.preventDefault()
       event.stopPropagation()
     }
@@ -996,6 +1045,8 @@ const toggleFeatureExpand = (featureId) => {
 // Check if a card is facing forward (within 45 degrees of center for better click detection)
 const isCardFrontFacing = (index) => {
   const totalCards = features.value.length
+  if (totalCards === 0) return false
+  
   const cardAngle = index * (360 / totalCards)
   
   // Normalize rotation to 0-360 range

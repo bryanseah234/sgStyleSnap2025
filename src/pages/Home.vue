@@ -37,7 +37,7 @@
     >
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <h1 class="text-[3.375rem] md:text-[3.375rem] font-bold text-foreground text-left">
-          Welcome back{{ userName }}
+          Welcome Back{{ userName }}
         </h1>
         <button
           class="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-black text-white hover:bg-zinc-800 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed w-[160px] min-w-[160px] max-w-[160px] flex-shrink-0 self-start md:self-auto"
@@ -73,23 +73,23 @@
         :key="stat.label"
         :to="stat.route"
         v-scroll-animate.up
-          class="liquid-card p-6 rounded-2xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
+          class="p-6 rounded-xl cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all hover:shadow-md"
         :style="{ transitionDelay: `${index * 100}ms` }"
-        @mouseenter="handleCardHover($event, index)"
-        @mouseleave="handleCardLeave($event, index)"
-        @mousemove="handleCardMouseMove($event, index)"
       >
-        <div class="flex items-center justify-between mb-4">
-          <div class="liquid-icon p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
-            <component :is="stat.icon" class="w-6 h-6" />
+        <div class="flex flex-col items-center text-center">
+          <!-- Icon at top center -->
+          <div class="mb-4">
+            <component :is="stat.icon" class="w-8 h-8 text-stone-700 dark:text-zinc-300 mx-auto" />
           </div>
-          <span class="text-4xl font-bold text-foreground liquid-number">
+          <!-- Number in middle -->
+          <span class="text-5xl font-bold text-stone-800 dark:text-zinc-200 mb-2">
             {{ stat.value }}
           </span>
+          <!-- Label at bottom -->
+          <p class="text-base font-medium text-stone-600 dark:text-zinc-400">
+            {{ stat.label }}
+          </p>
         </div>
-        <p class="text-lg font-medium liquid-text text-stone-600 dark:text-zinc-400">
-          {{ stat.label }}
-        </p>
       </router-link>
       </div>
     </div>
@@ -198,7 +198,7 @@ import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
 import { UserService } from '@/services/userService'
 import { vScrollAnimate } from '@/composables/useScrollAnimation'
-import { useLiquidReveal, useLiquidHover } from '@/composables/useLiquidGlass'
+import { useLiquidReveal } from '@/composables/useLiquidGlass'
 import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck, X } from 'lucide-vue-next'
 
 // Theme and auth composables
@@ -208,7 +208,7 @@ const router = useRouter()
 
 // Liquid glass composables
 const { elementRef: heroRef, reveal: heroReveal } = useLiquidReveal()
-const { elementRef: cardRefs, hoverIn: cardHoverIn, hoverOut: cardHoverOut } = useLiquidHover()
+// Card hover effects removed - using simpler card style
 
 // Service instances
 const clothesService = new ClothesService()
@@ -257,7 +257,7 @@ const userName = computed(() => {
     return `, ${firstName}`
   }
   
-  return '' // No name, just show "Welcome back"
+  return '' // No name, just show "Welcome Back"
 })
 
 // Reactive data for content
@@ -681,34 +681,5 @@ const handleHeroMouseLeave = () => {
   })
 }
 
-const handleCardHover = (event, index) => {
-  const card = event.currentTarget || event.target
-  cardHoverIn(card)
-}
-
-const handleCardLeave = (event, index) => {
-  const card = event.currentTarget || event.target
-  cardHoverOut(card)
-  // Reset any inline transforms applied during mouse move
-  card.style.transform = ''
-  const icon = card.querySelector('.liquid-icon')
-  if (icon) icon.style.transform = ''
-  const number = card.querySelector('.liquid-number')
-  if (number) number.style.transform = ''
-}
-
-const handleCardMouseMove = (event, index) => {
-  // Apply subtle parallax to cards
-  const card = event.currentTarget || event.target
-  const rect = card.getBoundingClientRect()
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  const centerX = rect.width / 2
-  const centerY = rect.height / 2
-  
-  const rotateX = (y - centerY) / centerY * 2
-  const rotateY = (x - centerX) / centerX * 2
-  
-  card.style.transform = `translateY(-8px) translateZ(15px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
-}
+// Card hover handlers removed - using simpler card style
 </script>
