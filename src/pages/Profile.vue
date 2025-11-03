@@ -192,44 +192,51 @@
           
               <div class="space-y-3">
                 <!-- Theme Toggle Button -->
-                <div class="relative">
+                <div class="relative" style="overflow: visible;">
                   <button
                     @click="showThemeDropdown = !showThemeDropdown"
-                    :class="`w-full flex items-center justify-between gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
-                    :title="getThemeLabel(theme.value)"
+                    :class="`w-full flex items-center justify-between gap-3 px-3 py-3 rounded-xl bg-secondary hover:bg-accent group relative transition-all duration-300 ease-in-out min-h-[44px]`"
+                    :title="getThemeLabel(currentTheme)"
                   >
-                    <div class="flex items-center gap-3">
-                      <Sun v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                      <Moon v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                      <Monitor v-else class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                      <span class="font-medium text-sm md:text-base">
+                    <div class="flex gap-3">
+                      <Sun v-if="currentTheme === 'light'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+                      <Moon v-else-if="currentTheme === 'dark'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+                      <Monitor v-else class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+                      <span class="font-medium text-secondary-foreground whitespace-nowrap transition-all duration-300 ease-in-out flex-1">
                         Theme
                       </span>
                     </div>
-                    <ChevronDown class="w-4 h-4 text-stone-800 dark:text-zinc-200" />
+
+                    <ChevronDown 
+                      class="w-4 h-4 text-secondary-foreground flex-shrink-0 transition-all duration-300"
+                      :class="[
+                        showThemeDropdown ? 'opacity-100' : 'opacity-50'
+                      ]"
+                    />
                   </button>
 
                   <!-- Theme Dropdown Menu -->
                   <div
                     v-if="showThemeDropdown"
-                    class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-50 overflow-hidden"
+                    data-theme-dropdown
+                    class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-[100] overflow-hidden"
                   >
                     <button
                       v-for="option in themeOptions"
                       :key="option.value"
                       @click.stop="selectTheme(option.value)"
                       :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
-                        theme.value === option.value
+                        currentTheme === option.value
                           ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
                           : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
                       }`"
                     >
-                      <component :is="option.icon" class="w-5 h-5" />
+                      <component :is="option.icon" class="w-5 h-5 flex-shrink-0" />
                       <span class="font-medium text-sm">{{ option.label }}</span>
                       <!-- Selected indicator checkmark -->
                       <svg 
-                        v-if="theme.value === option.value" 
-                        class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400" 
+                        v-if="currentTheme === option.value" 
+                        class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400 flex-shrink-0" 
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
@@ -282,9 +289,11 @@
  * @version 1.0.0
  */
 
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useTheme } from '@/composables/useTheme'
+import { useThemeStore } from '@/stores/theme-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePopup } from '@/composables/usePopup'
 import { notificationsService } from '@/services/notificationsService'
@@ -295,7 +304,10 @@ import { FriendsService } from '@/services/friendsService'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Composables and stores
-const { theme, toggleTheme, setTheme } = useTheme()
+const { theme, toggleTheme, setTheme, refreshTheme } = useTheme()
+const themeStore = useThemeStore()
+const { theme: themeFromStore } = storeToRefs(themeStore)
+const currentTheme = themeFromStore
 const authStore = useAuthStore()
 const router = useRouter()
 const { showConfirm, showError, showSuccess } = usePopup()
@@ -316,12 +328,16 @@ const getThemeLabel = (themeValue) => {
   return option ? option.label : 'Theme'
 }
 
-// Select theme
+// Select theme (matching Layout.vue functionality)
 const selectTheme = async (themeValue) => {
   // Close dropdown immediately for better UX
   showThemeDropdown.value = false
   // Then apply theme change
   await setTheme(themeValue)
+  // Wait for DOM update
+  await nextTick()
+  // Force refresh to ensure UI updates
+  refreshTheme()
 }
 
 // Reactive state
@@ -658,10 +674,19 @@ const loadStats = async () => {
   }
 }
 
-// Handle click outside to close theme dropdown
+// Handle click outside to close theme dropdown (matching Layout.vue)
 const handleClickOutside = (event) => {
-  const themeButton = event.target.closest('.relative')
-  if (themeButton && !themeButton.contains(event.target)) {
+  if (!showThemeDropdown.value) return
+  
+  const dropdown = document.querySelector('[data-theme-dropdown]')
+  const button = event.target.closest('button[title*="Theme"]') || 
+                 event.target.closest('.relative[style*="overflow: visible"]')
+  
+  // Check if click is outside both button and dropdown
+  const isClickOutsideButton = !button?.contains(event.target)
+  const isClickOutsideDropdown = !dropdown?.contains(event.target)
+  
+  if (isClickOutsideButton && isClickOutsideDropdown) {
     showThemeDropdown.value = false
   }
 }

@@ -9,12 +9,20 @@
       @click.stop
     >
       <!-- Close Button -->
-      <button
-        @click="$emit('close')"
-        class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
-      >
-        <X class="w-5 h-5" />
-      </button>
+      <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <!-- ESC Key Hint (Desktop only) -->
+        <div v-if="isDesktop" class="keyboard-hint-modal">
+          <span class="keyboard-hint-key">ESC</span>
+        </div>
+        <button
+          @click="$emit('close')"
+          class="p-2 rounded-lg transition-all bg-white/90 shadow-lg
+                hover:bg-stone-100 text-stone-500 hover:text-black 
+                dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
 
       <h3 :class="`text-2xl font-bold mb-4 pr-8 text-black dark:text-white`">
         Share Outfit with {{ getFirstName(friendName) }}
@@ -71,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { useSanitize } from '@/composables/useSanitize'
 import { getFirstName } from '@/utils'
@@ -95,6 +103,19 @@ const emit = defineEmits(['close', 'save'])
 // Theme
 const { theme } = useTheme()
 const { sanitizeText } = useSanitize()
+
+// Desktop detection for ESC hint
+const isDesktop = ref(false)
+
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
+
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close')
+  }
+}
 
 // State
 const outfitName = ref('')
@@ -123,6 +144,18 @@ watch(() => props.isOpen, (isOpen) => {
     outfitName.value = ''
     saving.value = false
   }
+})
+
+// Lifecycle hooks
+onMounted(() => {
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEsc)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEsc)
 })
 </script>
 

@@ -180,6 +180,11 @@
                     />
                     <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
                   </div>
+                  <!-- Tap indicator -->
+                  <div class="flex flex-col items-center justify-center pt-2 pb-1 opacity-60 hover:opacity-100 transition-opacity">
+                    <ChevronUp class="w-5 h-5 text-gray-600 animate-bounce" />
+                    <span class="text-xs text-gray-500 mt-0.5">Tap to flip</span>
+                  </div>
                 </div>
                 
                 <!-- Back Face -->
@@ -679,7 +684,8 @@ import {
   Redo,
   Grid3X3,
   Save,
-  Plus
+  Plus,
+  ChevronUp
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
@@ -967,8 +973,8 @@ const startCarousel = () => {
         const rotationStep = 360 / features.value.length
         carouselRotation.value -= rotationStep // Counter-clockwise rotation
       }
-    }, 5000) // Rotate every 5 seconds
-  }, 3000) // Start rotating after 3 seconds
+    }, 3000) // Rotate every 3 seconds (faster)
+  }, 2000) // Start rotating after 2 seconds
 }
 
 const pauseCarousel = () => {

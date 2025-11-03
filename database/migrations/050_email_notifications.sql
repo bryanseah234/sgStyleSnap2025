@@ -80,7 +80,7 @@ BEGIN
     'actor_id', NEW.actor_id,
     'type', NEW.type,
     'reference_id', NEW.reference_id,
-    'message', NEW.message,
+    'message', NEW.custom_message,
     'created_at', NEW.created_at
   );
 

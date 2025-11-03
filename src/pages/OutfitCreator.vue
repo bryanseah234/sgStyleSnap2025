@@ -95,7 +95,7 @@
           >
             <User v-if="!generatingTryOn" class="w-5 h-5" />
             <div v-else class="w-5 h-5 spinner-modern"></div>
-            <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Show on Model' }}</span>
+            <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Model' }}</span>
           </button>
           
           <!-- Generate AI button (only shown on suggested route) -->
@@ -115,7 +115,7 @@
             <span class="hidden sm:inline">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
           </button>
           
-          <!-- Weather Recommended button (only shown on suggested route) -->
+          <!-- Weather button (only shown on suggested route) -->
           <button
             v-if="currentSubRoute === 'suggested'"
             @click="generateWeatherBasedOutfit"
@@ -129,7 +129,7 @@
           >
             <CloudSun v-if="!generatingWeatherOutfit" class="w-5 h-5" />
             <div v-else class="w-5 h-5 spinner-modern"></div>
-            <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading Weather...' : 'Weather Recommended' }}</span>
+            <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading Weather...' : 'Weather' }}</span>
           </button>
           
         </div>
@@ -658,11 +658,11 @@
                   }`"
                   title="Regenerate AI Outfit Suggestion"
                 >
-                  <Sparkles class="w-4 h-4" />
+                  <Sparkles class="w-5 h-5" />
                   <span class="hidden sm:inline">Regenerate</span>
                 </button>
                 
-                <!-- Weather Recommended Button - Only for suggested route -->
+                <!-- Weather Button - Only for suggested route -->
                 <button
                   v-if="currentSubRoute === 'suggested'"
                   @click="generateWeatherBasedOutfit"
@@ -674,12 +674,12 @@
                   }`"
                   title="Generate Weather-Based Outfit"
                 >
-                  <CloudSun v-if="!generatingWeatherOutfit" class="w-4 h-4" />
-                  <div v-else class="w-4 h-4 spinner-modern"></div>
-                  <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading...' : 'Weather Recommended' }}</span>
+                  <CloudSun v-if="!generatingWeatherOutfit" class="w-5 h-5" />
+                  <div v-else class="w-5 h-5 spinner-modern"></div>
+                  <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading...' : 'Weather' }}</span>
                 </button>
                 
-                <!-- Show on Model Button -->
+                <!-- Model Button -->
                 <button
                   @click="showVirtualTryOn"
                   :disabled="!canShowVirtualTryOn || generatingTryOn"
@@ -690,9 +690,9 @@
                   }`"
                   title="Show Outfit on AI Model Person"
                 >
-                  <User v-if="!generatingTryOn" class="w-4 h-4" />
-                  <div v-else class="w-4 h-4 spinner-modern"></div>
-                  <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Show on Model' }}</span>
+                  <User v-if="!generatingTryOn" class="w-5 h-5" />
+                  <div v-else class="w-5 h-5 spinner-modern"></div>
+                  <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Model' }}</span>
                 </button>
               </div>
 
@@ -895,12 +895,18 @@
               <span v-else>Based on current weather conditions</span>
             </p>
           </div>
-          <button
-            @click="showWeatherRecommendationsModal = false"
-            class="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            <X class="w-5 h-5 text-stone-600 dark:text-zinc-400" />
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- ESC Key Hint (Desktop only) -->
+            <div v-if="isDesktop" class="keyboard-hint-modal">
+              <span class="keyboard-hint-key">ESC</span>
+            </div>
+            <button
+              @click="showWeatherRecommendationsModal = false"
+              class="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <X class="w-5 h-5 text-stone-600 dark:text-zinc-400" />
+            </button>
+          </div>
         </div>
         
         <!-- Content -->
@@ -1214,6 +1220,12 @@ const selectedRecommendation = ref(null)
 const showWeatherRecommendationsModal = ref(false)
 const weatherRecommendations = ref([])
 const selectedWardrobeItemForWeather = ref(null)
+
+// Desktop detection for ESC hint
+const isDesktop = ref(false)
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
 
 // Context menu state
 const showItemContextMenuState = ref(false)
@@ -1682,7 +1694,6 @@ const generateWeatherBasedOutfit = async (fixedItem = null) => {
     try {
       weatherData = await weatherService.getCurrentWeather(location)
       console.log('OutfitCreator: Weather data received:', weatherData)
-      showInfo(`Current weather in ${weatherData.location}: ${weatherData.temperature}°C, ${weatherData.description}`)
     } catch (error) {
       console.warn('OutfitCreator: Weather API unavailable, using default weather conditions')
       // Fallback to moderate weather if API is unavailable
@@ -3436,9 +3447,17 @@ const handleKeydown = (event) => {
     return
   }
   
-  // Handle Esc to deselect item
+  // Handle Esc key
   if (event.key === 'Escape') {
     event.preventDefault()
+    
+    // Close weather recommendations modal if open
+    if (showWeatherRecommendationsModal.value) {
+      showWeatherRecommendationsModal.value = false
+      return
+    }
+    
+    // Otherwise deselect item
     deselectItem()
     return
   }
@@ -3490,6 +3509,10 @@ watch(currentSubRoute, async (newRoute, oldRoute) => {
 // Lifecycle
 onMounted(async () => {
   try {
+    // Initialize desktop detection
+    isDesktop.value = window.innerWidth >= 1024
+    window.addEventListener('resize', handleResize)
+    
     console.log('🎨 OutfitCreator: Component mounting...')
     console.log('🎨 Current route:', route.path)
     console.log('🎨 Current sub-route:', currentSubRoute.value)
@@ -3661,6 +3684,7 @@ onMounted(async () => {
   onUnmounted(() => {
     // Remove arrow key and Esc handlers
     window.removeEventListener('keydown', handleKeydown)
+    window.removeEventListener('resize', handleResize)
     window.removeEventListener('click', closeContextMenu)
     
     // Remove other keyboard event listeners
