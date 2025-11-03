@@ -27,7 +27,7 @@
       class="skip-animation-btn"
       title="Skip animation"
     >
-      <ArrowDown class="w-4 h-4" />
+      <span>Skip Animation</span>
     </button>
   </div>
 
@@ -156,11 +156,6 @@
         <!-- 3D Carousel Container -->
         <div 
           class="carousel-3d-wrapper"
-          @mouseenter="pauseCarousel"
-          @mouseleave="resumeCarousel"
-          @wheel.prevent="handleCarouselWheel"
-          @touchmove="handleCarouselTouchMove"
-          @touchstart="handleCarouselTouchStart"
         >
           <div 
             class="carousel-3d-container"
@@ -176,13 +171,10 @@
               }"
               :style="{
                 transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
-                '--item-index': idx,
-                cursor: isCardFrontFacing(idx) ? 'pointer' : 'default'
+                '--item-index': idx
               }"
-              @click="handleCardClick(idx, feature.id, $event)"
-              @mousedown.stop="handleCardClick(idx, feature.id, $event)"
-              @touchstart.stop="handleCardTouchStart(idx, feature.id, $event)"
-              @touchend.stop="handleCardTouchEnd(idx, feature.id, $event)"
+              @mouseenter="handleCardHover(idx, feature.id)"
+              @mouseleave="handleCardHoverLeave(feature.id)"
             >
               <div 
                 class="carousel-card-wrapper"
@@ -197,21 +189,19 @@
                     />
                     <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
                   </div>
-                  <!-- Tap indicator - always show on front-facing cards when not flipped -->
+                  <!-- Hover indicator - only show on front-facing cards -->
                   <div 
-                    v-show="!feature.flipped && isCardFrontFacing(idx)"
-                    class="flex flex-col items-center justify-center pt-2 pb-1 transition-opacity duration-300"
-                    style="opacity: 1;"
+                    v-show="frontFacingCardIndex === idx"
+                    class="flex flex-col items-center justify-center pt-2 pb-1"
                   >
-                    <ChevronUp class="w-5 h-5 text-gray-600 animate-bounce" />
-                    <span class="text-xs text-gray-500 mt-0.5">Click to learn more</span>
+                    <span class="text-xs text-gray-500 mt-0.5">Hover over me to find out more</span>
                   </div>
                 </div>
                 
                 <!-- Back Face -->
-                <div class="carousel-card-face carousel-card-back bg-black rounded-xl border border-gray-800 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
+                <div class="carousel-card-face carousel-card-back bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
                   <div class="flex flex-col items-center text-center space-y-3 sm:space-y-4 flex-1 justify-center">
-                    <p class="text-xs sm:text-sm text-white leading-relaxed" style="color: #ffffff !important;">
+                    <p class="text-xs sm:text-sm text-gray-900 leading-relaxed" style="color: #000000 !important;">
                       {{ feature.expandedDescription }}
                     </p>
                   </div>
@@ -220,11 +210,27 @@
             </div>
           </div>
         </div>
+        
+        <!-- Carousel Slider -->
+        <div class="mt-8 flex flex-col items-center gap-3 w-full max-w-md mx-auto px-4">
+          <input
+            type="range"
+            :value="sliderValue"
+            :min="0"
+            :max="360"
+            step="1"
+            class="carousel-slider w-full"
+            @input="updateCarouselRotation"
+            @mouseup="snapOnRelease"
+            @touchend="snapOnRelease"
+          />
+          <p class="text-xs text-gray-500">Drag / Arrow Keys to rotate Carousel</p>
+        </div>
       </div>
     </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="landing-section py-[10vh] relative overflow-hidden bg-white">
+    <section id="demo" class="landing-section py-[10vh] relative overflow-hidden" style="background-color: rgb(245, 246, 247);">
       <div class="absolute inset-0 opacity-5">
         <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
       </div>
@@ -567,7 +573,8 @@
     
     <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="cta-card-section min-h-screen flex items-center justify-center bg-white text-gray-900 relative pt-20 sm:pt-24 md:pt-32"
+      class="cta-card-section min-h-screen flex items-center justify-center text-gray-900 relative pt-20 sm:pt-24 md:pt-32"
+      style="background-color: rgb(245, 246, 247);"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
@@ -702,7 +709,6 @@ import {
   Grid3X3,
   Save,
   Plus,
-  ChevronUp,
   ArrowDown
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
@@ -855,9 +861,82 @@ const features = ref([
 
 // Carousel state
 const carouselRotation = ref(0)
-const carouselInterval = ref(null)
-const isCarouselPaused = ref(false)
 const flipTimers = ref({}) // Track timers for auto-flip back
+
+// Calculate rotation step for each card (for snapping)
+const rotationStep = computed(() => {
+  return features.value.length > 0 ? 360 / features.value.length : 60
+})
+
+// Slider value (0-360 degrees) - computed property for display
+const sliderValue = computed(() => {
+  // Normalize rotation to 0-360 range for slider
+  // Since rotation is reversed, we need to convert: -rotation -> slider value
+  let normalized = (-carouselRotation.value) % 360
+  if (normalized < 0) normalized += 360
+  return normalized
+})
+
+// Snap value to nearest card position
+const snapToCardPosition = (value) => {
+  const step = rotationStep.value
+  return Math.round(value / step) * step
+}
+
+// Update carousel rotation from slider - smooth during drag
+const updateCarouselRotation = (event) => {
+  const value = parseFloat(event.target.value)
+  
+  // Reverse the rotation: slider left-to-right (0->360) = carousel left-to-right (-0->-360)
+  carouselRotation.value = -value
+}
+
+// Snap to nearest card position on release (haptic-like feedback)
+const snapOnRelease = (event) => {
+  const value = parseFloat(event.target.value)
+  const snappedValue = snapToCardPosition(value)
+  
+  // Always snap to nearest card position on release for haptic-like feedback
+  if (Math.abs(value - snappedValue) > 0.1) {
+    // Update slider value to snapped position
+    event.target.value = snappedValue
+    // Update carousel rotation with smooth snap animation
+    carouselRotation.value = -snappedValue
+  }
+}
+
+// Move to next card (rotate forward)
+const moveToNextCard = () => {
+  const currentSliderValue = sliderValue.value
+  const step = rotationStep.value
+  const nextValue = (currentSliderValue + step) % 360
+  carouselRotation.value = -nextValue
+}
+
+// Move to previous card (rotate backward)
+const moveToPreviousCard = () => {
+  const currentSliderValue = sliderValue.value
+  const step = rotationStep.value
+  let prevValue = (currentSliderValue - step) % 360
+  if (prevValue < 0) prevValue += 360
+  carouselRotation.value = -prevValue
+}
+
+// Handle keyboard arrow keys for carousel navigation
+const handleKeyboardNavigation = (event) => {
+  // Only handle arrow keys if not typing in an input field
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+    return
+  }
+  
+  if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    moveToNextCard()
+  } else if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    moveToPreviousCard()
+  }
+}
 
 // Avatar URLs for random selection
 const avatarUrls = [
@@ -958,89 +1037,15 @@ const handleCardTouchEnd = (index, featureId, event) => {
   cardTouchData.value = { startX: 0, startY: 0, startTime: 0, cardIndex: null }
 }
 
-// Handle card click - only allow clicks on front-facing cards
-const handleCardClick = (index, featureId, event) => {
-  // Prevent event propagation
-  if (event) {
-    event.stopPropagation()
-    // Don't prevent default on click - let it work normally
-    if (event.type !== 'click') {
-      event.preventDefault()
-    }
-  }
-  
-  // Only allow clicks on front-facing cards
-  if (!isCardFrontFacing(index)) {
-    return
-  }
-  
-  toggleFeatureExpand(featureId)
-}
-
-// Prevent wheel scrolling from affecting carousel
-const handleCarouselWheel = (event) => {
-  event.preventDefault()
-  event.stopPropagation()
-}
-
-// Prevent swipe gestures on carousel - only allow taps
-const touchStartPosition = ref({ x: 0, y: 0 })
-const touchStartTime = ref(0)
-
-const handleCarouselTouchStart = (event) => {
-  // Only track touch start on the wrapper itself, not on cards
-  // This allows taps on cards to work normally
-  if (event.target === event.currentTarget || event.target.closest('.carousel-3d-wrapper')) {
-    if (event.touches.length === 1) {
-      touchStartPosition.value = {
-        x: event.touches[0].clientX,
-        y: event.touches[0].clientY
-      }
-      touchStartTime.value = Date.now()
-    }
-  }
-}
-
-const handleCarouselTouchMove = (event) => {
-  // Only prevent swipe if it's on the wrapper background, not on cards
-  // Allow card touches to work normally
-  if (event.target === event.currentTarget || 
-      (event.target.closest('.carousel-3d-wrapper') && !event.target.closest('.carousel-3d-item'))) {
-    // If it's a significant movement, it's a swipe - prevent it
-    if (event.touches.length === 1 && touchStartPosition.value.x !== 0) {
-      const deltaX = Math.abs(event.touches[0].clientX - touchStartPosition.value.x)
-      const deltaY = Math.abs(event.touches[0].clientY - touchStartPosition.value.y)
-      
-      // If movement is more than 10px, it's a swipe - prevent it
-      if (deltaX > 10 || deltaY > 10) {
-        event.preventDefault()
-        event.stopPropagation()
-        // Reset touch position to prevent further movement
-        touchStartPosition.value = { x: 0, y: 0 }
-      }
-    } else if (!event.target.closest('.carousel-3d-item')) {
-      // Only prevent touch move on wrapper background, not on cards
-      event.preventDefault()
-      event.stopPropagation()
-    }
-  }
-}
-
-// Toggle feature flip on click
-const toggleFeatureExpand = (featureId) => {
+// Handle card hover - flip card to show information
+const handleCardHover = (index, featureId) => {
   const feature = features.value.find(f => f.id === featureId)
   if (!feature) return
   
-  // If card is already flipped, flip it back immediately and resume rotation
-  if (feature.flipped) {
-    feature.flipped = false
+  // Clear any existing timers
+  if (flipTimers.value[featureId]) {
     clearTimeout(flipTimers.value[featureId])
     delete flipTimers.value[featureId]
-    // Resume rotation only if no other cards are flipped
-    if (!features.value.some(f => f.flipped)) {
-      resumeCarousel()
-    }
-    return
   }
   
   // Close all other flipped features (only one card can flip at a time)
@@ -1054,91 +1059,60 @@ const toggleFeatureExpand = (featureId) => {
     }
   })
   
-  // Pause rotation while card is flipped
-  pauseCarousel()
-  
   // Flip the card
   feature.flipped = true
+}
+
+// Handle card hover leave - flip card back to front
+const handleCardHoverLeave = (featureId) => {
+  const feature = features.value.find(f => f.id === featureId)
+  if (!feature) return
   
-  // Auto-flip back after 5 seconds and then resume rotation
-  flipTimers.value[featureId] = setTimeout(() => {
-    feature.flipped = false
+  // Clear any existing timers
+  if (flipTimers.value[featureId]) {
+    clearTimeout(flipTimers.value[featureId])
     delete flipTimers.value[featureId]
-    // Only resume if no cards are flipped
-    if (!features.value.some(f => f.flipped)) {
-      resumeCarousel()
-    }
-  }, 5000)
+  }
+  
+  // Flip the card back
+  feature.flipped = false
 }
 
-// Check if a card is facing forward (within 45 degrees of center for better click detection)
-const isCardFrontFacing = (index) => {
+// Computed property to track which card is front-facing (reactive to carouselRotation)
+const frontFacingCardIndex = computed(() => {
   const totalCards = features.value.length
-  if (totalCards === 0) return false
+  if (totalCards === 0) return -1
   
-  const cardAngle = index * (360 / totalCards)
+  const rotation = carouselRotation.value
   
-  // Normalize rotation to 0-360 range
-  let currentRotation = carouselRotation.value % 360
-  if (currentRotation < 0) currentRotation += 360
+  // Find which card is closest to center (0 degrees)
+  let minDistance = Infinity
+  let frontCardIndex = -1
   
-  // Calculate the effective angle of this card after rotation
-  let effectiveAngle = (cardAngle - currentRotation) % 360
-  if (effectiveAngle < 0) effectiveAngle += 360
-  
-  // Card is front-facing if it's within 45 degrees of 0 (center front)
-  // This is more lenient than 30 degrees for better click detection
-  const isFront = effectiveAngle <= 45 || effectiveAngle >= 315
-  return isFront
-}
-
-// Carousel rotation functions
-const startCarousel = () => {
-  // Clear any existing interval first
-  if (carouselInterval.value) {
-    clearInterval(carouselInterval.value)
-    carouselInterval.value = null
-  }
-  
-  // Start rotating after initial delay (3 seconds)
-  setTimeout(() => {
-    // Double-check interval wasn't created elsewhere
-    if (carouselInterval.value) return
+  for (let i = 0; i < totalCards; i++) {
+    const cardAngle = i * (360 / totalCards)
+    // Calculate effective angle after rotation
+    // When container rotates -60°, card at 60° appears at 60° + (-60°) = 0°
+    let effectiveAngle = (cardAngle + rotation) % 360
+    if (effectiveAngle < 0) effectiveAngle += 360
     
-    // Do first rotation immediately after delay (only if no cards are flipped)
-    if (!features.value.some(f => f.flipped)) {
-      const rotationStep = 360 / features.value.length
-      carouselRotation.value -= rotationStep
+    // Distance to center (0 or 360)
+    const distanceToCenter = Math.min(effectiveAngle, 360 - effectiveAngle)
+    
+    if (distanceToCenter < minDistance) {
+      minDistance = distanceToCenter
+      frontCardIndex = i
     }
-    
-    // Then set up interval for subsequent rotations
-    carouselInterval.value = setInterval(() => {
-      // Only rotate if carousel is not paused AND no cards are currently flipped
-      if (!isCarouselPaused.value && !features.value.some(f => f.flipped)) {
-        const rotationStep = 360 / features.value.length
-        carouselRotation.value -= rotationStep // Counter-clockwise rotation
-      }
-    }, 3000) // Rotate every 3 seconds (faster)
-  }, 2000) // Start rotating after 2 seconds
-}
-
-const pauseCarousel = () => {
-  isCarouselPaused.value = true
-}
-
-const resumeCarousel = () => {
-  isCarouselPaused.value = false
-}
-
-const stopCarousel = () => {
-  if (carouselInterval.value) {
-    clearInterval(carouselInterval.value)
-    carouselInterval.value = null
   }
-  // Clear all flip timers
-  Object.values(flipTimers.value).forEach(timer => clearTimeout(timer))
-  flipTimers.value = {}
+  
+  return frontCardIndex
+})
+
+// Check if a card is facing forward
+const isCardFrontFacing = (index) => {
+  return index === frontFacingCardIndex.value
 }
+
 
 const isItemSelected = (itemId) => {
   return outfitItems.value.some(item => item.id === itemId)
@@ -1764,9 +1738,6 @@ onMounted(() => {
   const elementsToObserve = document.querySelectorAll('.scroll-hidden')
   elementsToObserve.forEach((el) => observer.observe(el))
   
-  // Start carousel rotation
-  startCarousel()
-  
   // Load catalogue items for demo, then normalize heights
   loadCatalogueItems().then(() => {
     // Normalize section heights after catalogue loads
@@ -1787,15 +1758,17 @@ onMounted(() => {
   }
   window.addEventListener('resize', handleResize, { passive: true })
   
+  // Add keyboard navigation for carousel
+  window.addEventListener('keydown', handleKeyboardNavigation)
+  
   // Cleanup function
   onUnmounted(() => {
     // Ensure body scroll is re-enabled when component is unmounted
     enableBodyScroll()
     window.removeEventListener('scroll', handleScroll)
     window.removeEventListener('resize', handleResize)
+    window.removeEventListener('keydown', handleKeyboardNavigation)
     observer.disconnect()
-    // Stop carousel rotation
-    stopCarousel()
   })
 })
 
@@ -1913,26 +1886,29 @@ const setScrollY = (value) => {
   transform: translateX(-50%);
   background: white;
   color: black;
-  border: none;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px 20px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 10001;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .skip-animation-btn:hover {
-  transform: translateX(-50%) scale(1.1);
+  transform: translateX(-50%) scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: #f5f5f5;
 }
 
 .skip-animation-btn:active {
-  transform: translateX(-50%) scale(0.95);
+  transform: translateX(-50%) scale(0.98);
 }
 
 /* Landing page hidden/visible states */
@@ -2102,7 +2078,7 @@ const setScrollY = (value) => {
   width: 260px;
   height: 320px;
   transform-style: preserve-3d;
-  transition: transform 1s ease-in-out;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .carousel-3d-item {
@@ -2116,6 +2092,8 @@ const setScrollY = (value) => {
   transform-style: preserve-3d;
   transition: transform 0.5s ease, z-index 0.5s ease;
   cursor: pointer;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Enable pointer events for all cards - click detection handled by JS */
@@ -2140,6 +2118,8 @@ const setScrollY = (value) => {
   transform-style: preserve-3d;
   transition: transform 0.6s ease;
   pointer-events: auto; /* Ensure wrapper can receive clicks */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .carousel-card-wrapper.flipped {
@@ -2164,6 +2144,28 @@ const setScrollY = (value) => {
 
 .carousel-card-back {
   transform: rotateY(180deg);
+  background-color: #ffffff !important;
+}
+
+/* Hide text on back face when card is not flipped (viewed from carousel rotation) */
+.carousel-card-wrapper:not(.flipped) .carousel-card-back {
+  color: transparent !important;
+}
+
+.carousel-card-wrapper:not(.flipped) .carousel-card-back * {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Show text and white background when card is intentionally flipped */
+.carousel-card-wrapper.flipped .carousel-card-back {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.carousel-card-wrapper.flipped .carousel-card-back * {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .carousel-card-wrapper:hover:not(.flipped) .carousel-card-front {
@@ -2222,6 +2224,54 @@ const setScrollY = (value) => {
   }
 }
 
+/* Carousel Slider */
+.carousel-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: linear-gradient(to right, #e5e7eb 0%, #9ca3af 50%, #e5e7eb 100%);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.carousel-slider:hover {
+  background: linear-gradient(to right, #d1d5db 0%, #6b7280 50%, #d1d5db 100%);
+}
+
+.carousel-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #000;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #000;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+.carousel-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
 
 /* Join for free button animations */
 .join-for-free-btn {
