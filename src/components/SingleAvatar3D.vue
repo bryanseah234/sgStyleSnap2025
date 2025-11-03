@@ -260,25 +260,40 @@ const restoreOriginalBoneStates = (model, states) => {
   })
 }
 
-// Animation functions
+// Smooth easing functions
+const easeInOutCubic = (t) => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
+
+const easeOutCubic = (t) => {
+  return 1 - Math.pow(1 - t, 3)
+}
+
+const easeInOutSine = (t) => {
+  return -(Math.cos(Math.PI * t) - 1) / 2
+}
+
+// Animation functions with smoother interpolation
 const animateWave = (model, progress) => {
   const bones = findBones(model)
+  const smoothProgress = easeInOutSine(progress)
   if (bones.rightArm) {
-    const waveAngle = Math.sin(progress * Math.PI * 4) * 0.3
-    const liftAngle = Math.sin(progress * Math.PI) * 1.0
+    const waveAngle = Math.sin(smoothProgress * Math.PI * 4) * 0.3
+    const liftAngle = easeInOutCubic(progress) * Math.PI / 2
     bones.rightArm.rotation.z = -liftAngle - 0.5
     bones.rightArm.rotation.x = waveAngle
   }
   if (bones.rightHand) {
-    const handWave = Math.sin(progress * Math.PI * 4) * 0.5
+    const handWave = Math.sin(smoothProgress * Math.PI * 4) * 0.5
     bones.rightHand.rotation.z = handWave
   }
 }
 
 const animateJump = (model, progress) => {
-  const jumpHeight = Math.sin(progress * Math.PI) * 0.5
+  const smoothProgress = easeInOutCubic(progress)
+  const jumpHeight = Math.sin(smoothProgress * Math.PI) * 0.5
   model.position.y = jumpHeight
-  const crouchAmount = Math.cos(progress * Math.PI * 2) * 0.1
+  const crouchAmount = Math.cos(smoothProgress * Math.PI * 2) * 0.1
   model.scale.y = 1 + crouchAmount
   model.scale.x = 1 - crouchAmount * 0.5
   model.scale.z = 1 - crouchAmount * 0.5
@@ -293,16 +308,24 @@ const animateJump = (model, progress) => {
 
 const animateNod = (model, progress) => {
   const bones = findBones(model)
+  const smoothProgress = easeInOutSine(progress)
   if (bones.head) {
-    const nodAngle = Math.sin(progress * Math.PI * 6) * 0.3
+    const nodAngle = Math.sin(smoothProgress * Math.PI * 6) * 0.3
     bones.head.rotation.x = nodAngle
   }
 }
 
 const animateTPose = (model, progress) => {
   const bones = findBones(model)
-  const easeProgress = progress < 0.3 ? progress / 0.3 : 
-                       progress > 0.7 ? (1 - progress) / 0.3 : 1
+  // Smooth easing in and out
+  let easeProgress
+  if (progress < 0.3) {
+    easeProgress = easeOutCubic(progress / 0.3)
+  } else if (progress > 0.7) {
+    easeProgress = easeOutCubic((1 - progress) / 0.3)
+  } else {
+    easeProgress = 1
+  }
   if (bones.leftArm) {
     bones.leftArm.rotation.z = easeProgress * Math.PI / 2
   }
@@ -313,13 +336,14 @@ const animateTPose = (model, progress) => {
 
 const animateBounce = (model, progress) => {
   const bones = findBones(model)
-  const breathe = Math.sin(progress * Math.PI * 4) * 0.02
+  const smoothProgress = easeInOutSine(progress)
+  const breathe = Math.sin(smoothProgress * Math.PI * 4) * 0.02
   if (bones.spine) {
     bones.spine.scale.y = 1 + breathe
   }
-  const sway = Math.sin(progress * Math.PI * 2) * 0.1
+  const sway = Math.sin(smoothProgress * Math.PI * 2) * 0.1
   model.rotation.z = sway * 0.05
-  const bounce = Math.sin(progress * Math.PI * 4) * 0.05
+  const bounce = Math.sin(smoothProgress * Math.PI * 4) * 0.05
   model.position.y = bounce
 }
 
@@ -367,7 +391,12 @@ const startAnimationLoop = () => {
       }
       
       // Auto-rotate (only if not paused)
+      // Start from front-facing position (rotation.y = 0) when resuming
       if (!isRotationPaused) {
+        // If rotation is close to 0, ensure we start from front
+        if (Math.abs(avatar.rotation.y) < 0.01) {
+          avatar.rotation.y = 0
+        }
         avatar.rotation.y += autoRotateSpeed
         
         // Faster rotation on hover
@@ -403,8 +432,13 @@ const stopAnimation = () => {
   isAnimating = false
   currentAnimationType = null
   
-  // Resume rotation after 3 seconds
+  // Ensure avatar is facing front before resuming rotation
+  avatar.rotation.y = 0
+  
+  // Resume rotation after 3 seconds (starting from front)
   setTimeout(() => {
+    // Double-check rotation is reset to front
+    avatar.rotation.y = 0
     isRotationPaused = false
   }, 3000)
 }
