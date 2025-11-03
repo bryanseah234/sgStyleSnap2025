@@ -32,45 +32,67 @@
       @mouseenter="navbarHoverIn"
       @mouseleave="navbarHoverOut"
     >
-    <div class="fixed inset-0 z-[200] pointer-events-none">
-      <button
-        v-if="!isLandingPage && isSidebarCollapsed"
-        @click.stop="toggleSidebar"
-        class="absolute hidden md:flex top-9 left-14 w-8 h-8 pe-1 rounded-lg bg-secondary hover:bg-accent items-center justify-center shadow-sm transition-all duration-200 hover:scale-110 pointer-events-auto"
-        aria-label="Expand sidebar"
-        title="Expand sidebar"
-      >
-        <PanelLeftOpen class="w-5 h-5 text-secondary-foreground" />
-      </button>
-    </div>
-    
       <!-- Logo section with toggle button -->
-      <div class="mb-12 relative flex items-center justify-between transition-all duration-300 ease-in-out justify-start">
-        <!-- Logo with liquid reveal - only navigates to home -->
-        <router-link 
-          to="/home" 
-          class="liquid-reveal flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
-          :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+      <div class="mb-12 relative flex items-center justify-between transition-all duration-300 ease-in-out">
+        <!-- Logo - morphs to expand icon on hover when collapsed, navigates to home when expanded -->
+        <div
+          v-if="isSidebarCollapsed"
+          @click="toggleSidebar"
+          @mouseenter="logoHovered = true"
+          @mouseleave="logoHovered = false"
+          class="liquid-reveal flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out flex-shrink-0 group"
+          title="Expand sidebar"
         >
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
+          <div 
+            :class="`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden transition-all duration-300 ease-in-out ${
+              logoHovered 
+                ? 'bg-zinc-800 dark:bg-zinc-200 shadow-md' 
+                : 'bg-black dark:bg-white'
+            }`"
+          >
+            <!-- Shirt icon - morphs out on hover when collapsed -->
+            <Shirt 
+              :class="`w-5 h-5 absolute text-white dark:text-black transition-all duration-300 ease-out ${
+                logoHovered 
+                  ? 'opacity-0 scale-50 rotate-180' 
+                  : 'opacity-100 scale-100 rotate-0'
+              }`" 
+              style="transform-origin: center; will-change: transform, opacity;"
+            />
+            <!-- PanelLeftOpen icon - morphs in on hover when collapsed -->
+            <PanelLeftOpen 
+              :class="`w-5 h-5 absolute text-white dark:text-black transition-all duration-300 ease-out ${
+                logoHovered 
+                  ? 'opacity-100 scale-100 rotate-0' 
+                  : 'opacity-0 scale-50 -rotate-180'
+              }`" 
+              style="transform-origin: center; will-change: transform, opacity;"
+            />
+          </div>
+        </div>
+        
+        <!-- Logo - navigates to home when expanded -->
+        <router-link 
+          v-else
+          to="/home" 
+          class="liquid-reveal flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0 justify-start"
+        >
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
             <Shirt class="w-5 h-5 text-white dark:text-black"/>
           </div>
-          <h1 
-            class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out"
-            :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
-          >
+          <h1 class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out opacity-100">
             <StyleSnapBrand size="2xl" />
           </h1>
         </router-link>
         
-        <!-- Toggle Button - always visible, positioned beside logo -->
+        <!-- Toggle Button - visible only when expanded, positioned beside logo -->
         <button
           v-if="!isSidebarCollapsed"
           @click.stop="toggleSidebar"
-          class="flex-shrink-0 w-8 h-8 rounded-lg bg-secondary hover:bg-accent flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-110"
-          :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+          class="flex-shrink-0 w-11 h-11 rounded-xl bg-secondary hover:bg-accent flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-110"
+          title="Collapse sidebar"
         >
-          <PanelLeftClose v-if="!isSidebarCollapsed" class="w-5 h-5 text-secondary-foreground" />
+          <PanelLeftClose class="w-5 h-5 text-secondary-foreground" />
         </button>
       </div>
 
@@ -397,6 +419,9 @@ const themeDropdownStyle = ref('')
 // Sidebar collapsed state - persist in localStorage
 const isSidebarCollapsed = ref(false)
 
+// Logo hover state for icon morphing when collapsed
+const logoHovered = ref(false)
+
 // Load sidebar state from localStorage on mount
 const loadSidebarState = () => {
   const saved = localStorage.getItem('sidebarCollapsed')
@@ -413,6 +438,8 @@ const toggleSidebar = () => {
   if (isSidebarCollapsed.value) {
     showThemeDropdown.value = false
   }
+  // Reset logo hover state when sidebar state changes
+  logoHovered.value = false
 }
 
 // Computed sidebar width class
@@ -469,6 +496,9 @@ const updateThemeDropdownPosition = () => {
 
 // Update position when sidebar state changes while dropdown is open
 watch(isSidebarCollapsed, async () => {
+  // Reset logo hover state when sidebar state changes
+  logoHovered.value = false
+  
   if (isSidebarCollapsed.value && showThemeDropdown.value) {
     await nextTick()
     updateThemeDropdownPosition()
