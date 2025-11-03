@@ -75,11 +75,11 @@ const initThreeJS = async () => {
   scene = new THREE.Scene()
   scene.background = null
 
-  // Camera
+  // Camera - 90 degrees straight on, no tilt
   const aspect = canvasRef.value.clientWidth / canvasRef.value.clientHeight
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000)
-  camera.position.set(0, 0.1, 3)
-  camera.lookAt(0, 0, 0)
+  camera.position.set(0, 0, 3) // y=0 for no vertical tilt
+  camera.lookAt(0, 0, 0) // Look straight at center
 
   // Renderer
   renderer = new THREE.WebGLRenderer({
@@ -92,21 +92,26 @@ const initThreeJS = async () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.outputColorSpace = THREE.SRGBColorSpace
 
-  // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.7)
+  // Lighting - Brighter setup
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.2) // Increased from 0.7 to 1.2
   scene.add(ambientLight)
 
-  const mainLight = new THREE.DirectionalLight(0xffffff, 1.0)
+  const mainLight = new THREE.DirectionalLight(0xffffff, 1.5) // Increased from 1.0 to 1.5
   mainLight.position.set(2, 3, 4)
   scene.add(mainLight)
 
-  const fillLight = new THREE.DirectionalLight(0xffffff, 0.5)
+  const fillLight = new THREE.DirectionalLight(0xffffff, 0.8) // Increased from 0.5 to 0.8
   fillLight.position.set(-3, 1, 2)
   scene.add(fillLight)
 
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.3)
+  const rimLight = new THREE.DirectionalLight(0xffffff, 0.6) // Increased from 0.3 to 0.6
   rimLight.position.set(0, 1, -3)
   scene.add(rimLight)
+
+  // Additional front light for more brightness
+  const frontLight = new THREE.DirectionalLight(0xffffff, 0.7)
+  frontLight.position.set(0, 0, 5)
+  scene.add(frontLight)
 
   // GLTF Loader
   loader = new GLTFLoader()
