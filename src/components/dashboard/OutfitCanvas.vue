@@ -104,7 +104,7 @@
     <!-- Empty State -->
     <div v-if="items.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
       <div :class="`w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-stone-100 dark:bg-zinc-800`">
-        <Palette :class="`w-8 h-8 text-stone-500 dark:text-zinc-400`" />
+        <Layers :class="`w-8 h-8 text-stone-500 dark:text-zinc-400`" />
       </div>
       <h3 :class="`text-lg font-semibold mb-2 text-black dark:text-white`">
         Start Building Your Outfit
@@ -133,7 +133,7 @@
 
 import { ref, onMounted, onUnmounted, nextTick, defineExpose } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import { Trash2, ArrowUp, ArrowDown, Shirt, Palette, Sparkles } from 'lucide-vue-next'
+import { Trash2, ArrowUp, ArrowDown, Shirt, Layers, Sparkles } from 'lucide-vue-next'
 
 // Theme composable for styling
 const { theme } = useTheme()
