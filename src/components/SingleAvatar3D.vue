@@ -73,7 +73,7 @@ let animationDuration = 2000 // 2 seconds
 let currentAnimationType = null
 let originalBoneStates = null
 let originalModelState = null // Store original model position, rotation, scale
-const ANIMATION_TYPES = ['wave', 'nod', 'tpose', 'bounce']
+const ANIMATION_TYPES = ['wave', 'nod', 'tpose']
 let currentAnimationIndex = 0
 
 // Initialize Three.js scene
