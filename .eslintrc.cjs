@@ -38,7 +38,7 @@ module.exports = {
       files: ['tests/**/*.js', 'tests/**/*.test.js'],
       env: {
         jest: true,
-        vitest: true
+        node: true
       },
       globals: {
         vi: 'readonly',

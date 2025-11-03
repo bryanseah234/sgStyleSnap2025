@@ -359,9 +359,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
-  Package,
-  FolderStack,
-  Images
+  Heart,
+  Camera,
+  Grid3X3
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
@@ -513,9 +513,9 @@ const homeDataCache = ref({
  */
 const outfitIconOptions = [
   { name: "Layers", icon: Layers },
-  { name: "Package", icon: Package },
-  { name: "FolderStack", icon: FolderStack },
-  { name: "Images", icon: Images },
+  { name: "Heart", icon: Heart },
+  { name: "Camera", icon: Camera },
+  { name: "Grid3X3", icon: Grid3X3 },
 ]
 
 /**
