@@ -1340,7 +1340,7 @@ const saveButtonLabel = computed(() => {
     return 'Share'
   }
   if (currentSubRoute.value === 'edit' && currentOutfitId.value) {
-    return 'Update Outfit'
+    return 'Update'
   }
   return 'Save'
 })

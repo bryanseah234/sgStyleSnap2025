@@ -275,8 +275,8 @@
                 <span class="text-stone-600 dark:text-zinc-400 whitespace-nowrap">
                   Created {{ formatDate(selectedOutfit.created_at) }}
                 </span>
-                <span v-if="getCreatedLocation(selectedOutfit)" class="text-stone-600 dark:text-zinc-400 whitespace-nowrap truncate md:max-w-[50%]">
-                  {{ getCreatedLocation(selectedOutfit) }}
+                <span v-if="createdLocation" class="text-stone-600 dark:text-zinc-400 whitespace-nowrap truncate md:max-w-[50%]">
+                  {{ createdLocation }}
                 </span>
               </div>
             </div>
@@ -433,6 +433,7 @@ const activeFilter = ref('all')
 const showFavoritesOnly = ref(false) // Independent favorites toggle, same as Closet page
 const showOutfitDetail = ref(false)
 const selectedOutfit = ref(null)
+const createdLocation = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
 
@@ -656,22 +657,69 @@ const formatDate = (dateString) => {
 }
 
 // Get where the outfit was created
-const getCreatedLocation = (outfit) => {
-  if (!outfit) return null
+const getCreatedLocation = async (outfit) => {
+  if (!outfit) {
+    createdLocation.value = null
+    return
+  }
+  
+  // Check if this outfit was created from a friend suggestion
+  if (outfit.description && outfit.description.includes('Created from friend suggestion')) {
+    // Try to get the friend's username who created it
+    try {
+      const { supabase } = await import('@/lib/supabase')
+      
+      // Find the friend_outfit_suggestion that created this outfit
+      const { data: suggestion, error } = await supabase
+        .from('friend_outfit_suggestions')
+        .select(`
+          suggester_id,
+          suggester:users!friend_outfit_suggestions_suggester_id_fkey (
+            username,
+            name
+          )
+        `)
+        .eq('generated_outfit_id', outfit.id)
+        .single()
+      
+      if (!error && suggestion && suggestion.suggester) {
+        const friendName = suggestion.suggester.name || suggestion.suggester.username
+        createdLocation.value = `Created by ${friendName}`
+        return
+      }
+    } catch (error) {
+      console.error('Outfits: Error fetching friend suggester info:', error)
+    }
+    
+    // Fallback if we can't find the suggester
+    createdLocation.value = 'Created by friend'
+    return
+  }
   
   // Check if description contains location info
   if (outfit.description && outfit.description.includes('Created in')) {
     // Extract location from description (e.g., "Created in Outfit Creator")
     const match = outfit.description.match(/Created in (.+)/i)
     if (match && match[1]) {
-      return `Created in ${match[1]}`
+      createdLocation.value = `Created in ${match[1]}`
+      return
     }
-    return outfit.description
+    createdLocation.value = outfit.description
+    return
   }
   
   // Default fallback - if no description, assume it was created in Outfits page
-  return 'Created in Outfits'
+  createdLocation.value = 'Created in Outfits'
 }
+
+// Watch for selected outfit changes and update created location
+watch(selectedOutfit, (newOutfit) => {
+  if (newOutfit) {
+    getCreatedLocation(newOutfit)
+  } else {
+    createdLocation.value = null
+  }
+}, { immediate: true })
 
 const handleSearch = () => {
   // Sanitize search input in real-time

@@ -42,7 +42,7 @@
         type="text"
         :placeholder="placeholder"
         maxlength="100"
-        @input="inputValue = sanitizeText(inputValue)"
+        @blur="inputValue = sanitizeText(inputValue)"
         @keydown.enter="handleConfirm"
         @keydown.esc="$emit('close')"
         :class="`w-full px-4 py-2 rounded-lg border transition-colors ${
