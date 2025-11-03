@@ -255,14 +255,14 @@
       style="padding-top: calc(0.75rem + env(safe-area-inset-top))"
     >
       <div class="flex items-center justify-center">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
-            <Shirt class="w-4 h-4 text-white" />
-          </div>
+        <button
+          @click="scrollToTop"
+          class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <h1 class="text-xl font-bold tracking-tight text-black">
             <StyleSnapBrand size="xl" />
           </h1>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -275,14 +275,14 @@
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg max-w-md mx-auto w-full">
+      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-200/30 dark:border-zinc-700/30 shadow-lg max-w-md mx-auto w-full">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"
           :to="item.path"
           class="relative flex-1"
         >
-          <div class="flex flex-col items-center justify-center gap-1 py-2">
+          <div class="flex flex-col items-center justify-center py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               isActiveRoute(item.path)
                 ? 'bg-black dark:bg-white scale-110 -translate-y-0.5'
@@ -358,7 +358,7 @@ import {
   Home, 
   Shirt, 
   Users, 
-  Palette, 
+  Layers, 
   User as UserIcon,
   LogOut,
   Sun,
@@ -395,6 +395,11 @@ const { registerSearchInput } = useKeyboardShortcuts()
 
 // Computed property to check if current route is landing page
 const isLandingPage = computed(() => route.path === '/')
+
+// Scroll to top of page
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 // Helper function to check if a navigation item is active (memoized for performance)
 const isActiveRoute = (itemPath) => {
@@ -527,7 +532,7 @@ const homeDataCache = ref({
 const navigationItems = [
   { name: "Home", path: "/home", icon: Home },
   { name: "Closet", path: "/closet", icon: Shirt },
-  { name: "Outfits", path: "/outfits", icon: Palette },
+  { name: "Outfits", path: "/outfits", icon: Layers },
   { name: "Friends", path: "/friends", icon: Users },
   { name: "Profile", path: "/profile", icon: UserIcon },
 ]
@@ -705,4 +710,4 @@ onUnmounted(() => {
   opacity: 0;
   transform: translateY(-20px);
 }
-</style>
+</style>  
