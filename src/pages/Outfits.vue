@@ -92,7 +92,9 @@
           ref="searchInputRef"
           v-model="searchTerm"
           type="text"
-          placeholder="Search your outfits (name, tags, occasion, style, items)..."
+          :placeholder="activeFilter === 'suggestions' 
+            ? 'Search suggestions (outfit name, friend name, username)...'
+            : 'Search your outfits (name, tags, occasion, style, items)...'"
           class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
           @input="handleSearch"
           @focus="handleSearchFocus"
@@ -118,22 +120,22 @@
       </div>
 
       <!-- Empty state -->
-      <div v-else-if="suggestions.length === 0" class="text-center py-12">
+      <div v-else-if="filteredSuggestions.length === 0" class="text-center py-12">
         <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800`">
           <Sparkles :class="`w-12 h-12 text-stone-500 dark:text-zinc-400`" />
         </div>
         <h3 :class="`text-xl font-semibold mb-2 text-black dark:text-white`">
-          No outfit suggestions yet
+          {{ searchTerm ? 'No suggestions found matching your search.' : 'No outfit suggestions yet' }}
         </h3>
         <p :class="`text-lg mb-4 text-stone-600 dark:text-zinc-400`">
-          When friends suggest outfits using your items, they'll appear here.
+          {{ searchTerm ? 'Try adjusting your search terms.' : 'When friends suggest outfits using your items, they\'ll appear here.' }}
         </p>
       </div>
 
       <!-- Suggestions Grid -->
       <div v-else class="space-y-6">
         <div
-          v-for="suggestion in suggestions"
+          v-for="suggestion in filteredSuggestions"
           :key="suggestion.id"
         >
           <FriendSuggestionCard
@@ -280,15 +282,18 @@
             </div>
             
             <!-- Close button -->
-            <button
-              @click="closeOutfitDetail"
-              class="icon-rotate-hover p-2 rounded-lg transition-all hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-rotate-hover">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- ESC Key Hint (Desktop only) -->
+              <div v-if="isDesktop" class="keyboard-hint-modal">
+                <span class="keyboard-hint-key">ESC</span>
+              </div>
+              <button
+                @click="closeOutfitDetail"
+                class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
+              >
+                <X class="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -401,7 +406,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { OutfitsService } from '@/services/outfitsService'
 import { friendSuggestionsService } from '@/services/friendSuggestionsService'
-import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart, Search } from 'lucide-vue-next'
+import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart, Search, X } from 'lucide-vue-next'
 import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
 import FriendSuggestionCard from '@/components/outfits/FriendSuggestionCard.vue'
 
@@ -433,6 +438,12 @@ const searchInputRef = ref(null)
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
+
+// Desktop detection for keyboard hints
+const isDesktop = ref(false)
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
 
 // Initialize activeFilter from URL parameter or route
 if (route.query.filter === 'suggestions' || route.meta.subRoute === 'suggestions') {
@@ -492,6 +503,28 @@ const filteredOutfits = computed(() => {
   }
 
   return filtered
+})
+
+// Filter suggestions based on search term
+const filteredSuggestions = computed(() => {
+  if (!searchTerm.value) {
+    return suggestions.value
+  }
+
+  const query = searchTerm.value.toLowerCase()
+  
+  return suggestions.value.filter(suggestion => {
+    // Search by outfit name (message field contains the outfit name)
+    const matchOutfitName = suggestion.message?.toLowerCase().includes(query)
+    
+    // Search by friend name
+    const matchFriendName = suggestion.suggester?.name?.toLowerCase().includes(query)
+    
+    // Search by username
+    const matchUsername = suggestion.suggester?.username?.toLowerCase().includes(query)
+    
+    return matchOutfitName || matchFriendName || matchUsername
+  })
 })
 
 const loadOutfits = async () => {
@@ -707,6 +740,10 @@ const handleEscKey = (event) => {
 }
 
 onMounted(async () => {
+  // Initialize desktop detection
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  
   // Add event listener for Esc key
   window.addEventListener('keydown', handleEscKey)
   
@@ -768,7 +805,8 @@ watch(activeFilter, (newFilter) => {
 })
 
 onUnmounted(() => {
-  // Remove event listener for Esc key
+  // Remove event listeners
+  window.removeEventListener('resize', handleResize)
   window.removeEventListener('keydown', handleEscKey)
 })
 </script>

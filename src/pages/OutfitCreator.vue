@@ -93,9 +93,11 @@
             }`"
             title="Show Outfit on AI Model Person"
           >
-            <User v-if="!generatingTryOn" class="w-5 h-5" />
-            <div v-else class="w-5 h-5 spinner-modern"></div>
-            <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Model' }}</span>
+            <User class="w-5 h-5" />
+            <span class="hidden sm:inline">
+              <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
+              <span v-else>Model</span>
+            </span>
           </button>
           
           <!-- Generate AI button (only shown on suggested route) -->
@@ -110,9 +112,11 @@
             }`"
             title="Generate AI Outfit Based on Score"
           >
-            <Sparkles v-if="!recommendingOutfits" class="w-5 h-5" />
-            <div v-else class="w-5 h-5 spinner-modern"></div>
-            <span class="hidden sm:inline">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
+            <Sparkles class="w-5 h-5" />
+            <span class="hidden sm:inline">
+              <span v-if="recommendingOutfits" class="ellipsis-animated">Generating</span>
+              <span v-else>Generate</span>
+            </span>
           </button>
           
           <!-- Weather button (only shown on suggested route) -->
@@ -127,9 +131,11 @@
             }`"
             title="Generate Weather-Based Outfit Recommendations"
           >
-            <CloudSun v-if="!generatingWeatherOutfit" class="w-5 h-5" />
-            <div v-else class="w-5 h-5 spinner-modern"></div>
-            <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading Weather...' : 'Weather' }}</span>
+            <CloudSun class="w-5 h-5" />
+            <span class="hidden sm:inline">
+              <span v-if="generatingWeatherOutfit" class="ellipsis-animated">Loading Weather</span>
+              <span v-else>Weather</span>
+            </span>
           </button>
           
         </div>
@@ -209,9 +215,11 @@
               }`"
               title="Show Outfit on AI Model Person"
             >
-              <User v-if="!generatingTryOn" class="w-4 h-4" />
-              <div v-else class="w-4 h-4 spinner-modern"></div>
-              <span class="text-xs">{{ generatingTryOn ? 'Gen...' : 'Model' }}</span>
+              <User class="w-4 h-4" />
+              <span class="text-xs">
+                <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
+                <span v-else>Model</span>
+              </span>
             </button>
             
             <!-- Generate AI button (only in AI mode) -->
@@ -226,9 +234,11 @@
               }`"
               title="Generate AI Outfit Based on Score"
             >
-              <Sparkles v-if="!recommendingOutfits" class="w-4 h-4" />
-              <div v-else class="w-4 h-4 spinner-modern"></div>
-              <span class="text-xs">{{ recommendingOutfits ? 'Generating...' : 'Generate' }}</span>
+              <Sparkles class="w-4 h-4" />
+              <span class="text-xs">
+                <span v-if="recommendingOutfits" class="ellipsis-animated">Generating</span>
+                <span v-else>Generate</span>
+              </span>
             </button>
             
             <!-- Weather Recommended button (only in AI mode) -->
@@ -243,9 +253,11 @@
               }`"
               title="Generate Weather-Based Outfit Recommendations"
             >
-              <CloudSun v-if="!generatingWeatherOutfit" class="w-4 h-4" />
-              <div v-else class="w-4 h-4 spinner-modern"></div>
-              <span class="text-xs">{{ generatingWeatherOutfit ? 'Loading...' : 'Weather' }}</span>
+              <CloudSun class="w-4 h-4" />
+              <span class="text-xs">
+                <span v-if="generatingWeatherOutfit" class="ellipsis-animated">Loading</span>
+                <span v-else>Weather</span>
+              </span>
             </button>
             
             <button
@@ -275,7 +287,7 @@
           }`"
         >
           <Sparkles class="w-4 h-4" />
-          Suggested
+          AI Suggestions
         </button>
         <button
           @click="$router.push('/outfits/add/personal')"
@@ -286,7 +298,7 @@
           }`"
         >
           <User class="w-4 h-4" />
-          Personal
+          Personal Creation
         </button>
         <button
           @click="$router.push('/outfits/add/friend')"
@@ -297,7 +309,7 @@
           }`"
         >
           <Users class="w-4 h-4" />
-          Friends
+          Friend Creation
         </button>
       </div>
       
@@ -492,6 +504,7 @@
               <div
                 v-if="showGrid"
                 class="absolute inset-0 opacity-20 pointer-events-none"
+                style="z-index: 1;"
                 :style="{
                   backgroundImage: `
                     linear-gradient(${theme.value === 'dark' ? '#ffffff' : '#000000'} 1px, transparent 1px),
@@ -509,7 +522,7 @@
                   position: 'absolute',
                   left: `${scalePosition(item.x, 'x')}px`,
                   top: `${scalePosition(item.y, 'y')}px`,
-                  zIndex: draggedItem === item.id ? 50 : (item.z_index || 0) + (selectedItemId === item.id ? 1000 : 0),
+                  zIndex: draggedItem === item.id ? 50 : Math.max(2, (item.z_index || 0)) + (selectedItemId === item.id ? 1000 : 0),
                   transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                   transformOrigin: 'center center',
                   transition: draggedItem === item.id ? 'none' : 'all duration-200'
@@ -641,17 +654,17 @@
                 </p>
               </div>
 
-              <!-- Top Right Buttons - Regenerate (suggested only) and Show on Model (personal & suggested) -->
+              <!-- Top Center Buttons - Regenerate (suggested only) and Show on Model (personal & suggested) -->
               <div
                 v-if="currentSubRoute === 'personal' || currentSubRoute === 'suggested'"
-                class="absolute top-4 right-4 z-20 flex items-center gap-2"
+                class="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-none"
               >
                 <!-- Regenerate Button - Only for suggested route -->
                 <button
                   v-if="currentSubRoute === 'suggested'"
                   @click="generateAISuggestion"
                   :disabled="wardrobeItems.length === 0"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
                     wardrobeItems.length > 0
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
@@ -667,32 +680,36 @@
                   v-if="currentSubRoute === 'suggested'"
                   @click="generateWeatherBasedOutfit"
                   :disabled="generatingWeatherOutfit || wardrobeItems.length < 2"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
                     !generatingWeatherOutfit && wardrobeItems.length >= 2
                       ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
                   title="Generate Weather-Based Outfit"
                 >
-                  <CloudSun v-if="!generatingWeatherOutfit" class="w-5 h-5" />
-                  <div v-else class="w-5 h-5 spinner-modern"></div>
-                  <span class="hidden sm:inline">{{ generatingWeatherOutfit ? 'Loading...' : 'Weather' }}</span>
+                  <CloudSun class="w-5 h-5" />
+                  <span class="hidden sm:inline">
+                    <span v-if="generatingWeatherOutfit" class="ellipsis-animated">Loading</span>
+                    <span v-else>Weather</span>
+                  </span>
                 </button>
                 
                 <!-- Model Button -->
                 <button
                   @click="showVirtualTryOn"
                   :disabled="!canShowVirtualTryOn || generatingTryOn"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
                     canShowVirtualTryOn && !generatingTryOn
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
                   title="Show Outfit on AI Model Person"
                 >
-                  <User v-if="!generatingTryOn" class="w-5 h-5" />
-                  <div v-else class="w-5 h-5 spinner-modern"></div>
-                  <span class="hidden sm:inline">{{ generatingTryOn ? 'Generating...' : 'Model' }}</span>
+                  <User class="w-5 h-5" />
+                  <span class="hidden sm:inline">
+                    <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
+                    <span v-else>Model</span>
+                  </span>
                 </button>
               </div>
 
@@ -2789,13 +2806,21 @@ const addItemToCanvas = (item) => {
     return
   }
   
+  // Define button area exclusion zone (top 80px to prevent overlap with centered buttons)
+  const BUTTON_AREA_HEIGHT = 80
+  const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
+  const baseY = Math.max(normalizedButtonArea, normalizePosition(50 + (canvasItems.value.length * 20), 'y'))
+  
+  // Ensure new items start with z_index >= 2 (above grid)
+  const baseZIndex = Math.max(2, canvasItems.value.length + 2)
+  
   const newItem = {
     ...item,
     originalId: item.id, // Store original clothing item ID
     id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
     x: 50 + (canvasItems.value.length * 20),
-    y: 50 + (canvasItems.value.length * 20),
-    z_index: canvasItems.value.length,
+    y: baseY,
+    z_index: baseZIndex,
     rotation: 0,
     scale: 1
   }
@@ -2841,13 +2866,20 @@ const handleDrop = (event) => {
       normalizedDropY
     )
     
+    // Define button area exclusion zone (top 80px to prevent overlap with centered buttons)
+    const BUTTON_AREA_HEIGHT = 80
+    const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
+    
+    // Ensure new items start with z_index >= 2 (above grid)
+    const baseZIndex = Math.max(2, canvasItems.value.length + 2)
+    
     const newItem = {
       ...item,
       originalId: item.id, // Store original clothing item ID
       id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
       x: Math.max(0, Math.min(position.x, REFERENCE_CANVAS_WIDTH - (normalizedItemSize * position.scale))),
-      y: Math.max(0, Math.min(position.y, REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale))),
-      z_index: canvasItems.value.length,
+      y: Math.max(normalizedButtonArea, Math.min(position.y, REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale))),
+      z_index: baseZIndex,
       rotation: 0,
       scale: position.scale
     }
@@ -2883,9 +2915,21 @@ const handleMouseMove = (e) => {
   
   const item = canvasItems.value.find(i => i.id === draggedItem.value)
   if (item) {
+    // Calculate item size (scaled)
+    const itemSize = 128 * (item.scale || 1)
+    const normalizedItemSize = normalizePosition(itemSize, 'x')
+    
+    // Define button area exclusion zone (top 80px to prevent overlap with centered buttons)
+    const BUTTON_AREA_HEIGHT = 80
+    const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
+    
     // Normalize positions to reference canvas size for consistent storage
-    item.x = Math.max(0, Math.min(normalizePosition(x, 'x'), normalizePosition(rect.width - 128, 'x')))
-    item.y = Math.max(0, Math.min(normalizePosition(y, 'y'), normalizePosition(rect.height - 128, 'y')))
+    // Ensure item doesn't overlap button area at top, and stays within bounds
+    const normalizedX = normalizePosition(x, 'x')
+    const normalizedY = normalizePosition(y, 'y')
+    
+    item.x = Math.max(0, Math.min(normalizedX, normalizePosition(rect.width - itemSize, 'x')))
+    item.y = Math.max(normalizedButtonArea, Math.min(normalizedY, normalizePosition(rect.height - itemSize, 'y')))
   }
 }
 
@@ -2942,33 +2986,45 @@ const moveSelectedItemForward = () => {
   const item = canvasItems.value.find(i => i.id === selectedItemId.value)
   if (!item) return
   
-  // Get max z-index among all items
-  const maxZIndex = Math.max(...canvasItems.value.map(i => i.z_index || 0), -1)
-  const currentZIndex = item.z_index || 0
+  // Ensure item has a z_index (normalize old items that might have 0 or undefined)
+  if (!item.z_index || item.z_index < 2) {
+    item.z_index = Math.max(2, canvasItems.value.length)
+  }
+  
+  // Get max z-index among all items (normalize all to ensure minimum of 2)
+  const normalizedItems = canvasItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  const maxZIndex = Math.max(...normalizedItems.map(i => i.normalizedZ), 2)
+  const currentZIndex = Math.max(2, item.z_index || 2)
   
   // If already at max, do nothing
-  if (currentZIndex >= maxZIndex) return
+  if (currentZIndex >= maxZIndex) {
+    console.log('Item already at front')
+    return
+  }
   
   // Find all items with z-index greater than current
-  const itemsAbove = canvasItems.value.filter(i => (i.z_index || 0) > currentZIndex)
+  const itemsAbove = normalizedItems.filter(i => i.id !== item.id && i.normalizedZ > currentZIndex)
   
   if (itemsAbove.length > 0) {
     // Find the item with the smallest z-index above current
-    const minAboveZIndex = Math.min(...itemsAbove.map(i => i.z_index || 0))
-    const swapItem = itemsAbove.find(i => (i.z_index || 0) === minAboveZIndex)
+    const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
+    const swapItem = canvasItems.value.find(i => i.id === itemsAbove.find(ai => ai.normalizedZ === minAboveZIndex)?.id)
     
     if (swapItem) {
       // Swap z-indexes
-      const tempZIndex = swapItem.z_index || 0
+      const tempZIndex = Math.max(2, swapItem.z_index || 2)
       swapItem.z_index = currentZIndex
       item.z_index = tempZIndex
+      console.log(`Swapped z-index: ${item.id} now ${item.z_index}, ${swapItem.id} now ${swapItem.z_index}`)
     } else {
       // Just increment
-      item.z_index = currentZIndex + 1
+      item.z_index = maxZIndex + 1
+      console.log(`Incremented z-index: ${item.id} now ${item.z_index}`)
     }
   } else {
-    // No items above, just increment
-    item.z_index = currentZIndex + 1
+    // No items above, move to front
+    item.z_index = maxZIndex + 1
+    console.log(`Moved to front: ${item.id} now ${item.z_index}`)
   }
   
   // Force reactivity update
@@ -2982,33 +3038,45 @@ const moveSelectedItemBackward = () => {
   const item = canvasItems.value.find(i => i.id === selectedItemId.value)
   if (!item) return
   
-  // Get min z-index among all items
-  const minZIndex = Math.min(...canvasItems.value.map(i => i.z_index || 0), 0)
-  const currentZIndex = item.z_index || 0
+  // Ensure item has a z_index (normalize old items that might have 0 or undefined)
+  if (!item.z_index || item.z_index < 2) {
+    item.z_index = Math.max(2, canvasItems.value.length)
+  }
   
-  // If already at min, do nothing
-  if (currentZIndex <= minZIndex) return
+  // Get min z-index among all items (normalize all to ensure minimum of 2)
+  const normalizedItems = canvasItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  const minZIndex = Math.min(...normalizedItems.map(i => i.normalizedZ), 2)
+  const currentZIndex = Math.max(2, item.z_index || 2)
+  
+  // If already at min (2), do nothing
+  if (currentZIndex <= minZIndex) {
+    console.log('Item already at back')
+    return
+  }
   
   // Find all items with z-index less than current
-  const itemsBelow = canvasItems.value.filter(i => (i.z_index || 0) < currentZIndex)
+  const itemsBelow = normalizedItems.filter(i => i.id !== item.id && i.normalizedZ < currentZIndex)
   
   if (itemsBelow.length > 0) {
     // Find the item with the largest z-index below current
-    const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.z_index || 0))
-    const swapItem = itemsBelow.find(i => (i.z_index || 0) === maxBelowZIndex)
+    const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.normalizedZ))
+    const swapItem = canvasItems.value.find(i => i.id === itemsBelow.find(bi => bi.normalizedZ === maxBelowZIndex)?.id)
     
     if (swapItem) {
       // Swap z-indexes
-      const tempZIndex = swapItem.z_index || 0
+      const tempZIndex = Math.max(2, swapItem.z_index || 2)
       swapItem.z_index = currentZIndex
       item.z_index = tempZIndex
+      console.log(`Swapped z-index: ${item.id} now ${item.z_index}, ${swapItem.id} now ${swapItem.z_index}`)
     } else {
-      // Just decrement
-      item.z_index = currentZIndex - 1
+      // Just decrement (but ensure minimum of 2)
+      item.z_index = Math.max(2, currentZIndex - 1)
+      console.log(`Decremented z-index: ${item.id} now ${item.z_index}`)
     }
   } else {
-    // No items below, just decrement
-    item.z_index = Math.max(0, currentZIndex - 1)
+    // No items below, just decrement (but ensure minimum of 2)
+    item.z_index = Math.max(2, currentZIndex - 1)
+    console.log(`Moved backward: ${item.id} now ${item.z_index}`)
   }
   
   // Force reactivity update

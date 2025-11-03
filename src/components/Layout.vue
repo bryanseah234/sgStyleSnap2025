@@ -216,13 +216,13 @@
           ]"
           :title="isSidebarCollapsed ? 'Logout' : undefined"
         >
-          <LogOut v-if="!loading" class="w-5 h-5 flex-shrink-0" />
-          <div v-else class="w-5 h-5 spinner-modern flex-shrink-0" />
+          <LogOut class="w-5 h-5 flex-shrink-0" />
           <span 
             class="font-medium whitespace-nowrap transition-all duration-300 ease-in-out"
             :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
           >
-            {{ loading ? 'Logging out...' : 'Logout' }}
+            <span v-if="loading" class="ellipsis-animated">Logging out</span>
+            <span v-else>Logout</span>
           </span>
         </button>
       </div>
@@ -255,7 +255,7 @@
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg max-w-md mx-auto w-full">
+      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-200/30 dark:border-zinc-700/30 shadow-lg max-w-md mx-auto w-full">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"

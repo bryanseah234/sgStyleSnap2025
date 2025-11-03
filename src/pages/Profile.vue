@@ -88,21 +88,33 @@
 
                 <!-- User Stats -->
                 <div v-if="!loadingStats" class="grid grid-cols-3 gap-3 pt-4 border-t border-stone-200 dark:border-zinc-700">
-                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                  <button
+                    @click="navigateToCloset"
+                    class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    title="View your closet"
+                  >
                     <Shirt class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
                     <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.closetItems }}</span>
                     <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Closet</span>
-                  </div>
-                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                  </button>
+                  <button
+                    @click="navigateToOutfits"
+                    class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    title="View your outfits"
+                  >
                     <Palette class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
                     <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.outfits }}</span>
                     <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Outfits</span>
-                  </div>
-                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                  </button>
+                  <button
+                    @click="navigateToFriends"
+                    class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    title="View your friends"
+                  >
                     <Users class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
                     <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.friends }}</span>
                     <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Friends</span>
-                  </div>
+                  </button>
                 </div>
                 <div v-else class="flex items-center justify-center pt-4 border-t border-stone-200 dark:border-zinc-700">
                   <div class="spinner-modern"></div>
@@ -307,7 +319,8 @@ import { getProxiedImageUrl } from '@/utils/imageProxy'
 const { theme, toggleTheme, setTheme, refreshTheme } = useTheme()
 const themeStore = useThemeStore()
 const { theme: themeFromStore } = storeToRefs(themeStore)
-const currentTheme = themeFromStore
+// Use computed to ensure reactivity - watch for theme changes
+const currentTheme = computed(() => themeFromStore.value)
 const authStore = useAuthStore()
 const router = useRouter()
 const { showConfirm, showError, showSuccess } = usePopup()
@@ -338,6 +351,19 @@ const selectTheme = async (themeValue) => {
   await nextTick()
   // Force refresh to ensure UI updates
   refreshTheme()
+}
+
+// Navigation functions for stats cards
+const navigateToCloset = () => {
+  router.push('/closet')
+}
+
+const navigateToOutfits = () => {
+  router.push('/outfits')
+}
+
+const navigateToFriends = () => {
+  router.push('/friends')
 }
 
 // Reactive state
@@ -584,44 +610,29 @@ const toggleNotificationType = async (typeKey) => {
   const currentValue = preferences.value[typeKey]
   const newValue = !currentValue
   
-  // Show confirmation popup before toggling
-  const actionText = newValue ? 'enable' : 'disable'
-  const message = `Are you sure you want to ${actionText} ${notificationType?.label || 'this notification'}?`
-  
-  showConfirm(
-    message,
-    'Confirm Notification Setting',
-    async () => {
-      // User confirmed - proceed with toggle
-      try {
-        preferences.value[typeKey] = newValue
-        const result = await notificationsService.updateNotificationPreferences({
-          [typeKey]: preferences.value[typeKey]
-        })
-        
-        if (result.success) {
-          // Show success popup
-          const successMessage = newValue 
-            ? `${notificationType?.label || 'Notification'} enabled`
-            : `${notificationType?.label || 'Notification'} disabled`
-          showSuccess(successMessage, 'Settings Updated')
-        } else {
-          // Revert on error
-          preferences.value[typeKey] = currentValue
-          showError('Failed to update notification preference', 'Error')
-        }
-      } catch (error) {
-        console.error('👤 Profile: Error toggling notification type:', error)
-        // Revert on error
-        preferences.value[typeKey] = currentValue
-        showError('Failed to update notification preference', 'Error')
-      }
-    },
-    () => {
-      // User cancelled - do nothing (toggle stays as it was)
-      console.log('👤 Profile: User cancelled notification toggle')
+  try {
+    preferences.value[typeKey] = newValue
+    const result = await notificationsService.updateNotificationPreferences({
+      [typeKey]: preferences.value[typeKey]
+    })
+    
+    if (result.success) {
+      // Show success popup
+      const successMessage = newValue 
+        ? `${notificationType?.label || 'Notification'} enabled`
+        : `${notificationType?.label || 'Notification'} disabled`
+      showSuccess(successMessage, 'Settings Updated')
+    } else {
+      // Revert on error
+      preferences.value[typeKey] = currentValue
+      showError('Failed to update notification preference', 'Error')
     }
-  )
+  } catch (error) {
+    console.error('👤 Profile: Error toggling notification type:', error)
+    // Revert on error
+    preferences.value[typeKey] = currentValue
+    showError('Failed to update notification preference', 'Error')
+  }
 }
 
 /**

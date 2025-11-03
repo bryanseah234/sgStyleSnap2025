@@ -27,7 +27,7 @@
   >
     <!-- Navigation - Floating Pill Header (Always Visible) -->
     <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 landing-nav-pill">
-      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/95 border border-gray-200/50 shadow-lg">
+      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/70 backdrop-blur-md border border-gray-200/50 shadow-lg">
         <!-- Logo and Brand -->
         <div 
           @click="scrollToTop"
@@ -76,7 +76,7 @@
       </div>
       
       <!-- Mobile Menu -->
-      <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/95 backdrop-blur-md border border-gray-200/50 shadow-lg animate-slideInDown">
+      <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/70 backdrop-blur-md border border-gray-200/50 shadow-lg animate-slideInDown">
         <div class="py-4 px-4 flex flex-col gap-3">
           <a href="#demo" @click="isMenuOpen = false" class="text-sm font-medium text-gray-900 hover:text-gray-600 transition py-2">Demo</a>
           <button
@@ -165,7 +165,9 @@
                 transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
                 '--item-index': idx
               }"
-              @click.stop="handleCardClick(idx, feature.id)"
+              @click="handleCardClick(idx, feature.id, $event)"
+              @mousedown="handleCardClick(idx, feature.id, $event)"
+              @touchstart="handleCardClick(idx, feature.id, $event)"
             >
               <div 
                 class="carousel-card-wrapper"
@@ -322,6 +324,7 @@
                 <div
                   v-if="showGrid"
                   class="absolute inset-0 opacity-20 pointer-events-none"
+                  style="z-index: 1;"
                   :style="{
                     backgroundImage: `
                       linear-gradient(#000000 1px, transparent 1px),
@@ -341,7 +344,7 @@
                     position: 'absolute',
                     left: `${item.x}px`,
                     top: `${item.y}px`,
-                    zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : (item.z_index || 0),
+                    zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : Math.max(2, (item.z_index || 0)),
                     transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                     transformOrigin: 'center center',
                     transition: draggedItem === item.id ? 'none' : 'all 0.2s'
@@ -664,7 +667,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth-store'
 import { useRouter } from 'vue-router'
 import { CatalogService } from '@/services/catalogService'
@@ -871,24 +874,15 @@ const handleSignUp = () => {
 }
 
 // Handle card click - improved to handle edge cases
-const handleCardClick = (index, featureId) => {
-  // Check if card is reasonably front-facing (within 45 degrees)
-  // Also allow clicks during transition for better UX
-  if (!isCardFrontFacing(index)) {
-    // If not perfectly front-facing, check if it's close enough
-    const totalCards = features.value.length
-    const cardAngle = index * (360 / totalCards)
-    let currentRotation = carouselRotation.value % 360
-    if (currentRotation < 0) currentRotation += 360
-    let effectiveAngle = (cardAngle - currentRotation) % 360
-    if (effectiveAngle < 0) effectiveAngle += 360
-    
-    // Allow clicks if within 60 degrees (even more lenient for better UX)
-    const withinClickRange = effectiveAngle <= 60 || effectiveAngle >= 300
-    if (!withinClickRange) return
+const handleCardClick = (index, featureId, event) => {
+  // Prevent event propagation
+  if (event) {
+    event.stopPropagation()
+    event.preventDefault()
   }
   
-  // Proceed with toggle
+  // Always allow clicks - removed restrictive front-facing check
+  // The carousel will pause automatically when card is flipped
   toggleFeatureExpand(featureId)
 }
 
@@ -1136,7 +1130,7 @@ const addCatalogueItemToCanvas = (item) => {
     y: position.y,
     scale: position.scale,
     rotation: 0,
-    z_index: outfitItems.value.length,
+    z_index: Math.max(2, outfitItems.value.length + 2),
   }
   
   outfitItems.value.push(newItem)
@@ -1180,7 +1174,7 @@ const handleDrop = (event) => {
       y: Math.max(0, Math.min(position.y, rect.height - (itemSize * position.scale))),
       scale: position.scale,
       rotation: 0,
-      z_index: outfitItems.value.length
+      z_index: Math.max(2, outfitItems.value.length + 2)
     }
     
     outfitItems.value.push(newItem)
@@ -1258,9 +1252,21 @@ const moveSelectedItemForward = (itemId) => {
     return
   }
   
-  // Find the highest z_index currently
-  const maxZIndex = Math.max(...outfitItems.value.map(i => i.z_index || 0), -1)
-  const oldZIndex = item.z_index || 0
+  // Normalize z_index to ensure minimum of 2 (above grid)
+  if (!item.z_index || item.z_index < 2) {
+    item.z_index = Math.max(2, outfitItems.value.length + 2)
+  }
+  
+  // Find the highest z_index currently (normalize all to ensure minimum of 2)
+  const normalizedItems = outfitItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  const maxZIndex = Math.max(...normalizedItems.map(i => i.normalizedZ), 2)
+  const oldZIndex = Math.max(2, item.z_index || 2)
+  
+  // If already at max, do nothing
+  if (oldZIndex >= maxZIndex) {
+    console.log('Item already at front')
+    return
+  }
   
   // Bring this item to the front by giving it the highest z_index + 1
   item.z_index = maxZIndex + 1
@@ -1278,26 +1284,34 @@ const moveSelectedItemBackward = (itemId) => {
     return
   }
   
-  const currentZIndex = item.z_index || 0
+  // Normalize z_index to ensure minimum of 2 (above grid)
+  if (!item.z_index || item.z_index < 2) {
+    item.z_index = Math.max(2, outfitItems.value.length + 2)
+  }
   
-  // Can't go below 0
-  if (currentZIndex === 0) {
-    console.log(`Item ${itemId} already at back (z_index: 0)`)
+  const currentZIndex = Math.max(2, item.z_index || 2)
+  
+  // Can't go below 2 (must stay above grid)
+  if (currentZIndex <= 2) {
+    console.log(`Item ${itemId} already at back (z_index: 2)`)
     return
   }
   
+  // Normalize all items to find conflicts
+  const normalizedItems = outfitItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  
   // Simply decrease z_index by 1
-  const newZIndex = currentZIndex - 1
+  const newZIndex = Math.max(2, currentZIndex - 1)
   
   // If the new z_index would conflict with another item, swap positions
-  const conflictingItem = outfitItems.value.find(i => i.id !== itemId && (i.z_index || 0) === newZIndex)
+  const conflictingItem = outfitItems.value.find(i => i.id !== itemId && Math.max(2, i.z_index || 2) === newZIndex)
   if (conflictingItem) {
     // Swap z_index values
     conflictingItem.z_index = currentZIndex
     item.z_index = newZIndex
     console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex} (swapped with ${conflictingItem.id})`)
   } else {
-    // No conflict, just decrease
+    // No conflict, just decrease (but ensure minimum of 2)
     item.z_index = newZIndex
     console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex}`)
   }
@@ -1323,30 +1337,37 @@ const scrollToTop = () => {
 const calculateSplashTransform = () => {
   if (!heroTitleRef.value) return
   
-  const heroRect = heroTitleRef.value.getBoundingClientRect()
-  const splashCenterX = window.innerWidth / 2
-  const splashCenterY = window.innerHeight / 2
-  
-  // Calculate the offset needed to move from splash center to hero position
-  const heroCenterY = heroRect.top + (heroRect.height / 2)
-  
-  // Position the splash text so it aligns with the hero title
-  // Use the center of the hero title element as reference point
-  const heroLeftEdge = heroRect.left
-  const heroTextCenter = heroLeftEdge + (heroRect.width / 2)
-  
-  const finalX = heroTextCenter - splashCenterX
-  const finalY = heroCenterY - splashCenterY
-  
-  splashTransform.x = finalX
-  splashTransform.y = finalY
-  splashTransform.scale = 1
-  // Don't set fontSize here - it will be set after isTransitioning to trigger animation
-  
-  // Store the final values for locking later
-  finalTransform.x = finalX
-  finalTransform.y = finalY
-  finalTransform.fontSize = '2.5625rem'
+  // Wait for next frame to ensure hero title is fully rendered
+  requestAnimationFrame(() => {
+    const heroRect = heroTitleRef.value.getBoundingClientRect()
+    const splashCenterX = window.innerWidth / 2
+    const splashCenterY = window.innerHeight / 2
+    
+    // Get computed styles to match exactly
+    const heroStyles = window.getComputedStyle(heroTitleRef.value)
+    const heroFontSize = parseFloat(heroStyles.fontSize)
+    const heroLineHeight = parseFloat(heroStyles.lineHeight) || heroFontSize * 1.2
+    
+    // Calculate the visual center of the hero text
+    // Account for line-height to get the true vertical center of the text
+    const heroCenterY = heroRect.top + (heroRect.height / 2)
+    
+    // For horizontal alignment, use the center of the text element
+    const heroTextCenter = heroRect.left + (heroRect.width / 2)
+    
+    // Calculate transform to move splash center to hero center
+    const finalX = heroTextCenter - splashCenterX
+    const finalY = heroCenterY - splashCenterY
+    
+    splashTransform.x = finalX
+    splashTransform.y = finalY
+    splashTransform.scale = 1
+    
+    // Store the final values for locking later
+    finalTransform.x = finalX
+    finalTransform.y = finalY
+    finalTransform.fontSize = '2.5625rem'
+  })
 }
 
 // Typewriter effect
@@ -1365,33 +1386,36 @@ const typewriterEffect = () => {
       
       // Wait a moment, then start transition
       setTimeout(() => {
-        // Calculate target position
+        // Calculate target position - this now uses requestAnimationFrame internally
         calculateSplashTransform()
         
-        // DON'T set fontSize yet - let it stay at the splash size initially
-        // This allows CSS transition to animate from current size to final size
-        
-        // Start the transition state
-        isTransitioning.value = true
-        
-        // Wait one frame to ensure DOM is ready, then set target values
+        // Wait for calculation to complete (next frame), then start transition
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            // Set the final font size - CSS will transition smoothly
-            splashTransform.fontSize = '2.5625rem'
+            // DON'T set fontSize yet - let it stay at the splash size initially
+            // This allows CSS transition to animate from current size to final size
             
-            // Wait for transition to complete, then LOCK everything
-            setTimeout(() => {
-              animationComplete.value = true
+            // Start the transition state
+            isTransitioning.value = true
+            
+            // Wait one more frame to ensure DOM is ready, then set target values
+            requestAnimationFrame(() => {
+              // Set the final font size - CSS will transition smoothly
+              splashTransform.fontSize = '2.5625rem'
               
-              // Wait a tiny bit, then show real title
+              // Wait for transition to complete, then LOCK everything
               setTimeout(() => {
-                showHeroTitle.value = true
+                animationComplete.value = true
+                
+                // Wait a tiny bit, then show real title
                 setTimeout(() => {
-                  showSplash.value = false
-                }, 300)
-              }, 50)
-            }, 1500) // Lock exactly when animation completes
+                  showHeroTitle.value = true
+                  setTimeout(() => {
+                    showSplash.value = false
+                  }, 300)
+                }, 50)
+              }, 1500) // Lock exactly when animation completes
+            })
           })
         })
       }, 500) // Pause after typing finishes
@@ -1422,6 +1446,55 @@ watch(showSplash, (isVisible) => {
     enableBodyScroll()
   }
 }, { immediate: true })
+
+// Function to normalize section heights (except hero)
+const normalizeSectionHeights = () => {
+  // Wait for next tick to ensure DOM is fully rendered
+  nextTick(() => {
+    // Get all sections except hero
+    const sections = document.querySelectorAll('section:not(.hero-section)')
+    if (sections.length === 0) return
+    
+    // Wait for images to load
+    const images = document.querySelectorAll('section:not(.hero-section) img')
+    const imagePromises = Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve()
+      return new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = resolve // Resolve even on error to not block
+        // Timeout after 2 seconds
+        setTimeout(resolve, 2000)
+      })
+    })
+    
+    Promise.all(imagePromises).then(() => {
+      // Reset min-height to auto to get natural height
+      sections.forEach(section => {
+        section.style.minHeight = 'auto'
+      })
+      
+      // Wait a moment for layout to recalculate after images load
+      setTimeout(() => {
+        let tallestHeight = 0
+        
+        // Find the tallest section
+        sections.forEach(section => {
+          const height = section.offsetHeight
+          if (height > tallestHeight) {
+            tallestHeight = height
+          }
+        })
+        
+        // Apply tallest height to all sections
+        if (tallestHeight > 0) {
+          sections.forEach(section => {
+            section.style.minHeight = `${tallestHeight}px`
+          })
+        }
+      }, 150)
+    })
+  })
+}
 
 // Lifecycle hooks
 onMounted(() => {
@@ -1513,14 +1586,32 @@ onMounted(() => {
   // Start carousel rotation
   startCarousel()
   
-  // Load catalogue items for demo
-  loadCatalogueItems()
+  // Load catalogue items for demo, then normalize heights
+  loadCatalogueItems().then(() => {
+    // Normalize section heights after catalogue loads
+    normalizeSectionHeights()
+  }).catch(() => {
+    // Normalize even if catalogue load fails
+    normalizeSectionHeights()
+  })
+  
+  // Also normalize after initial mount (fallback)
+  setTimeout(() => {
+    normalizeSectionHeights()
+  }, 500)
+  
+  // Also normalize on window resize
+  const handleResize = () => {
+    normalizeSectionHeights()
+  }
+  window.addEventListener('resize', handleResize, { passive: true })
   
   // Cleanup function
   onUnmounted(() => {
     // Ensure body scroll is re-enabled when component is unmounted
     enableBodyScroll()
     window.removeEventListener('scroll', handleScroll)
+    window.removeEventListener('resize', handleResize)
     observer.disconnect()
     // Stop carousel rotation
     stopCarousel()
@@ -1562,10 +1653,13 @@ const setScrollY = (value) => {
   padding: 0 2rem;
   transition: transform 1500ms cubic-bezier(0.4, 0, 0.2, 1),
               font-size 1500ms cubic-bezier(0.4, 0, 0.2, 1),
-              color 1500ms cubic-bezier(0.4, 0, 0.2, 1);
+              color 1500ms cubic-bezier(0.4, 0, 0.2, 1),
+              letter-spacing 1500ms cubic-bezier(0.4, 0, 0.2, 1),
+              line-height 1500ms cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 90vw;
   transform-origin: center center;
-  will-change: transform, font-size, color;
+  will-change: transform, font-size, color, letter-spacing, line-height;
+  line-height: 1.2;
 }
 
 @media (min-width: 768px) {
@@ -1584,6 +1678,10 @@ const setScrollY = (value) => {
   /* Apply final styling that transitions smoothly - match hero title */
   font-weight: 700 !important; /* font-bold matches hero title */
   color: #ffffff !important; /* White text to match hero section */
+  /* Match typography exactly */
+  letter-spacing: normal !important; /* Match hero title (no negative spacing) */
+  line-height: 1.2 !important; /* Match default line-height */
+  text-align: center !important;
   /* Lock position */
   position: fixed !important;
   z-index: 10001 !important;
@@ -1591,6 +1689,8 @@ const setScrollY = (value) => {
   /* No padding or margin that could shift */
   padding: 0 !important;
   margin: 0 !important;
+  /* Ensure transform origin is centered for accurate alignment */
+  transform-origin: center center !important;
 }
 
 .splash-title-frozen {
@@ -1602,6 +1702,10 @@ const setScrollY = (value) => {
   font-size: 2.5625rem !important;
   font-weight: 700 !important; /* font-bold matches hero title */
   color: #ffffff !important; /* White text to match hero section */
+  /* Match typography exactly */
+  letter-spacing: normal !important; /* Match hero title */
+  line-height: 1.2 !important; /* Match default line-height */
+  text-align: center !important;
   /* Lock position exactly where it is */
   position: fixed !important;
   /* Prevent ANY responsive behavior */
@@ -1610,6 +1714,8 @@ const setScrollY = (value) => {
   transform: translate(var(--target-x), var(--target-y)) !important;
   /* Block any potential parent influences */
   isolation: isolate !important;
+  /* Ensure transform origin is centered */
+  transform-origin: center center !important;
 }
 
 .typewriter-cursor-splash {
@@ -1645,6 +1751,9 @@ const setScrollY = (value) => {
   position: relative;
   opacity: 0;
   transition: opacity 0.5s ease-in;
+  letter-spacing: normal; /* Match splash title final state */
+  line-height: 1.2; /* Match splash title final state */
+  text-align: center; /* Ensure center alignment */
 }
 
 .hero-title-visible {
@@ -1689,7 +1798,9 @@ const setScrollY = (value) => {
 
 /* Force navigation pill to always use light mode */
 .landing-nav-pill > div {
-  background-color: rgba(243, 244, 246, 0.95) !important;
+  background-color: rgba(243, 244, 246, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
@@ -1717,12 +1828,17 @@ const setScrollY = (value) => {
 
 /* Ensure mobile menu also stays light */
 .landing-nav-pill .md\\:hidden {
-  background-color: rgba(243, 244, 246, 0.95) !important;
+  background-color: rgba(243, 244, 246, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
-/* Make all landing sections the same height */
-.landing-section {
+/* Landing sections will have dynamic heights set by JS to match tallest section */
+.landing-section,
+.cta-card-section {
+  /* Height will be set dynamically by normalizeSectionHeights() */
+  /* Keep a reasonable minimum for initial render */
   min-height: 100vh;
 }
 
@@ -1764,6 +1880,11 @@ const setScrollY = (value) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none; /* Allow clicks to pass through to cards */
+}
+
+.carousel-3d-wrapper > * {
+  pointer-events: auto; /* Re-enable for carousel container */
 }
 
 .carousel-3d-container {
@@ -1808,6 +1929,7 @@ const setScrollY = (value) => {
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s ease;
+  pointer-events: auto; /* Ensure wrapper can receive clicks */
 }
 
 .carousel-card-wrapper.flipped {
@@ -1823,6 +1945,7 @@ const setScrollY = (value) => {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
+  pointer-events: none; /* Let clicks pass through to parent */
 }
 
 .carousel-card-front {

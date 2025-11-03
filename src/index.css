@@ -295,6 +295,38 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   }
 }
 
+/* Animated ellipsis for processing states - simple and reliable */
+.ellipsis-animated::after {
+  content: '...';
+  animation: ellipsis-animate 1.5s infinite;
+  display: inline-block;
+  width: 1em;
+  text-align: left;
+}
+
+@keyframes ellipsis-animate {
+  0% {
+    content: '.';
+    width: 0.33em;
+  }
+  25% {
+    content: '..';
+    width: 0.66em;
+  }
+  50% {
+    content: '...';
+    width: 1em;
+  }
+  75% {
+    content: '..';
+    width: 0.66em;
+  }
+  100% {
+    content: '.';
+    width: 0.33em;
+  }
+}
+
 .spinner-modern {
   position: relative;
   width: 64px;

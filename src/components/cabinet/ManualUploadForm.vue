@@ -2,9 +2,9 @@
   <div>
     <!-- Upload Form -->
     <div :class="`rounded-2xl border p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-      <div class="space-y-6">
-        <!-- Image Upload -->
-        <div>
+      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <!-- Image Upload - Left Side (50%) -->
+        <div class="w-full lg:w-1/2 flex-shrink-0">
           <label :class="`text-base mb-3 block text-stone-700 dark:text-zinc-300`">
             Item Image *
           </label>
@@ -47,8 +47,9 @@
           </label>
         </div>
 
-        <!-- Form Fields -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Form Fields - Right Side (50%) -->
+        <div class="w-full lg:w-1/2 flex-shrink-0 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Item Name *
@@ -167,10 +168,10 @@
               <option value="public">Public (Everyone)</option>
             </select>
           </div>
-        </div>
+          </div>
 
-        <!-- Action Buttons -->
-        <div class="flex gap-3 pt-4">
+          <!-- Action Buttons -->
+          <div class="flex gap-3 pt-4">
           <button
             @click="$router.push('/closet')"
             :class="`flex-1 h-12 rounded-xl font-medium transition-colors bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200

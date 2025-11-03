@@ -121,9 +121,9 @@
               :disabled="isUpdating || !hasChanges"
               class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save v-if="!isUpdating" class="w-5 h-5" />
-              <div v-else class="w-5 h-5 spinner-modern"></div>
-              {{ isUpdating ? 'Updating...' : 'Update Item' }}
+              <Save class="w-5 h-5" />
+              <span v-if="isUpdating" class="ellipsis-animated">Updating</span>
+              <span v-else>Update Item</span>
             </button>
             <button
               @click="removeItem"
@@ -131,7 +131,8 @@
               class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 class="w-5 h-5" />
-              {{ isRemoving ? 'Removing...' : 'Remove Item' }}
+              <span v-if="isRemoving" class="ellipsis-animated">Removing</span>
+              <span v-else>Remove Item</span>
             </button>
           </div>
         </div>

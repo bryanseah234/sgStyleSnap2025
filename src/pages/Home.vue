@@ -117,13 +117,19 @@
           >
             Mark all as read
           </button>
-          <button
-            class="p-2 rounded-lg text-stone-600 hover:text-black hover:bg-stone-100 transition dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
-            @click="showNotificationsModal = false"
-            aria-label="Close"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- ESC Key Hint (Desktop only) -->
+            <div v-if="isDesktop" class="keyboard-hint-modal">
+              <span class="keyboard-hint-key">ESC</span>
+            </div>
+            <button
+              @click="showNotificationsModal = false"
+              class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-600 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
+              aria-label="Close"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
       <!-- Body - Scrollable Content -->
@@ -181,7 +187,7 @@
  * including wardrobe items, outfits, and friends.
  */
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
@@ -193,7 +199,7 @@ import { NotificationsService } from '@/services/notificationsService'
 import { UserService } from '@/services/userService'
 import { vScrollAnimate } from '@/composables/useScrollAnimation'
 import { useLiquidReveal, useLiquidHover } from '@/composables/useLiquidGlass'
-import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck } from 'lucide-vue-next'
+import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck, X } from 'lucide-vue-next'
 
 // Theme and auth composables
 const { theme } = useTheme()
@@ -264,6 +270,19 @@ const totalItemsCount = ref(0) // Total count of all items in closet
 const loadingNotifications = ref(false) // Loading state for notifications
 const showNotificationsModal = ref(false)
 const loadingAll = ref(true) // Global loading gate for the whole page
+
+// Desktop detection for keyboard hints
+const isDesktop = ref(false)
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
+
+// ESC key handler for notifications modal
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && showNotificationsModal.value) {
+    showNotificationsModal.value = false
+  }
+}
 
 /**
  * Computed statistics for the dashboard cards
@@ -581,6 +600,11 @@ const formatTimeAgo = (dateString) => {
  * - Friends list
  */
 onMounted(async () => {
+  // Initialize desktop detection
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEsc)
+  
   console.log('🏠 Home: Component mounted, starting data loading...')
   console.log('🏠 Home: Auth state:', {
     isAuthenticated: authStore.isAuthenticated,
@@ -616,6 +640,11 @@ onMounted(async () => {
   finally {
     loadingAll.value = false
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEsc)
 })
 
 // Liquid glass event handlers

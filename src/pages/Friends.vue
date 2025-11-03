@@ -205,15 +205,17 @@
               <div class="flex gap-2">
                 <button
                   @click="acceptFriendRequest(request.id)"
-                  class="px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 transition-all duration-200"
+                  class="p-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all duration-200 flex items-center justify-center"
+                  title="Accept"
                 >
-                  Accept
+                  <Check class="w-5 h-5" />
                 </button>
                 <button
                   @click="declineFriendRequest(request.id)"
-                  class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                  class="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200 flex items-center justify-center"
+                  title="Decline"
                 >
-                  Decline
+                  <X class="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -420,7 +422,7 @@ import { FriendsService } from '@/services/friendsService'
 import { UserService } from '@/services/userService'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
-import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X } from 'lucide-vue-next'
+import { Users, UserPlus, Bell, Search, CheckCircle, XCircle, X, Check } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()

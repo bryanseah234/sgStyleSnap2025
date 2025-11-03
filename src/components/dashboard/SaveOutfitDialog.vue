@@ -39,7 +39,7 @@
             placeholder="e.g., Summer Casual"
             maxlength="50"
             class="w-full h-12 px-3 rounded-xl border bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-            @input="outfitName = sanitizeText(outfitName)"
+            @blur="outfitName = sanitizeText(outfitName)"
             @keydown.enter="handleSave"
           />
           <div class="flex justify-end mt-1">

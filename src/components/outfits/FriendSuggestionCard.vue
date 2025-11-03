@@ -80,7 +80,8 @@
         class="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         <Check class="w-4 h-4" />
-        {{ processing ? 'Processing...' : 'Approve' }}
+        <span v-if="processing" class="ellipsis-animated">Processing</span>
+        <span v-else>Approve</span>
       </button>
       <button
         @click="rejectSuggestion"
@@ -88,7 +89,8 @@
         class="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         <X class="w-4 h-4" />
-        {{ processing ? 'Processing...' : 'Reject' }}
+        <span v-if="processing" class="ellipsis-animated">Processing</span>
+        <span v-else>Reject</span>
       </button>
     </div>
   </div>
