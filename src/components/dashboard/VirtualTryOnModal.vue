@@ -31,7 +31,7 @@
           Show Outfit on Model
         </h3>
         <p class="text-sm text-stone-600 dark:text-zinc-400 mt-2">
-          AI-powered virtual try-on using IDM-VTON technology
+          AI-powered virtual try-on using Google Gemini API
         </p>
       </div>
 
@@ -75,8 +75,8 @@
 
       <!-- Success State - Show Generated Image -->
       <div v-else-if="generatedImageUrl" class="flex-1 flex gap-4 overflow-hidden min-h-0">
-        <!-- Left: Image (50%) -->
-        <div class="w-[50%] flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700">
+        <!-- Left: Image (60%) -->
+        <div class="w-[60%] flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700">
           <img
             :src="generatedImageUrl"
             alt="Virtual try-on result"
@@ -84,8 +84,8 @@
           />
         </div>
 
-        <!-- Right: Content (50%) -->
-        <div class="w-[50%] flex-shrink-0 flex flex-col gap-3 overflow-y-auto min-h-0">
+        <!-- Right: Content (40%) -->
+        <div class="w-[40%] flex-shrink-0 flex flex-col gap-3 overflow-y-auto min-h-0">
           <!-- Image Info -->
           <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800 flex-shrink-0">
             <div class="flex items-center gap-3">
@@ -97,7 +97,7 @@
                   Virtual try-on generated successfully!
                 </p>
                 <p class="text-xs text-purple-700 dark:text-purple-300">
-                  Powered by IDM-VTON AI model
+                  Powered by Google Gemini Imagen
                 </p>
               </div>
             </div>
@@ -118,6 +118,20 @@
             >
               Close
             </button>
+          </div>
+
+          <!-- Info Banner -->
+          <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 flex-shrink-0">
+            <div class="flex gap-3">
+              <Info class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div class="text-xs text-blue-800 dark:text-blue-200">
+                <p class="font-medium mb-1">About Virtual Try-On</p>
+                <p>
+                  This image was generated using Google Gemini API with Imagen 4.0, which creates realistic images of models wearing your clothing items. 
+                  For best results, ensure your clothing items have clear, high-quality images.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -140,7 +154,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { X, Sparkles, Check, Download, AlertCircle } from 'lucide-vue-next'
+import { X, Sparkles, Check, Download, AlertCircle, Info } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({
