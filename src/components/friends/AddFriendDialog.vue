@@ -9,12 +9,24 @@
       @click.stop
     >
       <!-- Close Button -->
-      <button
-        @click="$emit('close')"
-        class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
-      >
-        <X class="w-5 h-5" />
-      </button>
+      <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <!-- ESC Key Hint (Desktop only) -->
+        <div v-if="isDesktop" class="keyboard-hint-modal">
+          <span class="keyboard-hint-key">ESC</span>
+        </div>
+        <button
+          @click="$emit('close')"
+          class="p-2 rounded-lg transition-all shadow-lg
+                bg-white border border-stone-300 text-stone-700
+                hover:bg-stone-100 hover:text-black 
+                dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 
+                dark:hover:bg-zinc-700 dark:hover:text-white
+                active:scale-95"
+          aria-label="Close dialog"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
 
       <h3 class="text-xl font-bold mb-4 text-foreground pr-8">
         Add Your Friend
@@ -23,12 +35,7 @@
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
-            <div class="flex justify-between items-center w-full">
-              <span>Search by username or email</span>
-              <span v-if="searchQuery.length >= 4 && !searching && searchResults">
-                {{ searchResults.length }} friends found
-              </span>
-            </div>
+            Search by username or email
           </label>
           <div class="relative search-input-group">
             <input
@@ -39,11 +46,27 @@
               @keyup="handleInputKeyup"
             />
             <!-- Small keyboard hint for search suggestions -->
-            <div class="keyboard-hint" style="font-size: 10px; padding: 3px 6px;">
+            <div v-if="isDesktop" class="keyboard-hint" style="font-size: 10px; padding: 3px 6px;">
               <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
               <span>+</span>
               <span class="keyboard-hint-key">K</span>
             </div>
+          </div>
+          
+          <!-- Results count / No results message - shown below input -->
+          <div class="mt-2">
+            <p v-if="searchQuery.length < 4" class="text-xs text-stone-400 dark:text-zinc-500">
+              Type at least 4 characters to search
+            </p>
+            <p v-else-if="searching" class="text-xs text-stone-500 dark:text-zinc-400">
+              Searching...
+            </p>
+            <p v-else-if="searchPerformed && searchResults.length > 0" class="text-xs text-stone-600 dark:text-zinc-400">
+              {{ searchResults.length }} {{ searchResults.length === 1 ? 'result' : 'results' }} found
+            </p>
+            <p v-else-if="searchPerformed && searchResults.length === 0" class="text-xs text-stone-600 dark:text-zinc-400">
+              No results found
+            </p>
           </div>
         </div>
         
@@ -88,21 +111,10 @@
                   : 'bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'
               }`"
             >
-              {{ sendingRequest === user.id ? 'Sending...' : 'Add' }}
+              <span v-if="sendingRequest === user.id" class="ellipsis-animated">Sending</span>
+              <span v-else>Add</span>
             </button>
           </div>
-        </div>
-        
-        <div v-if="searchQuery && searchResults.length === 0 && !searching" class="text-center py-4">
-          <p class="text-sm text-stone-600 dark:text-zinc-400">
-            No users found matching "{{ searchQuery }}"
-          </p>
-        </div>
-        
-        <div v-if="searching" class="text-center py-4">
-          <p class="text-sm text-stone-600 dark:text-zinc-400">
-            Searching...
-          </p>
         </div>
       </div>
       
@@ -119,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useDebounce } from '@/composables/useDebounce'
@@ -151,11 +163,25 @@ const emit = defineEmits(['close', 'friendRequestSent'])
 const { theme } = useTheme()
 const { showError } = usePopup()
 
+// Desktop detection for ESC hint
+const isDesktop = ref(false)
+
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
+
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close')
+  }
+}
+
 // State
 const searchQuery = ref('')
 const searchResults = ref([])
 const searching = ref(false)
 const sendingRequest = ref(null)
+const searchPerformed = ref(false) // Track if a search has been performed
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
@@ -167,6 +193,7 @@ const debouncedAutoSearch = debounce(() => {
     searchUsers()
   } else {
     searchResults.value = []
+    searchPerformed.value = false // Reset search performed flag if query is too short
   }
 }, 400)
 
@@ -186,6 +213,7 @@ const searchUsers = async () => {
   
   console.log('🔍 AddFriendDialog: Starting user search...')
   searching.value = true
+  searchPerformed.value = false // Reset before search
   
   try {
     console.log('🔍 AddFriendDialog: Calling userService.searchUsers...')
@@ -202,6 +230,7 @@ const searchUsers = async () => {
     })
     
     searchResults.value = result || []
+    searchPerformed.value = true // Mark that search has been performed
   } catch (error) {
     console.error('❌ AddFriendDialog: Error searching users:', error)
     console.error('❌ AddFriendDialog: Error details:', {
@@ -210,6 +239,7 @@ const searchUsers = async () => {
       name: error.name
     })
     searchResults.value = []
+    searchPerformed.value = true // Mark search as performed even on error
   } finally {
     searching.value = false
     console.log('🔍 AddFriendDialog: Search completed')
@@ -252,11 +282,17 @@ const sendFriendRequest = async (userId) => {
   }
 }
 
-// Watch for dialog open/close to detect Mac
+// Watch for dialog open/close to detect Mac and reset search state
 watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     // Detect Mac OS when dialog opens
     isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  } else {
+    // Reset search state when dialog closes
+    searchQuery.value = ''
+    searchResults.value = []
+    searchPerformed.value = false
+    searching.value = false
   }
 })
 
@@ -271,4 +307,16 @@ const handleInputKeyup = (ev) => {
     searchUsers()
   }
 }
+
+// Lifecycle hooks
+onMounted(() => {
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEsc)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEsc)
+})
 </script>

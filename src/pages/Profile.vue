@@ -3,7 +3,7 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-foreground">
+        <h1 class="text-4xl font-bold text-foreground text-center md:text-left">
           Profile Settings
         </h1>
       </div>
@@ -79,7 +79,7 @@
               </div>
 
               <!-- Additional Info -->
-              <div class="text-center mt-auto">
+              <div class="text-center mt-auto flex flex-col justify-center">
                 <p class="text-sm text-stone-600 dark:text-zinc-400 mb-6">
                   Profile information is managed through your Google account.
                   <br>
@@ -88,21 +88,33 @@
 
                 <!-- User Stats -->
                 <div v-if="!loadingStats" class="grid grid-cols-3 gap-3 pt-4 border-t border-stone-200 dark:border-zinc-700">
-                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                  <button
+                    @click="navigateToCloset"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 h-full"
+                    title="View your closet"
+                  >
                     <Shirt class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
                     <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.closetItems }}</span>
                     <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Closet</span>
-                  </div>
-                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
-                    <Palette class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
+                  </button>
+                  <button
+                    @click="navigateToOutfits"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 h-full"
+                    title="View your outfits"
+                  >
+                    <Layers class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
                     <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.outfits }}</span>
                     <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Outfits</span>
-                  </div>
-                  <div class="flex flex-col items-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800">
+                  </button>
+                  <button
+                    @click="navigateToFriends"
+                    class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 h-full"
+                    title="View your friends"
+                  >
                     <Users class="w-5 h-5 mb-2 text-stone-600 dark:text-zinc-400" />
                     <span class="text-2xl font-bold text-stone-800 dark:text-zinc-200">{{ stats.friends }}</span>
                     <span class="text-xs text-stone-600 dark:text-zinc-400 mt-1">Friends</span>
-                  </div>
+                  </button>
                 </div>
                 <div v-else class="flex items-center justify-center pt-4 border-t border-stone-200 dark:border-zinc-700">
                   <div class="spinner-modern"></div>
@@ -192,44 +204,51 @@
           
               <div class="space-y-3">
                 <!-- Theme Toggle Button -->
-                <div class="relative">
+                <div class="relative" style="overflow: visible;">
                   <button
                     @click="showThemeDropdown = !showThemeDropdown"
-                    :class="`w-full flex items-center justify-between gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200`"
-                    :title="getThemeLabel(theme.value)"
+                    :class="`w-full flex items-center justify-between gap-3 px-3 py-3 rounded-xl bg-secondary hover:bg-accent group relative transition-all duration-300 ease-in-out min-h-[44px]`"
+                    :title="getThemeLabel(currentTheme)"
                   >
-                    <div class="flex items-center gap-3">
-                      <Sun v-if="theme.value === 'light'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                      <Moon v-else-if="theme.value === 'dark'" class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                      <Monitor v-else class="w-4 h-4 md:w-5 md:h-5 text-stone-800 dark:text-zinc-200" />
-                      <span class="font-medium text-sm md:text-base">
+                    <div class="flex gap-3">
+                      <Sun v-if="currentTheme === 'light'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+                      <Moon v-else-if="currentTheme === 'dark'" class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+                      <Monitor v-else class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+                      <span class="font-medium text-secondary-foreground whitespace-nowrap transition-all duration-300 ease-in-out flex-1">
                         Theme
                       </span>
                     </div>
-                    <ChevronDown class="w-4 h-4 text-stone-800 dark:text-zinc-200" />
+
+                    <ChevronDown 
+                      class="w-4 h-4 text-secondary-foreground flex-shrink-0 transition-all duration-300"
+                      :class="[
+                        showThemeDropdown ? 'opacity-100' : 'opacity-50'
+                      ]"
+                    />
                   </button>
 
                   <!-- Theme Dropdown Menu -->
                   <div
                     v-if="showThemeDropdown"
-                    class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-50 overflow-hidden"
+                    data-theme-dropdown
+                    class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 dark:bg-zinc-900 dark:border-zinc-700 z-[100] overflow-hidden"
                   >
                     <button
                       v-for="option in themeOptions"
                       :key="option.value"
                       @click.stop="selectTheme(option.value)"
                       :class="`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
-                        theme.value === option.value
+                        currentTheme === option.value
                           ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold'
                           : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
                       }`"
                     >
-                      <component :is="option.icon" class="w-5 h-5" />
+                      <component :is="option.icon" class="w-5 h-5 flex-shrink-0" />
                       <span class="font-medium text-sm">{{ option.label }}</span>
                       <!-- Selected indicator checkmark -->
                       <svg 
-                        v-if="theme.value === option.value" 
-                        class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400" 
+                        v-if="currentTheme === option.value" 
+                        class="w-5 h-5 ml-auto text-blue-600 dark:text-blue-400 flex-shrink-0" 
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
@@ -282,20 +301,26 @@
  * @version 1.0.0
  */
 
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useTheme } from '@/composables/useTheme'
+import { useThemeStore } from '@/stores/theme-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePopup } from '@/composables/usePopup'
 import { notificationsService } from '@/services/notificationsService'
-import { Sun, Moon, Monitor, ChevronDown, LogOut, Shirt, Palette, Users } from 'lucide-vue-next'
+import { Sun, Moon, Monitor, ChevronDown, LogOut, Shirt, Layers, Users } from 'lucide-vue-next'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 
 // Composables and stores
-const { theme, toggleTheme, setTheme } = useTheme()
+const { toggleTheme, setTheme, refreshTheme } = useTheme()
+const themeStore = useThemeStore()
+const { theme: themeFromStore } = storeToRefs(themeStore)
+// Use computed to ensure reactivity - watch for theme changes
+const currentTheme = computed(() => themeFromStore.value)
 const authStore = useAuthStore()
 const router = useRouter()
 const { showConfirm, showError, showSuccess } = usePopup()
@@ -316,12 +341,29 @@ const getThemeLabel = (themeValue) => {
   return option ? option.label : 'Theme'
 }
 
-// Select theme
+// Select theme (matching Layout.vue functionality)
 const selectTheme = async (themeValue) => {
   // Close dropdown immediately for better UX
   showThemeDropdown.value = false
   // Then apply theme change
   await setTheme(themeValue)
+  // Wait for DOM update
+  await nextTick()
+  // Force refresh to ensure UI updates
+  refreshTheme()
+}
+
+// Navigation functions for stats cards
+const navigateToCloset = () => {
+  router.push('/closet')
+}
+
+const navigateToOutfits = () => {
+  router.push('/outfits')
+}
+
+const navigateToFriends = () => {
+  router.push('/friends')
 }
 
 // Reactive state
@@ -458,21 +500,6 @@ const getUsername = () => {
   return 'Not provided'
 }
 
-/**
- * Handles theme toggle functionality
- * 
- * Properly handles the async theme toggle operation and provides
- * user feedback during the process.
- */
-const handleThemeToggle = async () => {
-  try {
-    console.log('🎨 Profile: Toggling theme...')
-    await toggleTheme()
-    console.log('✅ Profile: Theme toggled successfully')
-  } catch (error) {
-    console.error('❌ Profile: Theme toggle error:', error)
-  }
-}
 
 /**
  * Handles user logout functionality
@@ -568,44 +595,29 @@ const toggleNotificationType = async (typeKey) => {
   const currentValue = preferences.value[typeKey]
   const newValue = !currentValue
   
-  // Show confirmation popup before toggling
-  const actionText = newValue ? 'enable' : 'disable'
-  const message = `Are you sure you want to ${actionText} ${notificationType?.label || 'this notification'}?`
-  
-  showConfirm(
-    message,
-    'Confirm Notification Setting',
-    async () => {
-      // User confirmed - proceed with toggle
-      try {
-        preferences.value[typeKey] = newValue
-        const result = await notificationsService.updateNotificationPreferences({
-          [typeKey]: preferences.value[typeKey]
-        })
-        
-        if (result.success) {
-          // Show success popup
-          const successMessage = newValue 
-            ? `${notificationType?.label || 'Notification'} enabled`
-            : `${notificationType?.label || 'Notification'} disabled`
-          showSuccess(successMessage, 'Settings Updated')
-        } else {
-          // Revert on error
-          preferences.value[typeKey] = currentValue
-          showError('Failed to update notification preference', 'Error')
-        }
-      } catch (error) {
-        console.error('👤 Profile: Error toggling notification type:', error)
-        // Revert on error
-        preferences.value[typeKey] = currentValue
-        showError('Failed to update notification preference', 'Error')
-      }
-    },
-    () => {
-      // User cancelled - do nothing (toggle stays as it was)
-      console.log('👤 Profile: User cancelled notification toggle')
+  try {
+    preferences.value[typeKey] = newValue
+    const result = await notificationsService.updateNotificationPreferences({
+      [typeKey]: preferences.value[typeKey]
+    })
+    
+    if (result.success) {
+      // Show success popup
+      const successMessage = newValue 
+        ? `${notificationType?.label || 'Notification'} enabled`
+        : `${notificationType?.label || 'Notification'} disabled`
+      showSuccess(successMessage, 'Settings Updated')
+    } else {
+      // Revert on error
+      preferences.value[typeKey] = currentValue
+      showError('Failed to update notification preference', 'Error')
     }
-  )
+  } catch (error) {
+    console.error('👤 Profile: Error toggling notification type:', error)
+    // Revert on error
+    preferences.value[typeKey] = currentValue
+    showError('Failed to update notification preference', 'Error')
+  }
 }
 
 /**
@@ -658,10 +670,19 @@ const loadStats = async () => {
   }
 }
 
-// Handle click outside to close theme dropdown
+// Handle click outside to close theme dropdown (matching Layout.vue)
 const handleClickOutside = (event) => {
-  const themeButton = event.target.closest('.relative')
-  if (themeButton && !themeButton.contains(event.target)) {
+  if (!showThemeDropdown.value) return
+  
+  const dropdown = document.querySelector('[data-theme-dropdown]')
+  const button = event.target.closest('button[title*="Theme"]') || 
+                 event.target.closest('.relative[style*="overflow: visible"]')
+  
+  // Check if click is outside both button and dropdown
+  const isClickOutsideButton = !button?.contains(event.target)
+  const isClickOutsideDropdown = !dropdown?.contains(event.target)
+  
+  if (isClickOutsideButton && isClickOutsideDropdown) {
     showThemeDropdown.value = false
   }
 }

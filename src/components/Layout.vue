@@ -236,13 +236,13 @@
           ]"
           :title="isSidebarCollapsed ? 'Logout' : undefined"
         >
-          <LogOut v-if="!loading" class="w-5 h-5 flex-shrink-0" />
-          <div v-else class="w-5 h-5 spinner-modern flex-shrink-0" />
+          <LogOut class="w-5 h-5 flex-shrink-0" />
           <span 
             class="font-medium whitespace-nowrap transition-all duration-300 ease-in-out"
             :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
           >
-            {{ loading ? 'Logging out...' : 'Logout' }}
+            <span v-if="loading" class="ellipsis-animated">Logging out</span>
+            <span v-else>Logout</span>
           </span>
         </button>
       </div>
@@ -255,14 +255,14 @@
       style="padding-top: calc(0.75rem + env(safe-area-inset-top))"
     >
       <div class="flex items-center justify-center">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
-            <Shirt class="w-4 h-4 text-white" />
-          </div>
+        <button
+          @click="scrollToTop"
+          class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <h1 class="text-xl font-bold tracking-tight text-black">
             <StyleSnapBrand size="xl" />
           </h1>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -275,14 +275,14 @@
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-lg max-w-md mx-auto w-full">
+      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-200/30 dark:border-zinc-700/30 shadow-lg max-w-md mx-auto w-full">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"
           :to="item.path"
           class="relative flex-1"
         >
-          <div class="flex flex-col items-center justify-center gap-1 py-2">
+          <div class="flex flex-col items-center justify-center py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               isActiveRoute(item.path)
                 ? 'bg-black dark:bg-white scale-110 -translate-y-0.5'
@@ -298,11 +298,7 @@
               />
             </div>
             
-            <span :class="`text-xs font-medium transition-all duration-200 ${
-              isActiveRoute(item.path)
-                ? 'text-gray-900 dark:text-black opacity-100 scale-100'
-                : 'text-gray-900 dark:text-white opacity-60 dark:opacity-80 scale-90'
-            }`">
+            <span class="hidden text-xs font-medium transition-all duration-200">
               {{ item.name }}
             </span>
 
@@ -358,7 +354,6 @@ import {
   Home, 
   Shirt, 
   Users, 
-  Palette, 
   User as UserIcon,
   LogOut,
   Sun,
@@ -366,7 +361,8 @@ import {
   Monitor,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Layers
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
@@ -463,6 +459,11 @@ const getThemeLabel = (themeValue) => {
   return option ? option.label : 'Theme'
 }
 
+// Scroll to top of page
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // Select theme
 const selectTheme = async (themeValue) => {
   // Close dropdown immediately for better UX
@@ -527,7 +528,7 @@ const homeDataCache = ref({
 const navigationItems = [
   { name: "Home", path: "/home", icon: Home },
   { name: "Closet", path: "/closet", icon: Shirt },
-  { name: "Outfits", path: "/outfits", icon: Palette },
+  { name: "Outfits", path: "/outfits", icon: Layers },
   { name: "Friends", path: "/friends", icon: Users },
   { name: "Profile", path: "/profile", icon: UserIcon },
 ]

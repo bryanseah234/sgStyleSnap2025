@@ -2,6 +2,7 @@
   <textarea
     :value="modelValue"
     @input="handleInput"
+    @blur="handleBlur"
     :placeholder="placeholder"
     :rows="rows"
     :maxlength="maxLength"
@@ -40,9 +41,15 @@ const emit = defineEmits(['update:modelValue'])
 const { theme } = useTheme()
 const { sanitizeText } = useSanitize()
 
-// Handle input with sanitization
+// Handle input without sanitization (allow spaces and typing freely)
 const handleInput = (event) => {
+  emit('update:modelValue', event.target.value)
+}
+
+// Handle blur with sanitization (clean up when user leaves field)
+const handleBlur = (event) => {
   const sanitized = sanitizeText(event.target.value)
   emit('update:modelValue', sanitized)
+  event.target.value = sanitized
 }
 </script>

@@ -23,7 +23,7 @@
     <!-- Canvas Background -->
     <div class="absolute inset-0 bg-gradient-to-br from-stone-50 to-stone-100 dark:from-zinc-800 dark:to-zinc-900">
       <!-- Grid Pattern -->
-      <div v-if="showGrid" class="absolute inset-0 opacity-20" :class="'bg-stone-300 dark:bg-zinc-700'" style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 20px 20px;"></div>
+      <div v-if="showGrid" class="absolute inset-0 opacity-20 pointer-events-none" style="z-index: 1; background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 20px 20px;" :class="'bg-stone-300 dark:bg-zinc-700'"></div>
     </div>
 
     <!-- Outfit Items -->
@@ -36,7 +36,7 @@
       :style="{
         left: `${item.x}px`,
         top: `${item.y}px`,
-        zIndex: item.z_index || 0,
+        zIndex: Math.max(2, item.z_index || 0),
         transform: isDragging && dragStart.itemId === item.id ? `translate(${dragOffset.x}px, ${dragOffset.y}px)` : 'none'
       }"
       @mousedown="startDrag(item.id, $event)"
@@ -104,7 +104,7 @@
     <!-- Empty State -->
     <div v-if="items.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
       <div :class="`w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-stone-100 dark:bg-zinc-800`">
-        <Palette :class="`w-8 h-8 text-stone-500 dark:text-zinc-400`" />
+        <Layers :class="`w-8 h-8 text-stone-500 dark:text-zinc-400`" />
       </div>
       <h3 :class="`text-lg font-semibold mb-2 text-black dark:text-white`">
         Start Building Your Outfit
@@ -133,7 +133,7 @@
 
 import { ref, onMounted, onUnmounted, nextTick, defineExpose } from 'vue'
 import { useTheme } from '@/composables/useTheme'
-import { Trash2, ArrowUp, ArrowDown, Shirt, Palette, Sparkles } from 'lucide-vue-next'
+import { Trash2, ArrowUp, ArrowDown, Shirt, Layers, Sparkles } from 'lucide-vue-next'
 
 // Theme composable for styling
 const { theme } = useTheme()
@@ -244,9 +244,28 @@ const bringForward = (itemId) => {
   const item = props.items.find(i => i.id === itemId)
   if (!item) return
   
-  const maxZIndex = Math.max(...props.items.map(i => i.z_index || 0), 0)
-  if ((item.z_index || 0) < maxZIndex) {
-    emit('updateItem', itemId, { z_index: (item.z_index || 0) + 1 })
+  // Normalize all z_index values to ensure minimum of 2 (above grid)
+  const normalizedItems = props.items.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  const maxZIndex = Math.max(...normalizedItems.map(i => i.normalizedZ), 2)
+  const currentZIndex = Math.max(2, item.z_index || 2)
+  
+  if (currentZIndex < maxZIndex) {
+    // Find items above current
+    const itemsAbove = normalizedItems.filter(i => i.id !== itemId && i.normalizedZ > currentZIndex)
+    if (itemsAbove.length > 0) {
+      // Swap with item immediately above
+      const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
+      const swapItem = props.items.find(i => i.id === itemsAbove.find(ai => ai.normalizedZ === minAboveZIndex)?.id)
+      if (swapItem) {
+        // Swap z-indexes
+        const tempZ = Math.max(2, swapItem.z_index || 2)
+        emit('updateItem', itemId, { z_index: tempZ })
+        emit('updateItem', swapItem.id, { z_index: currentZIndex })
+        return
+      }
+    }
+    // No swap, move to front
+    emit('updateItem', itemId, { z_index: maxZIndex + 1 })
   }
 }
 
@@ -254,8 +273,25 @@ const sendBackward = (itemId) => {
   const item = props.items.find(i => i.id === itemId)
   if (!item) return
   
-  if ((item.z_index || 0) > 0) {
-    emit('updateItem', itemId, { z_index: (item.z_index || 0) - 1 })
+  const currentZIndex = Math.max(2, item.z_index || 2)
+  
+  // Can't go below 2 (must stay above grid)
+  if (currentZIndex > 2) {
+    // Normalize all z_index values
+    const normalizedItems = props.items.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+    const newZIndex = Math.max(2, currentZIndex - 1)
+    
+    // Check for conflicts
+    const conflictingItem = props.items.find(i => i.id !== itemId && Math.max(2, i.z_index || 2) === newZIndex)
+    if (conflictingItem) {
+      // Swap z-indexes
+      const conflictZ = Math.max(2, conflictingItem.z_index || 2)
+      emit('updateItem', itemId, { z_index: newZIndex })
+      emit('updateItem', conflictingItem.id, { z_index: conflictZ })
+    } else {
+      // No conflict, just decrease (but ensure minimum of 2)
+      emit('updateItem', itemId, { z_index: newZIndex })
+    }
   }
 }
 

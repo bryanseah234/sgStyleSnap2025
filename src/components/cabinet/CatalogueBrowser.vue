@@ -13,6 +13,29 @@
         </button>
       </div>
       
+      <!-- Search Bar -->
+      <div class="mb-4">
+        <div class="relative search-input-group">
+          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
+          <input
+            ref="searchInputRef"
+            v-model="searchTerm"
+            type="text"
+            placeholder="Search catalog (name, brand, category, color)..."
+            class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
+            @input="handleSearch"
+            @focus="handleSearchFocus"
+            @blur="handleSearchBlur"
+          />
+          <!-- Raycast-style keyboard hint -->
+          <div class="keyboard-hint hidden md:block">
+            <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+            <span>+</span>
+            <span class="keyboard-hint-key">K</span>
+          </div>
+        </div>
+      </div>
+      
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Category Filter -->
         <div>
@@ -73,19 +96,19 @@
       </p>
     </div>
 
-    <div v-else-if="catalogItems.length === 0" :class="`text-center py-16 rounded-2xl border bg-white border-stone-200 text-stone-600
+    <div v-else-if="filteredCatalogItems.length === 0" :class="`text-center py-16 rounded-2xl border bg-white border-stone-200 text-stone-600
     dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400`">
       <Shirt :class="`w-16 h-16 mx-auto mb-4 text-stone-400 dark:text-zinc-600`" />
       <p class="text-lg">
-        {{ hasActiveFilters
-          ? 'No items match your filters. Try adjusting or clearing them.'
+        {{ searchTerm || hasActiveFilters
+          ? 'No items match your search or filters. Try adjusting or clearing them.'
           : 'No catalogue items available yet.' }}
       </p>
     </div>
 
     <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       <div
-        v-for="(item, index) in catalogItems"
+        v-for="(item, index) in filteredCatalogItems"
         :key="item.id"
         :class="`stagger-item rounded-xl border overflow-hidden transition-all bg-white border-stone-200 hover:border-stone-300
         dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700`"
@@ -127,8 +150,8 @@
             ]"
           >
             <template v-if="addingItemId === item.id">
-              <div class="w-4 h-4 spinner-modern" />
-              Adding...
+              <Plus class="w-4 h-4" />
+              <span class="ellipsis-animated">Adding</span>
             </template>
             <template v-else-if="addedItems.has(item.id)">
               <Check class="w-4 h-4" />
@@ -144,21 +167,25 @@
     </div>
 
     <!-- Results Count -->
-    <div v-if="!loading && catalogItems.length > 0" :class="`mt-8 text-center text-sm text-stone-500 dark:text-zinc-500`">
-      Showing {{ catalogItems.length }} item{{ catalogItems.length !== 1 ? 's' : '' }}
+    <div v-if="!loading && filteredCatalogItems.length > 0" :class="`mt-8 text-center text-sm text-stone-500 dark:text-zinc-500`">
+      Showing {{ filteredCatalogItems.length }} {{ filteredCatalogItems.length !== catalogItems.length ? `of ${catalogItems.length} ` : '' }}item{{ filteredCatalogItems.length !== 1 ? 's' : '' }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
+import { useSanitize } from '@/composables/useSanitize'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { catalogService } from '@/services/catalogService'
-import { Plus, Check, X, Shirt } from 'lucide-vue-next'
+import { Plus, Check, X, Shirt, Search } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const { showError, showSuccess } = usePopup()
+const { sanitizeSearch } = useSanitize()
+const { registerSearchInput } = useKeyboardShortcuts()
 
 const emit = defineEmits(['item-added'])
 
@@ -169,6 +196,11 @@ const brands = ref([])
 const loading = ref(true)
 const addedItems = ref(new Set())
 const addingItemId = ref(null)
+const searchTerm = ref('')
+const searchInputRef = ref(null)
+
+// Detect Mac for keyboard shortcut display
+const isMac = ref(false)
 
 const filters = ref({
   category: null,
@@ -177,7 +209,33 @@ const filters = ref({
 })
 
 const hasActiveFilters = computed(() => {
-  return Object.values(filters.value).some(v => v !== null)
+  return Object.values(filters.value).some(v => v !== null) || (searchTerm.value && searchTerm.value.trim().length > 0)
+})
+
+// Client-side filtering based on search term
+const filteredCatalogItems = computed(() => {
+  if (!searchTerm.value || !searchTerm.value.trim()) {
+    return catalogItems.value
+  }
+
+  const query = searchTerm.value.toLowerCase().trim()
+  
+  return catalogItems.value.filter(item => {
+    // Search in name
+    const matchName = item.name?.toLowerCase().includes(query)
+    
+    // Search in brand
+    const matchBrand = item.brand?.toLowerCase().includes(query)
+    
+    // Search in category
+    const matchCategory = item.category?.toLowerCase().includes(query)
+    
+    // Search in color
+    const matchColor = item.primary_color?.toLowerCase().includes(query) || 
+                       item.color?.toLowerCase().includes(query)
+    
+    return matchName || matchBrand || matchCategory || matchColor
+  })
 })
 
 const loadCatalogItems = async () => {
@@ -262,6 +320,20 @@ const clearFilters = () => {
     color: null,
     brand: null,
   }
+  searchTerm.value = ''
+}
+
+const handleSearch = () => {
+  // Sanitize search input in real-time
+  searchTerm.value = sanitizeSearch(searchTerm.value)
+}
+
+const handleSearchFocus = (event) => {
+  event.target.classList.add('search-input-focus')
+}
+
+const handleSearchBlur = (event) => {
+  event.target.classList.remove('search-input-focus')
 }
 
 // Watch for filter changes and reload items
@@ -270,10 +342,19 @@ watch(filters, () => {
 }, { deep: true })
 
 onMounted(async () => {
+  // Detect Mac OS
+  isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  
   await Promise.all([
     loadCatalogItems(),
     loadFilterOptions(),
   ])
+  
+  // Register search input for keyboard shortcuts after DOM is ready
+  await nextTick()
+  if (searchInputRef.value) {
+    registerSearchInput(searchInputRef.value)
+  }
 })
 </script>
 

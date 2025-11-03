@@ -2,15 +2,15 @@
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <!-- Header -->
     <div class="max-w-6xl mx-auto mb-8">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-4xl font-bold text-foreground">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="flex-1 min-w-0 w-full md:w-auto">
+          <h1 class="text-4xl font-bold text-foreground break-words text-left">
             Your Outfits
           </h1>
         </div>
         
         <!-- Add Outfit Dropdown Button -->
-        <div class="relative">
+        <div class="relative flex-shrink-0">
           <button
             @click="showAddMenu = !showAddMenu"
             :class="`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
@@ -92,7 +92,9 @@
           ref="searchInputRef"
           v-model="searchTerm"
           type="text"
-          placeholder="Search your outfits (name, tags, occasion, style, items)..."
+          :placeholder="activeFilter === 'suggestions' 
+            ? 'Search suggestions (outfit name, friend name, username)...'
+            : 'Search your outfits (name, tags, occasion, style, items)...'"
           class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
           @input="handleSearch"
           @focus="handleSearchFocus"
@@ -118,22 +120,22 @@
       </div>
 
       <!-- Empty state -->
-      <div v-else-if="suggestions.length === 0" class="text-center py-12">
+      <div v-else-if="filteredSuggestions.length === 0" class="text-center py-12">
         <div :class="`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800`">
           <Sparkles :class="`w-12 h-12 text-stone-500 dark:text-zinc-400`" />
         </div>
         <h3 :class="`text-xl font-semibold mb-2 text-black dark:text-white`">
-          No outfit suggestions yet
+          {{ searchTerm ? 'No suggestions found matching your search.' : 'No outfit suggestions yet' }}
         </h3>
         <p :class="`text-lg mb-4 text-stone-600 dark:text-zinc-400`">
-          When friends suggest outfits using your items, they'll appear here.
+          {{ searchTerm ? 'Try adjusting your search terms.' : 'When friends suggest outfits using your items, they\'ll appear here.' }}
         </p>
       </div>
 
       <!-- Suggestions Grid -->
       <div v-else class="space-y-6">
         <div
-          v-for="suggestion in suggestions"
+          v-for="suggestion in filteredSuggestions"
           :key="suggestion.id"
         >
           <FriendSuggestionCard
@@ -273,22 +275,25 @@
                 <span class="text-stone-600 dark:text-zinc-400 whitespace-nowrap">
                   Created {{ formatDate(selectedOutfit.created_at) }}
                 </span>
-                <span v-if="getCreatedLocation(selectedOutfit)" class="text-stone-600 dark:text-zinc-400 whitespace-nowrap truncate md:max-w-[50%]">
-                  {{ getCreatedLocation(selectedOutfit) }}
+                <span v-if="createdLocation" class="text-stone-600 dark:text-zinc-400 whitespace-nowrap truncate md:max-w-[50%]">
+                  {{ createdLocation }}
                 </span>
               </div>
             </div>
             
             <!-- Close button -->
-            <button
-              @click="closeOutfitDetail"
-              class="icon-rotate-hover p-2 rounded-lg transition-all hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-rotate-hover">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- ESC Key Hint (Desktop only) -->
+              <div v-if="isDesktop" class="keyboard-hint-modal">
+                <span class="keyboard-hint-key">ESC</span>
+              </div>
+              <button
+                @click="closeOutfitDetail"
+                class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
+              >
+                <X class="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -401,7 +406,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { OutfitsService } from '@/services/outfitsService'
 import { friendSuggestionsService } from '@/services/friendSuggestionsService'
-import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart, Search } from 'lucide-vue-next'
+import { Plus, Shirt, User, Users, Sparkles, ChevronDown, Pencil, Trash2, Heart, Search, X } from 'lucide-vue-next'
 import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
 import FriendSuggestionCard from '@/components/outfits/FriendSuggestionCard.vue'
 
@@ -428,11 +433,18 @@ const activeFilter = ref('all')
 const showFavoritesOnly = ref(false) // Independent favorites toggle, same as Closet page
 const showOutfitDetail = ref(false)
 const selectedOutfit = ref(null)
+const createdLocation = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
+
+// Desktop detection for keyboard hints
+const isDesktop = ref(false)
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
 
 // Initialize activeFilter from URL parameter or route
 if (route.query.filter === 'suggestions' || route.meta.subRoute === 'suggestions') {
@@ -492,6 +504,28 @@ const filteredOutfits = computed(() => {
   }
 
   return filtered
+})
+
+// Filter suggestions based on search term
+const filteredSuggestions = computed(() => {
+  if (!searchTerm.value) {
+    return suggestions.value
+  }
+
+  const query = searchTerm.value.toLowerCase()
+  
+  return suggestions.value.filter(suggestion => {
+    // Search by outfit name (message field contains the outfit name)
+    const matchOutfitName = suggestion.message?.toLowerCase().includes(query)
+    
+    // Search by friend name
+    const matchFriendName = suggestion.suggester?.name?.toLowerCase().includes(query)
+    
+    // Search by username
+    const matchUsername = suggestion.suggester?.username?.toLowerCase().includes(query)
+    
+    return matchOutfitName || matchFriendName || matchUsername
+  })
 })
 
 const loadOutfits = async () => {
@@ -623,22 +657,69 @@ const formatDate = (dateString) => {
 }
 
 // Get where the outfit was created
-const getCreatedLocation = (outfit) => {
-  if (!outfit) return null
+const getCreatedLocation = async (outfit) => {
+  if (!outfit) {
+    createdLocation.value = null
+    return
+  }
+  
+  // Check if this outfit was created from a friend suggestion
+  if (outfit.description && outfit.description.includes('Created from friend suggestion')) {
+    // Try to get the friend's username who created it
+    try {
+      const { supabase } = await import('@/lib/supabase')
+      
+      // Find the friend_outfit_suggestion that created this outfit
+      const { data: suggestion, error } = await supabase
+        .from('friend_outfit_suggestions')
+        .select(`
+          suggester_id,
+          suggester:users!friend_outfit_suggestions_suggester_id_fkey (
+            username,
+            name
+          )
+        `)
+        .eq('generated_outfit_id', outfit.id)
+        .single()
+      
+      if (!error && suggestion && suggestion.suggester) {
+        const friendName = suggestion.suggester.name || suggestion.suggester.username
+        createdLocation.value = `Created by ${friendName}`
+        return
+      }
+    } catch (error) {
+      console.error('Outfits: Error fetching friend suggester info:', error)
+    }
+    
+    // Fallback if we can't find the suggester
+    createdLocation.value = 'Created by friend'
+    return
+  }
   
   // Check if description contains location info
   if (outfit.description && outfit.description.includes('Created in')) {
     // Extract location from description (e.g., "Created in Outfit Creator")
     const match = outfit.description.match(/Created in (.+)/i)
     if (match && match[1]) {
-      return `Created in ${match[1]}`
+      createdLocation.value = `Created in ${match[1]}`
+      return
     }
-    return outfit.description
+    createdLocation.value = outfit.description
+    return
   }
   
   // Default fallback - if no description, assume it was created in Outfits page
-  return 'Created in Outfits'
+  createdLocation.value = 'Created in Outfits'
 }
+
+// Watch for selected outfit changes and update created location
+watch(selectedOutfit, (newOutfit) => {
+  if (newOutfit) {
+    getCreatedLocation(newOutfit)
+  } else {
+    createdLocation.value = null
+  }
+}, { immediate: true })
 
 const handleSearch = () => {
   // Sanitize search input in real-time
@@ -707,6 +788,10 @@ const handleEscKey = (event) => {
 }
 
 onMounted(async () => {
+  // Initialize desktop detection
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  
   // Add event listener for Esc key
   window.addEventListener('keydown', handleEscKey)
   
@@ -768,7 +853,8 @@ watch(activeFilter, (newFilter) => {
 })
 
 onUnmounted(() => {
-  // Remove event listener for Esc key
+  // Remove event listeners
+  window.removeEventListener('resize', handleResize)
   window.removeEventListener('keydown', handleEscKey)
 })
 </script>

@@ -19,6 +19,16 @@
     >
       {{ displayedTitle }}<span v-if="showTypewriterCursor" class="typewriter-cursor-splash">|</span>
     </h1>
+    
+    <!-- Skip Animation Button -->
+    <button
+      v-if="!isTransitioning && !animationComplete"
+      @click="skipAnimation"
+      class="skip-animation-btn"
+      title="Skip animation"
+    >
+      <ArrowDown class="w-4 h-4" />
+    </button>
   </div>
 
   <div 
@@ -27,7 +37,7 @@
   >
     <!-- Navigation - Floating Pill Header (Always Visible) -->
     <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 landing-nav-pill">
-      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/95 border border-gray-200/50 shadow-lg">
+      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/70 backdrop-blur-md border border-gray-200/50 shadow-lg">
         <!-- Logo and Brand -->
         <div 
           @click="scrollToTop"
@@ -76,7 +86,7 @@
       </div>
       
       <!-- Mobile Menu -->
-      <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/95 backdrop-blur-md border border-gray-200/50 shadow-lg animate-slideInDown">
+      <div v-if="isMenuOpen" class="md:hidden mt-2 rounded-xl bg-gray-100/70 backdrop-blur-md border border-gray-200/50 shadow-lg animate-slideInDown">
         <div class="py-4 px-4 flex flex-col gap-3">
           <a href="#demo" @click="isMenuOpen = false" class="text-sm font-medium text-gray-900 hover:text-gray-600 transition py-2">Demo</a>
           <button
@@ -129,7 +139,7 @@
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="landing-section py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
+    <section id="features" class="landing-section py-[10vh] bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute top-10 left-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" />
         <div class="absolute bottom-10 right-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s" />
@@ -148,6 +158,9 @@
           class="carousel-3d-wrapper"
           @mouseenter="pauseCarousel"
           @mouseleave="resumeCarousel"
+          @wheel.prevent="handleCarouselWheel"
+          @touchmove="handleCarouselTouchMove"
+          @touchstart="handleCarouselTouchStart"
         >
           <div 
             class="carousel-3d-container"
@@ -163,9 +176,13 @@
               }"
               :style="{
                 transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
-                '--item-index': idx
+                '--item-index': idx,
+                cursor: isCardFrontFacing(idx) ? 'pointer' : 'default'
               }"
-              @click.stop="handleCardClick(idx, feature.id)"
+              @click="handleCardClick(idx, feature.id, $event)"
+              @mousedown.stop="handleCardClick(idx, feature.id, $event)"
+              @touchstart.stop="handleCardTouchStart(idx, feature.id, $event)"
+              @touchend.stop="handleCardTouchEnd(idx, feature.id, $event)"
             >
               <div 
                 class="carousel-card-wrapper"
@@ -179,6 +196,15 @@
                       class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 flex-shrink-0"
                     />
                     <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
+                  </div>
+                  <!-- Tap indicator - always show on front-facing cards when not flipped -->
+                  <div 
+                    v-show="!feature.flipped && isCardFrontFacing(idx)"
+                    class="flex flex-col items-center justify-center pt-2 pb-1 transition-opacity duration-300"
+                    style="opacity: 1;"
+                  >
+                    <ChevronUp class="w-5 h-5 text-gray-600 animate-bounce" />
+                    <span class="text-xs text-gray-500 mt-0.5">Click to learn more</span>
                   </div>
                 </div>
                 
@@ -198,12 +224,12 @@
     </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="landing-section py-6 sm:py-12 md:py-20 relative overflow-hidden bg-white">
+    <section id="demo" class="landing-section py-[10vh] relative overflow-hidden bg-white">
       <div class="absolute inset-0 opacity-5">
         <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
       </div>
 
-      <div class="container relative z-10">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center space-y-2 sm:space-y-4 mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="demo-header">
           <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Try the Outfit Creator</h2>
           <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
@@ -211,7 +237,7 @@
           </p>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-6">
           <!-- Left Sidebar - Catalogue Items -->
           <div class="lg:col-span-2">
             <div class="rounded-xl p-4 sm:p-6 bg-white border border-gray-200">
@@ -317,6 +343,7 @@
                 <div
                   v-if="showGrid"
                   class="absolute inset-0 opacity-20 pointer-events-none"
+                  style="z-index: 1;"
                   :style="{
                     backgroundImage: `
                       linear-gradient(#000000 1px, transparent 1px),
@@ -336,7 +363,7 @@
                     position: 'absolute',
                     left: `${item.x}px`,
                     top: `${item.y}px`,
-                    zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : (item.z_index || 0),
+                    zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : Math.max(2, (item.z_index || 0)),
                     transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                     transformOrigin: 'center center',
                     transition: draggedItem === item.id ? 'none' : 'all 0.2s'
@@ -497,57 +524,52 @@
     </section>
 
     <!-- Why Choose Section -->
-    <section id="why" class="landing-section py-12 sm:py-20 md:py-32 bg-white relative overflow-hidden">
+    <section id="why" class="landing-section py-[5vh] bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
         <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s" />
           </div>
 
-      <div class="container grid md:grid-cols-2 gap-6 sm:gap-12 items-center relative z-10">
-        <div class="relative animate-parallaxFloat hidden sm:block">
-          <div class="aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-2xl">
-            <img 
-              src="/images/wardrobe-organization.jpg" 
-              alt="Wardrobe organisation showcase"
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <div class="absolute -bottom-6 -left-6 w-32 h-32 bg-gray-900/10 rounded-full blur-3xl" />
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <!-- Centered Title -->
+        <div class="text-center mb-8 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="why-content">
+          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
         </div>
 
-        <div class="relative animate-slideInRight sm:hidden">
-          <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-lg">
-            <img 
-              src="/images/wardrobe-organization.jpg" 
-              alt="Wardrobe organisation showcase"
-              class="w-full h-full object-cover"
-            />
+        <!-- Avatar and Cards Layout -->
+        <div class="flex flex-col md:flex-row gap-6 sm:gap-8 items-stretch">
+          <!-- 3D Avatar on Left -->
+          <div class="w-full md:w-1/2 flex items-center justify-center">
+            <div class="w-full h-full min-h-[400px] md:min-h-0">
+              <SingleAvatar3D :avatar-url="selectedAvatarUrl" />
+            </div>
           </div>
-        </div>
 
-        <div class="space-y-6 sm:space-y-8 scroll-hidden animate-slideInFromLeft" id="why-content">
-          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Why Choose StyleSnap?</h2>
-
-          <div
-            v-for="(item, idx) in whyChooseItems"
-            :key="idx"
-            class="flex gap-3 sm:gap-4 animate-staggeredFadeIn group cursor-pointer"
-            :style="{ animationDelay: `${idx * 0.1}s` }"
-          >
-            <component :is="item.icon" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 flex-shrink-0 mt-1 group-hover:scale-125 transition duration-300" />
-            <div>
-              <h3 class="font-bold text-sm sm:text-base md:text-lg mb-1 group-hover:text-gray-600 transition">{{ item.title }}</h3>
-              <p class="text-xs sm:text-sm md:text-base text-gray-600">{{ item.description }}</p>
-                </div>
+          <!-- Three Cards Stacked on Right -->
+          <div class="w-full md:w-1/2 flex flex-col gap-6 sm:gap-8">
+            <div
+              v-for="(item, idx) in whyChooseItems"
+              :key="idx"
+              class="flex flex-col gap-4 p-6 sm:p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 animate-staggeredFadeIn group cursor-pointer hover:-translate-y-2 flex-grow"
+              :style="{ animationDelay: `${idx * 0.1}s` }"
+            >
+              <div class="flex-shrink-0">
+                <component :is="item.icon" class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 group-hover:scale-125 transition duration-300" />
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-base sm:text-lg md:text-xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
+                <p class="text-sm sm:text-base text-gray-600">{{ item.description }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
     
-    <!-- CTA Section -->
+    <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="landing-section cta-card-section py-16 sm:py-20 md:py-24 bg-white text-gray-900 relative"
+      class="cta-card-section min-h-screen flex items-center justify-center bg-white text-gray-900 relative pt-20 sm:pt-24 md:pt-32"
     >
-      <div class="container text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
         <p class="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-gray-800/95">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
@@ -575,9 +597,9 @@
           '-translate-y-full': !showFooter 
         }"
       >
-        <div class="container py-12 sm:py-16 relative z-10">
+        <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
           <!-- Top Section: Branding and Links -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-12">
             <!-- Left: Logo and Tagline -->
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-3">
@@ -586,21 +608,44 @@
                 </div>
                 <StyleSnapBrand class="font-bold text-xl text-white" size="xl" />
               </div>
-              <p class="text-sm text-gray-400">
+              <p class="text-sm text-gray-400 max-w-xs">
                 Transform your fashion game with StyleSnap.
               </p>
             </div>
             
-            <!-- Right: Navigation Links Column -->
+            <!-- Right: Navigation Links in 2-3 Columns -->
             <div class="flex justify-start md:justify-end">
-              <ul class="space-y-3">
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Contact</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Help center</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Merch</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">X (Twitter)</a></li>
-                <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">LinkedIn</a></li>
-              </ul>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 w-full md:w-auto">
+                <!-- Column 1: Explore -->
+                <div>
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Explore</h3>
+                  <ul class="space-y-3">
+                    <li><a href="#features" class="text-sm text-white hover:text-gray-300 transition">Features</a></li>
+                    <li><a href="#demo" class="text-sm text-white hover:text-gray-300 transition">Demo</a></li>
+                    <li><a href="#why" class="text-sm text-white hover:text-gray-300 transition">Why StyleSnap</a></li>
+                  </ul>
+                </div>
+                
+                <!-- Column 2: Contact -->
+                <div>
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Contact</h3>
+                  <ul class="space-y-3">
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Help Center</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Support</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Contact Us</a></li>
+                  </ul>
+                </div>
+                
+                <!-- Column 3: Careers -->
+                <div>
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Company</h3>
+                  <ul class="space-y-3">
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Merch</a></li>
+                    <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Social</a></li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -636,7 +681,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth-store'
 import { useRouter } from 'vue-router'
 import { CatalogService } from '@/services/catalogService'
@@ -656,11 +701,14 @@ import {
   Redo,
   Grid3X3,
   Save,
-  Plus
+  Plus,
+  ChevronUp,
+  ArrowDown
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
+import SingleAvatar3D from '@/components/SingleAvatar3D.vue'
 
 // Import landing page animations
 import '@/assets/css/landing-page-animations.css'
@@ -811,6 +859,24 @@ const carouselInterval = ref(null)
 const isCarouselPaused = ref(false)
 const flipTimers = ref({}) // Track timers for auto-flip back
 
+// Avatar URLs for random selection
+const avatarUrls = [
+  'https://models.readyplayer.me/690030c2657a118475704718.glb',
+  'https://models.readyplayer.me/690030eb16afa77eb4fbeb91.glb',
+  'https://models.readyplayer.me/6900316350f0151f18f12166.glb',
+  'https://models.readyplayer.me/690031b503a04907a7367d03.glb',
+  'https://models.readyplayer.me/6900321e03a04907a73686be.glb',
+  'https://models.readyplayer.me/6900328321aeaea077d3f32e.glb',
+  'https://models.readyplayer.me/690032b5cc76da0daf9b671c.glb',
+  'https://models.readyplayer.me/690032ff08032bae29097e9b.glb',
+  'https://models.readyplayer.me/6900333003a04907a7369c05.glb',
+  'https://models.readyplayer.me/69003054afd9f514ac528c56.glb',
+  'https://models.readyplayer.me/690026ea4e683ec207c58310.glb'
+]
+
+// Randomly select one avatar on page load
+const selectedAvatarUrl = ref('')
+
 // Why choose items data
 const whyChooseItems = [
   {
@@ -841,26 +907,123 @@ const handleSignUp = () => {
   router.push({ path: '/login', query: { mode: 'signup' } })
 }
 
-// Handle card click - improved to handle edge cases
-const handleCardClick = (index, featureId) => {
-  // Check if card is reasonably front-facing (within 45 degrees)
-  // Also allow clicks during transition for better UX
+// Touch tracking for cards
+const cardTouchData = ref({ startX: 0, startY: 0, startTime: 0, cardIndex: null })
+
+// Handle card touch start
+const handleCardTouchStart = (index, featureId, event) => {
   if (!isCardFrontFacing(index)) {
-    // If not perfectly front-facing, check if it's close enough
-    const totalCards = features.value.length
-    const cardAngle = index * (360 / totalCards)
-    let currentRotation = carouselRotation.value % 360
-    if (currentRotation < 0) currentRotation += 360
-    let effectiveAngle = (cardAngle - currentRotation) % 360
-    if (effectiveAngle < 0) effectiveAngle += 360
-    
-    // Allow clicks if within 60 degrees (even more lenient for better UX)
-    const withinClickRange = effectiveAngle <= 60 || effectiveAngle >= 300
-    if (!withinClickRange) return
+    return
   }
   
-  // Proceed with toggle
+  // Track touch start for tap detection
+  if (event.touches && event.touches.length > 0) {
+    cardTouchData.value = {
+      startX: event.touches[0].clientX,
+      startY: event.touches[0].clientY,
+      startTime: Date.now(),
+      cardIndex: index,
+      featureId: featureId
+    }
+  }
+}
+
+// Handle card touch end (mobile tap)
+const handleCardTouchEnd = (index, featureId, event) => {
+  // Only process if this is the same card we started touching
+  if (cardTouchData.value.cardIndex !== index || !isCardFrontFacing(index)) {
+    return
+  }
+  
+  // Check if this was a tap (not a swipe)
+  let moved = false
+  if (event.changedTouches && event.changedTouches.length > 0) {
+    const deltaX = Math.abs(event.changedTouches[0].clientX - cardTouchData.value.startX)
+    const deltaY = Math.abs(event.changedTouches[0].clientY - cardTouchData.value.startY)
+    const deltaTime = Date.now() - cardTouchData.value.startTime
+    
+    // If moved more than 10px or took longer than 300ms, it's a swipe/drag, not a tap
+    if (deltaX > 10 || deltaY > 10 || deltaTime > 300) {
+      moved = true
+    }
+  }
+  
+  if (!moved) {
+    event.preventDefault()
+    event.stopPropagation()
+    toggleFeatureExpand(featureId)
+  }
+  
+  // Reset touch data
+  cardTouchData.value = { startX: 0, startY: 0, startTime: 0, cardIndex: null }
+}
+
+// Handle card click - only allow clicks on front-facing cards
+const handleCardClick = (index, featureId, event) => {
+  // Prevent event propagation
+  if (event) {
+    event.stopPropagation()
+    // Don't prevent default on click - let it work normally
+    if (event.type !== 'click') {
+      event.preventDefault()
+    }
+  }
+  
+  // Only allow clicks on front-facing cards
+  if (!isCardFrontFacing(index)) {
+    return
+  }
+  
   toggleFeatureExpand(featureId)
+}
+
+// Prevent wheel scrolling from affecting carousel
+const handleCarouselWheel = (event) => {
+  event.preventDefault()
+  event.stopPropagation()
+}
+
+// Prevent swipe gestures on carousel - only allow taps
+const touchStartPosition = ref({ x: 0, y: 0 })
+const touchStartTime = ref(0)
+
+const handleCarouselTouchStart = (event) => {
+  // Only track touch start on the wrapper itself, not on cards
+  // This allows taps on cards to work normally
+  if (event.target === event.currentTarget || event.target.closest('.carousel-3d-wrapper')) {
+    if (event.touches.length === 1) {
+      touchStartPosition.value = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY
+      }
+      touchStartTime.value = Date.now()
+    }
+  }
+}
+
+const handleCarouselTouchMove = (event) => {
+  // Only prevent swipe if it's on the wrapper background, not on cards
+  // Allow card touches to work normally
+  if (event.target === event.currentTarget || 
+      (event.target.closest('.carousel-3d-wrapper') && !event.target.closest('.carousel-3d-item'))) {
+    // If it's a significant movement, it's a swipe - prevent it
+    if (event.touches.length === 1 && touchStartPosition.value.x !== 0) {
+      const deltaX = Math.abs(event.touches[0].clientX - touchStartPosition.value.x)
+      const deltaY = Math.abs(event.touches[0].clientY - touchStartPosition.value.y)
+      
+      // If movement is more than 10px, it's a swipe - prevent it
+      if (deltaX > 10 || deltaY > 10) {
+        event.preventDefault()
+        event.stopPropagation()
+        // Reset touch position to prevent further movement
+        touchStartPosition.value = { x: 0, y: 0 }
+      }
+    } else if (!event.target.closest('.carousel-3d-item')) {
+      // Only prevent touch move on wrapper background, not on cards
+      event.preventDefault()
+      event.stopPropagation()
+    }
+  }
 }
 
 // Toggle feature flip on click
@@ -868,16 +1031,19 @@ const toggleFeatureExpand = (featureId) => {
   const feature = features.value.find(f => f.id === featureId)
   if (!feature) return
   
-  // If card is already flipped, flip it back immediately and resume
+  // If card is already flipped, flip it back immediately and resume rotation
   if (feature.flipped) {
     feature.flipped = false
     clearTimeout(flipTimers.value[featureId])
     delete flipTimers.value[featureId]
-    resumeCarousel()
+    // Resume rotation only if no other cards are flipped
+    if (!features.value.some(f => f.flipped)) {
+      resumeCarousel()
+    }
     return
   }
   
-  // Close all other flipped features
+  // Close all other flipped features (only one card can flip at a time)
   features.value.forEach(f => {
     if (f.id !== featureId && f.flipped) {
       f.flipped = false
@@ -888,23 +1054,28 @@ const toggleFeatureExpand = (featureId) => {
     }
   })
   
-  // Pause rotation
+  // Pause rotation while card is flipped
   pauseCarousel()
   
   // Flip the card
   feature.flipped = true
   
-  // Auto-flip back after 5 seconds
+  // Auto-flip back after 5 seconds and then resume rotation
   flipTimers.value[featureId] = setTimeout(() => {
     feature.flipped = false
     delete flipTimers.value[featureId]
-    resumeCarousel()
+    // Only resume if no cards are flipped
+    if (!features.value.some(f => f.flipped)) {
+      resumeCarousel()
+    }
   }, 5000)
 }
 
 // Check if a card is facing forward (within 45 degrees of center for better click detection)
 const isCardFrontFacing = (index) => {
   const totalCards = features.value.length
+  if (totalCards === 0) return false
+  
   const cardAngle = index * (360 / totalCards)
   
   // Normalize rotation to 0-360 range
@@ -934,18 +1105,21 @@ const startCarousel = () => {
     // Double-check interval wasn't created elsewhere
     if (carouselInterval.value) return
     
-    // Do first rotation immediately after delay
-    const rotationStep = 360 / features.value.length
-    carouselRotation.value -= rotationStep
+    // Do first rotation immediately after delay (only if no cards are flipped)
+    if (!features.value.some(f => f.flipped)) {
+      const rotationStep = 360 / features.value.length
+      carouselRotation.value -= rotationStep
+    }
     
     // Then set up interval for subsequent rotations
     carouselInterval.value = setInterval(() => {
-      if (!isCarouselPaused.value) {
+      // Only rotate if carousel is not paused AND no cards are currently flipped
+      if (!isCarouselPaused.value && !features.value.some(f => f.flipped)) {
         const rotationStep = 360 / features.value.length
         carouselRotation.value -= rotationStep // Counter-clockwise rotation
       }
-    }, 5000) // Rotate every 5 seconds
-  }, 3000) // Start rotating after 3 seconds
+    }, 3000) // Rotate every 3 seconds (faster)
+  }, 2000) // Start rotating after 2 seconds
 }
 
 const pauseCarousel = () => {
@@ -1107,7 +1281,7 @@ const addCatalogueItemToCanvas = (item) => {
     y: position.y,
     scale: position.scale,
     rotation: 0,
-    z_index: outfitItems.value.length,
+    z_index: Math.max(2, outfitItems.value.length + 2),
   }
   
   outfitItems.value.push(newItem)
@@ -1151,7 +1325,7 @@ const handleDrop = (event) => {
       y: Math.max(0, Math.min(position.y, rect.height - (itemSize * position.scale))),
       scale: position.scale,
       rotation: 0,
-      z_index: outfitItems.value.length
+      z_index: Math.max(2, outfitItems.value.length + 2)
     }
     
     outfitItems.value.push(newItem)
@@ -1229,9 +1403,21 @@ const moveSelectedItemForward = (itemId) => {
     return
   }
   
-  // Find the highest z_index currently
-  const maxZIndex = Math.max(...outfitItems.value.map(i => i.z_index || 0), -1)
-  const oldZIndex = item.z_index || 0
+  // Normalize z_index to ensure minimum of 2 (above grid)
+  if (!item.z_index || item.z_index < 2) {
+    item.z_index = Math.max(2, outfitItems.value.length + 2)
+  }
+  
+  // Find the highest z_index currently (normalize all to ensure minimum of 2)
+  const normalizedItems = outfitItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  const maxZIndex = Math.max(...normalizedItems.map(i => i.normalizedZ), 2)
+  const oldZIndex = Math.max(2, item.z_index || 2)
+  
+  // If already at max, do nothing
+  if (oldZIndex >= maxZIndex) {
+    console.log('Item already at front')
+    return
+  }
   
   // Bring this item to the front by giving it the highest z_index + 1
   item.z_index = maxZIndex + 1
@@ -1249,26 +1435,34 @@ const moveSelectedItemBackward = (itemId) => {
     return
   }
   
-  const currentZIndex = item.z_index || 0
+  // Normalize z_index to ensure minimum of 2 (above grid)
+  if (!item.z_index || item.z_index < 2) {
+    item.z_index = Math.max(2, outfitItems.value.length + 2)
+  }
   
-  // Can't go below 0
-  if (currentZIndex === 0) {
-    console.log(`Item ${itemId} already at back (z_index: 0)`)
+  const currentZIndex = Math.max(2, item.z_index || 2)
+  
+  // Can't go below 2 (must stay above grid)
+  if (currentZIndex <= 2) {
+    console.log(`Item ${itemId} already at back (z_index: 2)`)
     return
   }
   
+  // Normalize all items to find conflicts
+  const normalizedItems = outfitItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  
   // Simply decrease z_index by 1
-  const newZIndex = currentZIndex - 1
+  const newZIndex = Math.max(2, currentZIndex - 1)
   
   // If the new z_index would conflict with another item, swap positions
-  const conflictingItem = outfitItems.value.find(i => i.id !== itemId && (i.z_index || 0) === newZIndex)
+  const conflictingItem = outfitItems.value.find(i => i.id !== itemId && Math.max(2, i.z_index || 2) === newZIndex)
   if (conflictingItem) {
     // Swap z_index values
     conflictingItem.z_index = currentZIndex
     item.z_index = newZIndex
     console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex} (swapped with ${conflictingItem.id})`)
   } else {
-    // No conflict, just decrease
+    // No conflict, just decrease (but ensure minimum of 2)
     item.z_index = newZIndex
     console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex}`)
   }
@@ -1294,30 +1488,37 @@ const scrollToTop = () => {
 const calculateSplashTransform = () => {
   if (!heroTitleRef.value) return
   
-  const heroRect = heroTitleRef.value.getBoundingClientRect()
-  const splashCenterX = window.innerWidth / 2
-  const splashCenterY = window.innerHeight / 2
-  
-  // Calculate the offset needed to move from splash center to hero position
-  const heroCenterY = heroRect.top + (heroRect.height / 2)
-  
-  // Position the splash text so it aligns with the hero title
-  // Use the center of the hero title element as reference point
-  const heroLeftEdge = heroRect.left
-  const heroTextCenter = heroLeftEdge + (heroRect.width / 2)
-  
-  const finalX = heroTextCenter - splashCenterX
-  const finalY = heroCenterY - splashCenterY
-  
-  splashTransform.x = finalX
-  splashTransform.y = finalY
-  splashTransform.scale = 1
-  // Don't set fontSize here - it will be set after isTransitioning to trigger animation
-  
-  // Store the final values for locking later
-  finalTransform.x = finalX
-  finalTransform.y = finalY
-  finalTransform.fontSize = '2.5625rem'
+  // Wait for next frame to ensure hero title is fully rendered
+  requestAnimationFrame(() => {
+    const heroRect = heroTitleRef.value.getBoundingClientRect()
+    const splashCenterX = window.innerWidth / 2
+    const splashCenterY = window.innerHeight / 2
+    
+    // Get computed styles to match exactly
+    const heroStyles = window.getComputedStyle(heroTitleRef.value)
+    const heroFontSize = parseFloat(heroStyles.fontSize)
+    const heroLineHeight = parseFloat(heroStyles.lineHeight) || heroFontSize * 1.2
+    
+    // Calculate the visual center of the hero text
+    // Account for line-height to get the true vertical center of the text
+    const heroCenterY = heroRect.top + (heroRect.height / 2)
+    
+    // For horizontal alignment, use the center of the text element
+    const heroTextCenter = heroRect.left + (heroRect.width / 2)
+    
+    // Calculate transform to move splash center to hero center
+    const finalX = heroTextCenter - splashCenterX
+    const finalY = heroCenterY - splashCenterY
+    
+    splashTransform.x = finalX
+    splashTransform.y = finalY
+    splashTransform.scale = 1
+    
+    // Store the final values for locking later
+    finalTransform.x = finalX
+    finalTransform.y = finalY
+    finalTransform.fontSize = '2.5625rem'
+  })
 }
 
 // Typewriter effect
@@ -1336,33 +1537,36 @@ const typewriterEffect = () => {
       
       // Wait a moment, then start transition
       setTimeout(() => {
-        // Calculate target position
+        // Calculate target position - this now uses requestAnimationFrame internally
         calculateSplashTransform()
         
-        // DON'T set fontSize yet - let it stay at the splash size initially
-        // This allows CSS transition to animate from current size to final size
-        
-        // Start the transition state
-        isTransitioning.value = true
-        
-        // Wait one frame to ensure DOM is ready, then set target values
+        // Wait for calculation to complete (next frame), then start transition
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            // Set the final font size - CSS will transition smoothly
-            splashTransform.fontSize = '2.5625rem'
+            // DON'T set fontSize yet - let it stay at the splash size initially
+            // This allows CSS transition to animate from current size to final size
             
-            // Wait for transition to complete, then LOCK everything
-            setTimeout(() => {
-              animationComplete.value = true
+            // Start the transition state
+            isTransitioning.value = true
+            
+            // Wait one more frame to ensure DOM is ready, then set target values
+            requestAnimationFrame(() => {
+              // Set the final font size - CSS will transition smoothly
+              splashTransform.fontSize = '2.5625rem'
               
-              // Wait a tiny bit, then show real title
+              // Wait for transition to complete, then LOCK everything
               setTimeout(() => {
-                showHeroTitle.value = true
+                animationComplete.value = true
+                
+                // Wait a tiny bit, then show real title
                 setTimeout(() => {
-                  showSplash.value = false
-                }, 300)
-              }, 50)
-            }, 1500) // Lock exactly when animation completes
+                  showHeroTitle.value = true
+                  setTimeout(() => {
+                    showSplash.value = false
+                  }, 300)
+                }, 50)
+              }, 1500) // Lock exactly when animation completes
+            })
           })
         })
       }, 500) // Pause after typing finishes
@@ -1370,6 +1574,32 @@ const typewriterEffect = () => {
   }
   
   typeChar()
+}
+
+// Skip animation function
+const skipAnimation = () => {
+  // Stop all animations immediately
+  showTypewriterCursor.value = false
+  displayedTitle.value = 'Transform Your Fashion Game'
+  
+  // Calculate and apply final transform immediately
+  nextTick(() => {
+    calculateSplashTransform()
+    
+    // Set transition state
+    isTransitioning.value = true
+    
+    // After a brief moment, hide splash and show page
+    setTimeout(() => {
+      animationComplete.value = true
+      enableBodyScroll()
+      
+      setTimeout(() => {
+        showSplash.value = false
+        showHeroTitle.value = true
+      }, 100)
+    }, 200)
+  })
 }
 
 // Prevent body scrolling when splash screen is displayed
@@ -1394,10 +1624,63 @@ watch(showSplash, (isVisible) => {
   }
 }, { immediate: true })
 
+// Function to normalize section heights (except hero)
+const normalizeSectionHeights = () => {
+  // Wait for next tick to ensure DOM is fully rendered
+  nextTick(() => {
+    // Get all sections except hero
+    const sections = document.querySelectorAll('section:not(.hero-section)')
+    if (sections.length === 0) return
+    
+    // Wait for images to load
+    const images = document.querySelectorAll('section:not(.hero-section) img')
+    const imagePromises = Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve()
+      return new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = resolve // Resolve even on error to not block
+        // Timeout after 2 seconds
+        setTimeout(resolve, 2000)
+      })
+    })
+    
+    Promise.all(imagePromises).then(() => {
+      // Reset min-height to auto to get natural height
+      sections.forEach(section => {
+        section.style.minHeight = 'auto'
+      })
+      
+      // Wait a moment for layout to recalculate after images load
+      setTimeout(() => {
+        let tallestHeight = 0
+        
+        // Find the tallest section
+        sections.forEach(section => {
+          const height = section.offsetHeight
+          if (height > tallestHeight) {
+            tallestHeight = height
+          }
+        })
+        
+        // Apply tallest height to all sections
+        if (tallestHeight > 0) {
+          sections.forEach(section => {
+            section.style.minHeight = `${tallestHeight}px`
+          })
+        }
+      }, 150)
+    })
+  })
+}
+
 // Lifecycle hooks
 onMounted(() => {
   // Set page as loaded immediately to prevent flicker
   isPageLoaded.value = true
+  
+  // Randomly select an avatar
+  const randomIndex = Math.floor(Math.random() * avatarUrls.length)
+  selectedAvatarUrl.value = avatarUrls[randomIndex]
   
   // Start typewriter effect
   typewriterEffect()
@@ -1484,14 +1767,32 @@ onMounted(() => {
   // Start carousel rotation
   startCarousel()
   
-  // Load catalogue items for demo
-  loadCatalogueItems()
+  // Load catalogue items for demo, then normalize heights
+  loadCatalogueItems().then(() => {
+    // Normalize section heights after catalogue loads
+    normalizeSectionHeights()
+  }).catch(() => {
+    // Normalize even if catalogue load fails
+    normalizeSectionHeights()
+  })
+  
+  // Also normalize after initial mount (fallback)
+  setTimeout(() => {
+    normalizeSectionHeights()
+  }, 500)
+  
+  // Also normalize on window resize
+  const handleResize = () => {
+    normalizeSectionHeights()
+  }
+  window.addEventListener('resize', handleResize, { passive: true })
   
   // Cleanup function
   onUnmounted(() => {
     // Ensure body scroll is re-enabled when component is unmounted
     enableBodyScroll()
     window.removeEventListener('scroll', handleScroll)
+    window.removeEventListener('resize', handleResize)
     observer.disconnect()
     // Stop carousel rotation
     stopCarousel()
@@ -1533,10 +1834,13 @@ const setScrollY = (value) => {
   padding: 0 2rem;
   transition: transform 1500ms cubic-bezier(0.4, 0, 0.2, 1),
               font-size 1500ms cubic-bezier(0.4, 0, 0.2, 1),
-              color 1500ms cubic-bezier(0.4, 0, 0.2, 1);
+              color 1500ms cubic-bezier(0.4, 0, 0.2, 1),
+              letter-spacing 1500ms cubic-bezier(0.4, 0, 0.2, 1),
+              line-height 1500ms cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 90vw;
   transform-origin: center center;
-  will-change: transform, font-size, color;
+  will-change: transform, font-size, color, letter-spacing, line-height;
+  line-height: 1.2;
 }
 
 @media (min-width: 768px) {
@@ -1555,6 +1859,10 @@ const setScrollY = (value) => {
   /* Apply final styling that transitions smoothly - match hero title */
   font-weight: 700 !important; /* font-bold matches hero title */
   color: #ffffff !important; /* White text to match hero section */
+  /* Match typography exactly */
+  letter-spacing: normal !important; /* Match hero title (no negative spacing) */
+  line-height: 1.2 !important; /* Match default line-height */
+  text-align: center !important;
   /* Lock position */
   position: fixed !important;
   z-index: 10001 !important;
@@ -1562,6 +1870,8 @@ const setScrollY = (value) => {
   /* No padding or margin that could shift */
   padding: 0 !important;
   margin: 0 !important;
+  /* Ensure transform origin is centered for accurate alignment */
+  transform-origin: center center !important;
 }
 
 .splash-title-frozen {
@@ -1573,6 +1883,10 @@ const setScrollY = (value) => {
   font-size: 2.5625rem !important;
   font-weight: 700 !important; /* font-bold matches hero title */
   color: #ffffff !important; /* White text to match hero section */
+  /* Match typography exactly */
+  letter-spacing: normal !important; /* Match hero title */
+  line-height: 1.2 !important; /* Match default line-height */
+  text-align: center !important;
   /* Lock position exactly where it is */
   position: fixed !important;
   /* Prevent ANY responsive behavior */
@@ -1581,12 +1895,44 @@ const setScrollY = (value) => {
   transform: translate(var(--target-x), var(--target-y)) !important;
   /* Block any potential parent influences */
   isolation: isolate !important;
+  /* Ensure transform origin is centered */
+  transform-origin: center center !important;
 }
 
 .typewriter-cursor-splash {
   animation: blink 1s step-end infinite;
   margin-left: 2px;
   color: #ffffff;
+}
+
+/* Skip Animation Button */
+.skip-animation-btn {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10001;
+}
+
+.skip-animation-btn:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.skip-animation-btn:active {
+  transform: translateX(-50%) scale(0.95);
 }
 
 /* Landing page hidden/visible states */
@@ -1616,6 +1962,9 @@ const setScrollY = (value) => {
   position: relative;
   opacity: 0;
   transition: opacity 0.5s ease-in;
+  letter-spacing: normal; /* Match splash title final state */
+  line-height: 1.2; /* Match splash title final state */
+  text-align: center; /* Ensure center alignment */
 }
 
 .hero-title-visible {
@@ -1660,7 +2009,9 @@ const setScrollY = (value) => {
 
 /* Force navigation pill to always use light mode */
 .landing-nav-pill > div {
-  background-color: rgba(243, 244, 246, 0.95) !important;
+  background-color: rgba(243, 244, 246, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
@@ -1688,13 +2039,17 @@ const setScrollY = (value) => {
 
 /* Ensure mobile menu also stays light */
 .landing-nav-pill .md\\:hidden {
-  background-color: rgba(243, 244, 246, 0.95) !important;
+  background-color: rgba(243, 244, 246, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
-/* Make all landing sections the same height */
-.landing-section {
-  min-height: 100vh;
+/* Landing sections will have dynamic heights set by JS to match tallest section */
+.landing-section,
+.cta-card-section {
+  /* Height will be set dynamically by normalizeSectionHeights() */
+  /* Sections now use 10% viewport height padding on top and bottom (10vh each) */
 }
 
 .landing-page h1,
@@ -1735,6 +2090,11 @@ const setScrollY = (value) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none; /* Allow clicks to pass through to cards */
+}
+
+.carousel-3d-wrapper > * {
+  pointer-events: auto; /* Re-enable for carousel container */
 }
 
 .carousel-3d-container {
@@ -1779,6 +2139,7 @@ const setScrollY = (value) => {
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s ease;
+  pointer-events: auto; /* Ensure wrapper can receive clicks */
 }
 
 .carousel-card-wrapper.flipped {
@@ -1794,6 +2155,7 @@ const setScrollY = (value) => {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
+  pointer-events: none; /* Let clicks pass through to parent */
 }
 
 .carousel-card-front {
@@ -1889,12 +2251,19 @@ const setScrollY = (value) => {
 
 /* CTA Card Section with Rounded Bottom */
 .cta-card-section {
-  margin-bottom: -40px;
-  border-bottom-left-radius: 32px;
-  border-bottom-right-radius: 32px;
+  margin-bottom: -48px;
+  border-bottom-left-radius: 28px;
+  border-bottom-right-radius: 28px;
   z-index: 10;
   position: relative;
   background-color: white;
+}
+
+@media (min-width: 768px) {
+  .cta-card-section {
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+  }
 }
 
 /* Footer Reveal */
@@ -1902,7 +2271,7 @@ const setScrollY = (value) => {
   position: relative;
   overflow: visible;
   z-index: 1;
-  margin-top: -40px;
+  margin-top: -48px;
 }
 
 .footer-reveal {
@@ -1910,7 +2279,7 @@ const setScrollY = (value) => {
   z-index: 1;
   transform-origin: top center;
   will-change: transform;
-  margin-top: 40px;
+  margin-top: 48px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   transition: transform 0.5s ease-out;

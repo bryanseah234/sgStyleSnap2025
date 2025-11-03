@@ -3,15 +3,15 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 flex-1 min-w-0">
           <button
             @click="$router.back()"
-            class="p-2 rounded-lg transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            class="p-2 rounded-lg transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 flex-shrink-0"
           >
             <ArrowLeft class="w-5 h-5" />
           </button>
-          <div>
-            <h1 class="text-4xl font-bold text-foreground">
+          <div class="flex-1 min-w-0">
+            <h1 class="text-4xl font-bold text-foreground text-left">
               {{ getFirstName(friend?.name) || friend?.username || 'Friend' }}'s Closet
             </h1>
             <p class="text-lg text-stone-600 dark:text-zinc-400">

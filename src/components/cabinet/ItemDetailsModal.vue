@@ -10,8 +10,8 @@
         <Transition name="modal" appear>
           <div
             v-if="isOpen"
-            :class="`liquid-modal-card relative w-full max-w-2xl min-h-[420px] max-h-[calc(100vh-2rem)] md:max-h-[90vh] rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col`"
+            :class="`liquid-modal-card relative w-full max-w-2xl rounded-2xl shadow-2xl bg-white border border-stone-200
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col h-[90vh] max-h-[90vh]`"
             @click.stop
           >
           <!-- Close Button with Liquid Press -->
@@ -32,9 +32,9 @@
             </button>
           </div>
 
-      <div class="grid md:grid-cols-2 min-h-[420px] flex-1 overflow-hidden">
+      <div class="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image min-h-[200px] md:h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
+        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Right: Details with Liquid Reveal -->
-        <div class="liquid-modal-content p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
+        <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0">
           <!-- Item Name & Category -->
           <div>
             <h2 class="text-2xl font-bold mb-2 text-foreground">
@@ -121,9 +121,9 @@
               :disabled="isUpdating || !hasChanges"
               class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save v-if="!isUpdating" class="w-5 h-5" />
-              <div v-else class="w-5 h-5 spinner-modern"></div>
-              {{ isUpdating ? 'Updating...' : 'Update Item' }}
+              <Save class="w-5 h-5" />
+              <span v-if="isUpdating" class="ellipsis-animated">Updating</span>
+              <span v-else>Update Item</span>
             </button>
             <button
               @click="removeItem"
@@ -131,7 +131,8 @@
               class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 class="w-5 h-5" />
-              {{ isRemoving ? 'Removing...' : 'Remove Item' }}
+              <span v-if="isRemoving" class="ellipsis-animated">Removing</span>
+              <span v-else>Remove Item</span>
             </button>
           </div>
         </div>
@@ -258,15 +259,21 @@ const removeItem = async () => {
     async () => {
       isRemoving.value = true
       try {
-        await clothesService.deleteClothes(props.item.id)
+        const result = await clothesService.deleteClothes(props.item.id)
         
-        console.log('✅ Item removed successfully')
-        showSuccess('Item removed successfully!')
-        emit('item-removed', props.item.id)
-        closeModal()
+        if (result && result.success) {
+          console.log('✅ Item removed successfully')
+          showSuccess('Item removed successfully!')
+          emit('item-removed', props.item.id)
+          closeModal()
+        } else {
+          console.error('❌ Delete returned unsuccessful result:', result)
+          showError('Failed to remove item. Please try again.')
+        }
       } catch (error) {
         console.error('❌ Error removing item:', error)
-        showError('Failed to remove item')
+        const errorMessage = error?.message || 'Failed to remove item'
+        showError(errorMessage)
       } finally {
         isRemoving.value = false
       }

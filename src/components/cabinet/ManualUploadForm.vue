@@ -1,10 +1,10 @@
 <template>
   <div>
     <!-- Upload Form -->
-    <div :class="`rounded-2xl border p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-      <div class="space-y-6">
-        <!-- Image Upload -->
-        <div>
+    <div :class="`rounded-2xl border p-6 lg:p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <!-- Image Upload - Left Side (smaller) -->
+        <div class="w-full lg:w-2/5 flex-shrink-0">
           <label :class="`text-base mb-3 block text-stone-700 dark:text-zinc-300`">
             Item Image *
           </label>
@@ -13,7 +13,7 @@
             <img
               :src="previewUrl"
               alt="Preview"
-              :class="`w-full h-80 object-contain rounded-2xl bg-stone-100 dark:bg-zinc-800`"
+              :class="`w-full h-56 lg:h-64 object-contain rounded-2xl bg-stone-100 dark:bg-zinc-800`"
             />
             <button
               @click="clearImage"
@@ -24,7 +24,7 @@
           </div>
           <label
             v-else
-            :class="`flex flex-col items-center justify-center w-full h-80 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 
+            :class="`flex flex-col items-center justify-center w-full h-56 lg:h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 
             border-stone-300 hover:border-stone-400 bg-stone-50 hover:bg-stone-100 dark:border-zinc-700 dark:hover:border-zinc-600 dark:bg-zinc-800 dark:hover:bg-zinc-750`"
           >
             <div v-if="uploading" class="spinner-modern" />
@@ -47,8 +47,9 @@
           </label>
         </div>
 
-        <!-- Form Fields -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Form Fields - Right Side (larger with padding) -->
+        <div class="w-full lg:w-3/5 flex-shrink-0 space-y-6 pr-0 lg:pr-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Item Name *
@@ -60,7 +61,7 @@
               :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white 
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
-              @input="formData.name = sanitizeText(formData.name)"
+              @blur="formData.name = sanitizeText(formData.name)"
             />
           </div>
 
@@ -126,7 +127,7 @@
               maxlength="50"
               :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
               dark:bg-zinc-800 dark:border-zinc-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
-              @input="formData.brand = sanitizeText(formData.brand)"
+              @blur="formData.brand = sanitizeText(formData.brand)"
             />
           </div>
 
@@ -167,10 +168,10 @@
               <option value="public">Public (Everyone)</option>
             </select>
           </div>
-        </div>
+          </div>
 
-        <!-- Action Buttons -->
-        <div class="flex gap-3 pt-4">
+          <!-- Action Buttons -->
+          <div class="flex gap-3 pt-4">
           <button
             @click="$router.push('/closet')"
             :class="`flex-1 h-12 rounded-xl font-medium transition-colors bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200
@@ -191,6 +192,7 @@
           </button>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -216,7 +218,7 @@ const emit = defineEmits(['item-added'])
 // Category to clothing type mapping
 const categoryTypeMapping = {
   top: ['Blouse', 'Body', 'Dress', 'Hoodie', 'Longsleeve', 'Polo', 'Shirt', 'T-Shirt', 'Top', 'Undershirt'],
-  bottom: ['Pants', 'Shorts', 'Skirt'],
+  bottom: ['Pants'],
   outerwear: ['Blazer', 'Outwear'],
   shoes: ['Shoes'],
   accessory: ['Hat']
@@ -314,6 +316,20 @@ const handleFileUpload = async (e) => {
       if (classification.styleSnapCategory) {
         formData.value.category = classification.styleSnapCategory
       }
+      
+      // 4) Color detection
+      try {
+        const { detectColors } = await import('@/utils/color-detector')
+        const colors = await detectColors(processedFile)
+        if (colors && colors.primary) {
+          formData.value.color = colors.primary
+          console.log('🎨 ManualUploadForm: Detected color:', colors.primary, 'Secondary:', colors.secondary)
+        }
+      } catch (colorErr) {
+        console.warn('⚠️ ManualUploadForm: Color detection failed:', colorErr)
+        // Don't block upload if color detection fails, just log warning
+      }
+      
       // Store processed file for upload and show preview
       formData.value.image_file = processedFile
       const previewBlob = URL.createObjectURL(processedFile)
@@ -337,6 +353,7 @@ const clearImage = () => {
   previewUrl.value = ''
   formData.value.image_url = ''
   formData.value.image_file = null
+  formData.value.color = ''
 }
 
 const handleSubmit = async () => {
@@ -368,10 +385,34 @@ const handleSubmit = async () => {
   console.log('📝 ManualUploadForm: Form submission in progress...')
   
   try {
+    // Map clothing type to database format (capitalized, matching database constraint)
+    const clothingTypeMap = {
+      'blouse': 'Blouse',
+      'body': 'Body',
+      'hoodie': 'Hoodie',
+      'longsleeve': 'Longsleeve',
+      'polo': 'Polo',
+      'shirt': 'Shirt',
+      't-shirt': 'T-Shirt',
+      'top': 'Top',
+      'undershirt': 'Undershirt',
+      'pants': 'Pants',
+      'dress': 'Dress',
+      'blazer': 'Blazer',
+      'outwear': 'Outwear',
+      'shoes': 'Shoes',
+      'hat': 'Hat',
+      'other': 'Other'
+    }
+    
+    const clothingType = formData.value.type 
+      ? (clothingTypeMap[formData.value.type.toLowerCase()] || formData.value.type)
+      : null
+    
     const serviceData = {
       name: formData.value.name,
       category: formData.value.category,
-      clothing_type: formData.value.type || null,
+      clothing_type: clothingType,
       color: formData.value.color || null,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,

@@ -5,14 +5,19 @@
     <!-- Page Header Section -->
     <div class="max-w-6xl mx-auto mb-8">
       <!-- Header with title and add button -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title based on current sub-route -->
-        <h1 class="text-4xl font-bold text-foreground">
-          {{ subRouteTitle }}
-        </h1>
+        <div class="flex-1 min-w-0 w-full md:w-auto">
+          <h1 
+            :class="`text-4xl font-bold text-foreground break-words ${
+              currentSubRoute === 'default' ? 'text-left' : 'text-center md:text-left'
+            }`">
+            {{ subRouteTitle }}
+          </h1>
+        </div>
         
         <!-- Add Item Dropdown Button (only shown on default closet view) -->
-        <div v-if="currentSubRoute === 'default'" class="relative">
+        <div v-if="currentSubRoute === 'default'" class="relative flex-shrink-0">
           <!-- Toggle button for add item dropdown menu -->
           <button
             @click="showAddMenu = !showAddMenu"
@@ -65,7 +70,7 @@
       
       <!-- Sub-route Navigation - Individual Buttons -->
       <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="mb-8">
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 justify-center md:justify-start">
           <button
             @click="$router.push('/closet/add/manual')"
             :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${

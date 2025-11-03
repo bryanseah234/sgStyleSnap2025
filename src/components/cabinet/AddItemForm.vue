@@ -108,7 +108,8 @@
           class="submit-btn"
           :class="{ 'disabled': !canSubmit || uploading }"
         >
-          {{ uploading ? 'Adding...' : 'Add Item' }}
+          <span v-if="uploading" class="ellipsis-animated">Adding</span>
+          <span v-else>Add Item</span>
         </button>
       </div>
     </form>

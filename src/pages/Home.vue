@@ -35,24 +35,25 @@
       @mousemove="handleHeroMouseMove"
       @mouseleave="handleHeroMouseLeave"
     >
-      <div class="flex items-start gap-4 flex-wrap">
-        <h1 class="text-4xl font-bold mb-4 text-foreground break-words">
-        Welcome back{{ userName }}
-      </h1>
-      <button
-          class="inline-flex items-center px-3 py-2 rounded-full border border-stone-200 bg-white/90 backdrop-blur text-stone-700 hover:text-black hover:bg-white shadow-sm transition dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-        @click="showNotificationsModal = true"
-        :disabled="loadingAll || loadingNotifications"
-        :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
-        title="View notifications"
-      >
-        <div class="relative">
-        <Bell class="w-5 h-5" />
-          <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
-          {{ unreadCount }}
-        </span>
-        </div>
-      </button>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <h1 class="text-[3.375rem] md:text-[3.375rem] font-bold text-foreground text-left">
+          Welcome Back{{ userName }}
+        </h1>
+        <button
+          class="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-black text-white hover:bg-zinc-800 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed w-[160px] min-w-[160px] max-w-[160px] flex-shrink-0 self-start md:self-auto"
+          @click="showNotificationsModal = true"
+          :disabled="loadingAll || loadingNotifications"
+          :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
+          title="View notifications"
+        >
+          <div class="relative flex-shrink-0">
+            <Bell class="w-5 h-5" />
+            <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
+              {{ unreadCount }}
+            </span>
+          </div>
+          <span class="font-medium whitespace-nowrap">Notifications</span>
+        </button>
       </div>
       <p 
         class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
@@ -72,23 +73,23 @@
         :key="stat.label"
         :to="stat.route"
         v-scroll-animate.up
-          class="liquid-card p-6 rounded-2xl group cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
+          class="p-6 rounded-xl cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all hover:shadow-md"
         :style="{ transitionDelay: `${index * 100}ms` }"
-        @mouseenter="handleCardHover($event, index)"
-        @mouseleave="handleCardLeave($event, index)"
-        @mousemove="handleCardMouseMove($event, index)"
       >
-        <div class="flex items-center justify-between mb-4">
-          <div class="liquid-icon p-3 rounded-2xl bg-stone-100 dark:bg-zinc-800">
-            <component :is="stat.icon" class="w-6 h-6" />
+        <div class="flex flex-col items-center text-center">
+          <!-- Icon at top center -->
+          <div class="mb-4">
+            <component :is="stat.icon" class="w-8 h-8 text-stone-700 dark:text-zinc-300 mx-auto" />
           </div>
-          <span class="text-4xl font-bold text-foreground liquid-number">
+          <!-- Number in middle -->
+          <span class="text-5xl font-bold text-stone-800 dark:text-zinc-200 mb-2">
             {{ stat.value }}
           </span>
+          <!-- Label at bottom -->
+          <p class="text-base font-medium text-stone-600 dark:text-zinc-400">
+            {{ stat.label }}
+          </p>
         </div>
-        <p class="text-lg font-medium liquid-text text-stone-600 dark:text-zinc-400">
-          {{ stat.label }}
-        </p>
       </router-link>
       </div>
     </div>
@@ -100,9 +101,9 @@
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40" @click="showNotificationsModal = false" />
     <!-- Modal Content -->
-    <div class="relative z-10 w-[92%] sm:w-[560px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+    <div class="relative z-10 w-[480px] max-w-[92vw] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
       <!-- Header -->
-      <div class="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-zinc-800">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-zinc-800 flex-shrink-0">
         <div class="flex items-center gap-2">
           <Bell class="w-5 h-5" />
           <h3 class="text-lg font-semibold">Notifications</h3>
@@ -116,17 +117,23 @@
           >
             Mark all as read
           </button>
-          <button
-            class="p-2 rounded-lg text-stone-600 hover:text-black hover:bg-stone-100 transition dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
-            @click="showNotificationsModal = false"
-            aria-label="Close"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- ESC Key Hint (Desktop only) -->
+            <div v-if="isDesktop" class="keyboard-hint-modal">
+              <span class="keyboard-hint-key">ESC</span>
+            </div>
+            <button
+              @click="showNotificationsModal = false"
+              class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-600 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
+              aria-label="Close"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
-      <!-- Body -->
-      <div class="p-4 overflow-y-auto" style="max-height: calc(80vh - 64px);">
+      <!-- Body - Scrollable Content -->
+      <div class="p-4 overflow-y-auto overflow-x-hidden flex-1 custom-scrollbar" style="scroll-behavior: smooth; overscroll-behavior: contain;">
         <div v-if="loadingNotifications" class="flex flex-col items-center justify-center py-12">
           <div class="w-12 h-12 spinner-modern mb-4"></div>
           <p class="text-sm text-stone-600 dark:text-zinc-400">Loading notifications...</p>
@@ -180,7 +187,7 @@
  * including wardrobe items, outfits, and friends.
  */
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
@@ -191,8 +198,8 @@ import { FriendsService } from '@/services/friendsService'
 import { NotificationsService } from '@/services/notificationsService'
 import { UserService } from '@/services/userService'
 import { vScrollAnimate } from '@/composables/useScrollAnimation'
-import { useLiquidReveal, useLiquidHover } from '@/composables/useLiquidGlass'
-import { Shirt, Palette, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck } from 'lucide-vue-next'
+import { useLiquidReveal } from '@/composables/useLiquidGlass'
+import { Shirt, Layers, Users, Bell, UserPlus, Heart, Share2, Sparkles, CloudRain, Check, CheckCheck, X } from 'lucide-vue-next'
 
 // Theme and auth composables
 const { theme } = useTheme()
@@ -201,7 +208,7 @@ const router = useRouter()
 
 // Liquid glass composables
 const { elementRef: heroRef, reveal: heroReveal } = useLiquidReveal()
-const { elementRef: cardRefs, hoverIn: cardHoverIn, hoverOut: cardHoverOut } = useLiquidHover()
+// Card hover effects removed - using simpler card style
 
 // Service instances
 const clothesService = new ClothesService()
@@ -250,7 +257,7 @@ const userName = computed(() => {
     return `, ${firstName}`
   }
   
-  return '' // No name, just show "Welcome back"
+  return '' // No name, just show "Welcome Back"
 })
 
 // Reactive data for content
@@ -264,6 +271,19 @@ const loadingNotifications = ref(false) // Loading state for notifications
 const showNotificationsModal = ref(false)
 const loadingAll = ref(true) // Global loading gate for the whole page
 
+// Desktop detection for keyboard hints
+const isDesktop = ref(false)
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
+
+// ESC key handler for notifications modal
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && showNotificationsModal.value) {
+    showNotificationsModal.value = false
+  }
+}
+
 /**
  * Computed statistics for the dashboard cards
  * 
@@ -274,7 +294,7 @@ const loadingAll = ref(true) // Global loading gate for the whole page
  */
 const stats = computed(() => [
   { label: 'Closet', value: totalItemsCount.value, icon: Shirt, route: '/closet' },
-  { label: 'Outfits', value: outfits.value.length, icon: Palette, route: '/outfits' },
+  { label: 'Outfits', value: outfits.value.length, icon: Layers, route: '/outfits' },
   { label: 'Friends', value: friends.value.length, icon: Users, route: '/friends' },
 ])
 
@@ -469,6 +489,9 @@ const handleNotificationClick = async (notification) => {
   // Mark as read first
   await markNotificationAsRead(notification)
   
+  // Close notifications modal
+  showNotificationsModal.value = false
+  
   // Navigate based on notification type
   switch (notification.type) {
     case 'friend_request':
@@ -476,8 +499,13 @@ const handleNotificationClick = async (notification) => {
       router.push('/friends/requests/received')
       break
     case 'friend_request_accepted':
-      // Navigate to friends page
-      router.push('/friends')
+      // Navigate to friend's profile page if username is available
+      if (notification.actor_username) {
+        router.push(`/friend/${notification.actor_username}/profile`)
+      } else {
+        // Fallback to friends page if no username
+        router.push('/friends')
+      }
       break
     case 'outfit_shared':
       // Navigate to outfits page
@@ -580,6 +608,11 @@ const formatTimeAgo = (dateString) => {
  * - Friends list
  */
 onMounted(async () => {
+  // Initialize desktop detection
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEsc)
+  
   console.log('🏠 Home: Component mounted, starting data loading...')
   console.log('🏠 Home: Auth state:', {
     isAuthenticated: authStore.isAuthenticated,
@@ -617,6 +650,11 @@ onMounted(async () => {
   }
 })
 
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEsc)
+})
+
 // Liquid glass event handlers
 const handleHeroMouseMove = (event) => {
   // Apply parallax distortion to hero text
@@ -643,34 +681,5 @@ const handleHeroMouseLeave = () => {
   })
 }
 
-const handleCardHover = (event, index) => {
-  const card = event.currentTarget || event.target
-  cardHoverIn(card)
-}
-
-const handleCardLeave = (event, index) => {
-  const card = event.currentTarget || event.target
-  cardHoverOut(card)
-  // Reset any inline transforms applied during mouse move
-  card.style.transform = ''
-  const icon = card.querySelector('.liquid-icon')
-  if (icon) icon.style.transform = ''
-  const number = card.querySelector('.liquid-number')
-  if (number) number.style.transform = ''
-}
-
-const handleCardMouseMove = (event, index) => {
-  // Apply subtle parallax to cards
-  const card = event.currentTarget || event.target
-  const rect = card.getBoundingClientRect()
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  const centerX = rect.width / 2
-  const centerY = rect.height / 2
-  
-  const rotateX = (y - centerY) / centerY * 2
-  const rotateY = (x - centerX) / centerX * 2
-  
-  card.style.transform = `translateY(-8px) translateZ(15px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`
-}
+// Card hover handlers removed - using simpler card style
 </script>

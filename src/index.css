@@ -70,6 +70,16 @@
     overflow-x: hidden; /* Prevent horizontal scrolling that could shift nav bar */
   }
   
+  /* Hide scrollbar on all screen sizes while maintaining scroll functionality */
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  html::-webkit-scrollbar {
+    display: none;
+  }
+  html {
+    -ms-overflow-style: none; /* IE and old Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  
   /* Force proper text contrast in both modes */
   html, body {
     color: hsl(var(--foreground));
@@ -292,6 +302,38 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Animated ellipsis for processing states - simple and reliable */
+.ellipsis-animated::after {
+  content: '...';
+  animation: ellipsis-animate 1.5s infinite;
+  display: inline-block;
+  width: 1em;
+  text-align: left;
+}
+
+@keyframes ellipsis-animate {
+  0% {
+    content: '.';
+    width: 0.33em;
+  }
+  25% {
+    content: '..';
+    width: 0.66em;
+  }
+  50% {
+    content: '...';
+    width: 1em;
+  }
+  75% {
+    content: '..';
+    width: 0.66em;
+  }
+  100% {
+    content: '.';
+    width: 0.33em;
   }
 }
 
@@ -1308,6 +1350,68 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   
   .liquid-ripple {
     display: none;
+  }
+}
+
+/* ============================================
+   DARK MODE GLOW EFFECT FOR BLACK BUTTONS & CARDS
+   ============================================ */
+
+/* Glow effect for black buttons in dark mode */
+.dark button.bg-black:hover,
+.dark button[class*="bg-black"]:hover,
+.dark .bg-black:hover,
+.dark [class*="bg-black"]:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25),
+              0 0 15px rgba(255, 255, 255, 0.15),
+              0 0 30px rgba(255, 255, 255, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Glow effect for dark cards (black/dark gray backgrounds) in dark mode */
+.dark .bg-zinc-900:hover,
+.dark .bg-zinc-950:hover,
+.dark [class*="bg-zinc-900"]:hover,
+.dark [class*="bg-zinc-950"]:hover,
+.dark .bg-black:hover,
+.dark [class*="bg-black"]:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2),
+              0 0 20px rgba(255, 255, 255, 0.1),
+              0 0 40px rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Ensure cards get the glow effect */
+.dark .rounded-xl.bg-black:hover,
+.dark .rounded-2xl.bg-black:hover,
+.dark .rounded-lg.bg-black:hover,
+.dark .rounded-xl[class*="bg-zinc-900"]:hover,
+.dark .rounded-2xl[class*="bg-zinc-900"]:hover,
+.dark .rounded-lg[class*="bg-zinc-900"]:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2),
+              0 0 20px rgba(255, 255, 255, 0.1),
+              0 0 40px rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dark button.bg-black:hover,
+  .dark button[class*="bg-black"]:hover,
+  .dark .bg-black:hover,
+  .dark [class*="bg-black"]:hover,
+  .dark .bg-zinc-900:hover,
+  .dark .bg-zinc-950:hover,
+  .dark [class*="bg-zinc-900"]:hover,
+  .dark [class*="bg-zinc-950"]:hover,
+  .dark .rounded-xl.bg-black:hover,
+  .dark .rounded-2xl.bg-black:hover,
+  .dark .rounded-lg.bg-black:hover,
+  .dark .rounded-xl[class*="bg-zinc-900"]:hover,
+  .dark .rounded-2xl[class*="bg-zinc-900"]:hover,
+  .dark .rounded-lg[class*="bg-zinc-900"]:hover {
+    box-shadow: none;
+    transition: none;
   }
 }
 
