@@ -1354,6 +1354,68 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
 }
 
 /* ============================================
+   DARK MODE GLOW EFFECT FOR BLACK BUTTONS & CARDS
+   ============================================ */
+
+/* Glow effect for black buttons in dark mode */
+.dark button.bg-black:hover,
+.dark button[class*="bg-black"]:hover,
+.dark .bg-black:hover,
+.dark [class*="bg-black"]:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25),
+              0 0 15px rgba(255, 255, 255, 0.15),
+              0 0 30px rgba(255, 255, 255, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Glow effect for dark cards (black/dark gray backgrounds) in dark mode */
+.dark .bg-zinc-900:hover,
+.dark .bg-zinc-950:hover,
+.dark [class*="bg-zinc-900"]:hover,
+.dark [class*="bg-zinc-950"]:hover,
+.dark .bg-black:hover,
+.dark [class*="bg-black"]:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2),
+              0 0 20px rgba(255, 255, 255, 0.1),
+              0 0 40px rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Ensure cards get the glow effect */
+.dark .rounded-xl.bg-black:hover,
+.dark .rounded-2xl.bg-black:hover,
+.dark .rounded-lg.bg-black:hover,
+.dark .rounded-xl[class*="bg-zinc-900"]:hover,
+.dark .rounded-2xl[class*="bg-zinc-900"]:hover,
+.dark .rounded-lg[class*="bg-zinc-900"]:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2),
+              0 0 20px rgba(255, 255, 255, 0.1),
+              0 0 40px rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dark button.bg-black:hover,
+  .dark button[class*="bg-black"]:hover,
+  .dark .bg-black:hover,
+  .dark [class*="bg-black"]:hover,
+  .dark .bg-zinc-900:hover,
+  .dark .bg-zinc-950:hover,
+  .dark [class*="bg-zinc-900"]:hover,
+  .dark [class*="bg-zinc-950"]:hover,
+  .dark .rounded-xl.bg-black:hover,
+  .dark .rounded-2xl.bg-black:hover,
+  .dark .rounded-lg.bg-black:hover,
+  .dark .rounded-xl[class*="bg-zinc-900"]:hover,
+  .dark .rounded-2xl[class*="bg-zinc-900"]:hover,
+  .dark .rounded-lg[class*="bg-zinc-900"]:hover {
+    box-shadow: none;
+    transition: none;
+  }
+}
+
+/* ============================================
    MODALS/PANELS FLUID EXPANSION EFFECTS
    ============================================ */
 

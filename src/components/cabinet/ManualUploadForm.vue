@@ -1,10 +1,10 @@
 <template>
   <div>
     <!-- Upload Form -->
-    <div :class="`rounded-2xl border p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+    <div :class="`rounded-2xl border p-6 lg:p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
       <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
-        <!-- Image Upload - Left Side (50%) -->
-        <div class="w-full lg:w-1/2 flex-shrink-0">
+        <!-- Image Upload - Left Side (smaller) -->
+        <div class="w-full lg:w-2/5 flex-shrink-0">
           <label :class="`text-base mb-3 block text-stone-700 dark:text-zinc-300`">
             Item Image *
           </label>
@@ -13,7 +13,7 @@
             <img
               :src="previewUrl"
               alt="Preview"
-              :class="`w-full h-80 object-contain rounded-2xl bg-stone-100 dark:bg-zinc-800`"
+              :class="`w-full h-56 lg:h-64 object-contain rounded-2xl bg-stone-100 dark:bg-zinc-800`"
             />
             <button
               @click="clearImage"
@@ -24,7 +24,7 @@
           </div>
           <label
             v-else
-            :class="`flex flex-col items-center justify-center w-full h-80 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 
+            :class="`flex flex-col items-center justify-center w-full h-56 lg:h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 
             border-stone-300 hover:border-stone-400 bg-stone-50 hover:bg-stone-100 dark:border-zinc-700 dark:hover:border-zinc-600 dark:bg-zinc-800 dark:hover:bg-zinc-750`"
           >
             <div v-if="uploading" class="spinner-modern" />
@@ -47,8 +47,8 @@
           </label>
         </div>
 
-        <!-- Form Fields - Right Side (50%) -->
-        <div class="w-full lg:w-1/2 flex-shrink-0 space-y-6">
+        <!-- Form Fields - Right Side (larger with padding) -->
+        <div class="w-full lg:w-3/5 flex-shrink-0 space-y-6 pr-0 lg:pr-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
