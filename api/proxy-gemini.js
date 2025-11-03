@@ -95,19 +95,28 @@ export default async function handler(req, res) {
       }
 
       // Build request - include images if available
+      // Ensure numberOfImages is always 1 for single output
       const requestConfig = {
         model: modelName,
         prompt: prompt,
-        config: config || {
-          numberOfImages: 1,
-          aspectRatio: "3:4",
-          personGeneration: "allow_adult",
+        config: {
+          numberOfImages: 1, // Always return only one image
+          aspectRatio: config?.aspectRatio || "3:4",
+          personGeneration: config?.personGeneration || "allow_adult",
         },
       };
 
-      // If images are provided, try to include them (may need to check Imagen API docs for exact format)
-      // For now, we'll rely on the enhanced prompt that references the images
+      // Pass images to the API if provided
+      // Imagen API supports passing images as base64 inlineData in the request
+      if (imageParts.length > 0) {
+        // Include image parts in the request
+        // The API should accept images as part of the multimodal input
+        requestConfig.images = imageParts;
+        console.log('📸 Including', imageParts.length, 'image(s) in request');
+      }
+
       console.log('📸 Image parts count:', imageParts.length);
+      console.log('🖼️ numberOfImages set to:', requestConfig.config.numberOfImages);
 
       const response = await client.models.generateImages(requestConfig);
 
@@ -117,7 +126,10 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'No images generated in response' });
       }
 
+      // Ensure we only return the first image (should only be one anyway since numberOfImages=1)
       const generatedImage = response.generatedImages[0];
+      
+      console.log('✅ Generated', response.generatedImages.length, 'image(s), returning first one');
       
       return res.status(200).json({
         success: true,

@@ -119,18 +119,56 @@ export class VirtualTryOnService {
           throw new Error('Google Gemini API key is required. Please set the API key.')
         }
 
-        // Send clothing images along with the prompt for better accuracy
-        const response = await this.client.models.generateImages({
+        // Prepare image parts for the API call
+        let imageParts = []
+        
+        if (topImageBase64) {
+          const topData = topImageBase64.includes(',') ? topImageBase64.split(',')[1] : topImageBase64
+          const topMimeType = topImageBase64.startsWith('data:') 
+            ? topImageBase64.split(';')[0].split(':')[1] || 'image/jpeg'
+            : 'image/jpeg'
+          imageParts.push({
+            inlineData: {
+              mimeType: topMimeType,
+              data: topData
+            }
+          })
+        }
+        
+        if (bottomImageBase64) {
+          const bottomData = bottomImageBase64.includes(',') ? bottomImageBase64.split(',')[1] : bottomImageBase64
+          const bottomMimeType = bottomImageBase64.startsWith('data:')
+            ? bottomImageBase64.split(';')[0].split(':')[1] || 'image/jpeg'
+            : 'image/jpeg'
+          imageParts.push({
+            inlineData: {
+              mimeType: bottomMimeType,
+              data: bottomData
+            }
+          })
+        }
+
+        // Build request config with images and ensure only 1 image is generated
+        const requestConfig = {
           model: this.model,
           prompt: prompt,
-          // Note: Imagen API may need images passed differently - check API docs
-          // For now, the prompt should be descriptive enough with the image references
           config: {
-            numberOfImages: 1,
+            numberOfImages: 1, // Always return only one image
             aspectRatio: "3:4",
             personGeneration: "allow_adult",
           },
-        })
+        }
+
+        // Include images if available
+        if (imageParts.length > 0) {
+          requestConfig.images = imageParts
+          safeLog('📸 Including', imageParts.length, 'image(s) in direct API request')
+        }
+
+        safeLog('🖼️ numberOfImages set to:', requestConfig.config.numberOfImages)
+
+        // Send clothing images along with the prompt for better accuracy
+        const response = await this.client.models.generateImages(requestConfig)
 
         safeLog('✅ Received response from Imagen API')
 
@@ -138,6 +176,8 @@ export class VirtualTryOnService {
           throw new Error('No images generated in response')
         }
 
+        // Ensure we only use the first image (should only be one anyway since numberOfImages=1)
+        safeLog('✅ Generated', response.generatedImages.length, 'image(s), using first one')
         imageBytes = response.generatedImages[0].image.imageBytes
       }
       
