@@ -33,47 +33,67 @@
       @mouseleave="navbarHoverOut"
     >
       <!-- Logo section with toggle button -->
-      <div class="mb-12 relative flex flex-col transition-all duration-300 ease-in-out" :class="isSidebarCollapsed ? 'items-center gap-4' : 'items-start'">
-        <!-- Logo with liquid reveal - only navigates to home -->
-        <div class="flex items-center w-full" :class="isSidebarCollapsed ? 'justify-center' : 'justify-between'">
-          <router-link 
-            to="/home" 
-            class="liquid-reveal flex items-center cursor-pointer hover:opacity-80 transition-opacity"
-            :class="isSidebarCollapsed ? 'justify-center mx-auto' : 'gap-2 justify-start flex-shrink-0'"
+      <div class="mb-12 relative flex items-center justify-between transition-all duration-300 ease-in-out">
+        <!-- Logo - morphs to expand icon on hover when collapsed, navigates to home when expanded -->
+        <div
+          v-if="isSidebarCollapsed"
+          @click="toggleSidebar"
+          @mouseenter="logoHovered = true"
+          @mouseleave="logoHovered = false"
+          class="liquid-reveal flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out flex-shrink-0 group"
+          title="Expand sidebar"
+        >
+          <div 
+            :class="`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden transition-all duration-300 ease-in-out ${
+              logoHovered 
+                ? 'bg-zinc-800 dark:bg-zinc-200 shadow-md' 
+                : 'bg-black dark:bg-white'
+            }`"
           >
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
-              <Shirt class="w-5 h-5 text-white dark:text-black"/>
-            </div>
-            <h1 
-              class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out"
-              :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
-            >
-              <StyleSnapBrand size="2xl" />
-            </h1>
-          </router-link>
-          
-          <!-- Toggle Button - positioned beside logo when expanded -->
-          <button
-            v-if="!isSidebarCollapsed"
-            @click.stop="toggleSidebar"
-            class="flex-shrink-0 w-[44px] h-[44px] rounded-lg bg-secondary hover:bg-accent flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-110"
-            :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-          >
-            <PanelLeftClose v-if="!isSidebarCollapsed" class="w-5 h-5 text-secondary-foreground" />
-          </button>
+            <!-- Shirt icon - morphs out on hover when collapsed -->
+            <Shirt 
+              :class="`w-5 h-5 absolute text-white dark:text-black transition-all duration-300 ease-out ${
+                logoHovered 
+                  ? 'opacity-0 scale-50 rotate-180' 
+                  : 'opacity-100 scale-100 rotate-0'
+              }`" 
+              style="transform-origin: center; will-change: transform, opacity;"
+            />
+            <!-- PanelLeftOpen icon - morphs in on hover when collapsed -->
+            <PanelLeftOpen 
+              :class="`w-5 h-5 absolute text-white dark:text-black transition-all duration-300 ease-out ${
+                logoHovered 
+                  ? 'opacity-100 scale-100 rotate-0' 
+                  : 'opacity-0 scale-50 -rotate-180'
+              }`" 
+              style="transform-origin: center; will-change: transform, opacity;"
+            />
+          </div>
         </div>
         
-        <!-- View Tab Button - shown below logo when sidebar is collapsed -->
-        <div v-if="!isLandingPage && isSidebarCollapsed" class="w-full">
-          <button
-            @click.stop="toggleSidebar"
-            class="nav-item-liquid flex items-center justify-start px-3 py-3 rounded-xl bg-secondary hover:bg-accent transition-all duration-300 ease-in-out min-h-[44px] w-full"
-            aria-label="Expand sidebar"
-            title="Expand sidebar"
-          >
-            <PanelLeftOpen class="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-          </button>
-        </div>
+        <!-- Logo - navigates to home when expanded -->
+        <router-link 
+          v-else
+          to="/home" 
+          class="liquid-reveal flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0 justify-start"
+        >
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
+            <Shirt class="w-5 h-5 text-white dark:text-black"/>
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out opacity-100">
+            <StyleSnapBrand size="2xl" />
+          </h1>
+        </router-link>
+        
+        <!-- Toggle Button - visible only when expanded, positioned beside logo -->
+        <button
+          v-if="!isSidebarCollapsed"
+          @click.stop="toggleSidebar"
+          class="flex-shrink-0 w-11 h-11 rounded-xl bg-secondary hover:bg-accent flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-110"
+          title="Collapse sidebar"
+        >
+          <PanelLeftClose class="w-5 h-5 text-secondary-foreground" />
+        </button>
       </div>
 
       <!-- Navigation -->
@@ -216,13 +236,13 @@
           ]"
           :title="isSidebarCollapsed ? 'Logout' : undefined"
         >
-          <LogOut class="w-5 h-5 flex-shrink-0" />
+          <LogOut v-if="!loading" class="w-5 h-5 flex-shrink-0" />
+          <div v-else class="w-5 h-5 spinner-modern flex-shrink-0" />
           <span 
             class="font-medium whitespace-nowrap transition-all duration-300 ease-in-out"
             :class="isSidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'"
           >
-            <span v-if="loading" class="ellipsis-animated">Logging out</span>
-            <span v-else>Logout</span>
+            {{ loading ? 'Logging out...' : 'Logout' }}
           </span>
         </button>
       </div>
@@ -278,7 +298,11 @@
               />
             </div>
             
-            <span class="hidden text-xs font-medium transition-all duration-200">
+            <span :class="`text-xs font-medium transition-all duration-200 ${
+              isActiveRoute(item.path)
+                ? 'text-gray-900 dark:text-black opacity-100 scale-100'
+                : 'text-gray-900 dark:text-white opacity-60 dark:opacity-80 scale-90'
+            }`">
               {{ item.name }}
             </span>
 
@@ -334,6 +358,7 @@ import {
   Home, 
   Shirt, 
   Users, 
+  Layers, 
   User as UserIcon,
   LogOut,
   Sun,
@@ -341,8 +366,7 @@ import {
   Monitor,
   ChevronDown,
   ChevronLeft,
-  ChevronRight,
-  Layers
+  ChevronRight
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalPopup from './GlobalPopup.vue'
@@ -372,6 +396,11 @@ const { registerSearchInput } = useKeyboardShortcuts()
 // Computed property to check if current route is landing page
 const isLandingPage = computed(() => route.path === '/')
 
+// Scroll to top of page
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // Helper function to check if a navigation item is active (memoized for performance)
 const isActiveRoute = (itemPath) => {
   const currentPath = route.path
@@ -395,6 +424,9 @@ const themeDropdownStyle = ref('')
 // Sidebar collapsed state - persist in localStorage
 const isSidebarCollapsed = ref(false)
 
+// Logo hover state for icon morphing when collapsed
+const logoHovered = ref(false)
+
 // Load sidebar state from localStorage on mount
 const loadSidebarState = () => {
   const saved = localStorage.getItem('sidebarCollapsed')
@@ -411,6 +443,8 @@ const toggleSidebar = () => {
   if (isSidebarCollapsed.value) {
     showThemeDropdown.value = false
   }
+  // Reset logo hover state when sidebar state changes
+  logoHovered.value = false
 }
 
 // Computed sidebar width class
@@ -432,11 +466,6 @@ const themeOptions = [
 const getThemeLabel = (themeValue) => {
   const option = themeOptions.find(opt => opt.value === themeValue)
   return option ? option.label : 'Theme'
-}
-
-// Scroll to top of page
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 // Select theme
@@ -472,6 +501,9 @@ const updateThemeDropdownPosition = () => {
 
 // Update position when sidebar state changes while dropdown is open
 watch(isSidebarCollapsed, async () => {
+  // Reset logo hover state when sidebar state changes
+  logoHovered.value = false
+  
   if (isSidebarCollapsed.value && showThemeDropdown.value) {
     await nextTick()
     updateThemeDropdownPosition()
@@ -678,4 +710,4 @@ onUnmounted(() => {
   opacity: 0;
   transform: translateY(-20px);
 }
-</style>
+</style>  
