@@ -58,7 +58,7 @@
           class="p-6 rounded-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-1 text-center bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700"
         >
           <div class="w-12 h-12 mx-auto mb-4 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 bg-stone-100 dark:bg-zinc-800">
-            <Layers class="w-6 h-6" />
+            <Palette class="w-6 h-6" />
           </div>
           <p class="text-lg font-semibold text-black dark:text-white">
             View Outfits
@@ -109,7 +109,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
-import { Shirt, Home, Palette, Layers, ArrowLeft, RefreshCw } from 'lucide-vue-next'
+import { Shirt, Home, Palette, ArrowLeft, RefreshCw } from 'lucide-vue-next'
 
 // Theme is not used in this component
 const route = useRoute()

@@ -72,6 +72,7 @@ let animationStartTime = 0
 let animationDuration = 2000 // 2 seconds
 let currentAnimationType = null
 let originalBoneStates = null
+let originalModelState = null // Store original model position, rotation, scale
 const ANIMATION_TYPES = ['wave', 'nod', 'tpose', 'bounce']
 let currentAnimationIndex = 0
 
@@ -173,6 +174,13 @@ const loadAvatar = async () => {
     
     // Save original bone states
     originalBoneStates = saveOriginalBoneStates(avatarModel)
+    
+    // Save original model state (position, rotation, scale)
+    originalModelState = {
+      position: avatarModel.position.clone(),
+      rotation: avatarModel.rotation.clone(),
+      scale: avatarModel.scale.clone()
+    }
     
     isLoading.value = false
     startAnimationLoop()
@@ -423,10 +431,22 @@ const stopAnimation = () => {
     restoreOriginalBoneStates(model, originalBoneStates)
   }
   
-  // Reset model transforms
-  model.position.y = 0
-  model.rotation.z = 0
-  model.scale.set(1, 1, 1)
+  // Reset model transforms to original state
+  if (originalModelState) {
+    model.position.copy(originalModelState.position)
+    model.rotation.copy(originalModelState.rotation)
+    model.scale.copy(originalModelState.scale)
+  } else {
+    // Fallback if original state not saved
+    model.position.set(0, 0, 0)
+    model.rotation.set(0, 0, 0)
+    model.scale.set(1, 1, 1)
+  }
+  
+  // Also ensure avatar group position is reset
+  if (avatar) {
+    avatar.position.set(0, 0, 0)
+  }
   
   // Reset animation state
   isAnimating = false
@@ -505,6 +525,7 @@ const cleanup = () => {
 watch(() => props.avatarUrl, async (newUrl) => {
   if (newUrl && loader) {
     cleanup()
+    originalModelState = null // Reset model state
     await loadAvatar()
   }
 })
@@ -534,6 +555,9 @@ onUnmounted(() => {
   outline: none;
   width: 100%;
   height: 100%;
+}
+
+.avatar-canvas {
   filter: brightness(1.1);
 }
 

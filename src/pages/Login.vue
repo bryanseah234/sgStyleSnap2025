@@ -92,7 +92,7 @@
             
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
-                <Layers class="w-4 h-4 text-stone-600 dark:text-zinc-400" />
+                <Palette class="w-4 h-4 text-stone-600 dark:text-zinc-400" />
               </div>
               <span class="text-sm text-stone-700 dark:text-zinc-300">
                 AI-powered outfit suggestions
@@ -165,7 +165,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth-store'
-import { Shirt, Palette, Layers, Users, AlertCircle } from 'lucide-vue-next'
+import { Shirt, Palette, Users, AlertCircle } from 'lucide-vue-next'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
