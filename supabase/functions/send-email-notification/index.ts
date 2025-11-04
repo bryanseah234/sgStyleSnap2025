@@ -293,6 +293,10 @@ serve(async (req) => {
 
     // Parse request body
     // Handle both direct HTTP calls and Supabase webhook payloads
+    // Supabase Edge Function webhooks send the row data directly, which could be:
+    // 1. Direct row data (flat structure)
+    // 2. Webhook format with 'record' or 'new' field
+    // 3. Nested in 'data' or 'payload' field
     let notificationData: NotificationData
     try {
       const bodyText = await req.text()
@@ -300,27 +304,45 @@ serve(async (req) => {
       const parsedBody = JSON.parse(bodyText)
       console.log('📧 Parsed body:', JSON.stringify(parsedBody, null, 2))
       
-      // Check if this is a webhook payload (has 'record' or 'new' field)
-      if (parsedBody.record || parsedBody.new) {
-        console.log('📧 Detected Supabase webhook payload format')
-        // Extract the record from webhook payload
-        const record = parsedBody.record || parsedBody.new
-        notificationData = {
-          id: record.id,
-          recipient_id: record.recipient_id,
-          actor_id: record.actor_id,
-          type: record.type,
-          reference_id: record.reference_id,
-          message: record.custom_message || record.message,
-          created_at: record.created_at
-        }
-        console.log('📧 Extracted notification data from webhook:', JSON.stringify(notificationData, null, 2))
+      let record: any = null
+      
+      // Try different webhook payload formats
+      if (parsedBody.record) {
+        console.log('📧 Detected webhook format: record field')
+        record = parsedBody.record
+      } else if (parsedBody.new) {
+        console.log('📧 Detected webhook format: new field')
+        record = parsedBody.new
+      } else if (parsedBody.data) {
+        console.log('📧 Detected webhook format: data field')
+        record = parsedBody.data
+      } else if (parsedBody.payload) {
+        console.log('📧 Detected webhook format: payload field')
+        record = parsedBody.payload
       } else if (parsedBody.id && parsedBody.recipient_id && parsedBody.type) {
-        // Direct HTTP call format (flat structure)
-        console.log('📧 Detected direct HTTP call payload format')
-        notificationData = parsedBody as NotificationData
+        // Direct row data (flat structure) - this is what Supabase Edge Function webhooks typically send
+        console.log('📧 Detected direct row data format (Supabase Edge Function webhook)')
+        record = parsedBody
       } else {
-        throw new Error('Invalid payload format: missing required fields or unsupported webhook format')
+        // Last attempt: maybe the entire body is the record
+        console.log('📧 Trying entire body as record')
+        record = parsedBody
+      }
+      
+      // Extract notification data from the record
+      if (!record || !record.id || !record.recipient_id || !record.type) {
+        console.error('📧 ❌ Invalid record structure:', JSON.stringify(record, null, 2))
+        throw new Error('Invalid payload format: record missing required fields (id, recipient_id, type)')
+      }
+      
+      notificationData = {
+        id: record.id,
+        recipient_id: record.recipient_id,
+        actor_id: record.actor_id || null,
+        type: record.type,
+        reference_id: record.reference_id || null,
+        message: record.custom_message || record.message || null,
+        created_at: record.created_at
       }
       
       console.log('📧 Final notification data:', JSON.stringify(notificationData, null, 2))
