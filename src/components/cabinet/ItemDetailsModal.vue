@@ -11,7 +11,7 @@
           <div
             v-if="isOpen"
             :class="`liquid-modal-card relative w-full max-w-2xl rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]`"
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh]`"
             @click.stop
           >
           <!-- Close Button with Liquid Press -->
@@ -34,7 +34,7 @@
 
       <div class="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
+        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-[400px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
