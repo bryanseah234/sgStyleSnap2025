@@ -116,10 +116,19 @@
 
       <!-- Filters Section (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
-        <div :class="`rounded-2xl border p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-          <!-- Search Bar, Favourites, and Clear Filters Row -->
-          <div class="flex items-center gap-3 mb-4">
-            <!-- Search Bar (longer than buttons) -->
+        <div :class="`rounded-2xl border p-4 md:p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+          <!-- Filter Toggle Button (Mobile Only - At Top) -->
+          <button
+            @click="filtersExpanded = !filtersExpanded"
+            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
+          >
+            <span class="font-medium text-sm">Filters</span>
+            <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
+          </button>
+
+          <!-- Desktop: Search Bar, Favourites, and Clear Filters Row -->
+          <div class="hidden md:flex items-center gap-3 mb-4">
+            <!-- Search Bar -->
             <div class="flex-1 relative search-input-group">
               <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
               <input
@@ -127,7 +136,7 @@
                 v-model="searchTerm"
                 type="text"
                 placeholder="Search your closet..."
-                :class="`w-full pl-10 pr-3 md:pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
+                :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
                 @input="handleSearch"
                 @focus="handleSearchFocus"
@@ -141,7 +150,7 @@
               </div>
             </div>
             
-            <!-- Favourites Button (same width as Clear Filters) -->
+            <!-- Favourites Button -->
             <div class="w-32 flex-shrink-0">
               <button
                 @click="showFavoritesOnly = !showFavoritesOnly"
@@ -156,7 +165,7 @@
               </button>
             </div>
             
-            <!-- Clear Filters Button (same width as Favourites) -->
+            <!-- Clear Filters Button -->
             <div class="w-32 flex-shrink-0">
               <button
                 @click="clearFilters"
@@ -172,15 +181,53 @@
               </button>
             </div>
           </div>
-          
-          <!-- Filter Toggle Button (Mobile Only) -->
-          <button
-            @click="filtersExpanded = !filtersExpanded"
-            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200"
-          >
-            <span class="font-medium text-sm">Filters</span>
-            <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
-          </button>
+
+          <!-- Mobile: Search Bar with Heart Button Inline -->
+          <div class="md:hidden mb-3">
+            <div class="flex items-center gap-2">
+              <!-- Search Bar (full width minus heart button) -->
+              <div class="flex-1 relative search-input-group">
+                <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
+                <input
+                  ref="searchInputRef"
+                  v-model="searchTerm"
+                  type="text"
+                  placeholder="Search your closet..."
+                  :class="`w-full pl-10 pr-3 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
+                    dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
+                  @input="handleSearch"
+                  @focus="handleSearchFocus"
+                  @blur="handleSearchBlur"
+                />
+              </div>
+              
+              <!-- Heart Button (inline with search bar) -->
+              <button
+                @click="showFavoritesOnly = !showFavoritesOnly"
+                :class="`flex-shrink-0 w-12 h-12 rounded-lg font-medium transition-all duration-200 flex items-center justify-center ${
+                  showFavoritesOnly
+                    ? 'bg-red-500 text-white dark:bg-red-600'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                }`"
+              >
+                <Heart :class="`w-5 h-5 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+              </button>
+            </div>
+            
+            <!-- Clear Filters Button (below search bar on mobile) -->
+            <button
+              @click="clearFilters"
+              :disabled="!hasActiveFilters"
+              :class="`w-full mt-3 py-2.5 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+                hasActiveFilters
+                  ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer'
+                  : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50'
+              }`"
+            >
+              <X class="w-4 h-4" />
+              <span>Clear Filters</span>
+            </button>
+          </div>
           
           <!-- Filter Dropdowns -->
           <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0`">
