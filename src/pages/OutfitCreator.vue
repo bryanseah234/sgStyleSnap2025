@@ -1824,6 +1824,17 @@ const generateWeatherBasedOutfit = async (fixedItem = null) => {
     // Filter items based on weather conditions
     let weatherFilteredItems = filterItemsByWeather(wardrobeItems.value, { temperature, condition })
     
+    // Debug logging: Show what items remain after filtering
+    console.log('OutfitCreator: After weather filtering:', {
+      totalItems: wardrobeItems.value.length,
+      filteredItems: weatherFilteredItems.length,
+      categories: weatherFilteredItems.reduce((acc, item) => {
+        const cat = item.category?.toLowerCase() || 'unknown'
+        acc[cat] = (acc[cat] || 0) + 1
+        return acc
+      }, {})
+    })
+    
     // If a fixed item is provided, ensure it's included and available
     if (fixedItem) {
       const fixedItemInList = weatherFilteredItems.find(item => item.id === fixedItem.id)
@@ -1847,8 +1858,47 @@ const generateWeatherBasedOutfit = async (fixedItem = null) => {
       fixedItem
     )
     
+    // Debug logging: Show what categories were found
+    const categories = {
+      top: weatherFilteredItems.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse' || 
+               cat === 'hoodie' || cat === 'longsleeve' || cat === 'polo' || cat === 'body' || 
+               cat === 'undershirt'
+      }),
+      bottom: weatherFilteredItems.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt'
+      }),
+      shoes: weatherFilteredItems.filter(item => {
+        const cat = item.category?.toLowerCase()
+        return cat === 'shoes' || cat === 'slippers'
+      })
+    }
+    
+    console.log('OutfitCreator: Category breakdown:', {
+      tops: categories.top.length,
+      bottoms: categories.bottom.length,
+      shoes: categories.shoes.length,
+      topItems: categories.top.map(i => ({ name: i.name, category: i.category })),
+      bottomItems: categories.bottom.map(i => ({ name: i.name, category: i.category }))
+    })
+    
     if (outfitCombinations.length === 0) {
-      showWarning('Unable to generate weather-appropriate outfits with available items')
+      // Provide more specific error message
+      let errorMsg = 'Unable to generate weather-appropriate outfits. '
+      if (categories.top.length === 0) {
+        errorMsg += 'No tops found in your closet. '
+      }
+      if (categories.bottom.length === 0) {
+        errorMsg += 'No bottoms found in your closet. '
+      }
+      if (categories.top.length === 0 && categories.bottom.length === 0) {
+        errorMsg += 'You need at least one top and one bottom item.'
+      } else if (categories.top.length > 0 && categories.bottom.length > 0) {
+        errorMsg += 'Items may not match the current weather conditions (' + temperature + '°C). Try adding more items to your closet.'
+      }
+      showWarning(errorMsg)
       generatingWeatherOutfit.value = false
       showWeatherRecommendationsModal.value = false
       return
@@ -2471,26 +2521,16 @@ function filterItemsByWeather(items, weather) {
     const styleTags = item.style_tags || []
     
     // Temperature-based filtering
+    // NOTE: Made less aggressive - we prefer certain items but don't completely exclude others
+    // The scoring system will penalize less ideal items, but we still allow them
     if (temperature > 30) {
       // Very hot - prefer short sleeves, shorts, light fabrics
-      if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
-        // Prefer short sleeves
-        if (clothingType.includes('long') || clothingType === 'longsleeve' || 
-            clothingType === 'hoodie' || styleTags.includes('winter')) {
-          return false
-        }
-        return true
-      }
-      if (cat === 'bottom' || cat === 'pants' || cat === 'shorts' || cat === 'skirt') {
-        // Prefer shorts over long pants in very hot weather
-        if (cat === 'shorts' || cat === 'skirt') return true
-        if (cat === 'pants' && styleTags.includes('lightweight')) return true
-        return false // Avoid heavy pants
-      }
+      // But don't completely exclude long sleeves/pants - let scoring handle preference
       if (cat === 'outerwear' || cat === 'blazer') {
-        // Avoid outerwear in very hot weather
+        // Only completely exclude outerwear in very hot weather
         return false
       }
+      // Allow all tops and bottoms, scoring will handle preference
       return true
     } else if (temperature > 25) {
       // Hot - prefer light items, can include short sleeves and shorts
