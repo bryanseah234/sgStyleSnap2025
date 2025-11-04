@@ -122,11 +122,12 @@ async function sendEmail(
   try {
     const payload = {
       sender: {
-        name: 'StyleSnap',
-        email: 'no-reply@stylesnap.app'
+        name: 'SG StyleSnap',
+        email: 'noreply-sgstylesnap@hong-yi.me'
       },
       to: [{ email: to }],
-      cc: [{ email: 'hello@hong-yi.me' }],
+      // Temporarily disabled CC for testing
+      // cc: [{ email: 'hello@hong-yi.me' }],
       subject,
       htmlContent: html,
       headers: {
@@ -161,6 +162,18 @@ async function sendEmail(
 
     const responseData = await response.text()
     console.log('📧 ✅ Brevo API success response:', responseData)
+    
+    // Parse Brevo response to validate it contains a messageId
+    try {
+      const brevoResponse = JSON.parse(responseData)
+      if (brevoResponse.messageId) {
+        console.log('📧 ✅ Brevo messageId received:', brevoResponse.messageId)
+      } else {
+        console.warn('📧 ⚠️  Brevo response missing messageId:', brevoResponse)
+      }
+    } catch (parseError) {
+      console.warn('📧 ⚠️  Could not parse Brevo response as JSON:', responseData)
+    }
 
     return { success: true }
   } catch (error) {
