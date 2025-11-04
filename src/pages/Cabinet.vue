@@ -154,10 +154,10 @@
             <div class="w-32 flex-shrink-0">
               <button
                 @click="showFavoritesOnly = !showFavoritesOnly"
-                :class="`w-full py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+                :class="`w-full py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 border ${
                   showFavoritesOnly
-                    ? 'bg-red-500 text-white dark:bg-red-600'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                    ? 'bg-red-500 text-white dark:bg-red-600 border-0'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 border-stone-300 dark:border-zinc-700'
                 }`"
               >
                 <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
@@ -170,10 +170,10 @@
               <button
                 @click="clearFilters"
                 :disabled="!hasActiveFilters"
-                :class="`w-full py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+                :class="`w-full py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 border ${
                   hasActiveFilters
-                    ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer'
-                    : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50'
+                    ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer border-stone-300 dark:border-zinc-700'
+                    : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50 border-stone-300 dark:border-zinc-700'
                 }`"
               >
                 <X class="w-4 h-4" />
@@ -204,10 +204,10 @@
               <!-- Heart Button (inline with search bar) -->
               <button
                 @click="showFavoritesOnly = !showFavoritesOnly"
-                :class="`flex-shrink-0 w-12 h-12 rounded-lg font-medium transition-all duration-200 flex items-center justify-center ${
+                :class="`flex-shrink-0 w-12 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center border ${
                   showFavoritesOnly
-                    ? 'bg-red-500 text-white dark:bg-red-600'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                    ? 'bg-red-500 text-white dark:bg-red-600 border-0'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 border-stone-300 dark:border-zinc-700'
                 }`"
               >
                 <Heart :class="`w-5 h-5 ${showFavoritesOnly ? 'fill-current' : ''}`" />
@@ -218,10 +218,10 @@
             <button
               @click="clearFilters"
               :disabled="!hasActiveFilters"
-              :class="`w-full mt-3 py-2.5 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+              :class="`w-full mt-3 py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 border ${
                 hasActiveFilters
-                  ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer'
-                  : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50'
+                  ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer border-stone-300 dark:border-zinc-700'
+                  : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50 border-stone-300 dark:border-zinc-700'
               }`"
             >
               <X class="w-4 h-4" />
