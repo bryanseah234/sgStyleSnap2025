@@ -573,15 +573,15 @@
     
     <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="cta-card-section min-h-screen flex items-center justify-center text-gray-900 relative pt-20 sm:pt-24 md:pt-32"
+      class="cta-card-section text-gray-900 relative py-4 sm:py-6"
       style="background-color: rgb(245, 246, 247);"
     >
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2 sm:space-y-3 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
         <p class="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-gray-800/95">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
-        <div class="pt-4">
+        <div>
         <button
             @click="handleSignUp"
             class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-10 py-5 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"

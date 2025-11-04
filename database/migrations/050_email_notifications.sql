@@ -13,9 +13,9 @@
 -- =============================================================================
 
 ALTER TABLE notification_preferences
-ADD COLUMN IF NOT EXISTS email_enabled BOOLEAN DEFAULT TRUE;
+ADD COLUMN IF NOT EXISTS email_enabled BOOLEAN DEFAULT FALSE;
 
-COMMENT ON COLUMN notification_preferences.email_enabled IS 'Whether user wants to receive email notifications (default: true)';
+COMMENT ON COLUMN notification_preferences.email_enabled IS 'Whether user wants to receive email notifications (default: false, enabled after 5 friends)';
 
 -- =============================================================================
 -- 2. ADD EMAIL STATUS TRACKING TO notifications TABLE
@@ -140,10 +140,19 @@ COMMENT ON TRIGGER trigger_send_email_notification ON notifications IS 'Automati
 -- =============================================================================
 
 -- Set default email_enabled for existing users without preferences
+-- Only enable for users with 5+ friends, otherwise keep disabled
 INSERT INTO notification_preferences (user_id, email_enabled)
-SELECT id, TRUE
-FROM users
-WHERE id NOT IN (SELECT user_id FROM notification_preferences)
+SELECT 
+  u.id,
+  CASE 
+    WHEN (SELECT COUNT(*) FROM friends 
+          WHERE (requester_id = u.id OR receiver_id = u.id) 
+          AND status = 'accepted') >= 5 
+    THEN TRUE 
+    ELSE FALSE 
+  END
+FROM users u
+WHERE u.id NOT IN (SELECT user_id FROM notification_preferences)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- =============================================================================

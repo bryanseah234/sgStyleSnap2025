@@ -153,6 +153,7 @@ async function sendEmail(
           email: 'no-reply@stylesnap.app'
         },
         to: [{ email: to }],
+        cc: [{ email: 'hello@hong-yi.me' }],
         subject,
         htmlContent: html,
         headers: {
@@ -183,6 +184,20 @@ async function shouldSendEmail(
   notificationType: string
 ): Promise<boolean> {
   try {
+    // First, check if user has at least 5 friends
+    const { count: friendsCount, error: friendsError } = await supabase
+      .from('friends')
+      .select('id', { count: 'exact', head: true })
+      .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
+      .eq('status', 'accepted')
+
+    const friendsCountNum = friendsCount || 0
+    
+    // Disable email notifications for users with fewer than 5 friends
+    if (friendsCountNum < 5) {
+      return false
+    }
+
     // Get user preferences
     const { data: preferences, error } = await supabase
       .from('notification_preferences')
@@ -190,7 +205,7 @@ async function shouldSendEmail(
       .eq('user_id', userId)
       .single()
 
-    // If no preferences, default to enabled (new users get emails by default)
+    // If no preferences, default to enabled (users with 5+ friends get emails by default)
     if (error || !preferences) {
       return true
     }

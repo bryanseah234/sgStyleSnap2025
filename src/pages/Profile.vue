@@ -141,14 +141,24 @@
                 <div class="flex items-center justify-between pb-4 border-b border-stone-200 dark:border-zinc-700">
                   <div class="flex-1">
                     <p class="text-base font-medium text-stone-800 dark:text-zinc-200">Enable Email Notifications</p>
-                    <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">Master control for all email notifications</p>
+                    <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">
+                      <span v-if="stats.friends < 5">
+                        Email notifications are disabled until you have 5 friends. You currently have {{ stats.friends }} friend{{ stats.friends !== 1 ? 's' : '' }}.
+                      </span>
+                      <span v-else>
+                        Master control for all email notifications
+                      </span>
+                    </p>
                   </div>
                   <button
                     @click="toggleMasterEmail"
-                    :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                      preferences.email_enabled 
-                        ? 'bg-green-500' 
-                        : 'bg-gray-300 dark:bg-gray-500'
+                    :disabled="stats.friends < 5"
+                    :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                      stats.friends < 5
+                        ? 'bg-gray-300 dark:bg-gray-500 cursor-not-allowed opacity-50'
+                        : preferences.email_enabled 
+                          ? 'bg-green-500 cursor-pointer' 
+                          : 'bg-gray-300 dark:bg-gray-500 cursor-pointer'
                     }`"
                   >
                     <span
@@ -556,6 +566,12 @@ const loadNotificationPreferences = async () => {
  * Toggles the master email notification setting
  */
 const toggleMasterEmail = async () => {
+  // Prevent toggling if user has fewer than 5 friends
+  if (stats.value.friends < 5) {
+    showError('Email notifications are disabled until you have 5 friends', 'Requirement Not Met')
+    return
+  }
+  
   try {
     preferences.value.email_enabled = !preferences.value.email_enabled
     const result = await notificationsService.updateNotificationPreferences({

@@ -63,7 +63,7 @@ const isHovering = ref(false)
 // Three.js variables
 let scene, camera, renderer, loader, avatar = null
 let animationFrameId = null
-let autoRotateSpeed = 0.005
+let autoRotateSpeed = 0.006
 
 // Animation state
 let isAnimating = false

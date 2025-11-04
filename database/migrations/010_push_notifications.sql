@@ -239,8 +239,8 @@ CREATE TRIGGER notification_preferences_updated_at
 CREATE OR REPLACE FUNCTION create_default_notification_preferences()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO notification_preferences (user_id)
-  VALUES (NEW.id)
+  INSERT INTO notification_preferences (user_id, email_enabled)
+  VALUES (NEW.id, FALSE)
   ON CONFLICT (user_id) DO NOTHING;
   RETURN NEW;
 END;
