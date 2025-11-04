@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isOpen"
-    class="liquid-dialog-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="liquid-dialog-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-[1200] p-4"
     @click="$emit('close')"
   >
     <div
