@@ -11,7 +11,7 @@
           <div
             v-if="isOpen"
             :class="`liquid-modal-card relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-[400px]`"
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-[500px] md:min-h-[600px]`"
             @click.stop
           >
           <!-- Close Button with Liquid Press -->
@@ -32,9 +32,9 @@
             </button>
           </div>
 
-      <div class="flex flex-col md:flex-row flex-1 min-h-[400px] overflow-hidden">
+      <div class="flex flex-col md:flex-row flex-1 min-h-[500px] md:min-h-[600px] overflow-hidden">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
+        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[600px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Right: Details with Liquid Reveal -->
-        <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-[400px] md:min-h-0">
+        <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-[500px] md:min-h-0">
           <!-- Item Name & Category -->
           <div>
             <h2 class="text-2xl font-bold mb-2 text-foreground">
