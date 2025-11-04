@@ -95,7 +95,7 @@
               </div>
               <div>
                 <p class="font-medium text-foreground">
-                  {{ user.name || user.username }}
+                  {{ user.name || (user.username ? `@${user.username}` : 'User') }}
                 </p>
                 <p class="text-xs text-stone-600 dark:text-zinc-400">
                   @{{ user.username }}

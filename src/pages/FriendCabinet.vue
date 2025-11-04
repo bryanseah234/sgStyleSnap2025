@@ -12,7 +12,7 @@
           </button>
           <div class="flex-1 min-w-0">
             <h1 class="text-4xl font-bold text-foreground text-left">
-              {{ getFirstName(friend?.name) || friend?.username || 'Friend' }}'s Closet
+              {{ getFirstName(friend?.name) || (friend?.username ? `@${friend.username}` : 'Friend') }}'s Closet
             </h1>
             <p class="text-lg text-stone-600 dark:text-zinc-400">
               Browse their wardrobe and get style inspiration
@@ -51,7 +51,7 @@
           </div>
           <div class="flex-1">
             <h2 class="text-2xl font-bold text-black dark:text-white">
-              {{ getFirstName(friend.name) || friend.username }}
+              {{ getFirstName(friend.name) || (friend.username ? `@${friend.username}` : 'Friend') }}
             </h2>
             <p class="text-lg text-stone-600 dark:text-zinc-400">
               @{{ friend.username }}

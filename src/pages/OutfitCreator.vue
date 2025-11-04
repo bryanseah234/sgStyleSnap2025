@@ -389,7 +389,7 @@
             <!-- Friend Info -->
             <div class="flex-1 min-w-0">
               <p class="text-lg font-semibold mb-1 text-black dark:text-white">
-                {{ getFirstName(friend.name) || friend.username }}
+                {{ getFirstName(friend.name) || `@${friend.username}` }}
               </p>
               <p class="text-sm text-stone-600 dark:text-zinc-400">
                 @{{ friend.username }}
@@ -1150,7 +1150,7 @@ const subRouteTitle = computed(() => {
     case 'suggested': return 'Create Your Outfit'
     case 'personal': return 'Create Your Outfit'
     case 'friendSelect': return 'Select a Friend'
-    case 'friend': return friendProfile.value ? `Create Outfit for ${getFirstName(friendProfile.value.name || friendProfile.value.username)}` : `Create with Friend's Items`
+    case 'friend': return friendProfile.value ? `Create Outfit for ${getFirstName(friendProfile.value.name) || (friendProfile.value.username ? `@${friendProfile.value.username}` : 'Friend')}` : `Create with Friend's Items`
     case 'edit': return 'Edit Outfit'
     default: return 'Create Outfit'
   }
@@ -1381,7 +1381,7 @@ const selectedItem = computed(() => {
 
 const itemsSectionTitle = computed(() => {
   if (currentSubRoute.value === 'friend' && friendProfile.value) {
-    return `${getFirstName(friendProfile.value.name || friendProfile.value.username)}'s Closet`
+    return `${getFirstName(friendProfile.value.name) || (friendProfile.value.username ? `@${friendProfile.value.username}` : 'Friend')}'s Closet`
   }
   switch (itemsSource.value) {
     case 'my-cabinet': return 'My Closet'
@@ -3467,7 +3467,7 @@ const handleShareOutfit = async (outfitName) => {
     
     if (result && result.success) {
       console.log('OutfitCreator: Friend outfit suggestion created successfully')
-      showSuccess(`Outfit "${outfitName}" shared with ${friendProfile.value.username}! They will receive a notification.`)
+      showSuccess(`Outfit "${outfitName}" shared with @${friendProfile.value.username}! They will receive a notification.`)
       // Close the dialog
       showShareOutfitDialog.value = false
       // Navigate back to outfits gallery

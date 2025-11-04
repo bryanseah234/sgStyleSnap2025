@@ -327,13 +327,15 @@
                 <h3 class="font-semibold mb-1 text-black dark:text-white">
                   {{ item.name }}
                 </h3>
-                <!-- Tag and Date on same row -->
+                <!-- Category and Brand on same row -->
                 <p class="text-sm text-stone-600 dark:text-stone-100">
                   <span class="text-xs font-medium text-stone-700 dark:text-zinc-200">
                     {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
                   </span>
-                  <span v-if="item.category && formatItemDate(item)">, </span>
-                  {{ formatItemDate(item) }}
+                  <span v-if="item.category && item.brand">, </span>
+                  <span v-if="item.brand" class="text-xs font-medium text-stone-700 dark:text-zinc-200">
+                    {{ item.brand }}
+                  </span>
                 </p>
               </div>
               <button
@@ -435,7 +437,7 @@ const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
     case 'manual': return 'Add Your Item'
     case 'catalogue': return 'Add Your Item'
-    case 'friend': return `${route.params.username}'s Closet`
+    case 'friend': return `@${route.params.username}'s Closet`
     default: return 'Your Closet'
   }
 })
@@ -499,7 +501,7 @@ const availableCategoriesForDropdown = computed(() => {
 const availableColors = computed(() => {
   const colors = new Set(
     (items.value || [])
-      .map(i => i.color)
+      .map(i => i.primary_color || i.color) // Support both primary_color (from DB) and color (fallback)
       .filter(Boolean)
   )
   return Array.from(colors).sort()
@@ -607,7 +609,10 @@ const filteredItems = computed(() => {
 
   // Apply color filter
   if (selectedColor.value !== null) {
-    filtered = filtered.filter(item => item.color?.toLowerCase() === selectedColor.value.toLowerCase())
+    filtered = filtered.filter(item => {
+      const itemColor = (item.primary_color || item.color)?.toLowerCase()
+      return itemColor === selectedColor.value.toLowerCase()
+    })
   }
 
   // Apply brand filter
@@ -628,7 +633,7 @@ const filteredItems = computed(() => {
         item.brand?.toLowerCase().includes(query) ||
         item.type?.toLowerCase().includes(query) ||
         item.category?.toLowerCase().includes(query) ||
-        item.color?.toLowerCase().includes(query) ||
+        (item.primary_color || item.color)?.toLowerCase().includes(query) ||
         item.material?.toLowerCase().includes(query) ||
         item.pattern?.toLowerCase().includes(query) ||
         item.style?.toLowerCase().includes(query) ||
@@ -728,8 +733,16 @@ const handleItemAdded = async () => {
 
 // Item details modal functions
 const openItemDetails = (item) => {
-  selectedItem.value = item
-  showItemDetails.value = true
+  try {
+    if (!item) {
+      console.warn('Cabinet: Cannot open item details - item is null/undefined')
+      return
+    }
+    selectedItem.value = item
+    showItemDetails.value = true
+  } catch (error) {
+    console.error('Cabinet: Error opening item details:', error)
+  }
 }
 
 const closeItemDetails = () => {

@@ -137,7 +137,7 @@
           <div class="mb-3">
             <span :class="`text-xs text-stone-500 dark:text-zinc-400`">
               {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
-              <span v-if="item.category && item.brand">, </span>
+              <span v-if="item.category && item.brand">,</span>
               <span v-if="item.brand" :class="`text-xs font-medium text-stone-600 dark:text-zinc-500`">
                 {{ item.brand }}
               </span>

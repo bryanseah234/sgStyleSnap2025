@@ -23,7 +23,7 @@
       <!-- Friend Info -->
       <div class="flex-1">
         <h3 class="font-semibold text-foreground">
-          {{ getFirstName(suggestion.suggester?.name) || suggestion.suggester?.username || 'Unknown Friend' }}
+          {{ getFirstName(suggestion.suggester?.name) || (suggestion.suggester?.username ? `@${suggestion.suggester.username}` : 'Unknown Friend') }}
         </h3>
         <p :class="`text-sm text-stone-600 dark:text-zinc-400}`">
           Suggested an outfit

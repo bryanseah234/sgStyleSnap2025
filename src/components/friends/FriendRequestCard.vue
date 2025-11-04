@@ -27,7 +27,7 @@
         <!-- User Info -->
         <div>
           <h3 class="font-semibold text-foreground">
-            {{ request.requester.name || request.requester.username }}
+            {{ request.requester.name || (request.requester.username ? `@${request.requester.username}` : 'User') }}
           </h3>
           <p class="text-sm text-stone-600 dark:text-zinc-400">
             @{{ request.requester.username }}

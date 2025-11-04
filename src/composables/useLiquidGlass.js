@@ -114,7 +114,7 @@ export function useLiquidHover() {
           // Extract the easing function with proper error handling
           let easingFunction = null
           
-          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
             // Safely access array index
             easingFunction = springEasing[0]
           } else if (springEasing && typeof springEasing === 'function') {
@@ -195,7 +195,7 @@ export function useLiquidHover() {
           // Extract the easing function with proper error handling
           let easingFunction = null
           
-          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0) {
+          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
             // Safely access array index
             easingFunction = springEasing[0]
           } else if (springEasing && typeof springEasing === 'function') {
@@ -605,7 +605,7 @@ export function useNavbarLiquid() {
           
           // Safely check and extract easing function
           if (springEasing !== null && springEasing !== undefined) {
-            if (Array.isArray(springEasing) && springEasing.length > 0) {
+            if (Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
               easingFunction = springEasing[0]
             } else if (typeof springEasing === 'function') {
               easingFunction = springEasing
@@ -666,7 +666,7 @@ export function useNavbarLiquid() {
           
           // Safely check and extract easing function
           if (springEasing !== null && springEasing !== undefined) {
-            if (Array.isArray(springEasing) && springEasing.length > 0) {
+            if (Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
               easingFunction = springEasing[0]
             } else if (typeof springEasing === 'function') {
               easingFunction = springEasing
@@ -730,7 +730,7 @@ export function useNavbarLiquid() {
           
           // Safely check and extract easing function
           if (springEasing !== null && springEasing !== undefined) {
-            if (Array.isArray(springEasing) && springEasing.length > 0) {
+            if (Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
               easingFunction = springEasing[0]
             } else if (typeof springEasing === 'function') {
               easingFunction = springEasing

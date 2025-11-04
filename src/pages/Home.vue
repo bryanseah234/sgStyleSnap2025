@@ -128,8 +128,8 @@
   <div v-if="showNotificationsModal" class="fixed inset-0 z-50 flex items-center justify-center">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40" @click="showNotificationsModal = false" />
-    <!-- Modal Content -->
-    <div class="relative z-10 w-[480px] max-w-[92vw] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
+      <!-- Modal Content -->
+      <div class="relative z-10 w-[480px] max-w-[92vw] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden dark:bg-zinc-900 dark:border-zinc-800 flex flex-col" @click="closeContextMenu">
       <!-- Header -->
       <div class="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-zinc-800 flex-shrink-0">
         <div class="flex items-center gap-2">
@@ -181,6 +181,7 @@
             @touchmove="handleTouchMove($event, notification)"
             @touchend="handleTouchEnd($event, notification)"
             @click="handleNotificationClick(notification)"
+            @contextmenu.prevent="handleRightClick($event, notification)"
           >
             <!-- Swipe Action Indicator (Left side when swiping left) -->
             <div 
@@ -213,6 +214,30 @@
             </div>
           </div>
         </div>
+        
+        <!-- Context Menu for Desktop (Right-click) -->
+        <div
+          v-if="contextMenu.visible"
+          class="fixed z-[100] bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg shadow-xl py-1 min-w-[160px]"
+          :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
+          @click.stop
+        >
+          <button
+            v-if="contextMenu.notification?.is_read"
+            @click="handleContextMenuAction('mark-unread', contextMenu.notification)"
+            class="w-full px-4 py-2 text-left text-sm text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            Mark as Unread
+          </button>
+          <button
+            v-else
+            @click="handleContextMenuAction('mark-read', contextMenu.notification)"
+            class="w-full px-4 py-2 text-left text-sm text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            Mark as Read
+          </button>
+        </div>
+      </div>
         <div v-else class="text-center py-12">
           <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
             <Bell class="w-8 h-8 text-stone-500 dark:text-zinc-400" />
@@ -326,8 +351,12 @@ const handleResize = () => {
 
 // ESC key handler for notifications modal
 const handleEsc = (e) => {
-  if (e.key === 'Escape' && showNotificationsModal.value) {
-    showNotificationsModal.value = false
+  if (e.key === 'Escape') {
+    if (contextMenu.value.visible) {
+      closeContextMenu()
+    } else if (showNotificationsModal.value) {
+      showNotificationsModal.value = false
+    }
   }
 }
 
@@ -504,6 +533,14 @@ const touchStartX = ref(0)
 const touchStartY = ref(0)
 const isSwiping = ref(false)
 
+// Context menu state for desktop right-click
+const contextMenu = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  notification: null
+})
+
 /**
  * Marks a notification as read
  */
@@ -602,6 +639,46 @@ const handleTouchEnd = (event, notification) => {
   touchStartX.value = 0
   touchStartY.value = 0
   isSwiping.value = false
+}
+
+/**
+ * Handles right-click context menu on desktop
+ */
+const handleRightClick = (event, notification) => {
+  event.preventDefault()
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    notification: notification
+  }
+}
+
+/**
+ * Closes context menu
+ */
+const closeContextMenu = () => {
+  contextMenu.value = {
+    visible: false,
+    x: 0,
+    y: 0,
+    notification: null
+  }
+}
+
+/**
+ * Handles context menu action
+ */
+const handleContextMenuAction = async (action, notification) => {
+  closeContextMenu()
+  
+  if (action === 'toggle-read') {
+    await toggleNotificationReadStatus(notification)
+  } else if (action === 'mark-read' && !notification.is_read) {
+    await markNotificationAsRead(notification)
+  } else if (action === 'mark-unread' && notification.is_read) {
+    await markNotificationAsUnread(notification)
+  }
 }
 
 /**
@@ -753,6 +830,8 @@ onMounted(async () => {
   // Initialize desktop detection
   isDesktop.value = window.innerWidth >= 1024
   window.addEventListener('resize', handleResize)
+  // Close context menu when clicking outside
+  window.addEventListener('click', closeContextMenu)
   window.addEventListener('keydown', handleEsc)
   
   console.log('🏠 Home: Component mounted, starting data loading...')
@@ -795,6 +874,7 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('keydown', handleEsc)
+  window.removeEventListener('click', closeContextMenu)
 })
 
 // Liquid glass event handlers
