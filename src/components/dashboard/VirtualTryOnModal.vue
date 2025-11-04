@@ -87,7 +87,7 @@
         <!-- Right: Content (50%) -->
         <div class="w-[50%] flex-shrink-0 flex flex-col gap-3 overflow-y-auto min-h-0">
           <!-- Image Info -->
-          <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800 flex-shrink-0">
+          <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-200 dark:border-purple-800 flex-shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0">
                 <Check class="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -107,14 +107,14 @@
           <div class="flex flex-col gap-3 flex-shrink-0">
             <button
               @click="downloadImage"
-              class="w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-500 text-white hover:bg-purple-600"
+              class="w-full px-6 py-3 rounded-2xl font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-500 text-white hover:bg-purple-600"
             >
               <Download class="w-5 h-5" />
               Download Image
             </button>
             <button
               @click="$emit('close')"
-              class="w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              class="w-full px-6 py-3 rounded-2xl font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
               Close
             </button>

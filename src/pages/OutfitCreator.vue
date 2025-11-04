@@ -3474,19 +3474,19 @@ const moveSelectedItemForward = () => {
   if (itemsAbove.length > 0) {
     // Find the item with the smallest z-index above current (swap with it)
     const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
-    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === minAboveZIndex)
+    const swapItem = itemsWithZ.find(i => i.id !== item.id && i.normalizedZ === minAboveZIndex)
     
-    if (swapItemIndex !== -1) {
+    if (swapItem) {
       // Swap z-indexes by creating new array with updated items
       canvasItems.value = canvasItems.value.map((i, idx) => {
         if (idx === itemIndex) {
-          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
-        } else if (idx === swapItemIndex) {
+          return { ...i, z_index: swapItem.normalizedZ }
+        } else if (idx === swapItem.index) {
           return { ...i, z_index: currentZIndex }
         }
         return i
       })
-      console.log(`Swapped z-index: ${item.id} now ${itemsWithZ[swapItemIndex].normalizedZ}, ${itemsWithZ[swapItemIndex].id} now ${currentZIndex}`)
+      console.log(`Swapped z-index: ${item.id} now ${swapItem.normalizedZ}, ${swapItem.id} now ${currentZIndex}`)
     } else {
       // Fallback: just increment
       const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
@@ -3538,19 +3538,19 @@ const moveSelectedItemBackward = () => {
   if (itemsBelow.length > 0) {
     // Find the item with the largest z-index below current (swap with it)
     const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.normalizedZ))
-    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === maxBelowZIndex)
+    const swapItem = itemsWithZ.find(i => i.id !== item.id && i.normalizedZ === maxBelowZIndex)
     
-    if (swapItemIndex !== -1) {
+    if (swapItem) {
       // Swap z-indexes by creating new array with updated items
       canvasItems.value = canvasItems.value.map((i, idx) => {
         if (idx === itemIndex) {
-          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
-        } else if (idx === swapItemIndex) {
+          return { ...i, z_index: swapItem.normalizedZ }
+        } else if (idx === swapItem.index) {
           return { ...i, z_index: currentZIndex }
         }
         return i
       })
-      console.log(`Swapped z-index: ${item.id} now ${itemsWithZ[swapItemIndex].normalizedZ}, ${itemsWithZ[swapItemIndex].id} now ${currentZIndex}`)
+      console.log(`Swapped z-index: ${item.id} now ${swapItem.normalizedZ}, ${swapItem.id} now ${currentZIndex}`)
     } else {
       // Fallback: just decrement (but ensure minimum of 2)
       canvasItems.value = canvasItems.value.map((i, idx) => 

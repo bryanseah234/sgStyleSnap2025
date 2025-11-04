@@ -1,9 +1,9 @@
 <template>
   <!-- Main container with theme-aware background -->
-  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden flex flex-col">
     
     <!-- Page Header Section -->
-    <div class="max-w-6xl mx-auto mb-8">
+    <div class="max-w-6xl mx-auto mb-8 flex-shrink-0">
       <!-- Header with title, filter buttons, and add button -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title and navigation buttons row -->
@@ -95,27 +95,33 @@
         </div>
       </div>
       
-      <!-- Sub-route Content -->
-      <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
-      
-      <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
-      
-      <div v-if="currentSubRoute === 'friend'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
-        <div class="flex items-center gap-3 mb-4">
-          <Heart class="w-6 h-6 text-purple-600 dark:text-purple-400" />
-          <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">@{{ route.params.username }}'s Closet</h3>
+      <!-- Sub-route Content - Vertically Centered -->
+      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center">
+        <div class="w-full max-w-6xl mx-auto">
+          <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
+          <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
         </div>
-        <p class="text-purple-700 dark:text-purple-300 mb-4">
-          Browse @{{ route.params.username }}'s clothing collection. Get inspired by their style and see what they're wearing.
-        </p>
-        <div class="text-center py-8">
-          <Heart class="w-16 h-16 text-purple-400 dark:text-purple-500 mx-auto mb-4" />
-          <p class="text-purple-600 dark:text-purple-400">Loading @{{ route.params.username }}'s closet...</p>
+      </div>
+      
+      <!-- Friend Section -->
+      <div v-if="currentSubRoute === 'friend'" class="max-w-6xl mx-auto mb-8 flex-shrink-0">
+        <div class="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
+          <div class="flex items-center gap-3 mb-4">
+            <Heart class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">@{{ route.params.username }}'s Closet</h3>
+          </div>
+          <p class="text-purple-700 dark:text-purple-300 mb-4">
+            Browse @{{ route.params.username }}'s clothing collection. Get inspired by their style and see what they're wearing.
+          </p>
+          <div class="text-center py-8">
+            <Heart class="w-16 h-16 text-purple-400 dark:text-purple-500 mx-auto mb-4" />
+            <p class="text-purple-600 dark:text-purple-400">Loading @{{ route.params.username }}'s closet...</p>
+          </div>
         </div>
       </div>
 
       <!-- Filters Section (only show for default closet view) -->
-      <div v-if="currentSubRoute === 'default'" class="mb-6">
+      <div v-if="currentSubRoute === 'default'" class="max-w-6xl mx-auto mb-6 flex-shrink-0">
         <div :class="`rounded-2xl border p-4 md:p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
           <!-- Filter Toggle Button (Mobile Only - At Top) -->
           <button
