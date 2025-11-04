@@ -406,7 +406,7 @@
                   >
                 <!-- Zoom Out -->
                 <button
-                  @click.stop="scaleSelectedItem(item.id, -0.1)"
+                  @click.stop="scaleSelectedItem(-0.1)"
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Zoom Out"
                 >
@@ -419,7 +419,7 @@
 
                 <!-- Zoom In -->
                 <button
-                  @click.stop="scaleSelectedItem(item.id, 0.1)"
+                  @click.stop="scaleSelectedItem(0.1)"
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Zoom In"
                 >
@@ -433,7 +433,7 @@
 
                 <!-- Rotate Left -->
                 <button
-                  @click.stop="rotateSelectedItem(item.id, -15)"
+                  @click.stop="rotateSelectedItem(-15)"
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Rotate Left"
                 >
@@ -444,7 +444,7 @@
 
                 <!-- Rotate Right -->
                 <button
-                  @click.stop="rotateSelectedItem(item.id, 15)"
+                  @click.stop="rotateSelectedItem(15)"
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Rotate Right"
                 >
@@ -455,8 +455,7 @@
 
                 <!-- Move Forward -->
                 <button
-                  @click.stop.prevent="moveSelectedItemForward(item.id)"
-                  @mousedown.stop.prevent
+                  @click.stop="moveSelectedItemForward"
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Move Forward"
                 >
@@ -467,8 +466,7 @@
 
                 <!-- Move Backward -->
                 <button
-                  @click.stop.prevent="moveSelectedItemBackward(item.id)"
-                  @mousedown.stop.prevent
+                  @click.stop="moveSelectedItemBackward"
                   class="rounded h-7 w-7 transition-colors hover:bg-gray-100"
                   title="Move Backward"
                 >
@@ -479,7 +477,7 @@
 
                 <!-- Delete -->
                 <button
-                  @click.stop="deleteSelectedItem(item.id)"
+                  @click.stop="deleteSelectedItem"
                   class="rounded h-7 w-7 transition-colors hover:bg-red-200 text-red-600"
                   title="Delete"
                 >
@@ -1364,101 +1362,141 @@ const handleMouseUp = () => {
 
 // Selection and toolbar functions
 const selectItem = (itemId) => {
-  selectedItemId.value = selectedItemId.value === itemId ? null : itemId
+  // Select the item - stays selected until another item is selected or canvas is clicked
+  selectedItemId.value = itemId
 }
 
-const scaleSelectedItem = (itemId, delta) => {
-  const item = outfitItems.value.find(i => i.id === itemId)
+const scaleSelectedItem = (delta) => {
+  if (!selectedItemId.value) return
+  
+  const item = outfitItems.value.find(i => i.id === selectedItemId.value)
   if (item) {
-    const newScale = Math.max(0.5, Math.min(2, item.scale + delta))
+    const newScale = Math.max(0.3, Math.min(3, (item.scale || 1) + delta))
     item.scale = newScale
   }
 }
 
-const rotateSelectedItem = (itemId, degrees) => {
-  const item = outfitItems.value.find(i => i.id === itemId)
+const rotateSelectedItem = (degrees) => {
+  if (!selectedItemId.value) return
+  
+  const item = outfitItems.value.find(i => i.id === selectedItemId.value)
   if (item) {
-    item.rotation = ((item.rotation || 0) + degrees) % 360
+    item.rotation = (item.rotation || 0) + degrees
   }
 }
 
-const moveSelectedItemForward = (itemId) => {
-  const item = outfitItems.value.find(i => i.id === itemId)
-  if (!item) {
-    console.warn('Item not found:', itemId)
-    return
-  }
+const moveSelectedItemForward = () => {
+  if (!selectedItemId.value) return
   
-  // Normalize z_index to ensure minimum of 2 (above grid)
-  if (!item.z_index || item.z_index < 2) {
-    item.z_index = Math.max(2, outfitItems.value.length + 2)
-  }
+  const itemIndex = outfitItems.value.findIndex(i => i.id === selectedItemId.value)
+  if (itemIndex === -1) return
   
-  // Find the highest z_index currently (normalize all to ensure minimum of 2)
-  const normalizedItems = outfitItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
-  const maxZIndex = Math.max(...normalizedItems.map(i => i.normalizedZ), 2)
-  const oldZIndex = Math.max(2, item.z_index || 2)
+  const item = outfitItems.value[itemIndex]
   
-  // If already at max, do nothing
-  if (oldZIndex >= maxZIndex) {
-    console.log('Item already at front')
-    return
-  }
-  
-  // Bring this item to the front by giving it the highest z_index + 1
-  item.z_index = maxZIndex + 1
-  
-  console.log(`Move forward: Item ${itemId} z_index ${oldZIndex} -> ${item.z_index}`)
-  
-  // Force Vue reactivity by reassigning the array
-  outfitItems.value = [...outfitItems.value]
-}
-
-const moveSelectedItemBackward = (itemId) => {
-  const item = outfitItems.value.find(i => i.id === itemId)
-  if (!item) {
-    console.warn('Item not found:', itemId)
-    return
-  }
-  
-  // Normalize z_index to ensure minimum of 2 (above grid)
-  if (!item.z_index || item.z_index < 2) {
-    item.z_index = Math.max(2, outfitItems.value.length + 2)
-  }
-  
+  // Ensure item has a z_index (normalize old items that might have 0 or undefined)
   const currentZIndex = Math.max(2, item.z_index || 2)
   
-  // Can't go below 2 (must stay above grid)
-  if (currentZIndex <= 2) {
-    console.log(`Item ${itemId} already at back (z_index: 2)`)
+  // Get all items with their z-indexes normalized
+  const itemsWithZ = outfitItems.value.map((i, idx) => ({
+    ...i,
+    index: idx,
+    normalizedZ: Math.max(2, i.z_index || 2)
+  }))
+  
+  // Find all items with z-index greater than current
+  const itemsAbove = itemsWithZ.filter(i => i.id !== item.id && i.normalizedZ > currentZIndex)
+  
+  if (itemsAbove.length > 0) {
+    // Find the item with the smallest z-index above current (swap with it)
+    const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
+    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === minAboveZIndex)
+    
+    if (swapItemIndex !== -1) {
+      // Swap z-indexes by creating new array with updated items
+      outfitItems.value = outfitItems.value.map((i, idx) => {
+        if (idx === itemIndex) {
+          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
+        } else if (idx === swapItemIndex) {
+          return { ...i, z_index: currentZIndex }
+        }
+        return i
+      })
+    } else {
+      // Fallback: just increment
+      const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
+      outfitItems.value = outfitItems.value.map((i, idx) => 
+        idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+      )
+    }
+  } else {
+    // No items above, move to front
+    const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
+    outfitItems.value = outfitItems.value.map((i, idx) => 
+      idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+    )
+  }
+}
+
+const moveSelectedItemBackward = () => {
+  if (!selectedItemId.value) return
+  
+  const itemIndex = outfitItems.value.findIndex(i => i.id === selectedItemId.value)
+  if (itemIndex === -1) return
+  
+  const item = outfitItems.value[itemIndex]
+  
+  // Ensure item has a z_index (normalize old items that might have 0 or undefined)
+  const currentZIndex = Math.max(2, item.z_index || 2)
+  
+  // Get min z-index among all items (normalize all to ensure minimum of 2)
+  const itemsWithZ = outfitItems.value.map((i, idx) => ({
+    ...i,
+    index: idx,
+    normalizedZ: Math.max(2, i.z_index || 2)
+  }))
+  const minZIndex = Math.min(...itemsWithZ.map(i => i.normalizedZ), 2)
+  
+  // If already at min (2), do nothing
+  if (currentZIndex <= minZIndex) {
     return
   }
   
-  // Normalize all items to find conflicts
-  const normalizedItems = outfitItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
+  // Find all items with z-index less than current
+  const itemsBelow = itemsWithZ.filter(i => i.id !== item.id && i.normalizedZ < currentZIndex)
   
-  // Simply decrease z_index by 1
-  const newZIndex = Math.max(2, currentZIndex - 1)
-  
-  // If the new z_index would conflict with another item, swap positions
-  const conflictingItem = outfitItems.value.find(i => i.id !== itemId && Math.max(2, i.z_index || 2) === newZIndex)
-  if (conflictingItem) {
-    // Swap z_index values
-    conflictingItem.z_index = currentZIndex
-    item.z_index = newZIndex
-    console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex} (swapped with ${conflictingItem.id})`)
+  if (itemsBelow.length > 0) {
+    // Find the item with the largest z-index below current (swap with it)
+    const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.normalizedZ))
+    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === maxBelowZIndex)
+    
+    if (swapItemIndex !== -1) {
+      // Swap z-indexes by creating new array with updated items
+      outfitItems.value = outfitItems.value.map((i, idx) => {
+        if (idx === itemIndex) {
+          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
+        } else if (idx === swapItemIndex) {
+          return { ...i, z_index: currentZIndex }
+        }
+        return i
+      })
+    } else {
+      // Fallback: just decrement (but ensure minimum of 2)
+      outfitItems.value = outfitItems.value.map((i, idx) => 
+        idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+      )
+    }
   } else {
-    // No conflict, just decrease (but ensure minimum of 2)
-    item.z_index = newZIndex
-    console.log(`Move backward: Item ${itemId} z_index ${currentZIndex} -> ${newZIndex}`)
+    // No items below, just decrement (but ensure minimum of 2)
+    outfitItems.value = outfitItems.value.map((i, idx) => 
+      idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+    )
   }
-  
-  // Force Vue reactivity by reassigning the array
-  outfitItems.value = [...outfitItems.value]
 }
 
-const deleteSelectedItem = (itemId) => {
-  outfitItems.value = outfitItems.value.filter(item => item.id !== itemId)
+const deleteSelectedItem = () => {
+  if (!selectedItemId.value) return
+  
+  outfitItems.value = outfitItems.value.filter(item => item.id !== selectedItemId.value)
   selectedItemId.value = null
 }
 
@@ -1660,7 +1698,7 @@ const normalizeSectionHeights = () => {
 }
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
   // Set page as loaded immediately to prevent flicker
   isPageLoaded.value = true
   
