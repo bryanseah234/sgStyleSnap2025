@@ -6,45 +6,42 @@
     <div class="max-w-6xl mx-auto mb-8">
       <!-- Header with title, filter buttons, and add button -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <!-- Dynamic page title based on current sub-route -->
-        <div class="flex-1 min-w-0 w-full md:w-auto">
+        <!-- Dynamic page title and navigation buttons row -->
+        <div class="flex-1 min-w-0 w-full md:w-auto flex items-center gap-4 flex-wrap">
           <h1 
             :class="`text-4xl font-bold text-foreground break-words ${
-              currentSubRoute === 'default' ? 'text-left' : 'text-center md:text-left'
+              currentSubRoute === 'default' ? 'text-left' : 'text-left'
             }`">
             {{ subRouteTitle }}
           </h1>
+          
+          <!-- Manual Upload and Browse Catalogue Buttons (only shown on manual/catalogue sub-routes) -->
+          <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex items-center gap-2 flex-shrink-0">
+            <button
+              @click="$router.push('/closet/add/manual')"
+              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+                currentSubRoute === 'manual'
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              }`"
+            >
+              <Plus class="w-4 h-4" />
+              Manual Upload
+            </button>
+            <button
+              @click="$router.push('/closet/add/catalogue')"
+              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+                currentSubRoute === 'catalogue'
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              }`"
+            >
+              <Shirt class="w-4 h-4" />
+              Browse Catalogue
+            </button>
+          </div>
         </div>
         
-        <!-- Favourites and Clear Filters Buttons (only shown on default closet view) -->
-        <div v-if="currentSubRoute === 'default'" class="flex items-center gap-3 flex-shrink-0">
-          <!-- Favourites Button -->
-          <button
-            @click="showFavoritesOnly = !showFavoritesOnly"
-            :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center gap-2 ${
-              showFavoritesOnly
-                ? 'bg-red-500 text-white dark:bg-red-600'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
-          >
-            <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
-            Favourites
-          </button>
-          
-          <!-- Clear Filters Button -->
-          <button
-            @click="clearFilters"
-            :disabled="!hasActiveFilters"
-            :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center gap-2 ${
-              hasActiveFilters
-                ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer'
-                : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50'
-            }`"
-          >
-            <X class="w-4 h-4" />
-            Clear Filters
-          </button>
-        </div>
         
         <!-- Add Item Dropdown Button (only shown on default closet view) -->
         <div v-if="currentSubRoute === 'default'" class="relative flex-shrink-0">
@@ -98,34 +95,6 @@
         </div>
       </div>
       
-      <!-- Sub-route Navigation - Individual Buttons -->
-      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="mb-8">
-        <div class="flex flex-wrap gap-2 justify-center md:justify-start">
-          <button
-            @click="$router.push('/closet/add/manual')"
-            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
-              currentSubRoute === 'manual'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
-          >
-            <Plus class="w-4 h-4" />
-            Manual Upload
-          </button>
-          <button
-            @click="$router.push('/closet/add/catalogue')"
-            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
-              currentSubRoute === 'catalogue'
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
-          >
-            <Shirt class="w-4 h-4" />
-            Browse Catalogue
-          </button>
-        </div>
-      </div>
-      
       <!-- Sub-route Content -->
       <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
       
@@ -148,9 +117,10 @@
       <!-- Filters Section (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
         <div :class="`rounded-2xl border p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-          <!-- Search Bar -->
-          <div class="mb-4">
-            <div class="relative search-input-group">
+          <!-- Search Bar and Filter Buttons Row -->
+          <div class="flex items-center gap-3 mb-4">
+            <!-- Search Bar (70%) -->
+            <div class="flex-[0.7] relative search-input-group">
               <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
               <input
                 ref="searchInputRef"
@@ -169,6 +139,37 @@
                 <span>+</span>
                 <span class="keyboard-hint-key">K</span>
               </div>
+            </div>
+            
+            <!-- Favourites Button (15%) -->
+            <div class="flex-[0.15]">
+              <button
+                @click="showFavoritesOnly = !showFavoritesOnly"
+                :class="`w-full px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+                  showFavoritesOnly
+                    ? 'bg-red-500 text-white dark:bg-red-600'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                }`"
+              >
+                <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+                <span class="hidden sm:inline">Favourites</span>
+              </button>
+            </div>
+            
+            <!-- Clear Filters Button (15%) -->
+            <div class="flex-[0.15]">
+              <button
+                @click="clearFilters"
+                :disabled="!hasActiveFilters"
+                :class="`w-full px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+                  hasActiveFilters
+                    ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer'
+                    : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50'
+                }`"
+              >
+                <X class="w-4 h-4" />
+                <span class="hidden sm:inline">Clear Filters</span>
+              </button>
             </div>
           </div>
           
