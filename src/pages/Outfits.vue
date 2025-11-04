@@ -68,43 +68,48 @@
             {{ suggestionStats.pending }}
           </span>
         </button>
-        
-        <!-- Favourites Button - Same style as Closet page, independent toggle -->
-        <button
-          @click="showFavoritesOnly = !showFavoritesOnly"
-          :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
-            showFavoritesOnly
-              ? 'bg-red-500 text-white dark:bg-red-600'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-          }`"
-        >
-          <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
-          Favourites
-        </button>
       </div>
     </div>
 
-    <!-- Search Bar -->
+    <!-- Search Bar and Favourites Button -->
     <div class="max-w-6xl mx-auto mb-8">
-      <div class="relative search-input-group">
-        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
-        <input
-          ref="searchInputRef"
-          v-model="searchTerm"
-          type="text"
-          :placeholder="activeFilter === 'suggestions' 
-            ? 'Search suggestions (outfit name, friend name, username)...'
-            : 'Search your outfits (name, tags, occasion, style, items)...'"
-          class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
-          @input="handleSearch"
-          @focus="handleSearchFocus"
-          @blur="handleSearchBlur"
-        />
-        <!-- Raycast-style keyboard hint -->
-        <div class="keyboard-hint hidden md:block">
-          <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
-          <span>+</span>
-          <span class="keyboard-hint-key">K</span>
+      <div class="flex items-center gap-3">
+        <!-- Search Bar (85%) -->
+        <div class="flex-[0.85] relative search-input-group">
+          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
+          <input
+            ref="searchInputRef"
+            v-model="searchTerm"
+            type="text"
+            :placeholder="activeFilter === 'suggestions' 
+              ? 'Search suggestions (outfit name, friend name, username)...'
+              : 'Search your outfits (name, tags, occasion, style, items)...'"
+            class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
+            @input="handleSearch"
+            @focus="handleSearchFocus"
+            @blur="handleSearchBlur"
+          />
+          <!-- Raycast-style keyboard hint -->
+          <div class="keyboard-hint hidden md:block">
+            <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+            <span>+</span>
+            <span class="keyboard-hint-key">K</span>
+          </div>
+        </div>
+        
+        <!-- Favourites Button (15%) - Only show when All Outfits is selected -->
+        <div v-if="activeFilter === 'all'" class="flex-[0.15]">
+          <button
+            @click="showFavoritesOnly = !showFavoritesOnly"
+            :class="`w-full px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+              showFavoritesOnly
+                ? 'bg-red-500 text-white dark:bg-red-600'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
+          >
+            <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+            <span class="hidden sm:inline">Favourites</span>
+          </button>
         </div>
       </div>
     </div>
