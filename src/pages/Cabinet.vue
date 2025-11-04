@@ -168,7 +168,7 @@
           </div>
           
           <!-- Filter Dropdowns -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Category Filter -->
             <div>
               <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
@@ -213,6 +213,22 @@
                 <option :value="null">All Brands</option>
                 <option v-for="brand in availableBrands" :key="brand" :value="brand">
                   {{ brand }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Privacy Filter -->
+            <div>
+              <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
+                Privacy
+              </label>
+              <select
+                v-model="selectedPrivacy"
+                :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white`"
+              >
+                <option :value="null">All Privacy</option>
+                <option v-for="privacy in availablePrivacys" :key="privacy.value" :value="privacy.value">
+                  {{ privacy.label }}
                 </option>
               </select>
             </div>
@@ -434,6 +450,7 @@ const selectedItem = ref(null)           // Currently selected item for details
 const selectedCategory = ref(null)      // Selected category filter
 const selectedColor = ref(null)           // Selected color filter
 const selectedBrand = ref(null)          // Selected brand filter
+const selectedPrivacy = ref(null)        // Selected privacy filter
 const showFavoritesOnly = ref(false)     // Favorites-only filter toggle
 const searchTerm = ref('')               // Search input value
 
@@ -495,12 +512,38 @@ const availableBrands = computed(() => {
 })
 
 /**
+ * Available privacy levels for dropdown filter
+ */
+const availablePrivacys = computed(() => {
+  const privacys = new Set(
+    (items.value || [])
+      .map(i => i.privacy)
+      .filter(Boolean)
+  )
+  // Map privacy values to labels
+  const privacyLabels = {
+    'private': 'Private',
+    'friends': 'Visible to Friends',
+    'public': 'Public'
+  }
+  return Array.from(privacys).map(p => ({
+    value: p,
+    label: privacyLabels[p] || p.charAt(0).toUpperCase() + p.slice(1)
+  })).sort((a, b) => {
+    // Sort in a logical order: private, friends, public
+    const order = { 'private': 1, 'friends': 2, 'public': 3 }
+    return (order[a.value] || 99) - (order[b.value] || 99)
+  })
+})
+
+/**
  * Check if any filters are active
  */
 const hasActiveFilters = computed(() => {
   return selectedCategory.value !== null || 
          selectedColor.value !== null || 
          selectedBrand.value !== null || 
+         selectedPrivacy.value !== null ||
          (searchTerm.value && searchTerm.value.trim().length > 0) ||
          showFavoritesOnly.value
 })
@@ -512,6 +555,7 @@ const clearFilters = () => {
   selectedCategory.value = null
   selectedColor.value = null
   selectedBrand.value = null
+  selectedPrivacy.value = null
   searchTerm.value = ''
   showFavoritesOnly.value = false
 }
@@ -563,6 +607,11 @@ const filteredItems = computed(() => {
   // Apply brand filter
   if (selectedBrand.value !== null) {
     filtered = filtered.filter(item => item.brand?.toLowerCase() === selectedBrand.value.toLowerCase())
+  }
+
+  // Apply privacy filter
+  if (selectedPrivacy.value !== null) {
+    filtered = filtered.filter(item => item.privacy === selectedPrivacy.value)
   }
 
   // Apply search filter across multiple fields

@@ -126,49 +126,63 @@
 
           <!-- Right Column: Email Notifications and Account Actions -->
           <div class="flex flex-col gap-6">
-            <!-- Email Notifications Card -->
+            <!-- Send Email Notifications Card -->
             <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
               <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
-                Email Notifications
+                Send Email Notifications
               </h3>
               
               <div v-if="loadingPreferences || loadingStats" class="flex items-center justify-center py-8">
                 <div class="spinner-modern mb-4" />
               </div>
               
-              <div v-else class="space-y-4">
-                <!-- Master Toggle -->
-                <div class="flex items-center justify-between pb-4 border-b border-stone-200 dark:border-zinc-700">
-                  <div class="flex-1">
-                    <p class="text-base font-medium text-stone-800 dark:text-zinc-200">Enable Email Notifications</p>
-                    <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">
-                      <span v-if="stats.friends < 5">
-                        You need 5 friends to enable sending email notifications. You currently have {{ stats.friends }} friend{{ stats.friends !== 1 ? 's' : '' }}. You can still receive emails from friends who have 5+ friends.
-                      </span>
-                      <span v-else>
-                        Master control for all email notifications. You can send and receive email notifications.
-                      </span>
-                    </p>
-                  </div>
-                  <button
-                    @click="toggleMasterEmail"
-                    :disabled="stats.friends < 5"
-                    :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                      stats.friends < 5
-                        ? 'bg-gray-300 dark:bg-gray-500 cursor-not-allowed opacity-50'
-                        : preferences.email_enabled 
-                          ? 'bg-green-500 cursor-pointer' 
-                          : 'bg-gray-300 dark:bg-gray-500 cursor-pointer'
-                    }`"
-                  >
-                    <span
-                      :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        preferences.email_enabled ? 'translate-x-[22px]' : 'translate-x-0.5'
-                      }`"
-                    />
-                  </button>
+              <div v-else class="flex items-center justify-between">
+                <div class="flex-1">
+                  <p class="text-base font-medium text-stone-800 dark:text-zinc-200">Enable Sending Email Notifications</p>
+                  <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">
+                    <span v-if="stats.friends < 5">
+                      You need 5 friends to enable sending email notifications. You currently have {{ stats.friends }} friend{{ stats.friends !== 1 ? 's' : '' }}.
+                    </span>
+                    <span v-else>
+                      Allow the system to send email notifications on your behalf when you interact with friends.
+                    </span>
+                  </p>
                 </div>
+                <button
+                  @click="toggleSendEmail"
+                  :disabled="stats.friends < 5"
+                  :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                    stats.friends < 5
+                      ? 'bg-gray-300 dark:bg-gray-500 cursor-not-allowed opacity-50'
+                      : preferences.email_enabled 
+                        ? 'bg-green-500 cursor-pointer' 
+                        : 'bg-gray-300 dark:bg-gray-500 cursor-pointer'
+                  }`"
+                >
+                  <span
+                    :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      preferences.email_enabled ? 'translate-x-[22px]' : 'translate-x-0.5'
+                    }`"
+                  />
+                </button>
+              </div>
+            </div>
 
+            <!-- Receive Email Notifications Card -->
+            <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
+              <h3 class="text-lg font-semibold mb-4 text-stone-800 dark:text-zinc-200">
+                Receive Email Notifications
+              </h3>
+              
+              <div v-if="loadingPreferences" class="flex items-center justify-center py-8">
+                <div class="spinner-modern mb-4" />
+              </div>
+              
+              <div v-else class="space-y-4">
+                <p class="text-sm text-stone-600 dark:text-zinc-400 mb-4">
+                  Choose which types of email notifications you want to receive. All users can receive emails by default.
+                </p>
+                
                 <!-- Individual Notification Type Toggles -->
                 <div class="space-y-4">
                   <div
@@ -182,20 +196,15 @@
                     </div>
                     <button
                       @click="toggleNotificationType(type.key)"
-                      :disabled="!preferences.email_enabled"
                       :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                        preferences.email_enabled === true && preferences[type.key] === true
+                        preferences[type.key] === true
                           ? 'bg-green-500'
                           : 'bg-gray-300 dark:bg-gray-500'
-                      } ${
-                        !preferences.email_enabled
-                          ? 'opacity-50 cursor-not-allowed'
-                          : ''
                       }`"
                     >
                       <span
                         :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          preferences.email_enabled === true && preferences[type.key] === true
+                          preferences[type.key]
                             ? 'translate-x-[22px]' 
                             : 'translate-x-0.5'
                         }`"
@@ -546,8 +555,12 @@ const loadNotificationPreferences = async () => {
   try {
     loadingPreferences.value = true
     const prefs = await notificationsService.getNotificationPreferences()
+    
     preferences.value = {
-      email_enabled: prefs.email_enabled !== false,
+      // Force email_enabled (sending) to false if user has fewer than 5 friends
+      // All users default to not sending emails until they have 5 friends
+      email_enabled: stats.value.friends >= 5 ? (prefs.email_enabled === true) : false,
+      // Receiving emails defaults to enabled for all users (no friend requirement)
       friend_requests: prefs.friend_requests !== false,
       friend_accepted: prefs.friend_accepted !== false,
       outfit_likes: prefs.outfit_likes !== false,
@@ -565,12 +578,12 @@ const loadNotificationPreferences = async () => {
 }
 
 /**
- * Toggles the master email notification setting
+ * Toggles the send email notification setting (requires 5 friends)
  */
-const toggleMasterEmail = async () => {
+const toggleSendEmail = async () => {
   // Prevent toggling if user has fewer than 5 friends (required to send email notifications)
   if (stats.value.friends < 5) {
-    showError('You need 5 friends to enable sending email notifications. You can still receive emails from friends who have 5+ friends.', 'Requirement Not Met')
+    showError('You need 5 friends to enable sending email notifications.', 'Requirement Not Met')
     return
   }
   
@@ -583,8 +596,8 @@ const toggleMasterEmail = async () => {
     if (result.success) {
       showSuccess(
         preferences.value.email_enabled 
-          ? 'Email notifications enabled' 
-          : 'Email notifications disabled',
+          ? 'Sending email notifications enabled' 
+          : 'Sending email notifications disabled',
         'Settings Updated'
       )
     } else {
@@ -593,7 +606,7 @@ const toggleMasterEmail = async () => {
       showError('Failed to update email notification settings', 'Error')
     }
   } catch (error) {
-    console.error('👤 Profile: Error toggling master email:', error)
+    console.error('👤 Profile: Error toggling send email:', error)
     // Revert on error
     preferences.value.email_enabled = !preferences.value.email_enabled
     showError('Failed to update email notification settings', 'Error')
@@ -601,13 +614,10 @@ const toggleMasterEmail = async () => {
 }
 
 /**
- * Toggles a specific notification type setting
+ * Toggles a specific notification type setting (for receiving emails)
+ * Note: Receiving emails is independent of sending emails - all users can receive by default
  */
 const toggleNotificationType = async (typeKey) => {
-  if (!preferences.value.email_enabled) {
-    return // Don't allow toggling individual types if master is disabled
-  }
-  
   // Get the notification type info
   const notificationType = notificationTypes.find(type => type.key === typeKey)
   const currentValue = preferences.value[typeKey]

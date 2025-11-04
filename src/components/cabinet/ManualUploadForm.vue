@@ -31,7 +31,11 @@
           <label
             v-else
             :class="`flex flex-col items-center justify-center w-full h-56 lg:h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 
-            border-stone-300 hover:border-stone-400 bg-stone-50 hover:bg-stone-100 dark:border-zinc-700 dark:hover:border-zinc-600 dark:bg-zinc-800 dark:hover:bg-zinc-750`"
+            ${
+              hasError('image')
+                ? 'border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20'
+                : 'border-stone-300 hover:border-stone-400 bg-stone-50 hover:bg-stone-100 dark:border-zinc-700 dark:hover:border-zinc-600 dark:bg-zinc-800 dark:hover:bg-zinc-750'
+            }`"
           >
             <div v-if="uploading" class="spinner-modern" />
             <template v-else>
@@ -255,6 +259,7 @@ const categoryTypeMapping = {
 
 const uploading = ref(false)
 const isSubmitting = ref(false)
+const hasAttemptedSubmit = ref(false)
 const previewUrl = ref('')
 const formData = ref({
   name: '',
@@ -351,9 +356,9 @@ const fieldErrors = computed(() => {
   }
 })
 
-// Check if field has error
+// Check if field has error (only show errors after user attempts to submit)
 const hasError = (field) => {
-  return !!fieldErrors.value[field]
+  return hasAttemptedSubmit.value && !!fieldErrors.value[field]
 }
 
 // Handle category change - reset type when category changes
@@ -471,6 +476,9 @@ const clearImage = () => {
 }
 
 const handleSubmit = async () => {
+  // Mark that user has attempted to submit - this will show validation errors
+  hasAttemptedSubmit.value = true
+  
   console.log('📝 ManualUploadForm: ========== Form Submission Started ==========')
   console.log('📝 ManualUploadForm: Form validation:', {
     canSubmit: canSubmit.value,

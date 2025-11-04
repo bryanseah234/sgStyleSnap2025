@@ -80,6 +80,14 @@ let originalModelState = null // Store original model position, rotation, scale
 const ANIMATION_TYPES = ['wave', 'nod', 'tpose']
 let currentAnimationIndex = 0
 
+// Performance optimization: frame skipping
+let frameSkipCount = 0
+let frameSkipThreshold = 1 // Render every frame by default
+let lastFpsCheck = 0
+let frameCount = 0
+let currentFps = 60
+let isVisible = false // Track visibility for pausing
+
 // Initialize Three.js scene
 const initThreeJS = async () => {
   if (!canvasRef.value) return
@@ -96,15 +104,22 @@ const initThreeJS = async () => {
   camera.position.set(0, 0, 3) // y=0 for no vertical tilt
   camera.lookAt(0, 0, 0) // Look straight at center
 
+  // Detect device capabilities
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  const isLowEndDevice = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4
+  
   // Renderer
   renderer = new THREE.WebGLRenderer({
     canvas: canvasRef.value,
     alpha: true,
-    antialias: true,
+    antialias: !isLowEndDevice, // Disable antialiasing on low-end devices
     powerPreference: 'high-performance'
   })
   renderer.setSize(canvasRef.value.clientWidth, canvasRef.value.clientHeight)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  
+  // Optimize pixel ratio: reduce from 2 to 1.5 max, 1 on mobile
+  const pixelRatio = isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5)
+  renderer.setPixelRatio(pixelRatio)
   renderer.outputColorSpace = THREE.SRGBColorSpace
 
   // Lighting - Brighter setup
@@ -380,10 +395,40 @@ const executeAnimation = (model, animationType, progress) => {
   }
 }
 
-// Animation loop
+// Animation loop with frame skipping
 const startAnimationLoop = () => {
   const animate = () => {
     animationFrameId = requestAnimationFrame(animate)
+    
+    // Skip rendering if not visible
+    if (!isVisible || !props.autoRotate) {
+      return
+    }
+    
+    // Frame skipping for performance
+    frameSkipCount++
+    if (frameSkipCount < frameSkipThreshold) {
+      return
+    }
+    frameSkipCount = 0
+    
+    // FPS monitoring (check every 60 frames)
+    frameCount++
+    const now = performance.now()
+    if (now - lastFpsCheck >= 1000) {
+      currentFps = frameCount
+      frameCount = 0
+      lastFpsCheck = now
+      
+      // Adjust frame skip based on FPS
+      if (currentFps < 30) {
+        frameSkipThreshold = 2 // Skip every other frame if FPS < 30
+      } else if (currentFps < 45) {
+        frameSkipThreshold = 1.5 // Skip occasionally if FPS < 45
+      } else {
+        frameSkipThreshold = 1 // Render every frame if FPS >= 45
+      }
+    }
     
     if (avatar && avatar.userData.model) {
       const model = avatar.userData.model
@@ -416,9 +461,9 @@ const startAnimationLoop = () => {
           avatar.rotation.y += autoRotateSpeed * 2
         }
       }
+      
+      renderer.render(scene, camera)
     }
-    
-    renderer.render(scene, camera)
   }
   
   animate()
@@ -503,9 +548,31 @@ const handleResize = () => {
 watch(() => props.autoRotate, (shouldRotate) => {
   if (avatar) {
     isRotationPaused = !shouldRotate
+    isVisible = shouldRotate // Update visibility state
     if (shouldRotate && Math.abs(avatar.rotation.y) < 0.01) {
       avatar.rotation.y = 0 // Reset to front when starting rotation
     }
+  }
+})
+
+// IntersectionObserver to pause when not visible
+onMounted(() => {
+  if (containerRef.value) {
+    const visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisible = entry.isIntersecting && props.autoRotate
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
+    )
+    visibilityObserver.observe(containerRef.value)
+    
+    // Store observer for cleanup
+    containerRef.value._visibilityObserver = visibilityObserver
   }
 })
 
@@ -544,13 +611,23 @@ watch(() => props.avatarUrl, async (newUrl) => {
   }
 })
 
-onMounted(() => {
-  initThreeJS()
+onMounted(async () => {
+  await initThreeJS()
   window.addEventListener('resize', handleResize)
+  
+  // Set initial visibility based on autoRotate prop
+  isVisible = props.autoRotate
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  
+  // Cleanup visibility observer
+  if (containerRef.value && containerRef.value._visibilityObserver) {
+    containerRef.value._visibilityObserver.disconnect()
+    delete containerRef.value._visibilityObserver
+  }
+  
   cleanup()
 })
 </script>

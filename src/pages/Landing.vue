@@ -102,13 +102,9 @@
 
     <!-- Hero Section -->
     <section 
+      ref="heroSectionRef"
       class="hero-section relative overflow-hidden min-h-screen flex items-center justify-center"
-      :style="{
-        backgroundImage: 'url(/images/hero-fashion-outfit.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }"
+      :style="heroBackgroundStyle"
     >
       <!-- Overlay for better text readability -->
       <div class="absolute inset-0 bg-black/20"></div>
@@ -142,8 +138,8 @@
     <!-- Features Section -->
     <section id="features" class="landing-section py-[10vh] bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-10 left-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" />
-        <div class="absolute bottom-10 right-20 w-40 h-40 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s" />
+        <div class="absolute top-10 left-20 w-40 h-40 bg-gray-900 rounded-full blur-2xl animate-pulse" style="animation-duration: 3s;" />
+        <div class="absolute bottom-10 right-20 w-40 h-40 bg-gray-900 rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s; animation-duration: 3s;" />
       </div>
 
       <div class="container relative z-10">
@@ -156,11 +152,13 @@
           
         <!-- 3D Carousel Container -->
         <div 
+          ref="carouselWrapperRef"
           class="carousel-3d-wrapper"
+          :class="{ 'carousel-active': isCarouselActive }"
         >
           <div 
             class="carousel-3d-container"
-            :style="{ transform: `rotateY(${carouselRotation}deg)` }"
+            :style="{ transform: `translate3d(0, 0, 0) rotateY(${carouselRotation}deg)` }"
           >
             <div
               v-for="(feature, idx) in features"
@@ -171,7 +169,7 @@
                 'front-facing': isCardFrontFacing(idx)
               }"
               :style="{
-                transform: `rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
+                transform: `translate3d(0, 0, 0) rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
                 '--item-index': idx
               }"
               @mouseenter="handleCardHover(idx, feature.id)"
@@ -233,7 +231,7 @@
     <!-- Demo Section -->
     <section id="demo" class="landing-section py-[10vh] relative overflow-hidden" style="background-color: rgb(245, 246, 247);">
       <div class="absolute inset-0 opacity-5">
-        <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl" />
+        <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-2xl" />
       </div>
 
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -252,6 +250,9 @@
                 <h3 class="text-base sm:text-lg font-bold">Catalogue</h3>
                 <span class="text-xs sm:text-sm px-2 py-1 rounded-full bg-gray-100 text-gray-600">
                   {{ filteredCatalogueItems.length }}
+                  <span v-if="displayedItemsCount.value < filteredCatalogueItems.length">
+                    ({{ displayedItemsCount.value }} shown)
+                  </span>
                 </span>
               </div>
               
@@ -272,7 +273,11 @@
               </div>
 
               <!-- Items List -->
-              <div class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+              <div 
+                ref="catalogueScrollRef"
+                class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar"
+                @scroll="handleCatalogueScroll"
+              >
                 <div
                   v-if="loadingCatalogue"
                   class="text-center py-8 text-gray-500"
@@ -288,8 +293,9 @@
                 </div>
                 <div
                   v-else
-                  v-for="item in filteredCatalogueItems"
+                  v-for="item in displayedCatalogueItems"
                   :key="item.id"
+                  v-memo="[item.id, item.name, item.image_url, item.category, activeCategory]"
                   draggable="true"
                   @dragstart="handleCatalogDragStart(item, $event)"
                   @click="addCatalogueItemToCanvas(item)"
@@ -303,6 +309,7 @@
                         :src="item.thumbnail_url || item.image_url"
                         :alt="item.name"
                         class="w-full h-full object-cover"
+                        loading="lazy"
                         draggable="false"
                       />
                       <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
@@ -325,6 +332,18 @@
                       <Plus class="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
+                </div>
+                <!-- Load More Indicator -->
+                <div
+                  v-if="!loadingCatalogue && displayedItemsCount.value < filteredCatalogueItems.length"
+                  class="text-center py-4"
+                >
+                  <button
+                    @click="loadMoreItems"
+                    class="text-xs text-gray-500 hover:text-gray-700 transition"
+                  >
+                    Load more ({{ filteredCatalogueItems.length - displayedItemsCount.value }} remaining)
+                  </button>
                 </div>
               </div>
             </div>
@@ -390,6 +409,7 @@
                       :src="item.thumbnail_url || item.image_url"
                       :alt="item.name"
                       class="w-full h-full object-contain"
+                      loading="lazy"
                       draggable="false"
                     />
                     <div v-else class="w-full h-full flex items-center justify-center bg-gray-200">
@@ -537,7 +557,7 @@
     <!-- Why Choose Section -->
     <section id="why" class="landing-section py-[5vh] bg-white relative overflow-hidden">
       <div class="absolute inset-0 opacity-10">
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s" />
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-2xl animate-pulse" style="animation-delay: 2s; animation-duration: 4s;" />
           </div>
 
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -722,6 +742,7 @@ import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 import SingleAvatar3D from '@/components/SingleAvatar3D.vue'
+import { useLazyLoad } from '@/composables/useLazyLoad'
 
 // Import landing page animations
 import '@/assets/css/landing-page-animations.css'
@@ -766,6 +787,28 @@ const finalTransform = reactive({
 const avatarSectionRef = ref(null)
 const isAvatarVisible = ref(false)
 let avatarObserver = null
+const heroSectionRef = ref(null)
+const heroImageLoaded = ref(false)
+let scrollRafId = null
+let footerDebounceTimer = null
+
+// Lazy load hero background image
+const heroBackgroundStyle = computed(() => {
+  if (!heroImageLoaded.value) {
+    return {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: '#000000' // Fallback color
+    }
+  }
+  return {
+    backgroundImage: 'url(/images/hero-fashion-outfit.jpg)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  }
+})
 
 // Catalog service instance
 const catalogService = new CatalogService()
@@ -776,6 +819,11 @@ const loadingCatalogue = ref(false)
 const activeCategory = ref('all')
 const showGrid = ref(false)
 const categoryOptions = ['all', 'top', 'bottom', 'outerwear', 'shoes', 'accessories']
+
+// Pagination for catalogue items (virtual scrolling)
+const itemsPerPage = 10
+const displayedItemsCount = ref(itemsPerPage)
+const catalogueScrollRef = ref(null)
 
 // Filtered catalogue items
 const filteredCatalogueItems = computed(() => {
@@ -790,6 +838,18 @@ const filteredCatalogueItems = computed(() => {
   
   return filtered
 })
+
+// Displayed catalogue items (pagination)
+const displayedCatalogueItems = computed(() => {
+  return filteredCatalogueItems.value.slice(0, displayedItemsCount.value)
+})
+
+// Load more items when scrolling
+const loadMoreItems = () => {
+  if (displayedItemsCount.value < filteredCatalogueItems.value.length) {
+    displayedItemsCount.value += itemsPerPage
+  }
+}
 
 // Categories with items (only show categories that have at least 1 item)
 const availableCategories = computed(() => {
@@ -872,6 +932,13 @@ const features = ref([
 // Carousel state
 const carouselRotation = ref(0)
 const flipTimers = ref({}) // Track timers for auto-flip back
+const carouselWrapperRef = ref(null)
+const isCarouselActive = ref(false)
+const isCarouselVisible = ref(false)
+let carouselRafId = null
+let carouselObserver = null
+let lastRotationUpdate = 0
+const ROTATION_THROTTLE_MS = 16 // ~60fps
 
 // Calculate rotation step for each card (for snapping)
 const rotationStep = computed(() => {
@@ -893,12 +960,34 @@ const snapToCardPosition = (value) => {
   return Math.round(value / step) * step
 }
 
+// Throttled carousel rotation update
+const updateCarouselRotationThrottled = (value) => {
+  const now = performance.now()
+  if (now - lastRotationUpdate < ROTATION_THROTTLE_MS) {
+    if (carouselRafId) return
+    carouselRafId = requestAnimationFrame(() => {
+      carouselRotation.value = -value
+      lastRotationUpdate = performance.now()
+      carouselRafId = null
+    })
+  } else {
+    carouselRotation.value = -value
+    lastRotationUpdate = now
+  }
+}
+
 // Update carousel rotation from slider - smooth during drag
 const updateCarouselRotation = (event) => {
   const value = parseFloat(event.target.value)
+  isCarouselActive.value = true
   
-  // Reverse the rotation: slider left-to-right (0->360) = carousel left-to-right (-0->-360)
-  carouselRotation.value = -value
+  // Throttle rotation updates
+  updateCarouselRotationThrottled(value)
+  
+  // Remove active state after animation
+  setTimeout(() => {
+    isCarouselActive.value = false
+  }, 300)
 }
 
 // Snap to nearest card position on release (haptic-like feedback)
@@ -911,7 +1000,11 @@ const snapOnRelease = (event) => {
     // Update slider value to snapped position
     event.target.value = snappedValue
     // Update carousel rotation with smooth snap animation
-    carouselRotation.value = -snappedValue
+    isCarouselActive.value = true
+    updateCarouselRotationThrottled(snappedValue)
+    setTimeout(() => {
+      isCarouselActive.value = false
+    }, 300)
   }
 }
 
@@ -920,7 +1013,11 @@ const moveToNextCard = () => {
   const currentSliderValue = sliderValue.value
   const step = rotationStep.value
   const nextValue = (currentSliderValue + step) % 360
-  carouselRotation.value = -nextValue
+  isCarouselActive.value = true
+  updateCarouselRotationThrottled(nextValue)
+  setTimeout(() => {
+    isCarouselActive.value = false
+  }, 300)
 }
 
 // Move to previous card (rotate backward)
@@ -929,7 +1026,11 @@ const moveToPreviousCard = () => {
   const step = rotationStep.value
   let prevValue = (currentSliderValue - step) % 360
   if (prevValue < 0) prevValue += 360
-  carouselRotation.value = -prevValue
+  isCarouselActive.value = true
+  updateCarouselRotationThrottled(prevValue)
+  setTimeout(() => {
+    isCarouselActive.value = false
+  }, 300)
 }
 
 // Handle keyboard arrow keys for carousel navigation
@@ -1145,6 +1246,17 @@ const toggleItemInOutfit = (itemId) => {
   }
 }
 
+// Handle catalogue scroll for infinite loading
+const handleCatalogueScroll = (event) => {
+  const target = event.target
+  const scrollPercentage = (target.scrollTop + target.clientHeight) / target.scrollHeight
+  
+  // Load more when scrolled to 80%
+  if (scrollPercentage > 0.8 && displayedItemsCount.value < filteredCatalogueItems.value.length) {
+    loadMoreItems()
+  }
+}
+
 // Load catalogue items
 const loadCatalogueItems = async () => {
   loadingCatalogue.value = true
@@ -1155,6 +1267,8 @@ const loadCatalogueItems = async () => {
       offset: 0
     })
     catalogueItems.value = items || []
+    // Reset displayed count when category changes
+    displayedItemsCount.value = itemsPerPage
   } catch (error) {
     console.error('Landing: Error loading catalogue items:', error)
     catalogueItems.value = []
@@ -1162,6 +1276,11 @@ const loadCatalogueItems = async () => {
     loadingCatalogue.value = false
   }
 }
+
+// Reset displayed count when category changes
+watch(activeCategory, () => {
+  displayedItemsCount.value = itemsPerPage
+})
 
 // Check if two rectangles overlap
 const rectsOverlap = (a, b) => {
@@ -1709,38 +1828,53 @@ onMounted(async () => {
   // Start typewriter effect
   typewriterEffect()
   
+  // Throttle scroll handler with RAF
   const handleScroll = () => {
-    const currentScrollY = window.scrollY
-    setScrollY(currentScrollY)
+    if (scrollRafId) return
     
-    // Detect scroll direction
-    isScrollingDown.value = currentScrollY > lastScrollY.value
-    lastScrollY.value = currentScrollY
-    
-    // Show "Join for free" button when user scrolls past hero section (about 80% of viewport height)
-    const windowHeight = window.innerHeight
-    if (currentScrollY > windowHeight * 0.8) {
-      showJoinButton.value = true
-    } else {
-      showJoinButton.value = false
-    }
-    
-    // Show/hide footer based on scroll direction and position
-    // Show footer when scrolling down and near bottom, hide when scrolling up
-    const documentHeight = document.documentElement.scrollHeight
-    const scrollPercentage = (currentScrollY / (documentHeight - windowHeight)) * 100
-    
-    if (isScrollingDown.value && scrollPercentage > 70) {
-      showFooter.value = true
-    } else if (!isScrollingDown.value && scrollPercentage < 60) {
-      showFooter.value = false
-    }
-    
-    // Removed scroll to top button - functionality moved to logo click
+    scrollRafId = requestAnimationFrame(() => {
+      const currentScrollY = window.scrollY
+      setScrollY(currentScrollY)
+      
+      // Detect scroll direction
+      isScrollingDown.value = currentScrollY > lastScrollY.value
+      lastScrollY.value = currentScrollY
+      
+      // Show "Join for free" button when user scrolls past hero section (about 80% of viewport height)
+      const windowHeight = window.innerHeight
+      if (currentScrollY > windowHeight * 0.8) {
+        showJoinButton.value = true
+      } else {
+        showJoinButton.value = false
+      }
+      
+      // Debounce footer visibility updates
+      updateFooterVisibility()
+      
+      scrollRafId = null
+    })
   }
   window.addEventListener('scroll', handleScroll, { passive: true })
   
-  // Intersection Observer for scroll animations
+  // Debounce footer show/hide logic (separate from scroll handler)
+  const updateFooterVisibility = () => {
+    if (footerDebounceTimer) clearTimeout(footerDebounceTimer)
+    
+    footerDebounceTimer = setTimeout(() => {
+      const currentScrollY = window.scrollY
+      const documentHeight = document.documentElement.scrollHeight
+      const windowHeight = window.innerHeight
+      const scrollPercentage = (currentScrollY / (documentHeight - windowHeight)) * 100
+      
+      if (isScrollingDown.value && scrollPercentage > 70) {
+        showFooter.value = true
+      } else if (!isScrollingDown.value && scrollPercentage < 60) {
+        showFooter.value = false
+      }
+    }, 150) // Debounce footer updates
+  }
+  
+  // Intersection Observer for scroll animations (optimized threshold)
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -1779,7 +1913,7 @@ onMounted(async () => {
       })
     },
     {
-      threshold: 0.1,
+      threshold: 0.05, // Reduced from 0.1 for faster triggering
       rootMargin: '0px 0px -20px 0px'
     }
   )
@@ -1788,6 +1922,46 @@ onMounted(async () => {
   const elementsToObserve = document.querySelectorAll('.scroll-hidden')
   elementsToObserve.forEach((el) => observer.observe(el))
   
+  // Lazy load hero background image
+  if (heroSectionRef.value) {
+    const heroImageObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !heroImageLoaded.value) {
+            // Preload the image
+            const img = new Image()
+            img.onload = () => {
+              heroImageLoaded.value = true
+            }
+            img.src = '/images/hero-fashion-outfit.jpg'
+            heroImageObserver.disconnect()
+          }
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '200px' // Start loading 200px before visible
+      }
+    )
+    heroImageObserver.observe(heroSectionRef.value)
+  }
+
+  // Observe carousel visibility - pause when not visible
+  if (carouselWrapperRef.value) {
+    carouselObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isCarouselVisible.value = entry.isIntersecting
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px'
+      }
+    )
+    carouselObserver.observe(carouselWrapperRef.value)
+  }
+
   // Intersection Observer for avatar section - start rotation when visible
   await nextTick()
   if (avatarSectionRef.value) {
@@ -1820,6 +1994,26 @@ onMounted(async () => {
       avatarObserver.unobserve(avatarSectionRef.value)
       avatarObserver.disconnect()
       avatarObserver = null
+    }
+    // Clean up carousel observer
+    if (carouselObserver && carouselWrapperRef.value) {
+      carouselObserver.unobserve(carouselWrapperRef.value)
+      carouselObserver.disconnect()
+      carouselObserver = null
+    }
+    // Cancel pending RAF
+    if (carouselRafId) {
+      cancelAnimationFrame(carouselRafId)
+      carouselRafId = null
+    }
+    if (scrollRafId) {
+      cancelAnimationFrame(scrollRafId)
+      scrollRafId = null
+    }
+    // Clear footer debounce timer
+    if (footerDebounceTimer) {
+      clearTimeout(footerDebounceTimer)
+      footerDebounceTimer = null
     }
     // Ensure body scroll is re-enabled when component is unmounted
     enableBodyScroll()
@@ -1869,7 +2063,7 @@ const setScrollY = (value) => {
               line-height 1500ms cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 90vw;
   transform-origin: center center;
-  will-change: transform, font-size, color, letter-spacing, line-height;
+  /* Only use will-change during active transition */
   line-height: 1.2;
 }
 
@@ -1902,6 +2096,8 @@ const setScrollY = (value) => {
   margin: 0 !important;
   /* Ensure transform origin is centered for accurate alignment */
   transform-origin: center center !important;
+  /* Optimize: only use will-change during active transition */
+  will-change: transform, opacity;
 }
 
 .splash-title-frozen {
@@ -2043,9 +2239,10 @@ const setScrollY = (value) => {
 
 /* Force navigation pill to always use light mode */
 .landing-nav-pill > div {
-  background-color: rgba(243, 244, 246, 0.7) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background-color: rgba(243, 244, 246, 0.85) !important;
+  /* Reduce blur for better performance */
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
@@ -2073,9 +2270,10 @@ const setScrollY = (value) => {
 
 /* Ensure mobile menu also stays light */
 .landing-nav-pill .md\\:hidden {
-  background-color: rgba(243, 244, 246, 0.7) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background-color: rgba(243, 244, 246, 0.85) !important;
+  /* Reduce blur for better performance */
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
@@ -2114,7 +2312,7 @@ const setScrollY = (value) => {
 
 /* 3D Carousel Styles */
 .carousel-3d-wrapper {
-  perspective: 1200px;
+  perspective: 800px; /* Reduced from 1200px for better performance */
   perspective-origin: center center;
   width: 100%;
   height: 400px;
@@ -2124,6 +2322,7 @@ const setScrollY = (value) => {
   align-items: center;
   justify-content: center;
   pointer-events: none; /* Allow clicks to pass through to cards */
+  contain: layout style paint; /* Isolate rendering */
 }
 
 .carousel-3d-wrapper > * {
@@ -2136,6 +2335,11 @@ const setScrollY = (value) => {
   height: 320px;
   transform-style: preserve-3d;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform; /* Only when actively rotating */
+}
+
+.carousel-3d-wrapper:not(.carousel-active) .carousel-3d-container {
+  will-change: auto; /* Remove will-change when not rotating */
 }
 
 .carousel-3d-item {
@@ -2151,6 +2355,7 @@ const setScrollY = (value) => {
   cursor: pointer;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  contain: layout style paint; /* Isolate rendering */
 }
 
 /* Enable pointer events for all cards - click detection handled by JS */
@@ -2385,7 +2590,7 @@ const setScrollY = (value) => {
   position: relative;
   z-index: 1;
   transform-origin: top center;
-  will-change: transform;
+  /* Remove will-change - transform is already optimized */
   margin-top: 48px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;

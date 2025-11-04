@@ -426,8 +426,8 @@
       </div>
 
       <!-- Toasts -->
-      <div class="fixed top-4 right-4 z-[60] space-y-4">
-        <transition-group name="toast-fade" tag="div">
+      <div class="fixed top-4 right-4 z-[60]">
+        <transition-group name="toast-fade" tag="div" class="flex flex-col gap-6">
           <div
             v-for="t in toasts"
             :key="t.id"
