@@ -214,6 +214,13 @@
             </div>
           </div>
         </div>
+        <div v-else class="text-center py-12">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+            <Bell class="w-8 h-8 text-stone-500 dark:text-zinc-400" />
+          </div>
+          <p class="text-lg font-medium text-stone-600 dark:text-zinc-400">No notifications yet</p>
+          <p class="text-sm mt-1 text-stone-500 dark:text-zinc-500">We'll notify you when something happens</p>
+        </div>
         
         <!-- Context Menu for Desktop (Right-click) -->
         <div
@@ -236,14 +243,6 @@
           >
             Mark as Read
           </button>
-        </div>
-      </div>
-        <div v-else class="text-center py-12">
-          <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
-            <Bell class="w-8 h-8 text-stone-500 dark:text-zinc-400" />
-          </div>
-          <p class="text-lg font-medium text-stone-600 dark:text-zinc-400">No notifications yet</p>
-          <p class="text-sm mt-1 text-stone-500 dark:text-zinc-500">We'll notify you when something happens</p>
         </div>
       </div>
     </div>
