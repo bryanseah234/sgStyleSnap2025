@@ -595,13 +595,9 @@ export function useNavbarLiquid() {
     
     isHovering.value = true
     
-    // Check if dark mode is active - if so, skip the glow effect
-    const isDarkMode = document.documentElement.classList.contains('dark')
-    if (isDarkMode) {
-      return // Don't apply glow effect in dark mode
-    }
-    
-    await loadMotionOne()
+    // Disable navbar glow effect in both light and dark modes
+    // Individual button hover effects remain unchanged
+    return
 
     try {
       // Safely create spring easing function

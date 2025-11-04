@@ -173,15 +173,34 @@
       </div>
     </div>
 
+    <!-- Infinite Scroll Sentinel -->
+    <div 
+      v-if="!loading && hasMoreItems && !loadingMore"
+      ref="sentinelRef"
+      class="h-10 w-full flex items-center justify-center mt-8"
+    >
+      <div class="text-sm text-stone-500 dark:text-zinc-500">
+        Scroll for more items...
+      </div>
+    </div>
+
+    <!-- Loading More Indicator -->
+    <div v-if="loadingMore" class="flex flex-col items-center justify-center py-8">
+      <div class="spinner-modern mb-4"></div>
+      <p :class="`text-sm text-stone-600 dark:text-zinc-400`">
+        Loading more items...
+      </p>
+    </div>
+
     <!-- Results Count -->
-    <div v-if="!loading && filteredCatalogItems.length > 0" :class="`mt-8 text-center text-sm text-stone-500 dark:text-zinc-500`">
-      Showing {{ filteredCatalogItems.length }} {{ filteredCatalogItems.length !== catalogItems.length ? `of ${catalogItems.length} ` : '' }}item{{ filteredCatalogItems.length !== 1 ? 's' : '' }}
+    <div v-if="!loading && filteredCatalogItems.length > 0 && !hasMoreItems" :class="`mt-8 text-center text-sm text-stone-500 dark:text-zinc-500`">
+      Showing all {{ filteredCatalogItems.length }} item{{ filteredCatalogItems.length !== 1 ? 's' : '' }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useSanitize } from '@/composables/useSanitize'
@@ -201,10 +220,17 @@ const categories = ref([])
 const colors = ref([])
 const brands = ref([])
 const loading = ref(true)
+const loadingMore = ref(false)
 const addedItems = ref(new Set())
 const addingItemId = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
+const sentinelRef = ref(null)
+
+// Pagination state
+const ITEMS_PER_PAGE = 20
+const currentOffset = ref(0)
+const hasMoreItems = ref(true)
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
@@ -245,23 +271,57 @@ const filteredCatalogItems = computed(() => {
   })
 })
 
-const loadCatalogItems = async () => {
-  loading.value = true
+const loadCatalogItems = async (reset = false) => {
+  // If resetting, clear existing items and reset pagination
+  if (reset) {
+    loading.value = true
+    catalogItems.value = []
+    currentOffset.value = 0
+    hasMoreItems.value = true
+  } else {
+    loadingMore.value = true
+  }
+
   try {
     const items = await catalogService.getCatalogItems({
       category: filters.value.category,
       color: filters.value.color,
       brand: filters.value.brand,
-      limit: 50,
-      offset: 0,
+      limit: ITEMS_PER_PAGE,
+      offset: reset ? 0 : currentOffset.value,
     })
-    catalogItems.value = items
+
+    if (reset) {
+      catalogItems.value = items
+    } else {
+      // Append new items to existing list
+      catalogItems.value = [...catalogItems.value, ...items]
+    }
+
+    // Update pagination state
+    currentOffset.value += items.length
+    hasMoreItems.value = items.length === ITEMS_PER_PAGE
+
+    // If we got fewer items than requested, we've reached the end
+    if (items.length < ITEMS_PER_PAGE) {
+      hasMoreItems.value = false
+    }
   } catch (error) {
     console.error('CatalogueBrowser: Error loading catalog items:', error)
-    catalogItems.value = []
+    if (reset) {
+      catalogItems.value = []
+    }
+    hasMoreItems.value = false
   } finally {
     loading.value = false
+    loadingMore.value = false
   }
+}
+
+// Load more items when sentinel is visible
+const loadMoreCatalogItems = async () => {
+  if (loadingMore.value || !hasMoreItems.value) return
+  await loadCatalogItems(false)
 }
 
 const loadFilterOptions = async () => {
@@ -287,9 +347,10 @@ const handleAddToCloset = async (item) => {
     // First check if item is already owned (additional safety check)
     const isOwned = await catalogService.isItemOwned(item.id)
     if (isOwned) {
-      showError('This item is already in your closet. Please refresh the catalog to see updated items.')
-      // Refresh catalog to remove the owned item
-      await loadCatalogItems()
+      showError('This item is already in your closet.')
+      // Optimistically remove from local list
+      catalogItems.value = catalogItems.value.filter(i => i.id !== item.id)
+      addedItems.value.add(item.id)
       return
     }
 
@@ -298,11 +359,12 @@ const handleAddToCloset = async (item) => {
     // Mark item as added
     addedItems.value.add(item.id)
     
+    // Optimistically remove from local catalog list immediately (no need to refresh)
+    // This allows users to add multiple items quickly without waiting for server refresh
+    catalogItems.value = catalogItems.value.filter(i => i.id !== item.id)
+    
     // Emit event to refresh parent's item list
     emit('item-added')
-    
-    // Refresh catalog to remove the added item
-    await loadCatalogItems()
     
     console.log('CatalogueBrowser: Successfully added item to closet. New item ID:', newItemId)
   } catch (error) {
@@ -310,11 +372,14 @@ const handleAddToCloset = async (item) => {
     
     // Handle specific error cases
     if (error.message?.includes('already in closet')) {
-      showError('This item is already in your closet. Please refresh the catalog to see updated items.')
-      // Refresh catalog to remove the owned item
-      await loadCatalogItems()
+      showError('This item is already in your closet.')
+      // Optimistically remove from local list
+      catalogItems.value = catalogItems.value.filter(i => i.id !== item.id)
+      addedItems.value.add(item.id)
     } else {
       showError(error.message || 'Failed to add item to closet')
+      // On error, refresh to ensure sync with server (reset pagination)
+      await loadCatalogItems(true)
     }
   } finally {
     addingItemId.value = null
@@ -343,17 +408,57 @@ const handleSearchBlur = (event) => {
   event.target.classList.remove('search-input-focus')
 }
 
-// Watch for filter changes and reload items
+// Intersection Observer for infinite scroll
+let sentinelObserver = null
+
+const setupInfiniteScroll = () => {
+  if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+    console.warn('IntersectionObserver not supported')
+    return
+  }
+
+  // Clean up existing observer
+  if (sentinelObserver) {
+    sentinelObserver.disconnect()
+  }
+
+  sentinelObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && hasMoreItems.value && !loadingMore.value && !loading.value) {
+          loadMoreCatalogItems()
+        }
+      })
+    },
+    {
+      rootMargin: '200px', // Start loading 200px before sentinel is visible
+      threshold: 0.1
+    }
+  )
+
+  // Observe the sentinel element
+  if (sentinelRef.value) {
+    sentinelObserver.observe(sentinelRef.value)
+  }
+}
+
+// Watch for filter changes and reload items (reset pagination)
 watch(filters, () => {
-  loadCatalogItems()
+  loadCatalogItems(true)
 }, { deep: true })
+
+// Watch for search term changes and reload items (reset pagination)
+watch(searchTerm, () => {
+  // Only reload if search term is cleared or changed significantly
+  // Client-side filtering handles real-time search
+}, { immediate: false })
 
 onMounted(async () => {
   // Detect Mac OS
   isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
   
   await Promise.all([
-    loadCatalogItems(),
+    loadCatalogItems(true), // Reset pagination on mount
     loadFilterOptions(),
   ])
   
@@ -361,6 +466,25 @@ onMounted(async () => {
   await nextTick()
   if (searchInputRef.value) {
     registerSearchInput(searchInputRef.value)
+  }
+
+  // Setup infinite scroll after DOM is ready
+  await nextTick()
+  setupInfiniteScroll()
+})
+
+onUnmounted(() => {
+  // Cleanup observer
+  if (sentinelObserver) {
+    sentinelObserver.disconnect()
+    sentinelObserver = null
+  }
+})
+
+// Watch sentinelRef to setup observer when it's available
+watch(sentinelRef, () => {
+  if (sentinelRef.value && !loading.value) {
+    setupInfiniteScroll()
   }
 })
 </script>
