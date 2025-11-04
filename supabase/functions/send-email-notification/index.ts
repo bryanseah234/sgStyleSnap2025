@@ -34,11 +34,27 @@ const corsHeaders = {
  * Get email templates for different notification types
  */
 function getEmailTemplate(notificationType: string, actorName: string = 'A user'): EmailTemplate | null {
+  // StyleSnap Shirt Icon SVG (inline, from Lucide Icons)
+  const shirtIconSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;">
+      <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l1.48 9.24a2 2 0 0 0 2 1.78h10.48a2 2 0 0 0 2-1.78l1.48-9.24a2 2 0 0 0-1.34-2.23Z"/>
+      <path d="M12 8v13"/>
+      <path d="M8 8h8"/>
+    </svg>
+  `
+  
   const templates: Record<string, EmailTemplate> = {
     friend_request: {
       subject: 'You received a friend request on StyleSnap',
       html: `
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+          <!-- Logo/Header -->
+          <div style="text-align:center; margin-bottom:24px;">
+            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
+              ${shirtIconSvg.replace('currentColor', '#ffffff')}
+            </div>
+            <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
+          </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">New friend request 👋</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} sent you a friend request on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to accept or decline.</p>
@@ -49,6 +65,13 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
       subject: 'Your friend request was accepted on StyleSnap',
       html: `
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+          <!-- Logo/Header -->
+          <div style="text-align:center; margin-bottom:24px;">
+            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
+              ${shirtIconSvg.replace('currentColor', '#ffffff')}
+            </div>
+            <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
+          </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Friend request accepted 🎉</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} accepted your friend request on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">You can now view each other's closets and create outfits together!</p>
@@ -59,6 +82,13 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
       subject: 'Someone liked your outfit on StyleSnap',
       html: `
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+          <!-- Logo/Header -->
+          <div style="text-align:center; margin-bottom:24px;">
+            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
+              ${shirtIconSvg.replace('currentColor', '#ffffff')}
+            </div>
+            <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
+          </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Your outfit got a like ❤️</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} liked your outfit on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to see which outfit they liked.</p>
@@ -69,6 +99,13 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
       subject: 'Someone liked your item on StyleSnap',
       html: `
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+          <!-- Logo/Header -->
+          <div style="text-align:center; margin-bottom:24px;">
+            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
+              ${shirtIconSvg.replace('currentColor', '#ffffff')}
+            </div>
+            <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
+          </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Your item got a like ❤️</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} liked an item in your closet on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to see which item they liked.</p>
@@ -79,6 +116,13 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
       subject: 'A friend shared an outfit with you on StyleSnap',
       html: `
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+          <!-- Logo/Header -->
+          <div style="text-align:center; margin-bottom:24px;">
+            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
+              ${shirtIconSvg.replace('currentColor', '#ffffff')}
+            </div>
+            <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
+          </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Outfit shared with you 👗</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} shared an outfit with you on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to view the shared outfit.</p>
@@ -89,6 +133,13 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
       subject: 'You have an outfit suggestion on StyleSnap',
       html: `
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+          <!-- Logo/Header -->
+          <div style="text-align:center; margin-bottom:24px;">
+            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
+              ${shirtIconSvg.replace('currentColor', '#ffffff')}
+            </div>
+            <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
+          </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Outfit suggestion 💡</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} created an outfit suggestion using items from your closet.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to approve or reject the suggestion.</p>
@@ -99,6 +150,13 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
       subject: 'New comment on your outfit on StyleSnap',
       html: `
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+          <!-- Logo/Header -->
+          <div style="text-align:center; margin-bottom:24px;">
+            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
+              ${shirtIconSvg.replace('currentColor', '#ffffff')}
+            </div>
+            <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
+          </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">New comment 💬</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} commented on your outfit on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to view and reply to the comment.</p>
