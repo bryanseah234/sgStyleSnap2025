@@ -38,8 +38,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
   const shirtIconSvg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;">
       <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l1.48 9.24a2 2 0 0 0 2 1.78h10.48a2 2 0 0 0 2-1.78l1.48-9.24a2 2 0 0 0-1.34-2.23Z"/>
-      <path d="M12 8v13"/>
-      <path d="M8 8h8"/>
     </svg>
   `
   
