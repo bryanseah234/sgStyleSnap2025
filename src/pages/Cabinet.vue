@@ -332,7 +332,7 @@
                   <span class="text-xs font-medium text-stone-700 dark:text-zinc-200">
                     {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
                   </span>
-                  <span v-if="item.category && item.brand">, </span>
+                  <span v-if="item.category && item.brand">,</span>
                   <span v-if="item.brand" class="text-xs font-medium text-stone-700 dark:text-zinc-200">
                     {{ item.brand }}
                   </span>

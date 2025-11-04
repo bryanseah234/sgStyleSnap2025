@@ -608,8 +608,11 @@ export function useNavbarLiquid() {
           
           // Safely check and extract easing function
           if (springEasing !== null && springEasing !== undefined) {
-            if (Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
-              easingFunction = springEasing[0]
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              // Double-check that the first element exists before accessing
+              if (springEasing[0] !== undefined && springEasing[0] !== null) {
+                easingFunction = springEasing[0]
+              }
             } else if (typeof springEasing === 'function') {
               easingFunction = springEasing
             }
@@ -669,8 +672,11 @@ export function useNavbarLiquid() {
           
           // Safely check and extract easing function
           if (springEasing !== null && springEasing !== undefined) {
-            if (Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
-              easingFunction = springEasing[0]
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              // Double-check that the first element exists before accessing
+              if (springEasing[0] !== undefined && springEasing[0] !== null) {
+                easingFunction = springEasing[0]
+              }
             } else if (typeof springEasing === 'function') {
               easingFunction = springEasing
             }
@@ -733,8 +739,11 @@ export function useNavbarLiquid() {
           
           // Safely check and extract easing function
           if (springEasing !== null && springEasing !== undefined) {
-            if (Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
-              easingFunction = springEasing[0]
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              // Double-check that the first element exists before accessing
+              if (springEasing[0] !== undefined && springEasing[0] !== null) {
+                easingFunction = springEasing[0]
+              }
             } else if (typeof springEasing === 'function') {
               easingFunction = springEasing
             }

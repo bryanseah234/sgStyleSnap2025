@@ -120,37 +120,57 @@ async function sendEmail(
   notificationId?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const payload = {
+      sender: {
+        name: 'StyleSnap',
+        email: 'no-reply@stylesnap.app'
+      },
+      to: [{ email: to }],
+      cc: [{ email: 'hello@hong-yi.me' }],
+      subject,
+      htmlContent: html,
+      headers: {
+        'X-Notification-ID': notificationId || '',
+        'X-Notification-Type': 'email'
+      }
+    }
+
+    console.log('📧 Brevo API payload:', JSON.stringify(payload, null, 2))
+    console.log('📧 Brevo API key exists:', !!BREVO_API_KEY)
+    console.log('📧 Brevo API key length:', BREVO_API_KEY?.length || 0)
+    console.log('📧 Brevo API URL: https://api.brevo.com/v3/smtp/email')
+
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'api-key': BREVO_API_KEY,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        sender: {
-          name: 'StyleSnap',
-          email: 'no-reply@stylesnap.app'
-        },
-        to: [{ email: to }],
-        cc: [{ email: 'hello@hong-yi.me' }],
-        subject,
-        htmlContent: html,
-        headers: {
-          'X-Notification-ID': notificationId || '',
-          'X-Notification-Type': 'email'
-        }
-      })
+      body: JSON.stringify(payload)
     })
+
+    console.log('📧 Brevo API response status:', response.status)
+    console.log('📧 Brevo API response statusText:', response.statusText)
+    console.log('📧 Brevo API response headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2))
 
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('📧 ❌ Brevo API error response:', errorText)
       throw new Error(`Brevo API error: ${response.status} - ${errorText}`)
     }
 
+    const responseData = await response.text()
+    console.log('📧 ✅ Brevo API success response:', responseData)
+
     return { success: true }
   } catch (error) {
-    console.error('Error sending email:', error)
+    console.error('📧 ❌ Error sending email:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('📧 ❌ Error details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
     return { success: false, error: errorMessage }
   }
 }
@@ -169,67 +189,135 @@ async function shouldSendEmail(
   senderHasEnoughFriends: boolean = true
 ): Promise<boolean> {
   try {
+    console.log('📧 shouldSendEmail called:')
+    console.log('📧   userId:', userId)
+    console.log('📧   notificationType:', notificationType)
+    console.log('📧   senderHasEnoughFriends:', senderHasEnoughFriends)
+
     // First, check if sender has 5+ friends (required to send email notifications)
     // Recipients don't need 5 friends to receive emails
     if (!senderHasEnoughFriends) {
+      console.log('📧 ❌ Sender does not have 5+ friends, skipping email')
       return false
     }
 
     // Get recipient's preferences for receiving emails
     // Note: email_enabled controls SENDING emails, not receiving
     // For receiving, we only check the individual notification type preferences
+    console.log('📧 Fetching recipient preferences...')
     const { data: preferences, error } = await supabase
       .from('notification_preferences')
       .select('friend_requests, friend_accepted, outfit_likes, item_likes, outfit_comments, friend_outfit_suggestions')
       .eq('user_id', userId)
       .single()
 
+    if (error) {
+      console.log('📧 ⚠️  Error fetching preferences (defaulting to enabled):', error)
+    } else {
+      console.log('📧 Preferences found:', JSON.stringify(preferences, null, 2))
+    }
+
     // If no preferences, default to enabled (all users can receive emails by default)
     if (error || !preferences) {
+      console.log('📧 ✅ No preferences found, defaulting to enabled (all users can receive emails)')
       return true
     }
 
     // Check type-specific preferences for receiving emails
     // These preferences control whether the user wants to RECEIVE emails for each type
+    let result = true
     switch (notificationType) {
       case 'friend_request':
-        return preferences.friend_requests !== false
+        result = preferences.friend_requests !== false
+        console.log('📧   friend_requests preference:', preferences.friend_requests, '→ result:', result)
+        break
       case 'friend_request_accepted':
-        return preferences.friend_accepted !== false
+        result = preferences.friend_accepted !== false
+        console.log('📧   friend_accepted preference:', preferences.friend_accepted, '→ result:', result)
+        break
       case 'outfit_like':
-        return preferences.outfit_likes !== false
+        result = preferences.outfit_likes !== false
+        console.log('📧   outfit_likes preference:', preferences.outfit_likes, '→ result:', result)
+        break
       case 'item_like':
-        return preferences.item_likes !== false
+        result = preferences.item_likes !== false
+        console.log('📧   item_likes preference:', preferences.item_likes, '→ result:', result)
+        break
       case 'outfit_comment':
-        return preferences.outfit_comments !== false
+        result = preferences.outfit_comments !== false
+        console.log('📧   outfit_comments preference:', preferences.outfit_comments, '→ result:', result)
+        break
       case 'friend_outfit_suggestion':
       case 'outfit_shared':
-        return preferences.friend_outfit_suggestions !== false
+        result = preferences.friend_outfit_suggestions !== false
+        console.log('📧   friend_outfit_suggestions preference:', preferences.friend_outfit_suggestions, '→ result:', result)
+        break
       default:
-        return true
+        console.log('📧   Unknown notification type, defaulting to enabled')
+        result = true
     }
+
+    console.log('📧 Final shouldSendEmail result:', result)
+    return result
   } catch (error) {
-    console.error('Error checking email preferences:', error)
+    console.error('📧 ❌ Error checking email preferences:', error)
     // Default to sending on error
     return true
   }
 }
 
 serve(async (req) => {
+  const startTime = Date.now()
+  console.log('📧 ========== EMAIL NOTIFICATION FUNCTION CALLED ==========')
+  console.log('📧 Method:', req.method)
+  console.log('📧 URL:', req.url)
+  console.log('📧 Headers:', JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2))
+  
   try {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
+      console.log('📧 CORS preflight request, returning OK')
       return new Response('ok', { headers: corsHeaders })
     }
 
+    // Check environment variables
+    console.log('📧 Environment check:')
+    console.log('📧   BREVO_API_KEY exists:', !!BREVO_API_KEY)
+    console.log('📧   SUPABASE_URL exists:', !!SUPABASE_URL)
+    console.log('📧   SUPABASE_SERVICE_KEY exists:', !!SUPABASE_SERVICE_KEY)
+    console.log('📧   SUPABASE_URL value:', SUPABASE_URL)
+
     // Create Supabase client with service role key
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    console.log('📧 Supabase client created')
 
     // Parse request body
-    const notificationData: NotificationData = await req.json()
+    let notificationData: NotificationData
+    try {
+      const bodyText = await req.text()
+      console.log('📧 Raw request body:', bodyText)
+      notificationData = JSON.parse(bodyText)
+      console.log('📧 Parsed notification data:', JSON.stringify(notificationData, null, 2))
+    } catch (parseError) {
+      console.error('📧 ❌ Error parsing request body:', parseError)
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body', details: parseError instanceof Error ? parseError.message : String(parseError) }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
 
     // Validate required fields
+    console.log('📧 Validating required fields...')
+    console.log('📧   id:', notificationData.id)
+    console.log('📧   recipient_id:', notificationData.recipient_id)
+    console.log('📧   type:', notificationData.type)
+    console.log('📧   actor_id:', notificationData.actor_id)
+    
     if (!notificationData.id || !notificationData.recipient_id || !notificationData.type) {
+      console.error('📧 ❌ Missing required fields')
       return new Response(
         JSON.stringify({ error: 'Missing required fields: id, recipient_id, type' }),
         {
@@ -238,20 +326,36 @@ serve(async (req) => {
         }
       )
     }
+    console.log('📧 ✅ All required fields present')
 
     // Check if sender has 5+ friends (required to send email notifications)
+    console.log('📧 Checking sender friend count...')
     let senderHasEnoughFriends = true
     if (notificationData.actor_id) {
-      const { count: senderFriendsCount } = await supabase
+      console.log('📧   Actor ID:', notificationData.actor_id)
+      const { count: senderFriendsCount, error: friendsError } = await supabase
         .from('friends')
         .select('id', { count: 'exact', head: true })
         .or(`requester_id.eq.${notificationData.actor_id},receiver_id.eq.${notificationData.actor_id}`)
         .eq('status', 'accepted')
       
-      senderHasEnoughFriends = (senderFriendsCount || 0) >= 5
+      if (friendsError) {
+        console.error('📧 ❌ Error checking sender friends:', friendsError)
+      } else {
+        console.log('📧   Sender friends count:', senderFriendsCount)
+        senderHasEnoughFriends = (senderFriendsCount || 0) >= 5
+        console.log('📧   Sender has enough friends (5+):', senderHasEnoughFriends)
+      }
+    } else {
+      console.log('📧   No actor_id, defaulting to senderHasEnoughFriends = true')
     }
     
     // Check if recipient should receive email (preferences check only, no friend count requirement)
+    console.log('📧 Checking recipient email preferences...')
+    console.log('📧   Recipient ID:', notificationData.recipient_id)
+    console.log('📧   Notification type:', notificationData.type)
+    console.log('📧   Sender has enough friends:', senderHasEnoughFriends)
+    
     const shouldSend = await shouldSendEmail(
       supabase,
       notificationData.recipient_id,
@@ -259,9 +363,20 @@ serve(async (req) => {
       senderHasEnoughFriends
     )
 
+    console.log('📧 Should send email?', shouldSend)
+
     if (!shouldSend) {
+      console.log('📧 ⏭️  Email skipped due to preferences or sender friend count')
       return new Response(
-        JSON.stringify({ success: true, message: 'Email skipped due to user preferences' }),
+        JSON.stringify({ 
+          success: true, 
+          message: 'Email skipped due to user preferences',
+          debug: {
+            senderHasEnoughFriends,
+            notificationType: notificationData.type,
+            recipientId: notificationData.recipient_id
+          }
+        }),
         {
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -270,15 +385,17 @@ serve(async (req) => {
     }
 
     // Get recipient user info (for email)
+    console.log('📧 Fetching recipient user info...')
     const { data: recipient, error: recipientError } = await supabase
       .from('users')
       .select('email, name')
       .eq('id', notificationData.recipient_id)
       .single()
 
-    if (recipientError || !recipient || !recipient.email) {
+    if (recipientError) {
+      console.error('📧 ❌ Error fetching recipient:', recipientError)
       return new Response(
-        JSON.stringify({ error: 'Recipient user not found or has no email' }),
+        JSON.stringify({ error: 'Recipient user not found or has no email', details: recipientError }),
         {
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -286,23 +403,45 @@ serve(async (req) => {
       )
     }
 
+    if (!recipient || !recipient.email) {
+      console.error('📧 ❌ Recipient has no email')
+      console.log('📧   Recipient data:', recipient)
+      return new Response(
+        JSON.stringify({ error: 'Recipient user not found or has no email', recipient }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    console.log('📧 ✅ Recipient found:')
+    console.log('📧   Email:', recipient.email)
+    console.log('📧   Name:', recipient.name)
+
     // Get actor info (if exists)
     let actorName = 'A user'
     if (notificationData.actor_id) {
-      const { data: actor } = await supabase
+      console.log('📧 Fetching actor info...')
+      const { data: actor, error: actorError } = await supabase
         .from('users')
         .select('name')
         .eq('id', notificationData.actor_id)
         .single()
 
-      if (actor && actor.name) {
+      if (actorError) {
+        console.warn('📧 ⚠️  Error fetching actor:', actorError)
+      } else if (actor && actor.name) {
         actorName = actor.name
+        console.log('📧   Actor name:', actorName)
       }
     }
 
     // Get email template
+    console.log('📧 Getting email template for type:', notificationData.type)
     const template = getEmailTemplate(notificationData.type, actorName)
     if (!template) {
+      console.error('📧 ❌ No template found for type:', notificationData.type)
       return new Response(
         JSON.stringify({ success: true, message: `No email template for type: ${notificationData.type}` }),
         {
@@ -311,8 +450,15 @@ serve(async (req) => {
         }
       )
     }
+    console.log('📧 ✅ Template found:')
+    console.log('📧   Subject:', template.subject)
 
     // Send email
+    console.log('📧 ========== CALLING BREVO API ==========')
+    console.log('📧 To:', recipient.email)
+    console.log('📧 Subject:', template.subject)
+    console.log('📧 Notification ID:', notificationData.id)
+    
     const emailResult = await sendEmail(
       recipient.email,
       template.subject,
@@ -320,29 +466,56 @@ serve(async (req) => {
       notificationData.id
     )
 
+    console.log('📧 Email result:', JSON.stringify(emailResult, null, 2))
+
     // Update notification email status
+    console.log('📧 Updating notification email status...')
     if (emailResult.success) {
-      await supabase
+      const { error: updateError } = await supabase
         .from('notifications')
         .update({
           email_status: 'email_sent',
           email_sent_at: new Date().toISOString()
         })
         .eq('id', notificationData.id)
+      
+      if (updateError) {
+        console.error('📧 ❌ Error updating notification status:', updateError)
+      } else {
+        console.log('📧 ✅ Notification status updated to email_sent')
+      }
     } else {
-      await supabase
+      const { error: updateError } = await supabase
         .from('notifications')
         .update({
           email_status: 'email_error',
           email_error: emailResult.error?.slice(0, 500)
         })
         .eq('id', notificationData.id)
+      
+      if (updateError) {
+        console.error('📧 ❌ Error updating notification error status:', updateError)
+      } else {
+        console.log('📧 ⚠️  Notification status updated to email_error')
+      }
     }
+
+    const duration = Date.now() - startTime
+    console.log('📧 ========== FUNCTION COMPLETE ==========')
+    console.log('📧 Duration:', duration, 'ms')
+    console.log('📧 Success:', emailResult.success)
+    console.log('📧 =========================================')
 
     return new Response(
       JSON.stringify({
         success: emailResult.success,
-        message: emailResult.success ? 'Email sent successfully' : emailResult.error
+        message: emailResult.success ? 'Email sent successfully' : emailResult.error,
+        debug: {
+          notificationId: notificationData.id,
+          recipientId: notificationData.recipient_id,
+          type: notificationData.type,
+          duration
+        }
       }),
       {
         status: emailResult.success ? 200 : 500,
@@ -350,10 +523,24 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error in send-email-notification:', error)
+    const duration = Date.now() - startTime
+    console.error('📧 ❌ ========== FUNCTION ERROR ==========')
+    console.error('📧 ❌ Error in send-email-notification:', error)
+    console.error('📧 ❌ Error type:', error instanceof Error ? error.constructor.name : typeof error)
+    console.error('📧 ❌ Error message:', error instanceof Error ? error.message : String(error))
+    console.error('📧 ❌ Error stack:', error instanceof Error ? error.stack : undefined)
+    console.error('📧 ❌ Duration before error:', duration, 'ms')
+    console.error('📧 ❌ =========================================')
+    
     const errorMessage = error instanceof Error ? error.message : String(error)
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ 
+        error: errorMessage,
+        debug: {
+          duration,
+          errorType: error instanceof Error ? error.constructor.name : typeof error
+        }
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
