@@ -131,16 +131,17 @@
           </div>
         </div>
       </div>
-      
-      <!-- Sub-route Content - Vertically Centered -->
-      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center">
-        <div class="w-full max-w-6xl mx-auto px-4">
-          <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
-          <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
-        </div>
+    </div>
+    
+    <!-- Sub-route Content - Vertically Centered -->
+    <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center">
+      <div class="w-full max-w-6xl mx-auto px-4">
+        <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
+        <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
       </div>
-      
-      <!-- Friend Section -->
+    </div>
+    
+    <!-- Friend Section -->
       <div v-if="currentSubRoute === 'friend'" class="max-w-6xl mx-auto mb-8 flex-shrink-0">
         <div class="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
           <div class="flex items-center gap-3 mb-4">
