@@ -1,9 +1,9 @@
 <template>
   <!-- Main container with theme-aware background -->
-  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden flex flex-col">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden flex flex-col relative">
     
-    <!-- Page Header Section -->
-    <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="max-w-6xl mx-auto flex-shrink-0 mb-0">
+    <!-- Page Header Section - Positioned at top -->
+    <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="max-w-6xl mx-auto w-full flex-shrink-0 mb-0 relative z-10">
       <!-- Header with title and navigation buttons -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
         <!-- Dynamic page title and navigation buttons row -->
