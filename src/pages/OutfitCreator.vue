@@ -571,7 +571,7 @@
                   position: 'absolute',
                   left: `${scalePosition(item.x, 'x')}px`,
                   top: `${scalePosition(item.y, 'y')}px`,
-                  zIndex: draggedItem === item.id ? 50 : Math.max(2, (item.z_index || 2)) + (selectedItemId === item.id ? 1000 : 0),
+                  zIndex: draggedItem === item.id ? 50 : (selectedItemId === item.id ? (Math.max(2, (item.z_index || 2)) * 10 + 100) : Math.max(2, (item.z_index || 2)) * 10),
                   transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                   transformOrigin: 'center center',
                   transition: draggedItem === item.id ? 'none' : 'all duration-200'

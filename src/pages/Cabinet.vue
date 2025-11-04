@@ -3,7 +3,44 @@
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden flex flex-col">
     
     <!-- Page Header Section -->
-    <div class="max-w-6xl mx-auto flex-shrink-0" :class="currentSubRoute === 'manual' || currentSubRoute === 'catalogue' ? 'mb-4' : 'mb-8'">
+    <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="max-w-6xl mx-auto flex-shrink-0 mb-0">
+      <!-- Header with title and navigation buttons -->
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
+        <!-- Dynamic page title and navigation buttons row -->
+        <div class="flex-1 min-w-0 w-full md:w-auto flex items-center justify-between gap-4 flex-wrap">
+          <h1 class="text-4xl font-bold text-foreground break-words text-left">
+            {{ subRouteTitle }}
+          </h1>
+          
+          <!-- Manual Upload and Browse Catalogue Buttons -->
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button
+              @click="$router.push('/closet/add/manual')"
+              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+                currentSubRoute === 'manual'
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              }`"
+            >
+              <Plus class="w-4 h-4" />
+              Manual Upload
+            </button>
+            <button
+              @click="$router.push('/closet/add/catalogue')"
+              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+                currentSubRoute === 'catalogue'
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              }`"
+            >
+              <Shirt class="w-4 h-4" />
+              Browse Catalogue
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="max-w-6xl mx-auto flex-shrink-0 mb-8">
       <!-- Header with title, filter buttons, and add button -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title and navigation buttons row -->
@@ -96,7 +133,7 @@
       </div>
       
       <!-- Sub-route Content - Vertically Centered -->
-      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center py-8">
+      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center min-h-0">
         <div class="w-full max-w-6xl mx-auto px-4">
           <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
           <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
@@ -133,7 +170,7 @@
           </button>
 
           <!-- Desktop: Search Bar, Favourites, and Clear Filters Row -->
-          <div class="hidden md:flex items-center gap-3 mb-4 p-4 md:p-6 pb-4">
+          <div class="hidden md:flex items-center gap-3 mb-2 p-4 md:p-6 pb-2">
             <!-- Search Bar -->
             <div class="flex-1 relative search-input-group">
               <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
@@ -236,7 +273,7 @@
           </div>
           
           <!-- Filter Dropdowns -->
-          <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0 p-4 md:p-6 pt-0 md:pt-4`">
+          <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0 p-4 md:p-6 pt-0 md:pt-2 pb-4 md:pb-6`">
             <!-- Category Filter -->
             <div>
               <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
