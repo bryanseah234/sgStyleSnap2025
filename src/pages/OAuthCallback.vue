@@ -21,19 +21,6 @@
           {{ statusDescription }}
         </p>
       </div>
-      
-      <!-- Error Message -->
-      <div v-if="error" class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg">
-        <p class="text-red-700 dark:text-red-300 text-sm">
-          {{ error }}
-        </p>
-        <button 
-          @click="redirectToLogin"
-          class="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-        >
-          Return to Login
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -107,7 +94,7 @@ const handleOAuthCallback = async () => {
       safeError('❌ OAuthCallback: OAuth error:', errorParam, errorDescription)
       
       statusMessage.value = 'Authentication Failed'
-      statusDescription.value = 'There was an error during the authentication process.'
+      statusDescription.value = 'Redirecting you to login now...'
       error.value = `${errorParam}: ${errorDescription}`
       
       // Redirect to login after 3 seconds
@@ -178,7 +165,7 @@ const handleOAuthCallback = async () => {
     console.error('❌ OAuthCallback: Authentication timeout after', maxAttempts, 'seconds')
     
     statusMessage.value = 'Authentication Timeout'
-    statusDescription.value = 'The authentication process took too long.'
+    statusDescription.value = 'Redirecting you to login now...'
     error.value = 'Authentication timeout - please try again'
     
     // Redirect to login after 3 seconds
@@ -190,7 +177,7 @@ const handleOAuthCallback = async () => {
     console.error('❌ OAuthCallback: Error processing callback:', err)
     
     statusMessage.value = 'Something Went Wrong'
-    statusDescription.value = 'An unexpected error occurred.'
+    statusDescription.value = 'Redirecting you to login now...'
     error.value = err.message || 'Unknown error occurred'
     
     // Redirect to login after 3 seconds
