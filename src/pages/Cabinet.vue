@@ -3,7 +3,7 @@
   <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden flex flex-col">
     
     <!-- Page Header Section -->
-    <div class="max-w-6xl mx-auto mb-8 flex-shrink-0">
+    <div class="max-w-6xl mx-auto flex-shrink-0" :class="currentSubRoute === 'manual' || currentSubRoute === 'catalogue' ? 'mb-4' : 'mb-8'">
       <!-- Header with title, filter buttons, and add button -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title and navigation buttons row -->
@@ -96,8 +96,8 @@
       </div>
       
       <!-- Sub-route Content - Vertically Centered -->
-      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center">
-        <div class="w-full max-w-6xl mx-auto">
+      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center py-8">
+        <div class="w-full max-w-6xl mx-auto px-4">
           <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
           <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
         </div>
@@ -122,18 +122,18 @@
 
       <!-- Filters Section (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="max-w-6xl mx-auto mb-6 flex-shrink-0">
-        <div :class="`rounded-2xl border p-4 md:p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+        <div :class="`rounded-2xl border bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
           <!-- Filter Toggle Button (Mobile Only - At Top) -->
           <button
             @click="filtersExpanded = !filtersExpanded"
-            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
+            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-t-2xl bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
           >
             <span class="font-medium text-sm">Filters</span>
             <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
           </button>
 
           <!-- Desktop: Search Bar, Favourites, and Clear Filters Row -->
-          <div class="hidden md:flex items-center gap-3 mb-4">
+          <div class="hidden md:flex items-center gap-3 mb-4 p-4 md:p-6 pb-4">
             <!-- Search Bar -->
             <div class="flex-1 relative search-input-group">
               <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
@@ -189,7 +189,7 @@
           </div>
 
           <!-- Mobile: Search Bar with Heart Button Inline -->
-          <div class="md:hidden mb-3">
+          <div class="md:hidden mb-3 p-4 pb-0">
             <div class="flex items-center gap-2">
               <!-- Search Bar (full width minus heart button) -->
               <div class="flex-1 relative search-input-group">
@@ -236,7 +236,7 @@
           </div>
           
           <!-- Filter Dropdowns -->
-          <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0`">
+          <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0 p-4 md:p-6 pt-0 md:pt-4`">
             <!-- Category Filter -->
             <div>
               <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
