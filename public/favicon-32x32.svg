@@ -1,6 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Black background with rounded corners -->
   <rect width="32" height="32" rx="8" fill="#000000"/>
-  <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l1.48 9.24a2 2 0 0 0 2 1.78h10.48a2 2 0 0 0 2-1.78l1.48-9.24a2 2 0 0 0-1.34-2.23Z" transform="translate(0, 2) scale(0.7)"/>
-  <path d="M12 8v13" transform="translate(0, 2) scale(0.7)"/>
-  <path d="M8 8h8" transform="translate(0, 2) scale(0.7)"/>
+  <!-- Shirt icon centered, scaled to fit -->
+  <g transform="translate(4, 4) scale(1)">
+    <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l1.48 9.24a2 2 0 0 0 2 1.78h10.48a2 2 0 0 0 2-1.78l1.48-9.24a2 2 0 0 0-1.34-2.23Z" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 8v13" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8 8h8" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>
