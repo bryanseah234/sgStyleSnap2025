@@ -2306,157 +2306,292 @@ function calculateOutfitColorScore(items) {
 }
 
 /**
+ * Helper function to detect if an item has short sleeves
+ */
+function isShortSleeved(item) {
+  const cat = item.category?.toLowerCase()
+  const clothingType = (item.clothing_type || '').toLowerCase()
+  const itemName = (item.name || '').toLowerCase()
+  
+  // Explicit short sleeve types
+  if (clothingType === 't-shirt' || clothingType === 'polo' || clothingType === 'top') {
+    // Check if it's NOT a long sleeve variant
+    if (clothingType.includes('long') || itemName.includes('long sleeve')) {
+      return false
+    }
+    return true
+  }
+  
+  // Explicit long sleeve types
+  if (clothingType === 'longsleeve' || clothingType === 'hoodie' || 
+      clothingType.includes('long') || itemName.includes('long sleeve')) {
+    return false
+  }
+  
+  // Shirt/Blouse: Generally assumed long-sleeved unless name indicates otherwise
+  if (cat === 'shirt' || clothingType === 'shirt' || cat === 'blouse' || clothingType === 'blouse') {
+    // Check name for short sleeve indicators
+    if (itemName.includes('short') || itemName.includes('sleeveless') || 
+        itemName.includes('tee') || itemName.includes('t-shirt')) {
+      return true
+    }
+    return false // Default to long sleeves for shirts/blouses
+  }
+  
+  // Other tops: Check name for clues
+  if (cat === 'top' || cat === 't-shirt') {
+    return !itemName.includes('long sleeve')
+  }
+  
+  return false
+}
+
+/**
+ * Helper function to detect if an item has long sleeves
+ */
+function isLongSleeved(item) {
+  const cat = item.category?.toLowerCase()
+  const clothingType = (item.clothing_type || '').toLowerCase()
+  const itemName = (item.name || '').toLowerCase()
+  
+  // Explicit long sleeve types
+  if (clothingType === 'longsleeve' || clothingType === 'hoodie' || 
+      clothingType.includes('long') || itemName.includes('long sleeve')) {
+    return true
+  }
+  
+  // Shirt/Blouse: Generally long-sleeved unless name indicates otherwise
+  if (cat === 'shirt' || clothingType === 'shirt' || cat === 'blouse' || clothingType === 'blouse') {
+    // Check name for short sleeve indicators
+    if (itemName.includes('short') || itemName.includes('sleeveless') || 
+        itemName.includes('tee') || itemName.includes('t-shirt')) {
+      return false
+    }
+    return true // Default to long sleeves
+  }
+  
+  return false
+}
+
+/**
+ * Helper function to detect if an item is shorts
+ */
+function isShorts(item) {
+  const cat = item.category?.toLowerCase()
+  const clothingType = (item.clothing_type || '').toLowerCase()
+  return cat === 'shorts' || clothingType === 'shorts' || cat === 'skirt' || clothingType === 'skirt'
+}
+
+/**
+ * Helper function to detect if an item is pants
+ */
+function isPants(item) {
+  const cat = item.category?.toLowerCase()
+  const clothingType = (item.clothing_type || '').toLowerCase()
+  return cat === 'pants' || clothingType === 'pants' || cat === 'bottom'
+}
+
+/**
  * Calculate weather fit score (0-1)
  * Returns a score based on how well items match weather conditions
  * Includes penalties for illogical combinations (e.g., shorts + long sleeves in hot weather)
+ * Enhanced to prioritize clothing types based on temperature
  */
 function calculateWeatherFitScore(items, weather) {
   const { temperature, condition } = weather
   let totalScore = 0
   
-  // First, detect outfit combination issues
-  const hasShorts = items.some(item => {
-    const cat = item.category?.toLowerCase()
-    return cat === 'shorts' || cat === 'skirt'
-  })
-  
-  const hasLongSleeves = items.some(item => {
-    const cat = item.category?.toLowerCase()
-    const clothingType = item.clothing_type?.toLowerCase() || ''
-    const itemName = (item.name || '').toLowerCase()
-    
-    // Explicit long sleeve indicators
-    if (clothingType.includes('long') || clothingType === 'longsleeve' || 
-        clothingType === 'hoodie' || cat === 'hoodie') {
-      return true
-    }
-    
-    // If it's a shirt/blouse (not t-shirt or polo), in hot weather, assume long sleeves
-    // unless explicitly marked as short sleeve
-    if (temperature > 25 && (cat === 'shirt' || cat === 'blouse')) {
-      // Check if name suggests short sleeves
-      const hasShortSleeveName = itemName.includes('short') || itemName.includes('t-shirt') || 
-                                itemName.includes('tee') || itemName.includes('sleeveless')
-      // If no short sleeve indicator, assume it's long-sleeved in this context
-      return !hasShortSleeveName
-    }
-    
-    return false
-  })
-  
-  const hasShortSleeves = items.some(item => {
-    const cat = item.category?.toLowerCase()
-    const clothingType = item.clothing_type?.toLowerCase() || cat
-    return (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') &&
-           !(clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie')
-  })
-  
-  const hasPants = items.some(item => {
-    const cat = item.category?.toLowerCase()
-    return cat === 'pants' || cat === 'bottom'
-  })
+  // Detect outfit combination attributes
+  const hasShorts = items.some(item => isShorts(item))
+  const hasPants = items.some(item => isPants(item))
+  const hasLongSleeves = items.some(item => isLongSleeved(item))
+  const hasShortSleeves = items.some(item => isShortSleeved(item))
   
   // Combination penalty for illogical pairings
   let combinationPenalty = 0
   let combinationMultiplier = 1.0 // Use multiplier for severe mismatches
   
-  if (temperature > 25) {
-    // Hot weather: shorts + long sleeves is VERY illogical
+  if (temperature >= 31) {
+    // Very hot weather (31°C+): shorts + long sleeves is VERY illogical
     if (hasShorts && hasLongSleeves) {
       // This is a severe mismatch - heavily penalize
-      combinationPenalty += 0.5 // Heavy penalty
-      combinationMultiplier = 0.5 // Also multiply score to really bring it down
+      combinationPenalty += 0.6 // Heavy penalty
+      combinationMultiplier = 0.4 // Also multiply score to really bring it down
     }
-    // Shorts are great, but long sleeves cancel that out
+    // Shorts + short sleeves = perfect combo (bonus via scoring)
+    // Shorts + pants = impossible (can't have both)
+    if (hasShorts && hasPants) {
+      combinationPenalty += 0.3 // Shouldn't happen but penalize if it does
+    }
+    // Shorts without clear sleeve type indication
     if (hasShorts && !hasShortSleeves && !hasLongSleeves) {
-      // If shorts but no clear sleeve type, slight penalty
+      combinationPenalty += 0.1 // Slight penalty for unclear
+    }
+  } else if (temperature >= 26) {
+    // Hot weather (26°C+): shorts + long sleeves is illogical
+    if (hasShorts && hasLongSleeves) {
+      combinationPenalty += 0.5 // Heavy penalty
+      combinationMultiplier = 0.5
+    }
+    // Shorts without clear sleeve type
+    if (hasShorts && !hasShortSleeves && !hasLongSleeves) {
       combinationPenalty += 0.15
     }
+  } else if (temperature >= 15) {
+    // Moderate temperature (15-25°C): both short and long sleeves work, pants are good
+    // No penalties for mixing sleeve types - both are acceptable
+    // Shorts + long sleeves is less ideal but not heavily penalized
+    if (hasShorts && hasLongSleeves) {
+      combinationPenalty += 0.1 // Light penalty only
+    }
   } else if (temperature < 15) {
-    // Cool weather: shorts shouldn't be worn (already handled in item scoring)
+    // Cool weather: shorts shouldn't be worn
     if (hasShorts) {
-      combinationPenalty += 0.3
-      combinationMultiplier = 0.7
+      combinationPenalty += 0.4 // Strong penalty for shorts in cool weather
+      combinationMultiplier = 0.6
+    }
+    // Short sleeves without outerwear in cool weather is less ideal
+    if (hasShortSleeves && !hasLongSleeves && !items.some(item => {
+      const cat = item.category?.toLowerCase()
+      return cat === 'outerwear' || cat === 'blazer'
+    })) {
+      combinationPenalty += 0.2 // Short sleeves without layering in cool weather
     }
   }
   
+  // Score each item based on temperature and clothing type
   items.forEach(item => {
     const cat = item.category?.toLowerCase()
-    const clothingType = item.clothing_type?.toLowerCase() || cat
+    const clothingType = (item.clothing_type || '').toLowerCase()
     const styleTags = item.style_tags || []
     let itemScore = 0
     
-    // Temperature appropriateness scoring
-    if (temperature > 30) {
-      // Very hot - prefer shorts, short sleeves, light fabrics
-      if (cat === 'shorts' || cat === 'skirt') {
-        itemScore += 1.0
-      } else if (cat === 'pants') {
-        if (styleTags.includes('lightweight')) itemScore += 0.7
-        else itemScore += 0.3
+    const isShortSleeve = isShortSleeved(item)
+    const isLongSleeve = isLongSleeved(item)
+    const isShort = isShorts(item)
+    const isPant = isPants(item)
+    
+    // Temperature appropriateness scoring with enhanced clothing type detection
+    if (temperature >= 31) {
+      // Very hot (31°C+) - STRONGLY prefer T-Shirts, Polos, Shorts
+      if (isShort) {
+        itemScore += 1.0 // Shorts are perfect for very hot weather
+      } else if (isPant) {
+        itemScore += 0.3 // Pants are not ideal in very hot weather
+        if (styleTags.includes('lightweight')) itemScore += 0.2 // Lightweight pants get bonus
+      } else if (isShortSleeve) {
+        // T-Shirt, Polo, or other short-sleeved tops
+        itemScore += 1.0 // Perfect for very hot weather
+      } else if (isLongSleeve) {
+        // Longsleeve, Hoodie, long-sleeved Shirt/Blouse
+        itemScore += 0.1 // Very bad in very hot weather - heavy penalty
       } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
-        if (clothingType.includes('long') || clothingType === 'longsleeve' || clothingType === 'hoodie') {
-          itemScore += 0.15 // Long sleeves very bad in very hot weather
-        } else {
-          itemScore += 0.95 // Short sleeves perfect
-        }
+        // Unknown sleeve type - assume moderate
+        itemScore += 0.6
       } else if (cat === 'outerwear' || cat === 'blazer') {
-        itemScore += 0.1
+        itemScore += 0.05 // Outerwear very bad in very hot weather
       } else {
         itemScore += 0.5
       }
       
       if (styleTags.includes('winter')) itemScore -= 0.3
       if (styleTags.includes('summer')) itemScore += 0.2
-    } else if (temperature > 25) {
-      // Hot (25-30°C) - prefer shorts with short sleeves, not long sleeves
-      if (cat === 'shorts' || cat === 'skirt') {
-        itemScore += 0.95
-      } else if (cat === 'pants') {
-        itemScore += 0.6 // Pants are okay but shorts better
+    } else if (temperature >= 26) {
+      // Hot (26°C+) - prefer shorts with T-Shirts/Polos
+      if (isShort) {
+        itemScore += 0.95 // Shorts are great for hot weather
+      } else if (isPant) {
+        itemScore += 0.65 // Pants are okay but shorts better
+      } else if (isShortSleeve) {
+        // T-Shirt, Polo
+        itemScore += 0.95 // Short sleeves perfect for hot weather
+      } else if (isLongSleeve) {
+        // Longsleeve, Hoodie, long-sleeved Shirt/Blouse
+        itemScore += 0.35 // Long sleeves not ideal in hot weather
       } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
-        // Check for explicit long sleeves or infer from category
-        const isLongSleeve = clothingType.includes('long') || clothingType === 'longsleeve' || 
-                            clothingType === 'hoodie' ||
-                            (cat === 'shirt' && !clothingType.includes('short') && 
-                             !clothingType.includes('t-shirt') && !clothingType.includes('polo'))
-        
-        if (isLongSleeve) {
-          itemScore += 0.35 // Long sleeves not good in hot weather - more penalty
-        } else {
-          itemScore += 0.9 // Short sleeves perfect
-        }
+        // Unknown sleeve type
+        itemScore += 0.75
       } else if (cat === 'outerwear' && styleTags.includes('lightweight')) {
-        itemScore += 0.4
+        itemScore += 0.4 // Lightweight outerwear okay
       } else if (cat === 'outerwear') {
-        itemScore += 0.2
+        itemScore += 0.2 // Heavy outerwear not ideal
       } else {
         itemScore += 0.7
       }
       
       if (styleTags.includes('winter')) itemScore -= 0.2
       if (styleTags.includes('summer')) itemScore += 0.2
+    } else if (temperature >= 20) {
+      // Moderate-Warm (20-25°C) - both short and long sleeves work, favor short sleeves slightly, pants are good
+      if (isPant) {
+        itemScore += 0.9 // Pants are great for this temperature
+      } else if (isShort) {
+        itemScore += 0.75 // Shorts are okay but pants better
+      } else if (isShortSleeve) {
+        // T-Shirt, Polo - slightly favored
+        itemScore += 0.85 // Short sleeves work well, slightly favored
+      } else if (isLongSleeve) {
+        // Longsleeve, Hoodie, long-sleeved Shirt/Blouse
+        itemScore += 0.8 // Long sleeves work well too, almost equal
+      } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        // Unknown sleeve type
+        itemScore += 0.8
+      } else if (cat === 'outerwear' && styleTags.includes('lightweight')) {
+        itemScore += 0.6 // Lightweight outerwear optional
+      } else if (cat === 'outerwear') {
+        itemScore += 0.4 // Outerwear optional
+      } else {
+        itemScore += 0.75
+      }
+      
+      if (styleTags.includes('winter')) itemScore -= 0.1
+      if (styleTags.includes('summer')) itemScore += 0.1
+    } else if (temperature >= 15) {
+      // Moderate (15-19°C) - both short and long sleeves work equally, pants are good
+      if (isPant) {
+        itemScore += 0.9 // Pants are great for this temperature
+      } else if (isShort) {
+        itemScore += 0.6 // Shorts less ideal but acceptable
+      } else if (isShortSleeve) {
+        // T-Shirt, Polo - equal with long sleeves
+        itemScore += 0.8 // Short sleeves work well
+      } else if (isLongSleeve) {
+        // Longsleeve, Hoodie, long-sleeved Shirt/Blouse
+        itemScore += 0.8 // Long sleeves work equally well
+      } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        // Unknown sleeve type
+        itemScore += 0.75
+      } else if (cat === 'outerwear') {
+        itemScore += 0.6 // Outerwear optional but nice
+      } else {
+        itemScore += 0.75
+      }
+      
+      if (styleTags.includes('winter')) itemScore += 0.1
+      if (styleTags.includes('summer')) itemScore -= 0.05
     } else if (temperature < 15) {
-      // Cool - prefer pants, outerwear, long sleeves
-      if (cat === 'pants') itemScore += 0.9
-      else if (cat === 'shorts') itemScore += 0.15 // Shorts bad in cool weather
-      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
-        if (clothingType.includes('long') || clothingType === 'longsleeve') itemScore += 0.9
-        else itemScore += 0.6
-      } else if (cat === 'outerwear' || cat === 'blazer') itemScore += 0.9
-      else itemScore += 0.7
+      // Cool (<15°C) - STRONGLY prefer long sleeves, pants, outerwear
+      if (isPant) {
+        itemScore += 0.95 // Pants are perfect for cool weather
+      } else if (isShort) {
+        itemScore += 0.1 // Shorts very bad in cool weather
+      } else if (isLongSleeve) {
+        // Longsleeve, Hoodie, long-sleeved Shirt/Blouse
+        itemScore += 0.95 // Long sleeves perfect for cool weather
+      } else if (isShortSleeve) {
+        // T-Shirt, Polo - okay if layered with outerwear
+        itemScore += 0.5 // Short sleeves okay but not ideal
+      } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
+        // Unknown sleeve type
+        itemScore += 0.7
+      } else if (cat === 'outerwear' || cat === 'blazer') {
+        itemScore += 0.95 // Outerwear perfect for cool weather
+      } else {
+        itemScore += 0.7
+      }
       
       if (styleTags.includes('winter') || styleTags.includes('warm')) itemScore += 0.2
       if (styleTags.includes('summer')) itemScore -= 0.2
-    } else {
-      // Moderate (15-25°C) - most items suitable, slight variations
-      if (cat === 'pants') itemScore += 0.75
-      else if (cat === 'shorts' || cat === 'skirt') itemScore += 0.65
-      else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
-        itemScore += 0.7
-      } else if (cat === 'outerwear') {
-        itemScore += 0.4
-      } else itemScore += 0.7
     }
     
     // Condition appropriateness scoring
