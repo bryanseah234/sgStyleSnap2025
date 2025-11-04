@@ -570,7 +570,7 @@
         <div class="flex flex-col md:flex-row gap-6 sm:gap-8 items-stretch">
           <!-- 3D Avatar on Left -->
           <div class="w-full md:w-1/2 flex items-center justify-center" ref="avatarSectionRef">
-            <div class="w-full h-full min-h-[400px] md:min-h-0">
+            <div class="w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-0" style="max-height: 400px;">
               <SingleAvatar3D :avatar-url="selectedAvatarUrl" :auto-rotate="isAvatarVisible" />
             </div>
           </div>
