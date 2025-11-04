@@ -80,7 +80,7 @@
           <img
             :src="generatedImageUrl"
             alt="Virtual try-on result"
-            class="w-full h-full object-contain max-h-full max-w-full"
+            class="w-full h-full object-contain max-h-full max-w-full rounded-xl"
           />
         </div>
 
