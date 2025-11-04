@@ -2356,7 +2356,8 @@ function isLongSleeved(item) {
   
   // Explicit long sleeve types
   if (clothingType === 'longsleeve' || clothingType === 'hoodie' || 
-      clothingType.includes('long') || itemName.includes('long sleeve')) {
+      clothingType.includes('long') || itemName.includes('long sleeve') ||
+      itemName.includes('long-sleeve') || itemName.includes('longsleeve')) {
     return true
   }
   
@@ -2364,10 +2365,23 @@ function isLongSleeved(item) {
   if (cat === 'shirt' || clothingType === 'shirt' || cat === 'blouse' || clothingType === 'blouse') {
     // Check name for short sleeve indicators
     if (itemName.includes('short') || itemName.includes('sleeveless') || 
-        itemName.includes('tee') || itemName.includes('t-shirt')) {
+        itemName.includes('tee') || itemName.includes('t-shirt') ||
+        itemName.includes('t shirt') || itemName.includes('short sleeve')) {
       return false
     }
-    return true // Default to long sleeves
+    return true // Default to long sleeves for shirts/blouses
+  }
+  
+  // Check for sweater indicators (usually long-sleeved)
+  if (itemName.includes('sweater') || itemName.includes('jumper') || 
+      itemName.includes('cardigan') || itemName.includes('pullover')) {
+    return true
+  }
+  
+  // Check for button-up shirt indicators (usually long-sleeved)
+  if (itemName.includes('button') || itemName.includes('button-up') || 
+      itemName.includes('dress shirt') || itemName.includes('oxford')) {
+    return true
   }
   
   return false
@@ -2411,14 +2425,21 @@ function calculateWeatherFitScore(items, weather) {
   let combinationPenalty = 0
   let combinationMultiplier = 1.0 // Use multiplier for severe mismatches
   
+  // Additional penalty specifically for long sleeves in hot weather
+  let longSleevePenalty = 0
+  
   if (temperature >= 31) {
     // Very hot weather (31°C+): shorts + long sleeves is VERY illogical
     if (hasShorts && hasLongSleeves) {
       // This is a severe mismatch - heavily penalize
       combinationPenalty += 0.6 // Heavy penalty
-      combinationMultiplier = 0.4 // Also multiply score to really bring it down
+      combinationMultiplier = 0.3 // Also multiply score to really bring it down
     }
-    // Shorts + short sleeves = perfect combo (bonus via scoring)
+    // HEAVY penalty for ANY long sleeves in very hot weather
+    if (hasLongSleeves) {
+      longSleevePenalty += 0.4 // Additional penalty for long sleeves
+      combinationMultiplier = Math.min(combinationMultiplier, 0.5) // Further reduce multiplier
+    }
     // Shorts + pants = impossible (can't have both)
     if (hasShorts && hasPants) {
       combinationPenalty += 0.3 // Shouldn't happen but penalize if it does
@@ -2431,7 +2452,12 @@ function calculateWeatherFitScore(items, weather) {
     // Hot weather (26°C+): shorts + long sleeves is illogical
     if (hasShorts && hasLongSleeves) {
       combinationPenalty += 0.5 // Heavy penalty
-      combinationMultiplier = 0.5
+      combinationMultiplier = 0.4
+    }
+    // Penalty for long sleeves in hot weather
+    if (hasLongSleeves) {
+      longSleevePenalty += 0.3 // Additional penalty for long sleeves
+      combinationMultiplier = Math.min(combinationMultiplier, 0.6)
     }
     // Shorts without clear sleeve type
     if (hasShorts && !hasShortSleeves && !hasLongSleeves) {
@@ -2459,6 +2485,9 @@ function calculateWeatherFitScore(items, weather) {
     }
   }
   
+  // Apply long sleeve penalty to combination penalty
+  combinationPenalty += longSleevePenalty
+  
   // Score each item based on temperature and clothing type
   items.forEach(item => {
     const cat = item.category?.toLowerCase()
@@ -2484,10 +2513,14 @@ function calculateWeatherFitScore(items, weather) {
         itemScore += 1.0 // Perfect for very hot weather
       } else if (isLongSleeve) {
         // Longsleeve, Hoodie, long-sleeved Shirt/Blouse
-        itemScore += 0.1 // Very bad in very hot weather - heavy penalty
+        itemScore += 0.05 // Very bad in very hot weather - HEAVY penalty
       } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
-        // Unknown sleeve type - assume moderate
-        itemScore += 0.6
+        // Unknown sleeve type - check if it's likely a shirt/blouse (often long-sleeved)
+        if (cat === 'shirt' || cat === 'blouse') {
+          itemScore += 0.2 // Assume long-sleeved if shirt/blouse
+        } else {
+          itemScore += 0.6 // Unknown top type
+        }
       } else if (cat === 'outerwear' || cat === 'blazer') {
         itemScore += 0.05 // Outerwear very bad in very hot weather
       } else {
@@ -2507,10 +2540,14 @@ function calculateWeatherFitScore(items, weather) {
         itemScore += 0.95 // Short sleeves perfect for hot weather
       } else if (isLongSleeve) {
         // Longsleeve, Hoodie, long-sleeved Shirt/Blouse
-        itemScore += 0.35 // Long sleeves not ideal in hot weather
+        itemScore += 0.2 // Long sleeves not ideal in hot weather - heavier penalty
       } else if (cat === 'top' || cat === 't-shirt' || cat === 'shirt' || cat === 'blouse') {
-        // Unknown sleeve type
-        itemScore += 0.75
+        // Unknown sleeve type - check if it's likely a shirt/blouse (often long-sleeved)
+        if (cat === 'shirt' || cat === 'blouse') {
+          itemScore += 0.3 // Assume long-sleeved if shirt/blouse
+        } else {
+          itemScore += 0.7 // Unknown top type
+        }
       } else if (cat === 'outerwear' && styleTags.includes('lightweight')) {
         itemScore += 0.4 // Lightweight outerwear okay
       } else if (cat === 'outerwear') {
@@ -2615,11 +2652,33 @@ function calculateWeatherFitScore(items, weather) {
   // Average score across all items
   let avgScore = items.length > 0 ? totalScore / items.length : 0.5
   
+  // Debug logging for hot weather
+  if (temperature >= 31) {
+    console.log('🌡️ Weather Scoring Debug (31°C+):', {
+      hasLongSleeves,
+      hasShortSleeves,
+      hasShorts,
+      hasPants,
+      longSleevePenalty,
+      combinationPenalty,
+      combinationMultiplier,
+      avgScoreBeforePenalty: avgScore,
+      itemCount: items.length
+    })
+  }
+  
   // Apply combination penalty (subtract from average AND multiply for severe mismatches)
   avgScore = (avgScore - combinationPenalty) * combinationMultiplier
   
   // Ensure score is in valid range
   avgScore = Math.max(0, Math.min(1, avgScore))
+  
+  if (temperature >= 31) {
+    console.log('🌡️ Weather Scoring Debug (31°C+): Final score:', {
+      avgScoreAfterPenalty: avgScore,
+      percentage: Math.round(avgScore * 100) + '%'
+    })
+  }
   
   return avgScore
 }
