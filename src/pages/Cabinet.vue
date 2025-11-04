@@ -133,7 +133,7 @@
       </div>
       
       <!-- Sub-route Content - Vertically Centered -->
-      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center min-h-0">
+      <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center">
         <div class="w-full max-w-6xl mx-auto px-4">
           <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
           <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
