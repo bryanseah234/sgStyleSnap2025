@@ -11,9 +11,7 @@
       :style="isTransitioning || animationComplete ? {
         '--target-x': `${splashTransform.x}px`,
         '--target-y': `${splashTransform.y}px`,
-        '--target-size': splashTransform.fontSize || '3.5rem',
         transform: `translate(var(--target-x), var(--target-y))`,
-        fontSize: 'var(--target-size)',
         fontWeight: 700
       } : {}"
     >
@@ -33,7 +31,7 @@
   </div>
 
   <div 
-    class="min-h-screen bg-white text-gray-900 overflow-hidden landing-page"
+    class="min-h-screen bg-white text-gray-900 landing-page"
     :class="{ 'page-hidden': !isTransitioning && showSplash, 'page-visible': isTransitioning || !showSplash }"
   >
     <!-- Navigation - Floating Pill Header (Always Visible) -->
@@ -110,26 +108,24 @@
       <div class="absolute inset-0 bg-black/20"></div>
 
       <!-- Centered content -->
-      <div class="container relative z-10 text-center space-y-6 sm:space-y-8">
+      <div class="container relative z-10 text-center flex flex-col items-center">
         <h1 
           ref="heroTitleRef"
-          class="hero-title text-white"
+          class="hero-title text-white mb-4 sm:mb-6"
           :class="{ 'hero-title-visible': showHeroTitle }"
-          style="font-size: 2.5625rem;"
         >
           Transform Your Fashion Game
         </h1>
-        <p class="text-sm sm:text-base md:text-lg text-white max-w-2xl mx-auto" style="color: #ffffff !important;">
+        <p class="text-xl md:text-2xl text-white max-w-2xl mx-auto mb-8 sm:mb-10" style="color: #ffffff !important;">
           Organise your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
         </p>
         <div class="flex justify-center">
           <button
             @click="handleSignUp"
-            class="group inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-100 px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
-            style="color: #000000 !important;"
+            class="flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-white text-black hover:bg-gray-100 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            <span style="color: #000000 !important;">Get Started</span>
-            <ArrowRight class="w-5 h-5 text-black group-hover:translate-x-1 transition" style="color: #000000 !important; stroke: #000000 !important;" />
+            <span>Get Started</span>
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
           </button>
         </div>
       </div>
@@ -137,15 +133,10 @@
     
     <!-- Features Section -->
     <section id="features" class="landing-section py-[10vh] bg-white relative overflow-hidden">
-      <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-10 left-20 w-40 h-40 bg-gray-900 rounded-full blur-2xl animate-pulse" style="animation-duration: 3s;" />
-        <div class="absolute bottom-10 right-20 w-40 h-40 bg-gray-900 rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s; animation-duration: 3s;" />
-      </div>
-
       <div class="container relative z-10">
-        <div class="text-center space-y-2 sm:space-y-4 mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="features-header">
-          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Powerful Features for Your Style</h2>
-          <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+        <div class="text-center mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="features-header">
+          <h2 class="text-4xl font-bold mb-1 sm:mb-2">Powerful Features for Your Style</h2>
+          <p class="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto">
             Everything you need to manage, create, and share your fashion effortlessly
           </p>
         </div>
@@ -181,19 +172,27 @@
               >
                 <!-- Front Face -->
                 <div class="carousel-card-face carousel-card-front bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
-                  <div class="flex flex-col items-center justify-center text-center space-y-2 sm:space-y-2.5 flex-1">
+                  <div class="flex flex-col items-center justify-center text-center space-y-2 sm:space-y-2.5 flex-1" :class="{ 'mb-0': frontFacingCardIndex === idx, 'mb-auto': frontFacingCardIndex !== idx }">
                     <component 
                       :is="feature.icon" 
-                      class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 flex-shrink-0"
+                      class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 flex-shrink-0 transition-opacity duration-300"
+                      :style="{ opacity: isCardFrontFacing(idx) ? 1 : 0.3 }"
                     />
-                    <h3 class="text-base sm:text-lg font-bold flex-shrink-0">{{ feature.title }}</h3>
+                    <h3 
+                      class="text-base sm:text-lg font-bold flex-shrink-0 transition-opacity duration-300"
+                      :style="{ opacity: isCardFrontFacing(idx) ? 1 : 0.3 }"
+                    >{{ feature.title }}</h3>
                   </div>
                   <!-- Hover indicator - only show on front-facing cards -->
-                  <div 
-                    v-show="frontFacingCardIndex === idx"
-                    class="flex flex-col items-center justify-center pt-2 pb-1"
-                  >
-                    <span class="text-xs text-gray-500 mt-0.5 text-center">Hover over me to find out more</span>
+                  <div class="flex flex-col items-center justify-center pt-2 pb-1 h-8 transition-all duration-300">
+                    <Transition name="fade-in">
+                      <div 
+                        v-show="frontFacingCardIndex === idx"
+                        class="flex flex-col items-center justify-center"
+                      >
+                        <span class="text-xs text-gray-500 mt-0.5 text-center">Hover over me to find out more</span>
+                      </div>
+                    </Transition>
                   </div>
                 </div>
                 
@@ -229,15 +228,11 @@
     </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="landing-section py-[10vh] relative overflow-hidden" style="background-color: rgb(245, 246, 247);">
-      <div class="absolute inset-0 opacity-5">
-        <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-gray-900 rounded-full blur-2xl" />
-      </div>
-
+    <section id="demo" class="landing-section py-[10vh] relative overflow-hidden bg-white">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center space-y-2 sm:space-y-4 mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="demo-header">
-          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold">Try the Outfit Creator</h2>
-          <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+        <div class="text-center mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="demo-header">
+          <h2 class="text-4xl font-bold mb-1 sm:mb-2">Try the Outfit Creator</h2>
+          <p class="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto">
             Click items to add them, then drag to adjust positions in your outfit
           </p>
         </div>
@@ -555,22 +550,18 @@
     </section>
 
     <!-- Why Choose Section -->
-    <section id="why" class="landing-section py-[5vh] bg-white relative overflow-hidden">
-      <div class="absolute inset-0 opacity-10">
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-900 rounded-full blur-2xl animate-pulse" style="animation-delay: 2s; animation-duration: 4s;" />
-          </div>
-
+    <section id="why" class="landing-section py-[10vh] bg-white relative overflow-hidden">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <!-- Centered Title -->
         <div class="text-center mb-8 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="why-content">
-          <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
+          <h2 class="text-4xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
         </div>
 
         <!-- Avatar and Cards Layout -->
         <div class="flex flex-col md:flex-row gap-6 sm:gap-8 items-stretch">
           <!-- 3D Avatar on Left -->
-          <div class="w-full md:w-1/2 flex items-center justify-center" ref="avatarSectionRef">
-            <div class="w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-0" style="max-height: 400px;">
+          <div class="w-full md:w-1/2" ref="avatarSectionRef">
+            <div class="w-full h-full flex items-center justify-center" style="min-height: 100%;">
               <SingleAvatar3D :avatar-url="selectedAvatarUrl" :auto-rotate="isAvatarVisible" />
             </div>
           </div>
@@ -589,8 +580,8 @@
               </div>
               <!-- Title and subtitle on right, stacked -->
               <div class="flex-1 flex flex-col">
-                <h3 class="font-bold text-base sm:text-lg md:text-xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
-                <p class="text-sm sm:text-base text-gray-600">{{ item.description }}</p>
+                <h3 class="font-bold text-xl md:text-2xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
+                <p class="text-xl md:text-2xl text-gray-600">{{ item.description }}</p>
               </div>
             </div>
           </div>
@@ -598,44 +589,35 @@
       </div>
     </section>
     
-    <!-- CTA Section with Rounded Bottom -->
+    <!-- CTA Section -->
     <section 
-      class="cta-card-section text-gray-900 relative py-12 sm:py-16"
-      style="background-color: rgb(245, 246, 247);"
+      class="cta-card-section text-gray-900 relative"
+      style="background-color: rgb(245, 246, 247); padding-top: 9rem; padding-bottom: 9rem;"
     >
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2 sm:space-y-3 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">Ready to Transform Your Wardrobe?</h2>
-        <p class="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-gray-800/95">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
+        <h2 class="cta-title text-gray-900 mb-4 sm:mb-6">Ready to Transform Your Wardrobe?</h2>
+        <p class="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto mb-8 sm:mb-10">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
-        <div>
+        <div class="flex justify-center">
         <button
             @click="handleSignUp"
-            class="group inline-flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 px-10 py-5 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            class="flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
             Sign Up Now
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition text-white" style="color: #ffffff !important; stroke: #ffffff !important;" />
+            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
         </button>
         </div>
       </div>
     </section>
     
     <!-- Footer Section -->
-    <div class="footer-reveal-section relative">
-      
-      <!-- Footer -->
-      <footer 
-        class="footer-reveal bg-black text-white transition-transform duration-500 ease-out overflow-hidden relative"
-        :class="{ 
-          'translate-y-0 footer-revealed': showFooter, 
-          '-translate-y-full': !showFooter 
-        }"
-      >
-        <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
+    <footer class="footer-static bg-black text-white w-full">
+      <div class="max-w-[1200px] mx-auto px-8 pt-12 pb-12">
           <!-- Top Section: Branding and Links -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-12 mb-16 md:mb-12">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
             <!-- Left: Logo and Tagline -->
-            <div class="flex flex-col gap-8 md:gap-4">
+            <div class="flex flex-col gap-4">
               <div class="flex items-center gap-3">
                 <div class="bg-white rounded-xl p-2 flex items-center justify-center">
                   <Shirt class="w-6 h-6 text-black" />
@@ -649,11 +631,11 @@
             
             <!-- Right: Navigation Links in 2-3 Columns -->
             <div class="flex justify-start md:justify-end">
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 w-full md:w-auto">
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-12 w-full md:w-auto">
                 <!-- Column 1: Explore -->
                 <div>
-                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-6 md:mb-4">Explore</h3>
-                  <ul class="space-y-4 md:space-y-3">
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Explore</h3>
+                  <ul class="space-y-3">
                     <li><a href="#features" class="text-sm text-white hover:text-gray-300 transition">Features</a></li>
                     <li><a href="#demo" class="text-sm text-white hover:text-gray-300 transition">Demo</a></li>
                     <li><a href="#why" class="text-sm text-white hover:text-gray-300 transition">Why StyleSnap</a></li>
@@ -662,8 +644,8 @@
                 
                 <!-- Column 2: Contact -->
                 <div>
-                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-6 md:mb-4">Contact</h3>
-                  <ul class="space-y-4 md:space-y-3">
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Contact</h3>
+                  <ul class="space-y-3">
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Help Center</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Support</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Contact Us</a></li>
@@ -671,9 +653,9 @@
                 </div>
                 
                 <!-- Column 3: Company -->
-                <div class="col-span-2 md:col-span-1 mt-8 md:mt-0">
-                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-6 md:mb-4">Company</h3>
-                  <ul class="space-y-4 md:space-y-3">
+                <div class="col-span-2 md:col-span-1">
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Company</h3>
+                  <ul class="space-y-3">
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Merch</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Social</a></li>
@@ -684,7 +666,7 @@
           </div>
           
           <!-- Bottom Section: Copyright and Legal Links -->
-          <div class="flex flex-col sm:flex-row justify-center md:justify-between items-center pt-12 md:pt-8 border-t border-gray-800 gap-3 md:gap-4">
+          <div class="flex flex-col sm:flex-row justify-center md:justify-between items-center pt-0 border-t border-gray-800 gap-4">
             <p class="text-xs text-gray-400 text-center md:text-left">
               &copy; StyleSnap 2025. All rights reserved.
             </p>
@@ -705,7 +687,6 @@
           </div>
         </div>
       </footer>
-    </div>
 
     <!-- Modals -->
     <TermsOfServiceModal :isOpen="showTerms" @close="showTerms = false" />
@@ -1148,7 +1129,7 @@ const handleCardTouchEnd = (index, featureId, event) => {
   cardTouchData.value = { startX: 0, startY: 0, startTime: 0, cardIndex: null }
 }
 
-// Handle card hover - flip card to show information
+// Handle card hover - flip card to show information immediately
 const handleCardHover = (index, featureId) => {
   const feature = features.value.find(f => f.id === featureId)
   if (!feature) return
@@ -1170,7 +1151,7 @@ const handleCardHover = (index, featureId) => {
     }
   })
   
-  // Flip the card
+  // Flip the card immediately on hover
   feature.flipped = true
 }
 
@@ -1631,37 +1612,60 @@ const scrollToTop = () => {
 const calculateSplashTransform = () => {
   if (!heroTitleRef.value) return
   
-  // Wait for next frame to ensure hero title is fully rendered
-  requestAnimationFrame(() => {
-    const heroRect = heroTitleRef.value.getBoundingClientRect()
-    const splashCenterX = window.innerWidth / 2
-    const splashCenterY = window.innerHeight / 2
-    
-    // Get computed styles to match exactly
-    const heroStyles = window.getComputedStyle(heroTitleRef.value)
-    const heroFontSize = parseFloat(heroStyles.fontSize)
-    const heroLineHeight = parseFloat(heroStyles.lineHeight) || heroFontSize * 1.2
-    
-    // Calculate the visual center of the hero text
-    // Account for line-height to get the true vertical center of the text
-    const heroCenterY = heroRect.top + (heroRect.height / 2)
-    
-    // For horizontal alignment, use the center of the text element
-    const heroTextCenter = heroRect.left + (heroRect.width / 2)
-    
-    // Calculate transform to move splash center to hero center
-    const finalX = heroTextCenter - splashCenterX
-    const finalY = heroCenterY - splashCenterY
-    
-    splashTransform.x = finalX
-    splashTransform.y = finalY
-    splashTransform.scale = 1
-    
-    // Store the final values for locking later
-    finalTransform.x = finalX
-    finalTransform.y = finalY
-    finalTransform.fontSize = '2.5625rem'
-  })
+  const heroRect = heroTitleRef.value.getBoundingClientRect()
+  const splashCenterX = window.innerWidth / 2
+  const splashCenterY = window.innerHeight / 2
+  
+  // Get the splash title element to read its current font size
+  const splashTitleEl = document.querySelector('.splash-title')
+  let splashFontSize = '3.5rem' // default
+  
+  if (splashTitleEl) {
+    const splashStyles = window.getComputedStyle(splashTitleEl)
+    splashFontSize = splashStyles.fontSize
+    splashTransform.fontSize = splashFontSize
+  }
+  
+  // Get computed styles to match exactly
+  const heroStyles = window.getComputedStyle(heroTitleRef.value)
+  const heroLineHeight = parseFloat(heroStyles.lineHeight) || parseFloat(heroStyles.fontSize) * 1.2
+  
+  // Calculate the visual center of the hero text
+  const heroCenterY = heroRect.top + (heroRect.height / 2)
+  const heroTextCenter = heroRect.left + (heroRect.width / 2)
+  
+  // Calculate transform to move splash center to hero center
+  const finalX = heroTextCenter - splashCenterX
+  const finalY = heroCenterY - splashCenterY
+  
+  splashTransform.x = finalX
+  splashTransform.y = finalY
+  splashTransform.scale = 1
+  
+  // Store the final values for locking later
+  finalTransform.x = finalX
+  finalTransform.y = finalY
+  finalTransform.fontSize = splashFontSize
+  
+  // Ensure splash title matches hero title width for layout preservation
+  // This ensures text wraps identically
+  if (splashTitleEl && heroTitleRef.value) {
+    const heroComputedWidth = heroRect.width
+    // Get the hero's parent container to match its constraints
+    const heroContainer = heroTitleRef.value.closest('.container')
+    if (heroContainer) {
+      const containerRect = heroContainer.getBoundingClientRect()
+      const containerWidth = containerRect.width
+      // Apply container width constraint to preserve layout
+      // Account for padding by using the container width
+      splashTitleEl.style.maxWidth = `${containerWidth}px`
+      splashTitleEl.style.width = 'auto' // Let width be auto to accommodate padding
+    } else {
+      // Fallback to hero title width
+      splashTitleEl.style.width = 'auto'
+      splashTitleEl.style.maxWidth = `${heroComputedWidth}px`
+    }
+  }
 }
 
 // Typewriter effect
@@ -1680,36 +1684,26 @@ const typewriterEffect = () => {
       
       // Wait a moment, then start transition
       setTimeout(() => {
-        // Calculate target position - this now uses requestAnimationFrame internally
-        calculateSplashTransform()
-        
-        // Wait for calculation to complete (next frame), then start transition
-        requestAnimationFrame(() => {
+        // Calculate target position
+        nextTick(() => {
+          calculateSplashTransform()
+          
+          // Start transition immediately after calculation
           requestAnimationFrame(() => {
-            // DON'T set fontSize yet - let it stay at the splash size initially
-            // This allows CSS transition to animate from current size to final size
-            
-            // Start the transition state
             isTransitioning.value = true
             
-            // Wait one more frame to ensure DOM is ready, then set target values
-            requestAnimationFrame(() => {
-              // Set the final font size - CSS will transition smoothly
-              splashTransform.fontSize = '2.5625rem'
+            // Wait for transition to complete
+            setTimeout(() => {
+              animationComplete.value = true
               
-              // Wait for transition to complete, then LOCK everything
+              // Show hero title and hide splash
               setTimeout(() => {
-                animationComplete.value = true
-                
-                // Wait a tiny bit, then show real title
+                showHeroTitle.value = true
                 setTimeout(() => {
-                  showHeroTitle.value = true
-                  setTimeout(() => {
-                    showSplash.value = false
-                  }, 300)
-                }, 50)
-              }, 1500) // Lock exactly when animation completes
-            })
+                  showSplash.value = false
+                }, 200)
+              }, 50)
+            }, 1000) // Shorter transition duration for mobile
           })
         })
       }, 500) // Pause after typing finishes
@@ -2053,23 +2047,39 @@ const setScrollY = (value) => {
   font-size: 3.5rem;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: -0.03em;
+  letter-spacing: normal; /* Match hero title from start */
   text-align: center;
-  padding: 0 2rem;
-  transition: transform 1500ms cubic-bezier(0.4, 0, 0.2, 1),
-              font-size 1500ms cubic-bezier(0.4, 0, 0.2, 1),
-              color 1500ms cubic-bezier(0.4, 0, 0.2, 1),
-              letter-spacing 1500ms cubic-bezier(0.4, 0, 0.2, 1),
-              line-height 1500ms cubic-bezier(0.4, 0, 0.2, 1);
-  max-width: 90vw;
+  padding: 0 2rem; /* Restore padding for visual spacing */
+  transition: transform 1000ms ease-out,
+              color 1000ms ease-out,
+              letter-spacing 1000ms ease-out,
+              line-height 1000ms ease-out;
+  max-width: 90vw; /* Allow some padding on edges */
+  width: auto; /* Auto width to accommodate padding */
   transform-origin: center center;
-  /* Only use will-change during active transition */
   line-height: 1.2;
+  /* Preserve text layout */
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  /* Mobile optimizations */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 @media (min-width: 768px) {
   .splash-title:not(.splash-title-moving):not(.splash-title-frozen) {
     font-size: 4.5rem;
+  }
+  
+  .splash-title-moving {
+    font-size: 4.5rem;
+  }
+  
+  .splash-title-frozen {
+    font-size: 4.5rem !important;
   }
 }
 
@@ -2077,27 +2087,46 @@ const setScrollY = (value) => {
   .splash-title:not(.splash-title-moving):not(.splash-title-frozen) {
     font-size: 5rem;
   }
+  
+  .splash-title-moving {
+    font-size: 5rem;
+  }
+  
+  .splash-title-frozen {
+    font-size: 5rem !important;
+  }
 }
 
 .splash-title-moving {
-  /* Apply final styling that transitions smoothly - match hero title */
-  font-weight: 700 !important; /* font-bold matches hero title */
-  color: #ffffff !important; /* White text to match hero section */
-  /* Match typography exactly */
-  letter-spacing: normal !important; /* Match hero title (no negative spacing) */
-  line-height: 1.2 !important; /* Match default line-height */
+  /* Apply final styling that transitions smoothly - match hero title exactly */
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: normal !important;
+  line-height: 1.2 !important;
   text-align: center !important;
+  /* Match hero title width constraints but preserve padding */
+  max-width: 90vw !important;
+  width: auto !important;
+  /* Preserve text layout */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  /* Keep padding for visual spacing - match hero container padding */
+  padding: 0 2rem !important;
   /* Lock position */
   position: fixed !important;
   z-index: 10001 !important;
   pointer-events: none !important;
-  /* No padding or margin that could shift */
-  padding: 0 !important;
+  /* No margin that could shift */
   margin: 0 !important;
   /* Ensure transform origin is centered for accurate alignment */
   transform-origin: center center !important;
-  /* Optimize: only use will-change during active transition */
-  will-change: transform, opacity;
+  /* Use GPU acceleration for smoother mobile performance */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .splash-title-frozen {
@@ -2105,24 +2134,33 @@ const setScrollY = (value) => {
   transition: none !important;
   animation: none !important;
   will-change: auto !important;
-  /* Lock size - use exact pixel value */
-  font-size: 2.5625rem !important;
-  font-weight: 700 !important; /* font-bold matches hero title */
-  color: #ffffff !important; /* White text to match hero section */
-  /* Match typography exactly */
-  letter-spacing: normal !important; /* Match hero title */
-  line-height: 1.2 !important; /* Match default line-height */
+  /* Keep font size constant - don't change it, match hero title responsive size */
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: normal !important;
+  line-height: 1.2 !important;
   text-align: center !important;
+  /* Match hero title width constraints but preserve padding */
+  max-width: 90vw !important;
+  width: auto !important;
+  /* Preserve text layout */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  /* Keep padding for visual spacing */
+  padding: 0 2rem !important;
   /* Lock position exactly where it is */
   position: fixed !important;
-  /* Prevent ANY responsive behavior */
-  max-width: none !important;
   /* Force exact values from CSS variables */
   transform: translate(var(--target-x), var(--target-y)) !important;
   /* Block any potential parent influences */
   isolation: isolate !important;
-  /* Ensure transform origin is centered */
   transform-origin: center center !important;
+  /* No margin */
+  margin: 0 !important;
+  /* Remove GPU acceleration after transition */
+  backface-visibility: auto !important;
+  -webkit-backface-visibility: auto !important;
 }
 
 .typewriter-cursor-splash {
@@ -2187,18 +2225,64 @@ const setScrollY = (value) => {
 
 /* Hero title styling */
 .hero-title {
-  font-weight: 700; /* font-bold matches "Powerful Features" */
-  color: #ffffff !important; /* White text for better contrast */
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #ffffff !important;
   position: relative;
   opacity: 0;
   transition: opacity 0.5s ease-in;
-  letter-spacing: normal; /* Match splash title final state */
-  line-height: 1.2; /* Match splash title final state */
-  text-align: center; /* Ensure center alignment */
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+  /* Preserve text layout - match splash title */
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 4.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-title {
+    font-size: 5rem;
+  }
 }
 
 .hero-title-visible {
   opacity: 1 !important;
+}
+
+/* CTA Title - matches hero title styling except color */
+.cta-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #111827 !important; /* text-gray-900 */
+  position: relative;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+  /* Preserve text layout - match hero title */
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .cta-title {
+    font-size: 4.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cta-title {
+    font-size: 5rem;
+  }
 }
 
 /* Hero section text - ensure white color */
@@ -2561,11 +2645,10 @@ const setScrollY = (value) => {
   pointer-events: none;
 }
 
-/* CTA Card Section with Rounded Bottom */
+/* CTA Card Section */
 .cta-card-section {
-  margin-bottom: -48px;
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
+  margin-bottom: 0; /* Remove negative margin for equal spacing */
+  border-radius: 0; /* Remove all rounded corners */
   z-index: 10;
   position: relative;
   background-color: white;
@@ -2573,28 +2656,50 @@ const setScrollY = (value) => {
 
 @media (min-width: 768px) {
   .cta-card-section {
-    border-bottom-left-radius: 32px;
-    border-bottom-right-radius: 32px;
+    border-radius: 0; /* Remove all rounded corners on desktop too */
   }
 }
 
-/* Footer Reveal */
-.footer-reveal-section {
+/* Footer - Static at bottom of content */
+.footer-static {
   position: relative;
-  overflow: visible;
+  width: 100%;
+  margin-top: 0;
   z-index: 1;
-  margin-top: -48px;
+  /* Ensure footer is always visible and at bottom */
+  display: block;
+  clear: both;
+  /* Ensure footer doesn't get clipped */
+  overflow: visible;
 }
 
-.footer-reveal {
-  position: relative;
-  z-index: 1;
-  transform-origin: top center;
-  /* Remove will-change - transform is already optimized */
-  margin-top: 48px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  transition: transform 0.5s ease-out;
-  background-color: black;
+/* Ensure footer appears below all content sections */
+.landing-page {
+  /* Normal document flow - footer will appear after all sections */
+}
+
+/* Fade-in transition for hover indicator */
+.fade-in-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.fade-in-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.fade-in-enter-from {
+  opacity: 0;
+  transform: translateY(-5px) scale(0.95);
+}
+
+.fade-in-leave-to {
+  opacity: 0;
+  transform: translateY(-5px) scale(0.95);
+}
+
+.fade-in-enter-to,
+.fade-in-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 </style>

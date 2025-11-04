@@ -36,7 +36,7 @@
       @mouseleave="handleHeroMouseLeave"
     >
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <h1 class="text-[3.375rem] md:text-[3.375rem] font-bold text-foreground text-left">
+        <h1 class="text-[3.375rem] md:text-[3.375rem] font-bold text-foreground text-left leading-tight">
           Welcome Back{{ userName }}
         </h1>
         <button

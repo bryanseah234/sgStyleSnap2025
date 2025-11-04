@@ -94,12 +94,26 @@ const initThreeJS = async () => {
   
   await loadThreeJS()
 
+  // Wait for container to have dimensions
+  await new Promise((resolve) => {
+    const checkDimensions = () => {
+      if (canvasRef.value && canvasRef.value.clientWidth > 0 && canvasRef.value.clientHeight > 0) {
+        resolve()
+      } else {
+        requestAnimationFrame(checkDimensions)
+      }
+    }
+    checkDimensions()
+  })
+
   // Scene
   scene = new THREE.Scene()
   scene.background = null
 
   // Camera - 90 degrees straight on, no tilt
-  const aspect = canvasRef.value.clientWidth / canvasRef.value.clientHeight
+  const width = canvasRef.value.clientWidth
+  const height = canvasRef.value.clientHeight
+  const aspect = width / height
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000)
   camera.position.set(0, 0, 3) // y=0 for no vertical tilt
   camera.lookAt(0, 0, 0) // Look straight at center
@@ -115,7 +129,7 @@ const initThreeJS = async () => {
     antialias: !isLowEndDevice, // Disable antialiasing on low-end devices
     powerPreference: 'high-performance'
   })
-  renderer.setSize(canvasRef.value.clientWidth, canvasRef.value.clientHeight)
+  renderer.setSize(width, height)
   
   // Optimize pixel ratio: reduce from 2 to 1.5 max, 1 on mobile
   const pixelRatio = isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5)
@@ -539,6 +553,9 @@ const handleResize = () => {
   const width = canvasRef.value.clientWidth
   const height = canvasRef.value.clientHeight
   
+  // Don't resize if dimensions are invalid
+  if (width <= 0 || height <= 0) return
+  
   camera.aspect = width / height
   camera.updateProjectionMatrix()
   renderer.setSize(width, height)
@@ -573,6 +590,26 @@ onMounted(() => {
     
     // Store observer for cleanup
     containerRef.value._visibilityObserver = visibilityObserver
+    
+    // Add ResizeObserver to handle container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      // Debounce resize handling
+      if (containerRef.value._resizeTimeout) {
+        clearTimeout(containerRef.value._resizeTimeout)
+      }
+      containerRef.value._resizeTimeout = setTimeout(() => {
+        handleResize()
+      }, 100)
+    })
+    resizeObserver.observe(containerRef.value)
+    
+    // Store resize observer for cleanup
+    containerRef.value._resizeObserver = resizeObserver
+    
+    // Initial resize after a short delay to ensure container has rendered
+    setTimeout(() => {
+      handleResize()
+    }, 100)
   }
 })
 
@@ -628,6 +665,18 @@ onUnmounted(() => {
     delete containerRef.value._visibilityObserver
   }
   
+  // Cleanup resize observer
+  if (containerRef.value && containerRef.value._resizeObserver) {
+    containerRef.value._resizeObserver.disconnect()
+    delete containerRef.value._resizeObserver
+  }
+  
+  // Cleanup resize timeout
+  if (containerRef.value && containerRef.value._resizeTimeout) {
+    clearTimeout(containerRef.value._resizeTimeout)
+    delete containerRef.value._resizeTimeout
+  }
+  
   cleanup()
 })
 </script>
@@ -639,6 +688,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
+  height: 100%;
+  min-height: 100%;
 }
 
 .avatar-canvas {
@@ -646,6 +697,8 @@ onUnmounted(() => {
   outline: none;
   width: 100%;
   height: 100%;
+  min-height: 100%;
+  display: block;
 }
 
 .avatar-canvas {

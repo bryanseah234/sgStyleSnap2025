@@ -275,7 +275,7 @@
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-zinc-700/50 shadow-lg max-w-md mx-auto w-full">
+      <div class="mobile-nav-blur flex items-center justify-around py-2.5 px-4 rounded-full border shadow-lg max-w-md mx-auto w-full">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"
@@ -710,5 +710,19 @@ onUnmounted(() => {
 .page-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Mobile navigation blur - matches desktop toolbar */
+.mobile-nav-blur {
+  background: rgba(255, 255, 255, 0.85) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.dark .mobile-nav-blur {
+  background: rgba(0, 0, 0, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 </style>  
