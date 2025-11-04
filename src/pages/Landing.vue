@@ -583,8 +583,8 @@
               class="flex flex-row gap-4 p-6 sm:p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 animate-staggeredFadeIn group hover:-translate-y-2 flex-grow"
               :style="{ animationDelay: `${idx * 0.1}s` }"
             >
-              <!-- Icon on left, spans 2 rows -->
-              <div class="flex-shrink-0 flex items-start">
+              <!-- Icon on left, vertically centered -->
+              <div class="flex-shrink-0 flex items-center">
                 <component :is="item.icon" class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 group-hover:scale-125 transition duration-300" />
               </div>
               <!-- Title and subtitle on right, stacked -->
@@ -633,9 +633,9 @@
       >
         <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
           <!-- Top Section: Branding and Links -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-12">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-12 mb-16 md:mb-12">
             <!-- Left: Logo and Tagline -->
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-8 md:gap-4">
               <div class="flex items-center gap-3">
                 <div class="bg-white rounded-xl p-2 flex items-center justify-center">
                   <Shirt class="w-6 h-6 text-black" />
@@ -652,8 +652,8 @@
               <div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 w-full md:w-auto">
                 <!-- Column 1: Explore -->
                 <div>
-                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Explore</h3>
-                  <ul class="space-y-3">
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-6 md:mb-4">Explore</h3>
+                  <ul class="space-y-4 md:space-y-3">
                     <li><a href="#features" class="text-sm text-white hover:text-gray-300 transition">Features</a></li>
                     <li><a href="#demo" class="text-sm text-white hover:text-gray-300 transition">Demo</a></li>
                     <li><a href="#why" class="text-sm text-white hover:text-gray-300 transition">Why StyleSnap</a></li>
@@ -662,18 +662,18 @@
                 
                 <!-- Column 2: Contact -->
                 <div>
-                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Contact</h3>
-                  <ul class="space-y-3">
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-6 md:mb-4">Contact</h3>
+                  <ul class="space-y-4 md:space-y-3">
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Help Center</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Support</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Contact Us</a></li>
                   </ul>
                 </div>
                 
-                <!-- Column 3: Careers -->
-                <div>
-                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Company</h3>
-                  <ul class="space-y-3">
+                <!-- Column 3: Company -->
+                <div class="col-span-2 md:col-span-1 mt-8 md:mt-0">
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-6 md:mb-4">Company</h3>
+                  <ul class="space-y-4 md:space-y-3">
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Merch</a></li>
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Social</a></li>
@@ -684,8 +684,8 @@
           </div>
           
           <!-- Bottom Section: Copyright and Legal Links -->
-          <div class="flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-gray-800 gap-4">
-            <p class="text-xs text-gray-400">
+          <div class="flex flex-col sm:flex-row justify-center md:justify-between items-center pt-12 md:pt-8 border-t border-gray-800 gap-3 md:gap-4">
+            <p class="text-xs text-gray-400 text-center md:text-left">
               &copy; StyleSnap 2025. All rights reserved.
             </p>
             <div class="flex items-center gap-6">
