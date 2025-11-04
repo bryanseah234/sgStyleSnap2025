@@ -583,7 +583,8 @@
                   }
                 ]"
                 @mousedown.stop="startDrag(item, $event)"
-                @click.stop="selectItem(item.id)"
+                @touchstart.stop.prevent="startDrag(item, $event)"
+                @click.stop="handleItemClick(item.id, $event)"
               >
                 <div class="w-32 h-32 overflow-hidden">
                   <img
@@ -3264,25 +3265,55 @@ const handleDrop = (event) => {
 // Drag state
 const draggedItem = ref(null)
 const dragOffset = reactive({ x: 0, y: 0 })
+const isDragging = ref(false)
+const touchStartPosition = ref({ x: 0, y: 0 })
+const hasDragged = ref(false) // Track if user actually dragged vs just tapped
 
 const startDrag = (item, event) => {
+  // Handle both mouse and touch events
+  const isTouch = event.touches && event.touches.length > 0
+  const clientX = isTouch ? event.touches[0].clientX : event.clientX
+  const clientY = isTouch ? event.touches[0].clientY : event.clientY
+  
+  // Prevent default to avoid scrolling on mobile
+  if (isTouch) {
+    event.preventDefault()
+    // Store touch start position to detect if it's a drag vs tap
+    touchStartPosition.value = { x: clientX, y: clientY }
+    // Attach touch event listeners to document for better mobile support
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleTouchEnd)
+    document.addEventListener('touchcancel', handleTouchEnd)
+  }
+  
+  isDragging.value = false // Reset dragging state
+  hasDragged.value = false // Reset drag flag
   selectedItemId.value = item.id
   
   draggedItem.value = item.id
   if (canvasContainer.value) {
     const rect = canvasContainer.value.getBoundingClientRect()
     // item.x and item.y are normalized, so we need to scale them for drag offset calculation
-    dragOffset.x = event.clientX - rect.left - scalePosition(item.x, 'x')
-    dragOffset.y = event.clientY - rect.top - scalePosition(item.y, 'y')
+    dragOffset.x = clientX - rect.left - scalePosition(item.x, 'x')
+    dragOffset.y = clientY - rect.top - scalePosition(item.y, 'y')
   }
+}
+
+// Helper to get client coordinates from either mouse or touch event
+const getClientCoordinates = (e) => {
+  if (e.touches && e.touches.length > 0) {
+    return { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+  return { x: e.clientX, y: e.clientY }
 }
 
 const handleMouseMove = (e) => {
   if (!draggedItem.value || !canvasContainer.value) return
   
+  const coords = getClientCoordinates(e)
   const rect = canvasContainer.value.getBoundingClientRect()
-  const x = e.clientX - rect.left - dragOffset.x
-  const y = e.clientY - rect.top - dragOffset.y
+  const x = coords.x - rect.left - dragOffset.x
+  const y = coords.y - rect.top - dragOffset.y
   
   const item = canvasItems.value.find(i => i.id === draggedItem.value)
   if (item) {
@@ -3322,9 +3353,66 @@ const handleMouseUp = () => {
   }
 }
 
+// Touch event handlers
+const handleTouchMove = (e) => {
+  if (!draggedItem.value) return
+  
+  // Detect if user is actually dragging (moved more than 5px)
+  if (e.touches && e.touches.length > 0) {
+    const touch = e.touches[0]
+    const deltaX = Math.abs(touch.clientX - touchStartPosition.value.x)
+    const deltaY = Math.abs(touch.clientY - touchStartPosition.value.y)
+    
+    // If moved more than 5px, consider it a drag
+    if (deltaX > 5 || deltaY > 5) {
+      isDragging.value = true
+      hasDragged.value = true // Mark that dragging occurred
+      e.preventDefault() // Prevent scrolling while dragging
+    }
+  }
+  
+  if (isDragging.value) {
+    handleMouseMove(e) // Reuse the same logic
+  }
+}
+
+const handleTouchEnd = (e) => {
+  if (!draggedItem.value) return
+  
+  const wasDragging = hasDragged.value
+  
+  handleMouseUp() // Reuse the same logic
+  
+  // Remove touch event listeners
+  document.removeEventListener('touchmove', handleTouchMove)
+  document.removeEventListener('touchend', handleTouchEnd)
+  document.removeEventListener('touchcancel', handleTouchEnd)
+  
+  // Reset flags after a short delay to allow click prevention
+  setTimeout(() => {
+    isDragging.value = false
+    touchStartPosition.value = { x: 0, y: 0 }
+    if (!wasDragging) {
+      hasDragged.value = false
+    }
+  }, 100)
+}
+
 const selectItem = (itemId) => {
   // Select the item - stays selected until another item is selected or canvas is clicked
   selectedItemId.value = itemId
+}
+
+// Handle item click (only if not dragging)
+const handleItemClick = (itemId, event) => {
+  // Don't select if user just dragged (not a tap)
+  if (!hasDragged.value) {
+    selectItem(itemId)
+  }
+  // Reset hasDragged after click handling
+  setTimeout(() => {
+    hasDragged.value = false
+  }, 200)
 }
 
 const deselectItem = () => {
@@ -4147,6 +4235,11 @@ onMounted(async () => {
 
   // Cleanup on unmount
   onUnmounted(() => {
+    // Clean up any remaining touch event listeners
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+    document.removeEventListener('touchcancel', handleTouchEnd)
+    
     // Remove arrow key and Esc handlers
     window.removeEventListener('keydown', handleKeydown)
     window.removeEventListener('resize', handleResize)
