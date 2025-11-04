@@ -282,7 +282,7 @@
                 <button
                   @click="handleLogout"
                   :disabled="loading"
-                  :class="`w-full flex items-center justify-start gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+                  :class="`w-full flex items-center justify-start gap-2 md:gap-3 px-3 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] min-h-[44px] ${
                     loading
                       ? 'opacity-50 cursor-not-allowed text-muted-foreground'
                       : 'bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:hover:text-red-300'

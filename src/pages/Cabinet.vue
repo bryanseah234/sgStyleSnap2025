@@ -4,7 +4,7 @@
     
     <!-- Page Header Section -->
     <div class="max-w-6xl mx-auto mb-8">
-      <!-- Header with title and add button -->
+      <!-- Header with title, filter buttons, and add button -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title based on current sub-route -->
         <div class="flex-1 min-w-0 w-full md:w-auto">
@@ -14,6 +14,36 @@
             }`">
             {{ subRouteTitle }}
           </h1>
+        </div>
+        
+        <!-- Favourites and Clear Filters Buttons (only shown on default closet view) -->
+        <div v-if="currentSubRoute === 'default'" class="flex items-center gap-3 flex-shrink-0">
+          <!-- Favourites Button -->
+          <button
+            @click="showFavoritesOnly = !showFavoritesOnly"
+            :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center gap-2 ${
+              showFavoritesOnly
+                ? 'bg-red-500 text-white dark:bg-red-600'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
+          >
+            <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+            Favourites
+          </button>
+          
+          <!-- Clear Filters Button -->
+          <button
+            @click="clearFilters"
+            :disabled="!hasActiveFilters"
+            :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center gap-2 ${
+              hasActiveFilters
+                ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer'
+                : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50'
+            }`"
+          >
+            <X class="w-4 h-4" />
+            Clear Filters
+          </button>
         </div>
         
         <!-- Add Item Dropdown Button (only shown on default closet view) -->
@@ -118,31 +148,6 @@
       <!-- Filters Section (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
         <div :class="`rounded-2xl border p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-          <div class="flex items-center justify-between mb-4">
-            <!-- Favourites Button -->
-            <button
-              @click="showFavoritesOnly = !showFavoritesOnly"
-              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center gap-2 ${
-                showFavoritesOnly
-                  ? 'bg-red-500 text-white dark:bg-red-600'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-              }`"
-            >
-              <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
-              Favourites
-            </button>
-            
-            <!-- Clear Filters Button -->
-            <button
-              v-if="hasActiveFilters"
-              @click="clearFilters"
-              :class="`text-sm font-medium transition-colors text-stone-600 hover:text-black dark:text-zinc-400 dark:hover:text-white flex items-center gap-1`"
-            >
-              <X class="w-4 h-4" />
-              Clear Filters
-            </button>
-          </div>
-          
           <!-- Search Bar -->
           <div class="mb-4">
             <div class="relative search-input-group">

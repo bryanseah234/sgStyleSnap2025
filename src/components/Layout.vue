@@ -251,7 +251,7 @@
     <!-- Mobile Top Bar -->
     <div 
       v-if="!isLandingPage"
-      class="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-stone-200 z-50 px-4 py-3 pt-safe"
+      class="md:hidden fixed top-0 left-0 right-0 bg-white dark:bg-black border-b border-stone-200 dark:border-zinc-800 z-50 px-4 py-3 pt-safe"
       style="padding-top: calc(0.75rem + env(safe-area-inset-top))"
     >
       <div class="flex items-center justify-center">
@@ -259,7 +259,7 @@
           @click="scrollToTop"
           class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
         >
-          <h1 class="text-xl font-bold tracking-tight text-black">
+          <h1 class="text-xl font-bold tracking-tight text-black dark:text-white">
             <StyleSnapBrand size="xl" />
           </h1>
         </button>

@@ -14,6 +14,43 @@
             </p>
           </div>
           
+          <!-- Navigation Buttons (AI Suggestions, Personal Creation, Friend Creation) -->
+          <div v-if="currentSubRoute !== 'default' && currentSubRoute !== 'edit'" class="flex items-center gap-2 flex-shrink-0">
+            <button
+              @click="$router.push('/outfits/add/suggested')"
+              :class="`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                currentSubRoute === 'suggested'
+                  ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+                  : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+              }`"
+            >
+              <Sparkles class="w-4 h-4" />
+              AI Suggestions
+            </button>
+            <button
+              @click="$router.push('/outfits/add/personal')"
+              :class="`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                currentSubRoute === 'personal'
+                  ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+                  : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+              }`"
+            >
+              <User class="w-4 h-4" />
+              Personal Creation
+            </button>
+            <button
+              @click="$router.push('/outfits/add/friend')"
+              :class="`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                currentSubRoute === 'friend' || currentSubRoute === 'friendSelect'
+                  ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
+                  : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
+              }`"
+            >
+              <Users class="w-4 h-4" />
+              Friend Creation
+            </button>
+          </div>
+          
           <!-- Action Buttons (moved into canvas; hidden here) -->
           <div v-if="false" class="flex items-center gap-3">
           <button
@@ -276,10 +313,10 @@
         </div>
       </div>
       
-      <!-- Sub-route Navigation -->
-      <div v-if="currentSubRoute !== 'default' && currentSubRoute !== 'edit'" class="mb-8">
-        <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
-        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+      <!-- Sub-route Navigation (Mobile only - buttons moved to header on desktop) -->
+      <div v-if="currentSubRoute !== 'default' && currentSubRoute !== 'edit'" class="mb-8 md:hidden">
+        <!-- Mobile: Stack buttons vertically -->
+        <div class="flex flex-col gap-2">
           <button
             @click="$router.push('/outfits/add/suggested')"
             :class="`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${

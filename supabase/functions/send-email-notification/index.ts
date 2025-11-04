@@ -42,9 +42,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
           <h2 style="margin:0 0 12px; color:#1f2937;">New friend request 👋</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} sent you a friend request on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to accept or decline.</p>
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb;">
-            <p style="margin:0; color:#6b7280; font-size:14px;">You're receiving this email because you have email notifications enabled.</p>
-          </div>
         </div>
       `
     },
@@ -55,9 +52,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
           <h2 style="margin:0 0 12px; color:#1f2937;">Friend request accepted 🎉</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} accepted your friend request on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">You can now view each other's closets and create outfits together!</p>
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb;">
-            <p style="margin:0; color:#6b7280; font-size:14px;">You're receiving this email because you have email notifications enabled.</p>
-          </div>
         </div>
       `
     },
@@ -68,9 +62,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
           <h2 style="margin:0 0 12px; color:#1f2937;">Your outfit got a like ❤️</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} liked your outfit on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to see which outfit they liked.</p>
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb;">
-            <p style="margin:0; color:#6b7280; font-size:14px;">You're receiving this email because you have email notifications enabled.</p>
-          </div>
         </div>
       `
     },
@@ -81,9 +72,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
           <h2 style="margin:0 0 12px; color:#1f2937;">Your item got a like ❤️</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} liked an item in your closet on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to see which item they liked.</p>
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb;">
-            <p style="margin:0; color:#6b7280; font-size:14px;">You're receiving this email because you have email notifications enabled.</p>
-          </div>
         </div>
       `
     },
@@ -94,9 +82,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
           <h2 style="margin:0 0 12px; color:#1f2937;">Outfit shared with you 👗</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} shared an outfit with you on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to view the shared outfit.</p>
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb;">
-            <p style="margin:0; color:#6b7280; font-size:14px;">You're receiving this email because you have email notifications enabled.</p>
-          </div>
         </div>
       `
     },
@@ -107,9 +92,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
           <h2 style="margin:0 0 12px; color:#1f2937;">Outfit suggestion 💡</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} created an outfit suggestion using items from your closet.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to approve or reject the suggestion.</p>
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb;">
-            <p style="margin:0; color:#6b7280; font-size:14px;">You're receiving this email because you have email notifications enabled.</p>
-          </div>
         </div>
       `
     },
@@ -120,9 +102,6 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
           <h2 style="margin:0 0 12px; color:#1f2937;">New comment 💬</h2>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">${actorName} commented on your outfit on StyleSnap.</p>
           <p style="margin:0 0 12px; color:#374151; font-size:16px;">Open the app to view and reply to the comment.</p>
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb;">
-            <p style="margin:0; color:#6b7280; font-size:14px;">You're receiving this email because you have email notifications enabled.</p>
-          </div>
         </div>
       `
     }
@@ -171,7 +150,8 @@ async function sendEmail(
     return { success: true }
   } catch (error) {
     console.error('Error sending email:', error)
-    return { success: false, error: error.message }
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    return { success: false, error: errorMessage }
   }
 }
 
@@ -195,29 +175,22 @@ async function shouldSendEmail(
       return false
     }
 
-    // Get user preferences
+    // Get recipient's preferences for receiving emails
+    // Note: email_enabled controls SENDING emails, not receiving
+    // For receiving, we only check the individual notification type preferences
     const { data: preferences, error } = await supabase
       .from('notification_preferences')
-      .select('email_enabled, friend_requests, friend_accepted, outfit_likes, item_likes, outfit_comments, friend_outfit_suggestions')
+      .select('friend_requests, friend_accepted, outfit_likes, item_likes, outfit_comments, friend_outfit_suggestions')
       .eq('user_id', userId)
       .single()
 
-    // If no preferences, default to enabled (users with 5+ friends get emails by default)
+    // If no preferences, default to enabled (all users can receive emails by default)
     if (error || !preferences) {
       return true
     }
 
-    // Check if emails are enabled (column may not exist in older migrations, default to true)
-    if (preferences.email_enabled === false) {
-      return false
-    }
-    
-    // If email_enabled column doesn't exist, it will be null, default to true
-    if (preferences.email_enabled === null) {
-      return true
-    }
-
-    // Check type-specific preferences
+    // Check type-specific preferences for receiving emails
+    // These preferences control whether the user wants to RECEIVE emails for each type
     switch (notificationType) {
       case 'friend_request':
         return preferences.friend_requests !== false
@@ -378,8 +351,9 @@ serve(async (req) => {
     )
   } catch (error) {
     console.error('Error in send-email-notification:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

@@ -67,30 +67,58 @@
       <div v-if="loadingAll" class="flex justify-center items-center min-h-[200px] py-12">
         <div class="spinner-modern" style="width:64px;height:64px;"></div>
       </div>
-      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-      <router-link
-        v-for="(stat, index) in stats"
-        :key="stat.label"
-        :to="stat.route"
-        v-scroll-animate.up
-          class="p-6 rounded-xl cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all hover:shadow-md"
-        :style="{ transitionDelay: `${index * 100}ms` }"
-      >
-        <div class="flex flex-col items-center text-center">
-          <!-- Icon at top center -->
-          <div class="mb-4">
-            <component :is="stat.icon" class="w-8 h-8 text-stone-700 dark:text-zinc-300 mx-auto" />
-          </div>
-          <!-- Number in middle -->
-          <span class="text-5xl font-bold text-stone-800 dark:text-zinc-200 mb-2">
-            {{ stat.value }}
-          </span>
-          <!-- Label at bottom -->
-          <p class="text-base font-medium text-stone-600 dark:text-zinc-400">
-            {{ stat.label }}
-          </p>
+      <div v-else>
+        <!-- Mobile-only dark themed cards -->
+        <div class="md:hidden grid grid-cols-3 gap-4 mb-16">
+          <router-link
+            v-for="(stat, index) in stats"
+            :key="stat.label"
+            :to="stat.route"
+            class="p-4 rounded-xl cursor-pointer bg-zinc-800 dark:bg-zinc-900 transition-all active:scale-95"
+          >
+            <div class="flex flex-col items-center text-center">
+              <!-- Icon at top center -->
+              <div class="mb-3">
+                <component :is="stat.icon" class="w-6 h-6 text-white mx-auto stroke-2" />
+              </div>
+              <!-- Number in middle -->
+              <span class="text-4xl font-bold text-white mb-1">
+                {{ stat.value }}
+              </span>
+              <!-- Label at bottom -->
+              <p class="text-sm font-medium text-zinc-300 dark:text-zinc-400">
+                {{ stat.label }}
+              </p>
+            </div>
+          </router-link>
         </div>
-      </router-link>
+
+        <!-- Desktop cards (hidden on mobile) -->
+        <div class="hidden md:grid grid-cols-3 gap-6 mb-16">
+          <router-link
+            v-for="(stat, index) in stats"
+            :key="stat.label"
+            :to="stat.route"
+            v-scroll-animate.up
+            class="p-6 rounded-xl cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all hover:shadow-md"
+            :style="{ transitionDelay: `${index * 100}ms` }"
+          >
+            <div class="flex flex-col items-center text-center">
+              <!-- Icon at top center -->
+              <div class="mb-4">
+                <component :is="stat.icon" class="w-8 h-8 text-stone-700 dark:text-zinc-300 mx-auto" />
+              </div>
+              <!-- Number in middle -->
+              <span class="text-5xl font-bold text-stone-800 dark:text-zinc-200 mb-2">
+                {{ stat.value }}
+              </span>
+              <!-- Label at bottom -->
+              <p class="text-base font-medium text-stone-600 dark:text-zinc-400">
+                {{ stat.label }}
+              </p>
+            </div>
+          </router-link>
+        </div>
       </div>
     </div>
 
