@@ -76,12 +76,15 @@
       <!-- Success State - Show Generated Image -->
       <div v-else-if="generatedImageUrl" class="flex-1 flex gap-4 overflow-hidden min-h-0">
         <!-- Left: Image (50%) -->
-        <div class="w-[50%] flex-shrink-0 rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 flex items-center justify-center p-4">
-          <img
-            :src="generatedImageUrl"
-            alt="Virtual try-on result"
-            class="max-w-full max-h-full w-auto h-auto object-contain rounded-xl"
-          />
+        <div class="w-[50%] flex-shrink-0 rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 relative" style="border-radius: 0.75rem;">
+          <div class="absolute inset-0 flex items-center justify-center p-4" style="border-radius: 0.75rem; overflow: hidden;">
+            <img
+              :src="generatedImageUrl"
+              alt="Virtual try-on result"
+              class="max-w-full max-h-full w-auto h-auto object-contain"
+              style="border-radius: 0.75rem; display: block;"
+            />
+          </div>
         </div>
 
         <!-- Right: Content (50%) -->
