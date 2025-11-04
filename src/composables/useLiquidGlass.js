@@ -594,6 +594,13 @@ export function useNavbarLiquid() {
     if (!navbarRef.value) return
     
     isHovering.value = true
+    
+    // Check if dark mode is active - if so, skip the glow effect
+    const isDarkMode = document.documentElement.classList.contains('dark')
+    if (isDarkMode) {
+      return // Don't apply glow effect in dark mode
+    }
+    
     await loadMotionOne()
 
     try {
