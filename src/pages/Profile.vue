@@ -556,9 +556,15 @@ const loadNotificationPreferences = async () => {
     loadingPreferences.value = true
     const prefs = await notificationsService.getNotificationPreferences()
     
+    // Ensure stats are loaded before checking friends count
+    if (stats.value.friends === undefined) {
+      console.warn('👤 Profile: Stats not loaded yet, waiting...')
+      await loadStats()
+    }
+    
     preferences.value = {
       // Force email_enabled (sending) to false if user has fewer than 5 friends
-      // All users default to not sending emails until they have 5 friends
+      // If user has 5+ friends, respect the saved preference (default to false if null/undefined)
       email_enabled: stats.value.friends >= 5 ? (prefs.email_enabled === true) : false,
       // Receiving emails defaults to enabled for all users (no friend requirement)
       friend_requests: prefs.friend_requests !== false,
@@ -568,7 +574,12 @@ const loadNotificationPreferences = async () => {
       outfit_comments: prefs.outfit_comments !== false,
       friend_outfit_suggestions: prefs.friend_outfit_suggestions !== false
     }
-    console.log('👤 Profile: Notification preferences loaded:', preferences.value)
+    console.log('👤 Profile: Notification preferences loaded:', {
+      preferences: preferences.value,
+      saved_email_enabled: prefs.email_enabled,
+      friends_count: stats.value.friends,
+      has_5_friends: stats.value.friends >= 5
+    })
   } catch (error) {
     console.error('👤 Profile: Error loading notification preferences:', error)
     showError('Failed to load notification preferences', 'Error')
@@ -587,28 +598,42 @@ const toggleSendEmail = async () => {
     return
   }
   
+  const newValue = !preferences.value.email_enabled
+  console.log('👤 Profile: Toggling email_enabled:', {
+    current: preferences.value.email_enabled,
+    new: newValue,
+    friends_count: stats.value.friends
+  })
+  
   try {
-    preferences.value.email_enabled = !preferences.value.email_enabled
+    // Update local state optimistically
+    preferences.value.email_enabled = newValue
+    
     const result = await notificationsService.updateNotificationPreferences({
-      email_enabled: preferences.value.email_enabled
+      email_enabled: newValue
     })
+    
+    console.log('👤 Profile: Update result:', result)
     
     if (result.success) {
       showSuccess(
-        preferences.value.email_enabled 
+        newValue 
           ? 'Sending email notifications enabled' 
           : 'Sending email notifications disabled',
         'Settings Updated'
       )
+      // Reload preferences to ensure we have the latest from DB
+      await loadNotificationPreferences()
     } else {
       // Revert on error
-      preferences.value.email_enabled = !preferences.value.email_enabled
+      preferences.value.email_enabled = !newValue
+      console.error('👤 Profile: Failed to update preferences:', result.error)
       showError('Failed to update email notification settings', 'Error')
     }
   } catch (error) {
     console.error('👤 Profile: Error toggling send email:', error)
     // Revert on error
-    preferences.value.email_enabled = !preferences.value.email_enabled
+    preferences.value.email_enabled = !newValue
     showError('Failed to update email notification settings', 'Error')
   }
 }
@@ -743,12 +768,9 @@ onMounted(async () => {
     // Continue without profile data - we still have user data from auth
   }
   
-  // Load notification preferences
-  // Load stats and preferences in parallel so friend count is available when spinner hides
-  await Promise.all([
-    loadStats(),
-    loadNotificationPreferences()
-  ])
+  // Load stats first, then preferences (preferences need stats.friends to determine email_enabled)
+  await loadStats()
+  await loadNotificationPreferences()
   
   console.log('👤 Profile: Final user data:', user.value)
   console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)

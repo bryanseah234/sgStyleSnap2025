@@ -2,20 +2,10 @@
   <div>
     <!-- Filters Section -->
     <div :class="`rounded-2xl border p-6 mb-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-      <div class="flex items-center justify-end mb-4">
-        <button
-          v-if="hasActiveFilters"
-          @click="clearFilters"
-          :class="`text-sm font-medium transition-colors text-stone-600 hover:text-black dark:text-zinc-400 dark:hover:text-white`"
-        >
-          <X class="w-4 h-4 inline mr-1" />
-          Clear Filters
-        </button>
-      </div>
-      
-      <!-- Search Bar -->
-      <div class="mb-4">
-        <div class="relative search-input-group">
+      <!-- Search Bar and Clear Filters Row -->
+      <div class="flex items-center gap-3 mb-4">
+        <!-- Search Bar (longer than button) -->
+        <div class="flex-1 relative search-input-group">
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
           <input
             ref="searchInputRef"
@@ -33,6 +23,22 @@
             <span>+</span>
             <span class="keyboard-hint-key">K</span>
           </div>
+        </div>
+        
+        <!-- Clear Filters Button (same height as search bar) -->
+        <div class="flex-shrink-0">
+          <button
+            @click="clearFilters"
+            :disabled="!hasActiveFilters"
+            :class="`px-4 py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+              hasActiveFilters
+                ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer'
+                : 'bg-stone-50 text-stone-400 dark:bg-zinc-900 dark:text-zinc-600 cursor-not-allowed opacity-50'
+            }`"
+          >
+            <X class="w-4 h-4" />
+            <span class="hidden sm:inline">Clear Filters</span>
+          </button>
         </div>
       </div>
       

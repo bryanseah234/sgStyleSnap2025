@@ -74,8 +74,8 @@
     <!-- Search Bar and Favourites Button -->
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex items-center gap-3">
-        <!-- Search Bar (85%) -->
-        <div class="flex-[0.85] relative search-input-group">
+        <!-- Search Bar (85% when All Outfits, 100% when Suggestions) -->
+        <div :class="activeFilter === 'all' ? 'flex-[0.85]' : 'flex-1' relative search-input-group">
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
           <input
             ref="searchInputRef"
@@ -101,7 +101,7 @@
         <div v-if="activeFilter === 'all'" class="flex-[0.15]">
           <button
             @click="showFavoritesOnly = !showFavoritesOnly"
-            :class="`w-full px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+            :class="`w-full px-3 py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
               showFavoritesOnly
                 ? 'bg-red-500 text-white dark:bg-red-600'
                 : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'

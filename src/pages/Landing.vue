@@ -510,7 +510,7 @@
                 <!-- Empty State -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-gray-200">
-                    <Sparkles class="w-12 h-12 text-orange-500" />
+                    <Sparkles class="w-12 h-12 text-stone-500 dark:text-zinc-400" />
                   </div>
                   <p class="text-xl font-medium mb-2 text-gray-700">
                     Start Creating Your Outfit

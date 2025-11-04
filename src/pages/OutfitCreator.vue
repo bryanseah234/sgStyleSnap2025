@@ -693,7 +693,7 @@
                 class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
               >
                 <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-stone-200 dark:bg-zinc-700">
-                  <Sparkles class="w-12 h-12 text-orange-500" />
+                  <Sparkles class="w-12 h-12 text-stone-500 dark:text-zinc-400" />
                 </div>
                 <p class="text-xl font-medium mb-2 text-stone-700 dark:text-zinc-300">
                   {{ currentSubRoute === 'friend' ? "Start Creating Friend's Outfit" : "Start Creating Your Outfit" }}
