@@ -42,7 +42,16 @@
         </div>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Filter Toggle Button (Mobile Only) -->
+      <button
+        @click="filtersExpanded = !filtersExpanded"
+        class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200"
+      >
+        <span class="font-medium text-sm">Filters</span>
+        <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
+      </button>
+      
+      <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0`">
         <!-- Category Filter -->
         <div>
           <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
@@ -116,8 +125,8 @@
       <div
         v-for="(item, index) in filteredCatalogItems"
         :key="item.id"
-        :class="`stagger-item rounded-xl border overflow-hidden transition-all bg-white border-stone-200 hover:border-stone-300
-        dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700`"
+        :class="`stagger-item rounded-xl border overflow-hidden transition-all duration-300 bg-white border-stone-200 hover:border-stone-300
+        dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 hover:scale-105 shadow-sm hover:shadow-md cursor-pointer`"
       >
         <!-- Item Image -->
         <div :class="`aspect-square bg-stone-100 dark:bg-zinc-800`">
@@ -206,7 +215,7 @@ import { usePopup } from '@/composables/usePopup'
 import { useSanitize } from '@/composables/useSanitize'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { catalogService } from '@/services/catalogService'
-import { Plus, Check, X, Shirt, Search } from 'lucide-vue-next'
+import { Plus, Check, X, Shirt, Search, ChevronDown } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const { showError, showSuccess } = usePopup()
@@ -226,6 +235,7 @@ const addingItemId = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
 const sentinelRef = ref(null)
+const filtersExpanded = ref(false) // Filters expanded state (mobile only)
 
 // Pagination state
 const ITEMS_PER_PAGE = 20

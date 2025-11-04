@@ -50,17 +50,28 @@
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap gap-2 mb-6">
-        <!-- Category Filters (All Outfits, Suggestions) -->
+      <div class="mb-6">
+        <!-- Filter Toggle Button (Mobile Only) -->
         <button
-          v-for="filter in categoryFilters"
-          :key="filter.value"
-          @click="activeFilter = filter.value"
-          :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
-            activeFilter === filter.value
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-          }`"
+          @click="filtersExpanded = !filtersExpanded"
+          class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
+        >
+          <span class="font-medium text-sm">Filters</span>
+          <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
+        </button>
+        
+        <!-- Filter Buttons -->
+        <div :class="`flex flex-wrap gap-2 transition-all duration-300 ${filtersExpanded ? 'max-h-[100px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100'} md:!opacity-100`">
+          <!-- Category Filters (All Outfits, Suggestions) -->
+          <button
+            v-for="filter in categoryFilters"
+            :key="filter.value"
+            @click="activeFilter = filter.value"
+            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
+              activeFilter === filter.value
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
         >
           {{ filter.label }}
           <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 
@@ -68,6 +79,7 @@
             {{ suggestionStats.pending }}
           </span>
         </button>
+        </div>
       </div>
     </div>
 
@@ -82,9 +94,9 @@
             v-model="searchTerm"
             type="text"
             :placeholder="activeFilter === 'suggestions' 
-              ? 'Search suggestions (outfit name, friend name, username)...'
-              : 'Search your outfits (name, tags, occasion, style, items)...'"
-            class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
+              ? 'Search suggestions...'
+              : 'Search your outfits...'"
+            class="w-full pl-10 pr-3 md:pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
             @input="handleSearch"
             @focus="handleSearchFocus"
             @blur="handleSearchBlur"
@@ -441,6 +453,7 @@ const selectedOutfit = ref(null)
 const createdLocation = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
+const filtersExpanded = ref(false) // Filters expanded state (mobile only)
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)

@@ -143,8 +143,17 @@
                 </div>
               </div>
               
+              <!-- Filter Toggle Button (Mobile Only) -->
+              <button
+                @click="filtersExpanded = !filtersExpanded"
+                class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200"
+              >
+                <span class="font-medium text-sm">Filters</span>
+                <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
+              </button>
+              
               <!-- Filter Dropdowns -->
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0`">
                 <!-- Category Filter -->
                 <div>
                   <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
@@ -403,7 +412,7 @@ import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
-import { X, Search, Shirt } from 'lucide-vue-next'
+import { X, Search, Shirt, ChevronDown } from 'lucide-vue-next'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
@@ -432,6 +441,7 @@ const outfitSearchTerm = ref('')
 const selectedItemCategory = ref(null)
 const selectedItemColor = ref(null)
 const selectedItemBrand = ref(null)
+const filtersExpanded = ref(false) // Filters expanded state (mobile only)
 
 // Keyboard shortcuts
 const { isMac } = useKeyboardShortcuts()

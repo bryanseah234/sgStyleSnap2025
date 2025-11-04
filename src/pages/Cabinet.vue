@@ -126,8 +126,8 @@
                 ref="searchInputRef"
                 v-model="searchTerm"
                 type="text"
-                placeholder="Search your closet (name, brand, category, color)..."
-                :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
+                placeholder="Search your closet..."
+                :class="`w-full pl-10 pr-3 md:pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
                 @input="handleSearch"
                 @focus="handleSearchFocus"
@@ -173,8 +173,17 @@
             </div>
           </div>
           
+          <!-- Filter Toggle Button (Mobile Only) -->
+          <button
+            @click="filtersExpanded = !filtersExpanded"
+            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200"
+          >
+            <span class="font-medium text-sm">Filters</span>
+            <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
+          </button>
+          
           <!-- Filter Dropdowns -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0`">
             <!-- Category Filter -->
             <div>
               <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
@@ -461,6 +470,7 @@ const selectedBrand = ref(null)          // Selected brand filter
 const selectedPrivacy = ref(null)        // Selected privacy filter
 const showFavoritesOnly = ref(false)     // Favorites-only filter toggle
 const searchTerm = ref('')               // Search input value
+const filtersExpanded = ref(false)       // Filters expanded state (mobile only)
 
 // Available clothing categories for filtering (computed from user's items)
 /**
