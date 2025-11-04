@@ -1645,10 +1645,10 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   background: #3f3f46; /* zinc-700 */
 }
 .btn-tab--active {
-  background: #000; /* black */
-  color: #fff;
+  background: #000 !important; /* black */
+  color: #fff !important;
 }
 .dark .btn-tab--active {
-  background: #fff;
-  color: #000;
+  background: #fff !important;
+  color: #000 !important;
 }

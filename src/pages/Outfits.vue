@@ -75,7 +75,7 @@
     <div class="max-w-6xl mx-auto mb-8">
       <div class="flex items-center gap-3">
         <!-- Search Bar (85% when All Outfits, 100% when Suggestions) -->
-        <div :class="activeFilter === 'all' ? 'flex-[0.85]' : 'flex-1' relative search-input-group">
+        <div :class="`${activeFilter === 'all' ? 'flex-[0.85]' : 'flex-1'} relative search-input-group`">
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400" />
           <input
             ref="searchInputRef"

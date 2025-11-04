@@ -25,13 +25,17 @@
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <router-link
             to="/friends"
-            :class="currentTab === 'friends' ? 'btn-tab btn-tab--active justify-center' : 'btn-tab justify-center'"
+            :class="`inline-flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              currentTab === 'friends'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
           >
             <Users class="w-4 h-4" />
             My Friends
             <span
               v-if="friends.length > 0"
-              :class="currentTab === 'friends' ? 'px-2 py-1 text-xs rounded-full bg-black text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+              :class="currentTab === 'friends' ? 'px-2 py-1 text-xs rounded-full bg-white text-black dark:bg-black dark:text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
             >
               {{ friends.length }}
             </span>
@@ -39,13 +43,17 @@
 
           <router-link
             to="/friends/requests/received"
-            :class="currentTab === 'requests' ? 'btn-tab btn-tab--active justify-center' : 'btn-tab justify-center'"
+            :class="`inline-flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              currentTab === 'requests'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
           >
             <Bell class="w-4 h-4" />
             Requests Received
             <span
               v-if="friendRequests.length > 0"
-              :class="currentTab === 'requests' ? 'px-2 py-1 text-xs rounded-full bg-black text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+              :class="currentTab === 'requests' ? 'px-2 py-1 text-xs rounded-full bg-white text-black dark:bg-black dark:text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
             >
               {{ friendRequests.length }}
             </span>
@@ -53,13 +61,17 @@
 
           <router-link
             to="/friends/requests/sent"
-            :class="currentTab === 'sent' ? 'btn-tab btn-tab--active justify-center' : 'btn-tab justify-center'"
+            :class="`inline-flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              currentTab === 'sent'
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+            }`"
           >
             <UserPlus class="w-4 h-4" />
             Requests Sent
             <span
               v-if="sentRequests.length > 0"
-              :class="currentTab === 'sent' ? 'px-2 py-1 text-xs rounded-full bg-black text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
+              :class="currentTab === 'sent' ? 'px-2 py-1 text-xs rounded-full bg-white text-black dark:bg-black dark:text-white' : 'px-2 py-1 text-xs rounded-full bg-stone-300 text-stone-800 dark:bg-zinc-600 dark:text-zinc-200'"
             >
               {{ sentRequests.length }}
             </span>
