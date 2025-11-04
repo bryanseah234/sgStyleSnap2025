@@ -114,13 +114,23 @@ export function useLiquidHover() {
           // Extract the easing function with proper error handling
           let easingFunction = null
           
-          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
-            // Safely access array index
-            easingFunction = springEasing[0]
-          } else if (springEasing && typeof springEasing === 'function') {
-            easingFunction = springEasing
-          } else {
-            // If spring return is invalid, throw to trigger fallback
+          // Safely check and extract easing function with more defensive checks
+          if (springEasing != null) { // Check for both null and undefined
+            // Check if it's a proper array (not just array-like object)
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              // Safely access first element only if it exists
+              const firstElement = springEasing[0]
+              if (firstElement != null && typeof firstElement === 'function') {
+                easingFunction = firstElement
+              }
+            } else if (typeof springEasing === 'function') {
+              // Direct function return
+              easingFunction = springEasing
+            }
+          }
+          
+          // If we couldn't extract a valid easing function, throw to trigger fallback
+          if (!easingFunction) {
             throw new Error('Invalid spring easing return value')
           }
           
@@ -195,13 +205,23 @@ export function useLiquidHover() {
           // Extract the easing function with proper error handling
           let easingFunction = null
           
-          if (springEasing && Array.isArray(springEasing) && springEasing.length > 0 && springEasing[0] !== undefined) {
-            // Safely access array index
-            easingFunction = springEasing[0]
-          } else if (springEasing && typeof springEasing === 'function') {
-            easingFunction = springEasing
-          } else {
-            // If spring return is invalid, throw to trigger fallback
+          // Safely check and extract easing function with more defensive checks
+          if (springEasing != null) { // Check for both null and undefined
+            // Check if it's a proper array (not just array-like object)
+            if (Array.isArray(springEasing) && springEasing.length > 0) {
+              // Safely access first element only if it exists
+              const firstElement = springEasing[0]
+              if (firstElement != null && typeof firstElement === 'function') {
+                easingFunction = firstElement
+              }
+            } else if (typeof springEasing === 'function') {
+              // Direct function return
+              easingFunction = springEasing
+            }
+          }
+          
+          // If we couldn't extract a valid easing function, throw to trigger fallback
+          if (!easingFunction) {
             throw new Error('Invalid spring easing return value')
           }
           
@@ -606,14 +626,17 @@ export function useNavbarLiquid() {
         try {
           const springEasing = spring({ stiffness: 250, damping: 20 })
           
-          // Safely check and extract easing function
-          if (springEasing !== null && springEasing !== undefined) {
+          // Safely check and extract easing function with more defensive checks
+          if (springEasing != null) { // Check for both null and undefined
+            // Check if it's a proper array (not just array-like object)
             if (Array.isArray(springEasing) && springEasing.length > 0) {
-              // Double-check that the first element exists before accessing
-              if (springEasing[0] !== undefined && springEasing[0] !== null) {
-                easingFunction = springEasing[0]
+              // Safely access first element only if it exists
+              const firstElement = springEasing[0]
+              if (firstElement != null && typeof firstElement === 'function') {
+                easingFunction = firstElement
               }
             } else if (typeof springEasing === 'function') {
+              // Direct function return
               easingFunction = springEasing
             }
           }
@@ -670,14 +693,17 @@ export function useNavbarLiquid() {
         try {
           const springEasing = spring({ stiffness: 200, damping: 25 })
           
-          // Safely check and extract easing function
-          if (springEasing !== null && springEasing !== undefined) {
+          // Safely check and extract easing function with more defensive checks
+          if (springEasing != null) { // Check for both null and undefined
+            // Check if it's a proper array (not just array-like object)
             if (Array.isArray(springEasing) && springEasing.length > 0) {
-              // Double-check that the first element exists before accessing
-              if (springEasing[0] !== undefined && springEasing[0] !== null) {
-                easingFunction = springEasing[0]
+              // Safely access first element only if it exists
+              const firstElement = springEasing[0]
+              if (firstElement != null && typeof firstElement === 'function') {
+                easingFunction = firstElement
               }
             } else if (typeof springEasing === 'function') {
+              // Direct function return
               easingFunction = springEasing
             }
           }
@@ -737,14 +763,17 @@ export function useNavbarLiquid() {
         try {
           const springEasing = spring({ stiffness: 250, damping: 20 })
           
-          // Safely check and extract easing function
-          if (springEasing !== null && springEasing !== undefined) {
+          // Safely check and extract easing function with more defensive checks
+          if (springEasing != null) { // Check for both null and undefined
+            // Check if it's a proper array (not just array-like object)
             if (Array.isArray(springEasing) && springEasing.length > 0) {
-              // Double-check that the first element exists before accessing
-              if (springEasing[0] !== undefined && springEasing[0] !== null) {
-                easingFunction = springEasing[0]
+              // Safely access first element only if it exists
+              const firstElement = springEasing[0]
+              if (firstElement != null && typeof firstElement === 'function') {
+                easingFunction = firstElement
               }
             } else if (typeof springEasing === 'function') {
+              // Direct function return
               easingFunction = springEasing
             }
           }

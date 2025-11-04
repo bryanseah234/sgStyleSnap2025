@@ -61,10 +61,11 @@
         <div class="w-full lg:w-3/5 flex-shrink-0 space-y-6 pr-0 lg:pr-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
+            <label for="manual-upload-name" :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Item Name <span class="text-red-500">*</span>
             </label>
             <input
+              id="manual-upload-name"
               v-model="formData.name"
               placeholder="e.g., Black T-Shirt"
               maxlength="50"
@@ -83,10 +84,11 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
+            <label for="manual-upload-category" :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Category <span class="text-red-500">*</span>
             </label>
             <select
+              id="manual-upload-category"
               v-model="formData.category"
               @change="onCategoryChange"
               :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black
@@ -110,10 +112,11 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
+            <label for="manual-upload-color" :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Color <span class="text-red-500">*</span>
             </label>
             <select
+              id="manual-upload-color"
               v-model="formData.color"
               :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black
               dark:bg-zinc-800 dark:text-white
@@ -138,10 +141,11 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
+            <label for="manual-upload-brand" :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Brand
             </label>
             <input
+              id="manual-upload-brand"
               v-model="formData.brand"
               placeholder="e.g., Nike"
               maxlength="50"
@@ -152,10 +156,11 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
+            <label for="manual-upload-type" :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Type <span class="text-red-500">*</span>
             </label>
             <select
+              id="manual-upload-type"
               v-model="formData.type"
               :disabled="!formData.category"
               :class="[
@@ -181,10 +186,11 @@
           </div>
 
           <div>
-            <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
+            <label for="manual-upload-privacy" :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Privacy <span class="text-red-500">*</span>
             </label>
             <select
+              id="manual-upload-privacy"
               v-model="formData.privacy"
               :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black
               dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${

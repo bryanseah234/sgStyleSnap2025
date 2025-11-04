@@ -292,12 +292,38 @@ serve(async (req) => {
     console.log('📧 Supabase client created')
 
     // Parse request body
+    // Handle both direct HTTP calls and Supabase webhook payloads
     let notificationData: NotificationData
     try {
       const bodyText = await req.text()
       console.log('📧 Raw request body:', bodyText)
-      notificationData = JSON.parse(bodyText)
-      console.log('📧 Parsed notification data:', JSON.stringify(notificationData, null, 2))
+      const parsedBody = JSON.parse(bodyText)
+      console.log('📧 Parsed body:', JSON.stringify(parsedBody, null, 2))
+      
+      // Check if this is a webhook payload (has 'record' or 'new' field)
+      if (parsedBody.record || parsedBody.new) {
+        console.log('📧 Detected Supabase webhook payload format')
+        // Extract the record from webhook payload
+        const record = parsedBody.record || parsedBody.new
+        notificationData = {
+          id: record.id,
+          recipient_id: record.recipient_id,
+          actor_id: record.actor_id,
+          type: record.type,
+          reference_id: record.reference_id,
+          message: record.custom_message || record.message,
+          created_at: record.created_at
+        }
+        console.log('📧 Extracted notification data from webhook:', JSON.stringify(notificationData, null, 2))
+      } else if (parsedBody.id && parsedBody.recipient_id && parsedBody.type) {
+        // Direct HTTP call format (flat structure)
+        console.log('📧 Detected direct HTTP call payload format')
+        notificationData = parsedBody as NotificationData
+      } else {
+        throw new Error('Invalid payload format: missing required fields or unsupported webhook format')
+      }
+      
+      console.log('📧 Final notification data:', JSON.stringify(notificationData, null, 2))
     } catch (parseError) {
       console.error('📧 ❌ Error parsing request body:', parseError)
       return new Response(

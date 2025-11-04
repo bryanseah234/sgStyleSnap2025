@@ -131,9 +131,9 @@
           <button
             ref="themeButtonRef"
             @click="handleThemeButtonClick"
-            @mousedown="themePressIn"
-            @mouseup="themePressOut"
-            @mouseleave="themePressOut"
+            @mousedown="themePressIn($event.currentTarget)"
+            @mouseup="themePressOut($event.currentTarget)"
+            @mouseleave="themePressOut($event.currentTarget)"
             :class="`nav-item-liquid liquid-press w-full flex items-center justify-between  ${isSidebarCollapsed ? '' : 'gap-3'} px-3 py-3 rounded-xl bg-secondary hover:bg-accent group relative transition-all duration-300 ease-in-out min-h-[44px]`"
             :title="isSidebarCollapsed ? `${getThemeLabel(currentTheme)} Theme` : getThemeLabel(currentTheme)"
           >
@@ -224,9 +224,9 @@
         <button
           ref="logoutButtonRef"
           @click="handleLogout"
-          @mousedown="logoutPressIn"
-          @mouseup="logoutPressOut"
-          @mouseleave="logoutPressOut"
+          @mousedown="logoutPressIn($event.currentTarget)"
+          @mouseup="logoutPressOut($event.currentTarget)"
+          @mouseleave="logoutPressOut($event.currentTarget)"
           :disabled="loading"
           :class="[
             `nav-item-liquid w-full flex items-center liquid-press justify-start ${isSidebarCollapsed ? '' : 'gap-3'} px-3 py-3 rounded-xl liquid-press bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-all duration-300 ease-in-out min-h-[44px]`,
