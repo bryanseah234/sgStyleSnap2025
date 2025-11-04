@@ -131,7 +131,7 @@
             title="Show Outfit on AI Model Person"
           >
             <User class="w-5 h-5" />
-            <span class="hidden sm:inline">
+            <span class="hidden sm:inline whitespace-nowrap">
               <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
               <span v-else>Try On</span>
             </span>
@@ -253,7 +253,7 @@
               title="Show Outfit on AI Model Person"
             >
               <User class="w-4 h-4" />
-              <span class="text-xs">
+              <span class="text-xs whitespace-nowrap">
                 <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
                 <span v-else>Try On</span>
               </span>
@@ -755,7 +755,7 @@
                   title="Show Outfit on AI Model Person"
                 >
                   <User class="w-5 h-5" />
-                  <span class="hidden sm:inline">
+                  <span class="hidden sm:inline whitespace-nowrap">
                     <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
                     <span v-else>Try On</span>
                   </span>

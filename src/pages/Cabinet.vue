@@ -103,14 +103,14 @@
       <div v-if="currentSubRoute === 'friend'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
         <div class="flex items-center gap-3 mb-4">
           <Heart class="w-6 h-6 text-purple-600 dark:text-purple-400" />
-          <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">{{ route.params.username }}'s Closet</h3>
+          <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">@{{ route.params.username }}'s Closet</h3>
         </div>
         <p class="text-purple-700 dark:text-purple-300 mb-4">
-          Browse {{ route.params.username }}'s clothing collection. Get inspired by their style and see what they're wearing.
+          Browse @{{ route.params.username }}'s clothing collection. Get inspired by their style and see what they're wearing.
         </p>
         <div class="text-center py-8">
           <Heart class="w-16 h-16 text-purple-400 dark:text-purple-500 mx-auto mb-4" />
-          <p class="text-purple-600 dark:text-purple-400">Loading {{ route.params.username }}'s closet...</p>
+          <p class="text-purple-600 dark:text-purple-400">Loading @{{ route.params.username }}'s closet...</p>
         </div>
       </div>
 
