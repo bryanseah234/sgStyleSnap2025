@@ -24,10 +24,11 @@
     <button
       v-if="!isTransitioning && !animationComplete"
       @click="skipAnimation"
-      class="skip-animation-btn"
+      class="skip-animation-btn group"
       title="Skip animation"
     >
       <span>Skip Animation</span>
+      <ArrowRight class="w-5 h-5 text-black group-hover:translate-x-1 transition" style="color: #000000 !important; stroke: #000000 !important;" />
     </button>
   </div>
 
@@ -363,13 +364,19 @@
                 <div
                   v-for="item in outfitItems"
                   :key="item.id"
-                  class="absolute group select-none"
-                  :class="draggedItem === item.id ? 'cursor-grabbing' : 'cursor-grab'"
+                  :title="`${item.name}${item.category ? ` - ${item.category.charAt(0).toUpperCase() + item.category.slice(1)}` : ''}`"
+                  :class="[
+                    'absolute group select-none',
+                    draggedItem === item.id ? 'cursor-grabbing' : 'cursor-grab',
+                    {
+                      'ring-4 ring-blue-500 ring-offset-2': selectedItemId === item.id
+                    }
+                  ]"
                   :style="{
                     position: 'absolute',
                     left: `${item.x}px`,
                     top: `${item.y}px`,
-                    zIndex: draggedItem === item.id ? 50 : selectedItemId === item.id ? 30 : Math.max(2, (item.z_index || 0)),
+                    zIndex: draggedItem === item.id ? 50 : Math.max(2, (item.z_index || 0)) + (selectedItemId === item.id ? 1000 : 0),
                     transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                     transformOrigin: 'center center',
                     transition: draggedItem === item.id ? 'none' : 'all 0.2s'
@@ -393,7 +400,7 @@
                   <!-- Toolkit (shown when selected) -->
                   <div
                     v-if="selectedItemId === item.id"
-                    class="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    class="absolute -top-14 left-1/2 -translate-x-1/2 flex gap-0.5 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-gray-200 opacity-100 transition-opacity duration-200 z-[100] pointer-events-auto"
                     @mousedown.stop
                     @click.stop
                   >
@@ -544,9 +551,9 @@
         <!-- Avatar and Cards Layout -->
         <div class="flex flex-col md:flex-row gap-6 sm:gap-8 items-stretch">
           <!-- 3D Avatar on Left -->
-          <div class="w-full md:w-1/2 flex items-center justify-center">
+          <div class="w-full md:w-1/2 flex items-center justify-center" ref="avatarSectionRef">
             <div class="w-full h-full min-h-[400px] md:min-h-0">
-              <SingleAvatar3D :avatar-url="selectedAvatarUrl" />
+              <SingleAvatar3D :avatar-url="selectedAvatarUrl" :auto-rotate="isAvatarVisible" />
             </div>
           </div>
 
@@ -555,13 +562,15 @@
             <div
               v-for="(item, idx) in whyChooseItems"
               :key="idx"
-              class="flex flex-col gap-4 p-6 sm:p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 animate-staggeredFadeIn group cursor-pointer hover:-translate-y-2 flex-grow"
+              class="flex flex-row gap-4 p-6 sm:p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 animate-staggeredFadeIn group hover:-translate-y-2 flex-grow"
               :style="{ animationDelay: `${idx * 0.1}s` }"
             >
-              <div class="flex-shrink-0">
+              <!-- Icon on left, spans 2 rows -->
+              <div class="flex-shrink-0 flex items-start">
                 <component :is="item.icon" class="w-8 h-8 sm:w-10 sm:h-10 text-gray-900 group-hover:scale-125 transition duration-300" />
               </div>
-              <div class="flex-1">
+              <!-- Title and subtitle on right, stacked -->
+              <div class="flex-1 flex flex-col">
                 <h3 class="font-bold text-base sm:text-lg md:text-xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
                 <p class="text-sm sm:text-base text-gray-600">{{ item.description }}</p>
               </div>
@@ -756,6 +765,9 @@ const finalTransform = reactive({
   y: 0,
   fontSize: '2.5625rem'
 })
+const avatarSectionRef = ref(null)
+const isAvatarVisible = ref(false)
+let avatarObserver = null
 
 // Catalog service instance
 const catalogService = new CatalogService()
@@ -1738,6 +1750,23 @@ onMounted(() => {
   const elementsToObserve = document.querySelectorAll('.scroll-hidden')
   elementsToObserve.forEach((el) => observer.observe(el))
   
+  // Intersection Observer for avatar section - start rotation when visible
+  await nextTick()
+  if (avatarSectionRef.value) {
+    avatarObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isAvatarVisible.value = entry.isIntersecting
+        })
+      },
+      {
+        threshold: 0.3, // Start rotation when 30% of avatar section is visible
+        rootMargin: '0px'
+      }
+    )
+    avatarObserver.observe(avatarSectionRef.value)
+  }
+  
   // Load catalogue items for demo
   loadCatalogueItems()
   
@@ -1748,6 +1777,12 @@ onMounted(() => {
   
   // Cleanup function
   onUnmounted(() => {
+    // Clean up avatar observer
+    if (avatarObserver && avatarSectionRef.value) {
+      avatarObserver.unobserve(avatarSectionRef.value)
+      avatarObserver.disconnect()
+      avatarObserver = null
+    }
     // Ensure body scroll is re-enabled when component is unmounted
     enableBodyScroll()
     window.removeEventListener('scroll', handleScroll)
@@ -1876,6 +1911,7 @@ const setScrollY = (value) => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);

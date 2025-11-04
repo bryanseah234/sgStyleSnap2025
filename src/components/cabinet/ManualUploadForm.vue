@@ -7,7 +7,7 @@
         <div class="w-full lg:w-2/5 flex-shrink-0">
           <div class="flex items-center justify-between mb-3">
             <label :class="`text-base text-stone-700 dark:text-zinc-300`">
-              Item Image *
+              Item Image <span class="text-red-500">*</span>
             </label>
             <button
               v-if="previewUrl"
@@ -17,6 +17,9 @@
               <X class="w-4 h-4" />
             </button>
           </div>
+          <p v-if="hasError('image')" class="mb-2 text-sm text-red-500">
+            {{ fieldErrors.image }}
+          </p>
           
           <div v-if="previewUrl" class="relative">
             <img
@@ -55,29 +58,40 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
-              Item Name *
+              Item Name <span class="text-red-500">*</span>
             </label>
             <input
               v-model="formData.name"
               placeholder="e.g., Black T-Shirt"
               maxlength="50"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
-                dark:bg-zinc-800 dark:border-zinc-700 dark:text-white 
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black
+                dark:bg-zinc-800 dark:text-white 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  hasError('name')
+                    ? 'border-red-500 focus:ring-red-500 dark:border-red-500 dark:focus:ring-red-500'
+                    : 'border-stone-200 focus:ring-black dark:border-zinc-700 dark:focus:ring-white'
+                }`"
               @blur="formData.name = sanitizeText(formData.name)"
             />
+            <p v-if="hasError('name')" class="mt-1 text-sm text-red-500">
+              {{ fieldErrors.name }}
+            </p>
           </div>
 
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
-              Category *
+              Category <span class="text-red-500">*</span>
             </label>
             <select
               v-model="formData.category"
               @change="onCategoryChange"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border 
-                dark:bg-zinc-800 dark:border-zinc-700 dark:text-white 
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black
+                dark:bg-zinc-800 dark:text-white 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  hasError('category')
+                    ? 'border-red-500 focus:ring-red-500 dark:border-red-500 dark:focus:ring-red-500'
+                    : 'border-stone-200 focus:ring-black dark:border-zinc-700 dark:focus:ring-white'
+                }`"
             >
               <option value="">Select category</option>
               <option value="top">Tops</option>
@@ -86,38 +100,37 @@
               <option value="outerwear">Outerwear</option>
               <option value="accessory">Accessories</option>
             </select>
+            <p v-if="hasError('category')" class="mt-1 text-sm text-red-500">
+              {{ fieldErrors.category }}
+            </p>
           </div>
 
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
-              Color *
+              Color <span class="text-red-500">*</span>
             </label>
             <select
               v-model="formData.color"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
-              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black
+              dark:bg-zinc-800 dark:text-white
+              focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                hasError('color')
+                  ? 'border-red-500 focus:ring-red-500 dark:border-red-500 dark:focus:ring-red-500'
+                  : 'border-stone-200 focus:ring-black dark:border-zinc-700 dark:focus:ring-white'
+              }`"
             >
               <option value="">Select color</option>
-              <option value="black">Black</option>
-              <option value="white">White</option>
-              <option value="gray">Gray</option>
-              <option value="beige">Beige</option>
-              <option value="brown">Brown</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-              <option value="yellow">Yellow</option>
-              <option value="green">Green</option>
-              <option value="orange">Orange</option>
-              <option value="purple">Purple</option>
-              <option value="pink">Pink</option>
-              <option value="navy">Navy</option>
-              <option value="teal">Teal</option>
-              <option value="maroon">Maroon</option>
-              <option value="olive">Olive</option>
-              <option value="gold">Gold</option>
-              <option value="silver">Silver</option>
+              <option 
+                v-for="color in availableColors" 
+                :key="color.value" 
+                :value="color.value"
+              >
+                {{ color.label }}
+              </option>
             </select>
+            <p v-if="hasError('color')" class="mt-1 text-sm text-red-500">
+              {{ fieldErrors.color }}
+            </p>
           </div>
 
           <div>
@@ -136,14 +149,17 @@
 
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
-              Type *
+              Type <span class="text-red-500">*</span>
             </label>
             <select
               v-model="formData.type"
               :disabled="!formData.category"
               :class="[
-                'w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border border-stone-200 text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:focus:ring-white',
-                !formData.category ? 'opacity-50 cursor-not-allowed' : ''
+                'w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black focus:outline-none focus:ring-2 focus:ring-offset-2 dark:bg-zinc-800 dark:text-white',
+                !formData.category ? 'opacity-50 cursor-not-allowed' : '',
+                hasError('type')
+                  ? 'border-red-500 focus:ring-red-500 dark:border-red-500 dark:focus:ring-red-500'
+                  : 'border-stone-200 focus:ring-black dark:border-zinc-700 dark:focus:ring-white'
               ]"
             >
               <option value="">Select type</option>
@@ -155,21 +171,31 @@
                 {{ type }}
               </option>
             </select>
+            <p v-if="hasError('type')" class="mt-1 text-sm text-red-500">
+              {{ fieldErrors.type }}
+            </p>
           </div>
 
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
-              Privacy *
+              Privacy <span class="text-red-500">*</span>
             </label>
             <select
               v-model="formData.privacy"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
-              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
+              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border text-black
+              dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                hasError('privacy')
+                  ? 'border-red-500 focus:ring-red-500 dark:border-red-500 dark:focus:ring-red-500'
+                  : 'border-stone-200 focus:ring-black dark:border-zinc-700 dark:focus:ring-white'
+              }`"
             >
               <option value="private">Private (Only Me)</option>
               <option value="friends">Friends</option>
               <option value="public">Public (Everyone)</option>
             </select>
+            <p v-if="hasError('privacy')" class="mt-1 text-sm text-red-500">
+              {{ fieldErrors.privacy }}
+            </p>
           </div>
           </div>
 
@@ -241,6 +267,63 @@ const formData = ref({
   image_file: null, // Store the actual file for upload
 })
 
+// Colors from color-detector.js COLOR_PALETTE
+const colorDetectorColors = [
+  'black', 'white', 'gray', 'grey', 'beige', 'brown',
+  'red', 'blue', 'yellow',
+  'green', 'orange', 'purple', 'pink',
+  'navy', 'teal', 'maroon', 'olive', 'gold', 'silver',
+  'charcoal', 'burgundy', 'coral', 'peach', 'salmon', 'turquoise', 'mint', 'lavender', 'indigo'
+]
+
+// Colors valid in database constraint
+const databaseValidColors = [
+  'black', 'white', 'gray', 'beige', 'brown',
+  'red', 'blue', 'yellow',
+  'green', 'orange', 'purple', 'pink',
+  'navy', 'teal', 'maroon', 'olive', 'gold', 'silver'
+]
+
+// Combine both lists and remove duplicates
+// Only include colors that are in database or in color-detector
+const allValidColors = [...new Set([...databaseValidColors, ...colorDetectorColors])]
+
+// Normalize color: convert grey to gray, handle case
+const normalizeColorValue = (color) => {
+  if (!color) return null
+  const colorLower = color.toLowerCase().trim()
+  // Normalize grey to gray
+  if (colorLower === 'grey') return 'gray'
+  return colorLower
+}
+
+// Check if color is valid (in combined list or can be normalized)
+const isValidColor = (color) => {
+  if (!color) return false
+  const normalized = normalizeColorValue(color)
+  return allValidColors.includes(normalized)
+}
+
+// Available colors for dropdown (sorted, with grey normalized to gray)
+const availableColors = computed(() => {
+  const colors = allValidColors
+    .map(color => {
+      // Normalize grey to gray for display
+      const normalized = normalizeColorValue(color)
+      return {
+        value: normalized,
+        label: normalized.charAt(0).toUpperCase() + normalized.slice(1)
+      }
+    })
+    .filter((color, index, self) => 
+      // Remove duplicates (grey will be normalized to gray)
+      index === self.findIndex(c => c.value === color.value)
+    )
+    .sort((a, b) => a.label.localeCompare(b.label))
+  
+  return colors
+})
+
 // Computed property for available types based on selected category
 const availableTypes = computed(() => {
   if (!formData.value.category) return []
@@ -255,6 +338,23 @@ const canSubmit = computed(() => {
          formData.value.privacy && 
          formData.value.image_file
 })
+
+// Validation states for each field
+const fieldErrors = computed(() => {
+  return {
+    name: !formData.value.name ? 'Please enter an item name' : null,
+    category: !formData.value.category ? 'Please select a category' : null,
+    type: !formData.value.type ? 'Please select a type' : null,
+    color: !formData.value.color ? 'Please select a color' : null,
+    privacy: !formData.value.privacy ? 'Please select privacy setting' : null,
+    image: !formData.value.image_file ? 'Please upload an image' : null
+  }
+})
+
+// Check if field has error
+const hasError = (field) => {
+  return !!fieldErrors.value[field]
+}
 
 // Handle category change - reset type when category changes
 const onCategoryChange = () => {
@@ -330,8 +430,14 @@ const handleFileUpload = async (e) => {
         const { detectColors } = await import('@/utils/color-detector')
         const colors = await detectColors(processedFile)
         if (colors && colors.primary) {
-          formData.value.color = colors.primary
-          console.log('🎨 ManualUploadForm: Detected color:', colors.primary, 'Secondary:', colors.secondary)
+          // Normalize detected color (grey -> gray)
+          const normalizedColor = normalizeColorValue(colors.primary)
+          if (isValidColor(normalizedColor)) {
+            formData.value.color = normalizedColor
+            console.log('🎨 ManualUploadForm: Detected color:', colors.primary, '-> normalized to:', normalizedColor, 'Secondary:', colors.secondary)
+          } else {
+            console.warn('⚠️ ManualUploadForm: Detected color', colors.primary, 'is not in valid colors list')
+          }
         }
       } catch (colorErr) {
         console.warn('⚠️ ManualUploadForm: Color detection failed:', colorErr)
@@ -417,11 +523,51 @@ const handleSubmit = async () => {
       ? (clothingTypeMap[formData.value.type.toLowerCase()] || formData.value.type)
       : null
     
+    // Validate and normalize color value
+    // Use combined list from color-detector and database valid colors
+    // Normalize grey to gray, and map color-detector colors to closest database color
+    let normalizedColor = null
+    if (formData.value.color) {
+      const normalized = normalizeColorValue(formData.value.color)
+      
+      // Check if color is valid (in database constraint)
+      if (databaseValidColors.includes(normalized)) {
+        normalizedColor = normalized
+      } else if (isValidColor(normalized)) {
+        // Color is from color-detector but not in database - map to closest database color
+        const colorMapping = {
+          'grey': 'gray', // Already normalized, but just in case
+          'charcoal': 'black',
+          'burgundy': 'maroon',
+          'coral': 'orange',
+          'peach': 'orange',
+          'salmon': 'pink',
+          'turquoise': 'teal',
+          'mint': 'green',
+          'lavender': 'purple',
+          'indigo': 'navy'
+        }
+        
+        // Try to find a mapping
+        if (colorMapping[normalized]) {
+          normalizedColor = colorMapping[normalized]
+          console.log('🎨 ManualUploadForm: Mapped color-detector color', normalized, 'to database color', normalizedColor)
+        } else {
+          // If no mapping found, set to null (database constraint)
+          console.warn('⚠️ ManualUploadForm: Color', normalized, 'is from color-detector but cannot be mapped to database color - will be set to null')
+          normalizedColor = null
+        }
+      } else {
+        console.warn('⚠️ ManualUploadForm: Invalid color value detected:', formData.value.color, '- will be set to null')
+        normalizedColor = null
+      }
+    }
+    
     const serviceData = {
       name: formData.value.name,
       category: formData.value.category,
       clothing_type: clothingType,
-      color: formData.value.color || null,
+      color: normalizedColor,
       brand: formData.value.brand || null,
       privacy: formData.value.privacy,
       image_file: formData.value.image_file, // Pass the file for Cloudinary upload

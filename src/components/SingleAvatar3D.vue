@@ -51,6 +51,10 @@ const props = defineProps({
   avatarUrl: {
     type: String,
     required: true
+  },
+  autoRotate: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -67,7 +71,7 @@ let autoRotateSpeed = 0.006
 
 // Animation state
 let isAnimating = false
-let isRotationPaused = false
+let isRotationPaused = true // Start paused, will be enabled when autoRotate prop is true
 let animationStartTime = 0
 let animationDuration = 2000 // 2 seconds
 let currentAnimationType = null
@@ -494,6 +498,16 @@ const handleResize = () => {
   camera.updateProjectionMatrix()
   renderer.setSize(width, height)
 }
+
+// Watch autoRotate prop to start/stop rotation
+watch(() => props.autoRotate, (shouldRotate) => {
+  if (avatar) {
+    isRotationPaused = !shouldRotate
+    if (shouldRotate && Math.abs(avatar.rotation.y) < 0.01) {
+      avatar.rotation.y = 0 // Reset to front when starting rotation
+    }
+  }
+})
 
 // Cleanup
 const cleanup = () => {

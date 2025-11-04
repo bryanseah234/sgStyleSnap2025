@@ -177,24 +177,21 @@ async function sendEmail(
 
 /**
  * Check if user should receive email notification
+ * @param supabase - Supabase client
+ * @param userId - Recipient user ID (the one receiving the email)
+ * @param notificationType - Type of notification
+ * @param senderHasEnoughFriends - Whether the sender has 5+ friends (required to send emails)
  */
 async function shouldSendEmail(
   supabase: any,
   userId: string,
-  notificationType: string
+  notificationType: string,
+  senderHasEnoughFriends: boolean = true
 ): Promise<boolean> {
   try {
-    // First, check if user has at least 5 friends
-    const { count: friendsCount, error: friendsError } = await supabase
-      .from('friends')
-      .select('id', { count: 'exact', head: true })
-      .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
-      .eq('status', 'accepted')
-
-    const friendsCountNum = friendsCount || 0
-    
-    // Disable email notifications for users with fewer than 5 friends
-    if (friendsCountNum < 5) {
+    // First, check if sender has 5+ friends (required to send email notifications)
+    // Recipients don't need 5 friends to receive emails
+    if (!senderHasEnoughFriends) {
       return false
     }
 
@@ -269,11 +266,24 @@ serve(async (req) => {
       )
     }
 
-    // Check if user should receive email
+    // Check if sender has 5+ friends (required to send email notifications)
+    let senderHasEnoughFriends = true
+    if (notificationData.actor_id) {
+      const { count: senderFriendsCount } = await supabase
+        .from('friends')
+        .select('id', { count: 'exact', head: true })
+        .or(`requester_id.eq.${notificationData.actor_id},receiver_id.eq.${notificationData.actor_id}`)
+        .eq('status', 'accepted')
+      
+      senderHasEnoughFriends = (senderFriendsCount || 0) >= 5
+    }
+    
+    // Check if recipient should receive email (preferences check only, no friend count requirement)
     const shouldSend = await shouldSendEmail(
       supabase,
       notificationData.recipient_id,
-      notificationData.type
+      notificationData.type,
+      senderHasEnoughFriends
     )
 
     if (!shouldSend) {

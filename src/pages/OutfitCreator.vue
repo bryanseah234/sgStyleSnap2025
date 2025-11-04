@@ -96,7 +96,7 @@
             <User class="w-5 h-5" />
             <span class="hidden sm:inline">
               <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
-              <span v-else>Model</span>
+              <span v-else>Try On</span>
             </span>
           </button>
           
@@ -218,7 +218,7 @@
               <User class="w-4 h-4" />
               <span class="text-xs">
                 <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
-                <span v-else>Model</span>
+                <span v-else>Try On</span>
               </span>
             </button>
             
@@ -277,7 +277,7 @@
       </div>
       
       <!-- Sub-route Navigation -->
-      <div v-if="currentSubRoute !== 'default'" class="mb-8">
+      <div v-if="currentSubRoute !== 'default' && currentSubRoute !== 'edit'" class="mb-8">
         <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <button
@@ -397,33 +397,40 @@
 
           <!-- Items Section -->
           <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-bold text-black dark:text-white">
-                {{ itemsSectionTitle }}
-              </h3>
-              <span class="text-sm px-2 py-1 rounded-full bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400">
-                {{ filteredItems.length }}
-              </span>
+            <!-- Loading State -->
+            <div v-if="loadingWardrobeItems" class="flex flex-col items-center justify-center py-24">
+              <div class="w-16 h-16 spinner-modern mb-4"></div>
             </div>
             
-            <!-- Category Filters -->
-            <div class="flex flex-wrap gap-2 mb-4">
-              <button
-                v-for="category in categoryOptions"
-                :key="category"
-                @click="activeCategory = category"
-                :class="`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                  activeCategory === category
-                    ? 'bg-black text-white dark:bg-white dark:text-black'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-800 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200'
-                }`"
-              >
-                {{ category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1) }}
-              </button>
-            </div>
+            <!-- Content (when loaded) -->
+            <template v-else>
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-black dark:text-white">
+                  {{ itemsSectionTitle }}
+                </h3>
+                <span class="text-sm px-2 py-1 rounded-full bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400">
+                  {{ filteredItems.length }}
+                </span>
+              </div>
+              
+              <!-- Category Filters -->
+              <div class="flex flex-wrap gap-2 mb-4">
+                <button
+                  v-for="category in categoryOptions"
+                  :key="category"
+                  @click="activeCategory = category"
+                  :class="`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    activeCategory === category
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-800 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200'
+                  }`"
+                >
+                  {{ category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1) }}
+                </button>
+              </div>
 
-            <!-- Items List -->
-            <div class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+              <!-- Items List -->
+              <div class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
               <div
                 v-for="item in filteredItems"
                 :key="item.id"
@@ -466,24 +473,25 @@
               </div>
             </div>
             
-            <!-- Empty State -->
-            <div v-if="filteredItems.length === 0" class="text-center py-12">
-              <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
-                <Shirt v-if="itemsSource === 'my-cabinet'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
-                <Users v-else-if="itemsSource === 'friends'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
-                <Sparkles v-else class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+              <!-- Empty State -->
+              <div v-if="filteredItems.length === 0" class="text-center py-12">
+                <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+                  <Shirt v-if="itemsSource === 'my-cabinet'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+                  <Users v-else-if="itemsSource === 'friends'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+                  <Sparkles v-else class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+                </div>
+                <p class="text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
+                  {{ itemsSource === 'my-cabinet' ? 'No items in your closet' : 
+                     itemsSource === 'friends' ? "No friend's items available" :
+                     'No AI suggestions available' }}
+                </p>
+                <p class="text-xs text-stone-500 dark:text-zinc-500">
+                  {{ itemsSource === 'my-cabinet' ? 'Add items to your closet to get started' : 
+                     itemsSource === 'friends' ? 'Connect with friends to access their items' :
+                     'AI suggestions are coming soon!' }}
+                </p>
               </div>
-              <p class="text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
-                {{ itemsSource === 'my-cabinet' ? 'No items in your closet' : 
-                   itemsSource === 'friends' ? "No friend's items available" :
-                   'No AI suggestions available' }}
-              </p>
-              <p class="text-xs text-stone-500 dark:text-zinc-500">
-                {{ itemsSource === 'my-cabinet' ? 'Add items to your closet to get started' : 
-                   itemsSource === 'friends' ? 'Connect with friends to access their items' :
-                   'AI suggestions are coming soon!' }}
-              </p>
-            </div>
+            </template>
           </div>
         </div>
 
@@ -521,11 +529,12 @@
               <div
                 v-for="item in canvasItems"
                 :key="item.id"
+                :title="`${item.name}${item.category ? ` - ${item.category.charAt(0).toUpperCase() + item.category.slice(1)}` : ''}`"
                 :style="{
                   position: 'absolute',
                   left: `${scalePosition(item.x, 'x')}px`,
                   top: `${scalePosition(item.y, 'y')}px`,
-                  zIndex: draggedItem === item.id ? 50 : Math.max(2, (item.z_index || 0)) + (selectedItemId === item.id ? 1000 : 0),
+                  zIndex: draggedItem === item.id ? 50 : Math.max(2, (item.z_index || 2)) + (selectedItemId === item.id ? 1000 : 0),
                   transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                   transformOrigin: 'center center',
                   transition: draggedItem === item.id ? 'none' : 'all duration-200'
@@ -657,9 +666,9 @@
                 </p>
               </div>
 
-              <!-- Top Center Buttons - Regenerate (suggested only) and Show on Model (personal & suggested) -->
+              <!-- Top Center Buttons - Regenerate (suggested only) and Show on Model (personal, suggested & edit) -->
               <div
-                v-if="currentSubRoute === 'personal' || currentSubRoute === 'suggested'"
+                v-if="currentSubRoute === 'personal' || currentSubRoute === 'suggested' || currentSubRoute === 'edit'"
                 class="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-none"
               >
                 <!-- Regenerate Button - Only for suggested route -->
@@ -711,7 +720,7 @@
                   <User class="w-5 h-5" />
                   <span class="hidden sm:inline">
                     <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
-                    <span v-else>Model</span>
+                    <span v-else>Try On</span>
                   </span>
                 </button>
               </div>
@@ -1036,7 +1045,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, reactive, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
@@ -1114,6 +1123,7 @@ const subRouteTitle = computed(() => {
 const itemsSource = ref('my-cabinet')
 const activeCategory = ref('all')
 const wardrobeItems = ref([])
+const loadingWardrobeItems = ref(false)
 const canvasItems = ref([])
 const selectedItemId = ref(null)
 const showGrid = ref(false)
@@ -1453,6 +1463,7 @@ watch(addFriendDialogOpen, (open, prev) => {
 
 const loadWardrobeItems = async () => {
   try {
+    loadingWardrobeItems.value = true
     console.log('OutfitCreator: Loading wardrobe items...')
     console.log('OutfitCreator: Current user:', currentUser.value)
     console.log('OutfitCreator: Items source:', itemsSource.value)
@@ -1506,6 +1517,8 @@ const loadWardrobeItems = async () => {
   } catch (error) {
     console.error('OutfitCreator: Error loading wardrobe items:', error)
     wardrobeItems.value = []
+  } finally {
+    loadingWardrobeItems.value = false
   }
 }
 
@@ -1532,9 +1545,14 @@ const loadExistingOutfit = async (outfitId) => {
     // Handle positions: if positions are > reference size, they were saved for a larger canvas
     // Normalize them to reference size for consistent scaling
     if (outfit.outfit_items && outfit.outfit_items.length > 0) {
+      // Wait for canvas container to be available to check actual bounds
+      await nextTick()
+      
       canvasItems.value = outfit.outfit_items.map((outfitItem, index) => {
         let x = outfitItem.x_position || 100
         let y = outfitItem.y_position || 100
+        const itemScale = outfitItem.scale || 1
+        const itemSize = 128 * itemScale // Item size in reference coordinates
         
         // If positions are larger than reference canvas, they were likely saved on a larger screen
         // Normalize them to reference size (assume they were saved on a canvas ~800px wide)
@@ -1547,13 +1565,45 @@ const loadExistingOutfit = async (outfitId) => {
           y = (y / assumedHeight) * REFERENCE_CANVAS_HEIGHT
         }
         
+        // Ensure items are within reference canvas bounds
+        x = Math.max(0, Math.min(x, REFERENCE_CANVAS_WIDTH - itemSize))
+        y = Math.max(0, Math.min(y, REFERENCE_CANVAS_HEIGHT - itemSize))
+        
+        // Check if item would be visible on current canvas size
+        // If canvas container is available, verify actual visibility
+        if (canvasContainer.value) {
+          const rect = canvasContainer.value.getBoundingClientRect()
+          const currentScaleX = rect.width / REFERENCE_CANVAS_WIDTH
+          const currentScaleY = rect.height / REFERENCE_CANVAS_HEIGHT
+          
+          // Calculate where item would actually render
+          const renderedX = x * currentScaleX
+          const renderedY = y * currentScaleY
+          const renderedSize = itemSize * Math.min(currentScaleX, currentScaleY)
+          
+          // If item would be off-screen, adjust to be visible
+          // Center items if they're too spread out for the smaller canvas
+          if (renderedX + renderedSize > rect.width || renderedY + renderedSize > rect.height) {
+            // Calculate a safe position that keeps items visible
+            // For mobile, we might want to compact items more
+            const maxX = normalizePosition(rect.width - renderedSize, 'x')
+            const maxY = normalizePosition(rect.height - renderedSize, 'y')
+            
+            // Clamp to visible bounds
+            x = Math.max(0, Math.min(x, maxX))
+            y = Math.max(0, Math.min(y, maxY))
+            
+            console.log(`OutfitCreator: Adjusted item ${index + 1} position for mobile view (${rect.width}x${rect.height})`)
+          }
+        }
+        
         return {
           ...outfitItem.clothing_item,
           originalId: outfitItem.clothing_item.id, // Store original ID
           id: `canvas-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
-          x: Math.min(x, REFERENCE_CANVAS_WIDTH - 128), // Ensure within bounds
-          y: Math.min(y, REFERENCE_CANVAS_HEIGHT - 128), // Ensure within bounds
-          scale: outfitItem.scale || 1,
+          x: x,
+          y: y,
+          scale: itemScale,
           rotation: outfitItem.rotation || 0,
           z_index: outfitItem.z_index || 0
         }
@@ -2827,13 +2877,21 @@ const addItemToCanvas = (item) => {
   const itemSize = 128
   const normalizedItemSize = normalizePosition(itemSize, 'x') // Use x scale as item is square
   
-  // Start position: center of canvas, but below button area
-  const BUTTON_AREA_HEIGHT = 80
-  const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
+  // Define button area exclusion zones
+  // Top area: 80px (for top-center buttons)
+  const TOP_BUTTON_AREA_HEIGHT = 80
+  const normalizedTopButtonArea = normalizePosition(TOP_BUTTON_AREA_HEIGHT, 'y')
+  
+  // Bottom area: 80px (for bottom-center toolbar)
+  const BOTTOM_BUTTON_AREA_HEIGHT = 80
+  const normalizedBottomButtonArea = normalizePosition(BOTTOM_BUTTON_AREA_HEIGHT, 'y')
+  
+  // Start position: center of canvas, but below top button area and above bottom button area
   const centerX = REFERENCE_CANVAS_WIDTH / 2
+  const maxYPosition = REFERENCE_CANVAS_HEIGHT - (normalizedItemSize) - normalizedBottomButtonArea
   const centerY = Math.max(
-    (REFERENCE_CANVAS_HEIGHT / 2),
-    normalizedButtonArea + 100 // Ensure below button area
+    normalizedTopButtonArea + 100, // Ensure below top button area
+    Math.min((REFERENCE_CANVAS_HEIGHT / 2), maxYPosition) // And above bottom button area
   )
   
   // Find a non-overlapping position (may reduce scale if needed)
@@ -2847,12 +2905,15 @@ const addItemToCanvas = (item) => {
   // Ensure new items start with z_index >= 2 (above grid)
   const baseZIndex = Math.max(2, canvasItems.value.length + 2)
   
+  // Calculate max Y position to avoid bottom button area
+  const maxYPositionForItem = REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale) - normalizedBottomButtonArea
+  
   const newItem = {
     ...item,
     originalId: item.id, // Store original clothing item ID
     id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
     x: Math.max(0, Math.min(position.x, REFERENCE_CANVAS_WIDTH - (normalizedItemSize * position.scale))),
-    y: Math.max(normalizedButtonArea, Math.min(position.y, REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale))),
+    y: Math.max(normalizedTopButtonArea, Math.min(position.y, maxYPositionForItem)),
     z_index: baseZIndex,
     rotation: 0,
     scale: position.scale // Use scaled size from findNonOverlappingPosition
@@ -2899,9 +2960,15 @@ const handleDrop = (event) => {
       normalizedDropY
     )
     
-    // Define button area exclusion zone (top 80px to prevent overlap with centered buttons)
-    const BUTTON_AREA_HEIGHT = 80
-    const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
+    // Define button area exclusion zones
+    // Top area: 80px (for top-center buttons)
+    const TOP_BUTTON_AREA_HEIGHT = 80
+    const normalizedTopButtonArea = normalizePosition(TOP_BUTTON_AREA_HEIGHT, 'y')
+    
+    // Bottom area: 80px (for bottom-center toolbar)
+    const BOTTOM_BUTTON_AREA_HEIGHT = 80
+    const normalizedBottomButtonArea = normalizePosition(BOTTOM_BUTTON_AREA_HEIGHT, 'y')
+    const maxYPosition = REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale) - normalizedBottomButtonArea
     
     // Ensure new items start with z_index >= 2 (above grid)
     const baseZIndex = Math.max(2, canvasItems.value.length + 2)
@@ -2911,7 +2978,7 @@ const handleDrop = (event) => {
       originalId: item.id, // Store original clothing item ID
       id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID (not UUID)
       x: Math.max(0, Math.min(position.x, REFERENCE_CANVAS_WIDTH - (normalizedItemSize * position.scale))),
-      y: Math.max(normalizedButtonArea, Math.min(position.y, REFERENCE_CANVAS_HEIGHT - (normalizedItemSize * position.scale))),
+      y: Math.max(normalizedTopButtonArea, Math.min(position.y, maxYPosition)),
       z_index: baseZIndex,
       rotation: 0,
       scale: position.scale
@@ -2952,17 +3019,28 @@ const handleMouseMove = (e) => {
     const itemSize = 128 * (item.scale || 1)
     const normalizedItemSize = normalizePosition(itemSize, 'x')
     
-    // Define button area exclusion zone (top 80px to prevent overlap with centered buttons)
-    const BUTTON_AREA_HEIGHT = 80
-    const normalizedButtonArea = normalizePosition(BUTTON_AREA_HEIGHT, 'y')
+    // Define button area exclusion zones
+    // Top area: 80px (for top-center buttons)
+    const TOP_BUTTON_AREA_HEIGHT = 80
+    const normalizedTopButtonArea = normalizePosition(TOP_BUTTON_AREA_HEIGHT, 'y')
+    
+    // Bottom area: 80px (for bottom-center toolbar)
+    const BOTTOM_BUTTON_AREA_HEIGHT = 80
+    const normalizedBottomButtonArea = normalizePosition(BOTTOM_BUTTON_AREA_HEIGHT, 'y')
+    const maxY = normalizePosition(rect.height - itemSize, 'y')
+    const minY = maxY - normalizedBottomButtonArea // Prevent items from going into bottom button area
     
     // Normalize positions to reference canvas size for consistent storage
-    // Ensure item doesn't overlap button area at top, and stays within bounds
     const normalizedX = normalizePosition(x, 'x')
     const normalizedY = normalizePosition(y, 'y')
     
+    // Constrain X: stay within canvas bounds
+    // Constrain Y: stay above top button area AND above bottom button area
     item.x = Math.max(0, Math.min(normalizedX, normalizePosition(rect.width - itemSize, 'x')))
-    item.y = Math.max(normalizedButtonArea, Math.min(normalizedY, normalizePosition(rect.height - itemSize, 'y')))
+    item.y = Math.max(
+      normalizedTopButtonArea, // Above top buttons
+      Math.min(normalizedY, minY) // Above bottom buttons
+    )
   }
 }
 
@@ -3016,80 +3094,78 @@ const rotateSelectedItem = (degrees) => {
 const moveSelectedItemForward = () => {
   if (!selectedItemId.value) return
   
-  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
-  if (!item) return
+  const itemIndex = canvasItems.value.findIndex(i => i.id === selectedItemId.value)
+  if (itemIndex === -1) return
+  
+  const item = canvasItems.value[itemIndex]
   
   // Ensure item has a z_index (normalize old items that might have 0 or undefined)
-  if (!item.z_index || item.z_index < 2) {
-    item.z_index = Math.max(2, canvasItems.value.length)
-  }
-  
-  // Get max z-index among all items (normalize all to ensure minimum of 2)
-  const normalizedItems = canvasItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
-  const maxZIndex = Math.max(...normalizedItems.map(i => i.normalizedZ), 2)
   const currentZIndex = Math.max(2, item.z_index || 2)
   
-  // If already at max, do nothing
-  if (currentZIndex >= maxZIndex) {
-    console.log('Item already at front')
-    return
-  }
+  // Get all items with their z-indexes normalized
+  const itemsWithZ = canvasItems.value.map((i, idx) => ({
+    ...i,
+    index: idx,
+    normalizedZ: Math.max(2, i.z_index || 2)
+  }))
   
   // Find all items with z-index greater than current
-  const itemsAbove = normalizedItems.filter(i => i.id !== item.id && i.normalizedZ > currentZIndex)
-  let swapItem = null
+  const itemsAbove = itemsWithZ.filter(i => i.id !== item.id && i.normalizedZ > currentZIndex)
   
   if (itemsAbove.length > 0) {
-    // Find the item with the smallest z-index above current
+    // Find the item with the smallest z-index above current (swap with it)
     const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
-    swapItem = canvasItems.value.find(i => i.id === itemsAbove.find(ai => ai.normalizedZ === minAboveZIndex)?.id)
+    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === minAboveZIndex)
     
-    if (swapItem) {
-      // Swap z-indexes
-      const tempZIndex = Math.max(2, swapItem.z_index || 2)
-      swapItem.z_index = currentZIndex
-      item.z_index = tempZIndex
-      console.log(`Swapped z-index: ${item.id} now ${item.z_index}, ${swapItem.id} now ${swapItem.z_index}`)
+    if (swapItemIndex !== -1) {
+      // Swap z-indexes by creating new array with updated items
+      canvasItems.value = canvasItems.value.map((i, idx) => {
+        if (idx === itemIndex) {
+          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
+        } else if (idx === swapItemIndex) {
+          return { ...i, z_index: currentZIndex }
+        }
+        return i
+      })
+      console.log(`Swapped z-index: ${item.id} now ${itemsWithZ[swapItemIndex].normalizedZ}, ${itemsWithZ[swapItemIndex].id} now ${currentZIndex}`)
     } else {
-      // Just increment
-      item.z_index = maxZIndex + 1
-      console.log(`Incremented z-index: ${item.id} now ${item.z_index}`)
+      // Fallback: just increment
+      const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
+      canvasItems.value = canvasItems.value.map((i, idx) => 
+        idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+      )
+      console.log(`Incremented z-index: ${item.id} now ${maxZIndex + 1}`)
     }
   } else {
     // No items above, move to front
-    item.z_index = maxZIndex + 1
-    console.log(`Moved to front: ${item.id} now ${item.z_index}`)
+    const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
+    canvasItems.value = canvasItems.value.map((i, idx) => 
+      idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+    )
+    console.log(`Moved to front: ${item.id} now ${maxZIndex + 1}`)
   }
   
-  // Force reactivity update by creating new array with updated items
-  const updatedItems = canvasItems.value.map(i => 
-    i.id === item.id ? { ...i, z_index: item.z_index } : i
-  )
-  if (swapItem) {
-    canvasItems.value = updatedItems.map(i => 
-      i.id === swapItem.id ? { ...i, z_index: swapItem.z_index } : i
-    )
-  } else {
-    canvasItems.value = updatedItems
-  }
   saveToHistory()
 }
 
 const moveSelectedItemBackward = () => {
   if (!selectedItemId.value) return
   
-  const item = canvasItems.value.find(i => i.id === selectedItemId.value)
-  if (!item) return
+  const itemIndex = canvasItems.value.findIndex(i => i.id === selectedItemId.value)
+  if (itemIndex === -1) return
+  
+  const item = canvasItems.value[itemIndex]
   
   // Ensure item has a z_index (normalize old items that might have 0 or undefined)
-  if (!item.z_index || item.z_index < 2) {
-    item.z_index = Math.max(2, canvasItems.value.length)
-  }
+  const currentZIndex = Math.max(2, item.z_index || 2)
   
   // Get min z-index among all items (normalize all to ensure minimum of 2)
-  const normalizedItems = canvasItems.value.map(i => ({ ...i, normalizedZ: Math.max(2, i.z_index || 2) }))
-  const minZIndex = Math.min(...normalizedItems.map(i => i.normalizedZ), 2)
-  const currentZIndex = Math.max(2, item.z_index || 2)
+  const itemsWithZ = canvasItems.value.map((i, idx) => ({
+    ...i,
+    index: idx,
+    normalizedZ: Math.max(2, i.z_index || 2)
+  }))
+  const minZIndex = Math.min(...itemsWithZ.map(i => i.normalizedZ), 2)
   
   // If already at min (2), do nothing
   if (currentZIndex <= minZIndex) {
@@ -3098,42 +3174,39 @@ const moveSelectedItemBackward = () => {
   }
   
   // Find all items with z-index less than current
-  const itemsBelow = normalizedItems.filter(i => i.id !== item.id && i.normalizedZ < currentZIndex)
-  let swapItem = null
+  const itemsBelow = itemsWithZ.filter(i => i.id !== item.id && i.normalizedZ < currentZIndex)
   
   if (itemsBelow.length > 0) {
-    // Find the item with the largest z-index below current
+    // Find the item with the largest z-index below current (swap with it)
     const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.normalizedZ))
-    swapItem = canvasItems.value.find(i => i.id === itemsBelow.find(bi => bi.normalizedZ === maxBelowZIndex)?.id)
+    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === maxBelowZIndex)
     
-    if (swapItem) {
-      // Swap z-indexes
-      const tempZIndex = Math.max(2, swapItem.z_index || 2)
-      swapItem.z_index = currentZIndex
-      item.z_index = tempZIndex
-      console.log(`Swapped z-index: ${item.id} now ${item.z_index}, ${swapItem.id} now ${swapItem.z_index}`)
+    if (swapItemIndex !== -1) {
+      // Swap z-indexes by creating new array with updated items
+      canvasItems.value = canvasItems.value.map((i, idx) => {
+        if (idx === itemIndex) {
+          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
+        } else if (idx === swapItemIndex) {
+          return { ...i, z_index: currentZIndex }
+        }
+        return i
+      })
+      console.log(`Swapped z-index: ${item.id} now ${itemsWithZ[swapItemIndex].normalizedZ}, ${itemsWithZ[swapItemIndex].id} now ${currentZIndex}`)
     } else {
-      // Just decrement (but ensure minimum of 2)
-      item.z_index = Math.max(2, currentZIndex - 1)
-      console.log(`Decremented z-index: ${item.id} now ${item.z_index}`)
+      // Fallback: just decrement (but ensure minimum of 2)
+      canvasItems.value = canvasItems.value.map((i, idx) => 
+        idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+      )
+      console.log(`Decremented z-index: ${item.id} now ${Math.max(2, currentZIndex - 1)}`)
     }
   } else {
     // No items below, just decrement (but ensure minimum of 2)
-    item.z_index = Math.max(2, currentZIndex - 1)
-    console.log(`Moved backward: ${item.id} now ${item.z_index}`)
+    canvasItems.value = canvasItems.value.map((i, idx) => 
+      idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+    )
+    console.log(`Moved backward: ${item.id} now ${Math.max(2, currentZIndex - 1)}`)
   }
   
-  // Force reactivity update by creating new array with updated items
-  const updatedItems = canvasItems.value.map(i => 
-    i.id === item.id ? { ...i, z_index: item.z_index } : i
-  )
-  if (swapItem) {
-    canvasItems.value = updatedItems.map(i => 
-      i.id === swapItem.id ? { ...i, z_index: swapItem.z_index } : i
-    )
-  } else {
-    canvasItems.value = updatedItems
-  }
   saveToHistory()
 }
 
@@ -3244,10 +3317,10 @@ const saveOwnOutfit = async () => {
             weather_condition: null,
           items: canvasItems.value.map(item => ({
             clothing_item_id: item.originalId || item.id, // Use stored original ID
-            // Positions are already normalized to reference canvas size
-            // If they were set on a different canvas size, normalize them
-            x_position: normalizePosition(item.x, 'x'),
-            y_position: normalizePosition(item.y, 'y'),
+            // Positions are already normalized to reference canvas size (REFERENCE_CANVAS_WIDTH/HEIGHT)
+            // They are stored in item.x and item.y as reference coordinates, not screen coordinates
+            x_position: item.x || 0,
+            y_position: item.y || 0,
             z_index: item.z_index || 1,
             rotation: item.rotation || 0,
             scale: item.scale || 1

@@ -132,7 +132,7 @@
                 Email Notifications
               </h3>
               
-              <div v-if="loadingPreferences" class="flex items-center justify-center py-8">
+              <div v-if="loadingPreferences || loadingStats" class="flex items-center justify-center py-8">
                 <div class="spinner-modern mb-4" />
               </div>
               
@@ -143,10 +143,10 @@
                     <p class="text-base font-medium text-stone-800 dark:text-zinc-200">Enable Email Notifications</p>
                     <p class="text-sm text-stone-600 dark:text-zinc-400 mt-1">
                       <span v-if="stats.friends < 5">
-                        Email notifications are disabled until you have 5 friends. You currently have {{ stats.friends }} friend{{ stats.friends !== 1 ? 's' : '' }}.
+                        You need 5 friends to enable sending email notifications. You currently have {{ stats.friends }} friend{{ stats.friends !== 1 ? 's' : '' }}. You can still receive emails from friends who have 5+ friends.
                       </span>
                       <span v-else>
-                        Master control for all email notifications
+                        Master control for all email notifications. You can send and receive email notifications.
                       </span>
                     </p>
                   </div>
@@ -184,7 +184,7 @@
                       @click="toggleNotificationType(type.key)"
                       :disabled="!preferences.email_enabled"
                       :class="`relative inline-flex h-6 w-11 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                        preferences.email_enabled && preferences[type.key]
+                        preferences.email_enabled === true && preferences[type.key] === true
                           ? 'bg-green-500'
                           : 'bg-gray-300 dark:bg-gray-500'
                       } ${
@@ -195,7 +195,7 @@
                     >
                       <span
                         :class="`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          preferences.email_enabled && preferences[type.key] 
+                          preferences.email_enabled === true && preferences[type.key] === true
                             ? 'translate-x-[22px]' 
                             : 'translate-x-0.5'
                         }`"
@@ -568,9 +568,9 @@ const loadNotificationPreferences = async () => {
  * Toggles the master email notification setting
  */
 const toggleMasterEmail = async () => {
-  // Prevent toggling if user has fewer than 5 friends
+  // Prevent toggling if user has fewer than 5 friends (required to send email notifications)
   if (stats.value.friends < 5) {
-    showError('Email notifications are disabled until you have 5 friends', 'Requirement Not Met')
+    showError('You need 5 friends to enable sending email notifications. You can still receive emails from friends who have 5+ friends.', 'Requirement Not Met')
     return
   }
   
@@ -734,10 +734,11 @@ onMounted(async () => {
   }
   
   // Load notification preferences
-  await loadNotificationPreferences()
-  
-  // Load user statistics
-  await loadStats()
+  // Load stats and preferences in parallel so friend count is available when spinner hides
+  await Promise.all([
+    loadStats(),
+    loadNotificationPreferences()
+  ])
   
   console.log('👤 Profile: Final user data:', user.value)
   console.log('👤 Profile: Avatar URL:', user.value?.avatar_url)

@@ -115,58 +115,107 @@
         </div>
       </div>
 
-      <!-- Filters (only show for default closet view) -->
+      <!-- Filters Section (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
-        <!-- Category Filters -->
-        <div class="flex flex-wrap gap-2">
-          <button
-            v-for="category in availableCategories"
-            :key="category"
-            @click="activeCategory = category"
-            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
-              activeCategory === category
-                ? 'bg-black text-white dark:bg-white dark:text-black'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
-          >
-            {{ getCategoryLabel(category) }}
-          </button>
+        <div :class="`rounded-2xl border p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+          <div class="flex items-center justify-between mb-4">
+            <!-- Favourites Button -->
+            <button
+              @click="showFavoritesOnly = !showFavoritesOnly"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center gap-2 ${
+                showFavoritesOnly
+                  ? 'bg-red-500 text-white dark:bg-red-600'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              }`"
+            >
+              <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+              Favourites
+            </button>
+            
+            <!-- Clear Filters Button -->
+            <button
+              v-if="hasActiveFilters"
+              @click="clearFilters"
+              :class="`text-sm font-medium transition-colors text-stone-600 hover:text-black dark:text-zinc-400 dark:hover:text-white flex items-center gap-1`"
+            >
+              <X class="w-4 h-4" />
+              Clear Filters
+            </button>
+          </div>
           
-          <!-- Favourites Button - Same size as other filter buttons -->
-          <button
-            @click="showFavoritesOnly = !showFavoritesOnly"
-            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
-              showFavoritesOnly
-                ? 'bg-red-500 text-white dark:bg-red-600'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            }`"
-          >
-            <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
-            Favourites
-          </button>
-        </div>
-      </div>
+          <!-- Search Bar -->
+          <div class="mb-4">
+            <div class="relative search-input-group">
+              <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
+              <input
+                ref="searchInputRef"
+                v-model="searchTerm"
+                type="text"
+                placeholder="Search your closet (name, brand, category, color)..."
+                :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
+                  dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
+                @input="handleSearch"
+                @focus="handleSearchFocus"
+                @blur="handleSearchBlur"
+              />
+              <!-- Raycast-style keyboard hint -->
+              <div class="keyboard-hint hidden md:block">
+                <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
+                <span>+</span>
+                <span class="keyboard-hint-key">K</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Filter Dropdowns -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Category Filter -->
+            <div>
+              <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
+                Category
+              </label>
+              <select
+                v-model="selectedCategory"
+                :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white`"
+              >
+                <option :value="null">All Categories</option>
+                <option v-for="category in availableCategoriesForDropdown" :key="category.value" :value="category.value">
+                  {{ category.label }}
+                </option>
+              </select>
+            </div>
 
-      <!-- Search Bar (only show for default closet view) -->
-      <div v-if="currentSubRoute === 'default'" class="mb-6">
-        <div class="relative search-input-group">
-          <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
-          <input
-            ref="searchInputRef"
-            v-model="searchTerm"
-            type="text"
-          placeholder="Search your closet (brand, type, category, color, tags)..."
-            :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
-              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
-            @input="handleSearch"
-            @focus="handleSearchFocus"
-            @blur="handleSearchBlur"
-          />
-          <!-- Raycast-style keyboard hint -->
-          <div class="keyboard-hint hidden md:block">
-            <span class="keyboard-hint-key">{{ isMac ? '⌘' : 'Ctrl' }}</span>
-            <span>+</span>
-            <span class="keyboard-hint-key">K</span>
+            <!-- Color Filter -->
+            <div>
+              <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
+                Color
+              </label>
+              <select
+                v-model="selectedColor"
+                :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white`"
+              >
+                <option :value="null">All Colors</option>
+                <option v-for="color in availableColors" :key="color" :value="color">
+                  {{ color.charAt(0).toUpperCase() + color.slice(1) }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Brand Filter -->
+            <div>
+              <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">
+                Brand
+              </label>
+              <select
+                v-model="selectedBrand"
+                :class="`w-full h-10 px-3 rounded-lg transition-colors bg-stone-50 border-stone-200 text-black border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white`"
+              >
+                <option :value="null">All Brands</option>
+                <option v-for="brand in availableBrands" :key="brand" :value="brand">
+                  {{ brand }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -232,7 +281,7 @@
           @keydown.enter.prevent="openItemDetails(item)"
           @keydown.space.prevent="openItemDetails(item)"
           class="group cursor-pointer transition-all duration-300 hover:scale-105 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-          v-memo="[item.id, item.name, item.image_url, item.is_favorite, activeCategory, searchTerm]"
+          v-memo="[item.id, item.name, item.image_url, item.is_favorite, selectedCategory, selectedColor, selectedBrand, searchTerm]"
         >
           <div class="aspect-square relative overflow-hidden">
             <img
@@ -333,7 +382,7 @@ import { useLiquidPress } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 // UI Components
-import { Plus, Heart, Shirt, Search, ChevronDown } from 'lucide-vue-next'
+import { Plus, Heart, Shirt, Search, ChevronDown, X } from 'lucide-vue-next'
 import UploadItemModal from '@/components/cabinet/UploadItemModal.vue'
 import ManualUploadForm from '@/components/cabinet/ManualUploadForm.vue'
 import CatalogueBrowser from '@/components/cabinet/CatalogueBrowser.vue'
@@ -382,41 +431,89 @@ const showUpload = ref(false)            // Upload modal visibility
 const showAddMenu = ref(false)           // Add item dropdown menu visibility
 const showItemDetails = ref(false)       // Item details modal visibility
 const selectedItem = ref(null)           // Currently selected item for details
-const activeCategory = ref('all')        // Currently active category filter
+const selectedCategory = ref(null)      // Selected category filter
+const selectedColor = ref(null)           // Selected color filter
+const selectedBrand = ref(null)          // Selected brand filter
 const showFavoritesOnly = ref(false)     // Favorites-only filter toggle
 const searchTerm = ref('')               // Search input value
 
 // Available clothing categories for filtering (computed from user's items)
-const availableCategories = computed(() => {
+/**
+ * Available categories for dropdown filter
+ */
+const availableCategoriesForDropdown = computed(() => {
   const raw = new Set(
     (items.value || [])
       .map(i => (i.category || '').toLowerCase())
       .filter(Boolean)
   )
   // Preserve a sensible order
-  const order = ['top', 'bottom', 'outerwear', 'shoes', 'hat']
+  const order = ['top', 'bottom', 'outerwear', 'shoes', 'accessory']
   const ordered = order.filter(cat => raw.has(cat))
   // Include any unexpected categories at the end
   const extras = Array.from(raw).filter(cat => !order.includes(cat))
-  return ['all', ...ordered, ...extras]
+  
+  const allCategories = [...ordered, ...extras]
+  
+  return allCategories.map(cat => {
+    const labels = {
+      'top': 'Tops',
+      'bottom': 'Bottoms',
+      'outerwear': 'Outerwear',
+      'shoes': 'Shoes',
+      'accessory': 'Accessories'
+    }
+    return {
+      value: cat,
+      label: labels[cat] || cat.charAt(0).toUpperCase() + cat.slice(1)
+    }
+  })
 })
 
 /**
- * Converts category key to display label
- * 
- * @param {string} category - Category key (e.g., 'top', 'bottom')
- * @returns {string} Display label (e.g., 'Tops', 'Bottoms')
+ * Available colors for dropdown filter
  */
-const getCategoryLabel = (category) => {
-  const labels = {
-    'all': 'All Items',
-    'top': 'Tops',
-    'bottom': 'Bottoms',
-    'outerwear': 'Outerwear',
-    'shoes': 'Shoes',
-    'hat': 'Accessories'
-  }
-  return labels[category] || category.charAt(0).toUpperCase() + category.slice(1)
+const availableColors = computed(() => {
+  const colors = new Set(
+    (items.value || [])
+      .map(i => i.color)
+      .filter(Boolean)
+  )
+  return Array.from(colors).sort()
+})
+
+/**
+ * Available brands for dropdown filter
+ */
+const availableBrands = computed(() => {
+  const brands = new Set(
+    (items.value || [])
+      .map(i => i.brand)
+      .filter(Boolean)
+  )
+  return Array.from(brands).sort()
+})
+
+/**
+ * Check if any filters are active
+ */
+const hasActiveFilters = computed(() => {
+  return selectedCategory.value !== null || 
+         selectedColor.value !== null || 
+         selectedBrand.value !== null || 
+         (searchTerm.value && searchTerm.value.trim().length > 0) ||
+         showFavoritesOnly.value
+})
+
+/**
+ * Clear all filters
+ */
+const clearFilters = () => {
+  selectedCategory.value = null
+  selectedColor.value = null
+  selectedBrand.value = null
+  searchTerm.value = ''
+  showFavoritesOnly.value = false
 }
 
 // Navigation functions for add item routes
@@ -439,24 +536,39 @@ const navigateToCatalogue = () => {
 }
 
 /**
- * Computed property that filters items based on search term, category, and favorites
+ * Computed property that filters items based on search term, category, color, brand, and favorites
  * 
  * Applies multiple filters in sequence:
- * 1. Search filter across name, brand, color, and category
- * 2. Category filter (if not 'all')
- * 3. Favorites filter (if enabled)
+ * 1. Category filter
+ * 2. Color filter
+ * 3. Brand filter
+ * 4. Search filter across name, brand, color, and category
+ * 5. Favorites filter (if enabled)
  * 
  * @returns {Array} Filtered array of clothing items
  */
 const filteredItems = computed(() => {
   let filtered = items.value
 
+  // Apply category filter
+  if (selectedCategory.value !== null) {
+    filtered = filtered.filter(item => item.category?.toLowerCase() === selectedCategory.value)
+  }
+
+  // Apply color filter
+  if (selectedColor.value !== null) {
+    filtered = filtered.filter(item => item.color?.toLowerCase() === selectedColor.value.toLowerCase())
+  }
+
+  // Apply brand filter
+  if (selectedBrand.value !== null) {
+    filtered = filtered.filter(item => item.brand?.toLowerCase() === selectedBrand.value.toLowerCase())
+  }
+
   // Apply search filter across multiple fields
-  if (searchTerm.value) {
-    const query = searchTerm.value.toLowerCase()
-    // Use faster filtering - only process up to 100 items for instant results
-    const maxFilter = 100
-    filtered = filtered.slice(0, maxFilter).filter(item => 
+  if (searchTerm.value && searchTerm.value.trim()) {
+    const query = searchTerm.value.toLowerCase().trim()
+    filtered = filtered.filter(item => 
         item.name?.toLowerCase().includes(query) ||
         item.brand?.toLowerCase().includes(query) ||
         item.type?.toLowerCase().includes(query) ||
@@ -472,25 +584,12 @@ const filteredItems = computed(() => {
     )
   }
 
-  // Apply category filter
-  if (activeCategory.value !== 'all') {
-    filtered = filtered.filter(item => item.category === activeCategory.value)
-  }
-
   // Apply favorites filter
   if (showFavoritesOnly.value) {
     filtered = filtered.filter(item => item.is_favorite)
   }
 
   return filtered
-})
-
-// Ensure activeCategory remains valid when items change
-watch(items, () => {
-  const cats = new Set(availableCategories.value)
-  if (!cats.has(activeCategory.value)) {
-    activeCategory.value = 'all'
-  }
 })
 
 const loadItems = async () => {

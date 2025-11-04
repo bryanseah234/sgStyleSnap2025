@@ -407,7 +407,8 @@ const isActiveRoute = (itemPath) => {
   return currentPath === itemPath || 
          (currentPath.startsWith('/outfits/add') && itemPath === '/outfits') || 
          (currentPath.startsWith('/outfits/edit') && itemPath === '/outfits') ||
-         (currentPath.startsWith('/closet/') && itemPath === '/closet')
+         (currentPath.startsWith('/closet/') && itemPath === '/closet') ||
+         (currentPath.startsWith('/friends') && itemPath === '/friends')
 }
 
 // Service instances for data prefetching

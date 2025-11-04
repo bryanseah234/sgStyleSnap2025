@@ -33,7 +33,7 @@
             <button @click="navigateToCreate('personal')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
               <User class="w-5 h-5" />
               <div>
-                <div class="font-medium">Personal creation</div>
+                <div class="font-medium">Personal Creation</div>
                 <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Create your own outfit combinations</div>
               </div>
             </button>
@@ -41,7 +41,7 @@
             <button @click="navigateToCreate('friend')" class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left hover:bg-stone-50 dark:hover:bg-zinc-800 text-black dark:text-white">
               <Users class="w-5 h-5" />
               <div>
-                <div class="font-medium">Friend creation</div>
+                <div class="font-medium">Friend Creation</div>
                 <div :class="`text-xs text-stone-500 dark:text-zinc-400`">Use items from friends' closets</div>
               </div>
             </button>
@@ -683,15 +683,37 @@ const getCreatedLocation = async (outfit) => {
         .single()
       
       if (!error && suggestion && suggestion.suggester) {
-        const friendName = suggestion.suggester.name || suggestion.suggester.username
-        createdLocation.value = `Created by ${friendName}`
-        return
+        const username = suggestion.suggester.username
+        if (username) {
+          createdLocation.value = `Created by @${username}`
+          return
+        }
       }
     } catch (error) {
       console.error('Outfits: Error fetching friend suggester info:', error)
     }
     
-    // Fallback if we can't find the suggester
+    // Fallback if we can't find the suggester - try to get username from outfit data
+    // Check if outfit has friend_suggester_id or similar field
+    if (outfit.friend_suggester_id) {
+      try {
+        const { supabase } = await import('@/lib/supabase')
+        const { data: friendUser, error: friendError } = await supabase
+          .from('users')
+          .select('username')
+          .eq('id', outfit.friend_suggester_id)
+          .single()
+        
+        if (!friendError && friendUser && friendUser.username) {
+          createdLocation.value = `Created by @${friendUser.username}`
+          return
+        }
+      } catch (error) {
+        console.error('Outfits: Error fetching friend username from outfit:', error)
+      }
+    }
+    
+    // Final fallback if we still can't find the username
     createdLocation.value = 'Created by friend'
     return
   }

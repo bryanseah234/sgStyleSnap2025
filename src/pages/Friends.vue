@@ -309,18 +309,24 @@
           @click.stop
         >
           <!-- Close Button -->
-          <button
-            @click="showAddFriendModal = false"
-            class="absolute top-4 right-4 p-2 rounded-lg transition-all shadow-lg
-                  bg-white border border-stone-300 text-stone-700
-                  hover:bg-stone-100 hover:text-black 
-                  dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 
-                  dark:hover:bg-zinc-700 dark:hover:text-white
-                  active:scale-95 z-50"
-            aria-label="Close dialog"
-          >
-            <X class="w-5 h-5" />
-          </button>
+          <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
+            <!-- ESC Key Hint (Desktop only) -->
+            <div v-if="isDesktop" class="keyboard-hint-modal">
+              <span class="keyboard-hint-key">ESC</span>
+            </div>
+            <button
+              @click="showAddFriendModal = false"
+              class="p-2 rounded-lg transition-all shadow-lg
+                    bg-white border border-stone-300 text-stone-700
+                    hover:bg-stone-100 hover:text-black 
+                    dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 
+                    dark:hover:bg-zinc-700 dark:hover:text-white
+                    active:scale-95"
+              aria-label="Close dialog"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
           
           <h3 class="text-xl font-bold mb-4 text-black dark:text-white pr-8">
             Add Your Friend
@@ -705,6 +711,13 @@ const { registerSearchInput } = useKeyboardShortcuts()
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
 
+// Desktop detection for ESC hint
+const isDesktop = ref(false)
+
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
+
 // Handle ESC key to close modal
 const handleEsc = (e) => {
   if (e.key === 'Escape' && showAddFriendModal.value) {
@@ -727,6 +740,10 @@ watch(showAddFriendModal, (isOpen) => {
 onMounted(() => {
   // Detect Mac OS
   isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+  
+  // Initialize desktop detection
+  isDesktop.value = window.innerWidth >= 1024
+  window.addEventListener('resize', handleResize)
   
   // Register search input for keyboard shortcuts
   if (searchInputRef.value) {
@@ -752,7 +769,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  // Clean up ESC key listener
+  // Clean up event listeners
+  window.removeEventListener('resize', handleResize)
   window.removeEventListener('keydown', handleEsc)
 })
 
