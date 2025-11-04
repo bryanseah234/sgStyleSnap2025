@@ -270,7 +270,7 @@
     <nav 
       v-if="!isLandingPage"
       ref="mobileNavRef"
-      class="md:hidden fixed bottom-4 left-0 right-0 z-50 px-4"
+      class="md:hidden fixed bottom-4 left-0 right-0 z-[1100] px-4"
       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
