@@ -5,9 +5,18 @@
       <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
         <!-- Image Upload - Left Side (smaller) -->
         <div class="w-full lg:w-2/5 flex-shrink-0">
-          <label :class="`text-base mb-3 block text-stone-700 dark:text-zinc-300`">
-            Item Image *
-          </label>
+          <div class="flex items-center justify-between mb-3">
+            <label :class="`text-base text-stone-700 dark:text-zinc-300`">
+              Item Image *
+            </label>
+            <button
+              v-if="previewUrl"
+              @click="clearImage"
+              :class="`p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors flex-shrink-0`"
+            >
+              <X class="w-4 h-4" />
+            </button>
+          </div>
           
           <div v-if="previewUrl" class="relative">
             <img
@@ -15,12 +24,6 @@
               alt="Preview"
               :class="`w-full h-56 lg:h-64 object-contain rounded-2xl bg-stone-100 dark:bg-zinc-800`"
             />
-            <button
-              @click="clearImage"
-              :class="`absolute top-2 right-2 sm:top-4 sm:right-4 p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors z-10`"
-            >
-              <X class="w-4 h-4" />
-            </button>
           </div>
           <label
             v-else
@@ -87,7 +90,7 @@
 
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
-              Color
+              Color *
             </label>
             <select
               v-model="formData.color"
@@ -95,7 +98,7 @@
               dark:bg-zinc-800 dark:border-zinc-700 dark:text-white
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
             >
-              <option value="">Select color (optional)</option>
+              <option value="">Select color</option>
               <option value="black">Black</option>
               <option value="white">White</option>
               <option value="gray">Gray</option>
@@ -133,7 +136,7 @@
 
           <div>
             <label :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
-              Type
+              Type *
             </label>
             <select
               v-model="formData.type"
@@ -245,7 +248,12 @@ const availableTypes = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return formData.value.name && formData.value.category && formData.value.privacy && formData.value.image_file
+  return formData.value.name && 
+         formData.value.category && 
+         formData.value.type && 
+         formData.value.color && 
+         formData.value.privacy && 
+         formData.value.image_file
 })
 
 // Handle category change - reset type when category changes

@@ -395,7 +395,7 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  display: inline-flex;
+  display: none; /* Hidden by default on mobile */
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
@@ -409,6 +409,13 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   -webkit-user-select: none;
   user-select: none;
   transition: all 0.2s ease;
+}
+
+/* Show keyboard hint on desktop (md breakpoint and up) */
+@media (min-width: 768px) {
+  .keyboard-hint {
+    display: inline-flex;
+  }
 }
 
 .dark .keyboard-hint {

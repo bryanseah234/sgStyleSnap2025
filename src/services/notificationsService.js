@@ -66,6 +66,26 @@ export class NotificationsService {
     }
   }
 
+  async markAsUnread(notificationId) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .update({ is_read: false, read_at: null })
+        .eq('id', notificationId)
+        .eq('recipient_id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      handleSupabaseError(error, 'mark notification as unread')
+    }
+  }
+
   async markAllAsRead() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()

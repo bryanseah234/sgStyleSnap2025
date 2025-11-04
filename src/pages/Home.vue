@@ -40,14 +40,14 @@
           Welcome Back{{ userName }}
         </h1>
         <button
-          class="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-black text-white hover:bg-zinc-800 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed w-[160px] min-w-[160px] max-w-[160px] flex-shrink-0 self-start md:self-auto"
+          class="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-gray-300 dark:text-black dark:hover:bg-gray-400 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed w-[160px] min-w-[160px] max-w-[160px] flex-shrink-0 self-start md:self-auto"
           @click="showNotificationsModal = true"
           :disabled="loadingAll || loadingNotifications"
           :aria-disabled="(loadingAll || loadingNotifications) ? 'true' : 'false'"
           title="View notifications"
         >
           <div class="relative flex-shrink-0">
-            <Bell class="w-5 h-5" />
+            <Bell class="w-5 h-5 dark:text-black" />
             <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold text-white bg-red-500">
               {{ unreadCount }}
             </span>
@@ -142,26 +142,45 @@
           <div
             v-for="notification in notifications"
             :key="notification.id"
-            @click="handleNotificationClick(notification)"
-            :class="`p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.01] ${
+            class="notification-item relative overflow-hidden"
+            :class="`rounded-xl transition-all duration-200 ${
               notification.is_read
                 ? 'bg-stone-50 border border-stone-200 dark:bg-zinc-800/50 dark:border-zinc-800'
                 : 'bg-stone-100 border border-stone-300 dark:bg-zinc-800 dark:border-zinc-700'
             }`"
+            :style="{ transform: `translateX(${notification.swipeOffset || 0}px)` }"
+            @touchstart="handleTouchStart($event, notification)"
+            @touchmove="handleTouchMove($event, notification)"
+            @touchend="handleTouchEnd($event, notification)"
+            @click="handleNotificationClick(notification)"
           >
-            <div class="flex items-center gap-4">
-              <div class="p-2 rounded-lg flex-shrink-0 bg-white dark:bg-zinc-700">
-                <component :is="getNotificationIcon(notification.type)" class="w-5 h-5" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <h4 class="font-semibold text-sm text-foreground">{{ getNotificationTitle(notification) }}</h4>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="text-xs text-stone-500 dark:text-zinc-500">{{ formatTimeAgo(notification.created_at) }}</span>
-                    <div v-if="!notification.is_read" class="w-2 h-2 rounded-full bg-blue-500" title="Unread" />
-                  </div>
+            <!-- Swipe Action Indicator (Left side when swiping left) -->
+            <div 
+              v-if="notification.swipeOffset && notification.swipeOffset < -30"
+              class="absolute inset-y-0 left-0 flex items-center justify-center px-4 transition-opacity duration-200 bg-blue-500 text-white"
+              style="width: 120px;"
+            >
+              <span class="text-sm font-medium">
+                {{ notification.is_read ? 'Mark Unread' : 'Mark Read' }}
+              </span>
+            </div>
+            
+            <!-- Notification Content -->
+            <div class="p-4 cursor-pointer hover:scale-[1.01]" :class="{ 'pointer-events-none': Math.abs(notification.swipeOffset || 0) > 10 }">
+              <div class="flex items-center gap-4">
+                <div class="p-2 rounded-lg flex-shrink-0 bg-white dark:bg-zinc-700">
+                  <component :is="getNotificationIcon(notification.type)" class="w-5 h-5" />
                 </div>
-                <p class="text-xs mt-1 truncate text-stone-600 dark:text-zinc-400">{{ getNotificationMessage(notification) }}</p>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <h4 class="font-semibold text-sm text-foreground">{{ getNotificationTitle(notification) }}</h4>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <span class="text-xs text-stone-500 dark:text-zinc-500">{{ formatTimeAgo(notification.created_at) }}</span>
+                      <div v-if="!notification.is_read" class="w-2 h-2 rounded-full bg-blue-500" title="Unread" />
+                    </div>
+                  </div>
+                  <p class="text-xs mt-1 truncate text-stone-600 dark:text-zinc-400">{{ getNotificationMessage(notification) }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -452,6 +471,11 @@ const loadNotifications = async () => {
   }
 }
 
+// Swipe gesture state
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+const isSwiping = ref(false)
+
 /**
  * Marks a notification as read
  */
@@ -465,6 +489,91 @@ const markNotificationAsRead = async (notification) => {
   } catch (error) {
     console.error('❌ Home: Error marking notification as read:', error)
   }
+}
+
+/**
+ * Marks a notification as unread
+ */
+const markNotificationAsUnread = async (notification) => {
+  if (!notification.is_read) return
+  
+  try {
+    await notificationsService.markAsUnread(notification.id)
+    notification.is_read = false
+    unreadCount.value += 1
+  } catch (error) {
+    console.error('❌ Home: Error marking notification as unread:', error)
+  }
+}
+
+/**
+ * Toggles notification read/unread status
+ */
+const toggleNotificationReadStatus = async (notification) => {
+  if (notification.is_read) {
+    await markNotificationAsUnread(notification)
+  } else {
+    await markNotificationAsRead(notification)
+  }
+}
+
+/**
+ * Handles touch start for swipe gesture
+ */
+const handleTouchStart = (event, notification) => {
+  const touch = event.touches[0]
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+  isSwiping.value = false
+  if (!notification.swipeOffset) {
+    notification.swipeOffset = 0
+  }
+}
+
+/**
+ * Handles touch move for swipe gesture
+ */
+const handleTouchMove = (event, notification) => {
+  if (!touchStartX.value) return
+  
+  const touch = event.touches[0]
+  const deltaX = touch.clientX - touchStartX.value
+  const deltaY = touch.clientY - touchStartY.value
+  
+  // Only allow horizontal swipes (left swipe)
+  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+    isSwiping.value = true
+    event.preventDefault()
+    
+    // Only allow swiping left (negative deltaX)
+    if (deltaX < 0) {
+      notification.swipeOffset = Math.max(deltaX, -120) // Max swipe distance
+    }
+  }
+}
+
+/**
+ * Handles touch end for swipe gesture
+ */
+const handleTouchEnd = (event, notification) => {
+  if (!isSwiping.value) {
+    touchStartX.value = 0
+    touchStartY.value = 0
+    return
+  }
+  
+  const swipeThreshold = 60 // Minimum swipe distance to trigger action
+  
+  if (notification.swipeOffset <= -swipeThreshold) {
+    // Swipe left completed - toggle read/unread
+    toggleNotificationReadStatus(notification)
+  }
+  
+  // Reset swipe offset
+  notification.swipeOffset = 0
+  touchStartX.value = 0
+  touchStartY.value = 0
+  isSwiping.value = false
 }
 
 /**
@@ -486,6 +595,11 @@ const markAllAsRead = async () => {
  * Handles notification click - navigates to appropriate page and marks as read
  */
 const handleNotificationClick = async (notification) => {
+  // Don't trigger click if user was swiping
+  if (isSwiping.value) {
+    return
+  }
+  
   // Mark as read first
   await markNotificationAsRead(notification)
   

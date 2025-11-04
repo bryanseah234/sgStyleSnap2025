@@ -275,7 +275,7 @@
       @mouseenter="mobileNavHoverIn"
       @mouseleave="mobileNavHoverOut"
     >
-      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-200/30 dark:border-zinc-700/30 shadow-lg max-w-md mx-auto w-full">
+      <div class="flex items-center justify-around py-2.5 px-4 rounded-full bg-gray-100/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-zinc-700/50 shadow-lg max-w-md mx-auto w-full">
         <router-link
           v-for="item in navigationItems"
           :key="item.name"
@@ -285,14 +285,14 @@
           <div class="flex flex-col items-center justify-center py-2">
             <div :class="`p-2.5 rounded-2xl transition-all duration-200 ${
               isActiveRoute(item.path)
-                ? 'bg-black dark:bg-white scale-110 -translate-y-0.5'
+                ? 'bg-black dark:bg-white/20 scale-110 -translate-y-0.5'
                 : 'bg-transparent'
             }`">
               <component 
                 :is="item.icon" 
                 :class="`w-5 h-5 transition-colors duration-200 ${
                   isActiveRoute(item.path)
-                    ? 'text-white dark:text-black'
+                    ? 'text-white dark:text-white'
                     : 'text-gray-900 dark:text-white'
                 }`"
               />
@@ -300,7 +300,7 @@
             
             <span :class="`text-xs font-medium transition-all duration-200 ${
               isActiveRoute(item.path)
-                ? 'text-gray-900 dark:text-black opacity-100 scale-100'
+                ? 'text-gray-900 dark:text-white opacity-100 scale-100'
                 : 'text-gray-900 dark:text-white opacity-60 dark:opacity-80 scale-90'
             }`">
               {{ item.name }}

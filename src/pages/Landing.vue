@@ -573,7 +573,7 @@
     
     <!-- CTA Section with Rounded Bottom -->
     <section 
-      class="cta-card-section text-gray-900 relative py-4 sm:py-6"
+      class="cta-card-section text-gray-900 relative py-12 sm:py-16"
       style="background-color: rgb(245, 246, 247);"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2 sm:space-y-3 relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
@@ -1738,25 +1738,10 @@ onMounted(() => {
   const elementsToObserve = document.querySelectorAll('.scroll-hidden')
   elementsToObserve.forEach((el) => observer.observe(el))
   
-  // Load catalogue items for demo, then normalize heights
-  loadCatalogueItems().then(() => {
-    // Normalize section heights after catalogue loads
-    normalizeSectionHeights()
-  }).catch(() => {
-    // Normalize even if catalogue load fails
-    normalizeSectionHeights()
-  })
+  // Load catalogue items for demo
+  loadCatalogueItems()
   
-  // Also normalize after initial mount (fallback)
-  setTimeout(() => {
-    normalizeSectionHeights()
-  }, 500)
-  
-  // Also normalize on window resize
-  const handleResize = () => {
-    normalizeSectionHeights()
-  }
-  window.addEventListener('resize', handleResize, { passive: true })
+  // No longer normalizing section heights - sections use natural heights with sufficient padding
   
   // Add keyboard navigation for carousel
   window.addEventListener('keydown', handleKeyboardNavigation)
@@ -1766,7 +1751,6 @@ onMounted(() => {
     // Ensure body scroll is re-enabled when component is unmounted
     enableBodyScroll()
     window.removeEventListener('scroll', handleScroll)
-    window.removeEventListener('resize', handleResize)
     window.removeEventListener('keydown', handleKeyboardNavigation)
     observer.disconnect()
   })
@@ -2021,11 +2005,10 @@ const setScrollY = (value) => {
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
-/* Landing sections will have dynamic heights set by JS to match tallest section */
+/* Landing sections use natural heights with sufficient padding */
 .landing-section,
 .cta-card-section {
-  /* Height will be set dynamically by normalizeSectionHeights() */
-  /* Sections now use 10% viewport height padding on top and bottom (10vh each) */
+  /* Sections use natural content height with appropriate padding */
 }
 
 .landing-page h1,

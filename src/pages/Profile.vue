@@ -405,6 +405,7 @@ const preferences = ref({
 })
 
 // Notification types configuration
+// Only show notification options for features that are actually implemented in the UI
 const notificationTypes = [
   {
     key: 'friend_requests',
@@ -416,21 +417,22 @@ const notificationTypes = [
     label: 'Friend Request Accepted',
     description: 'When someone accepts your friend request'
   },
-  {
-    key: 'outfit_likes',
-    label: 'Outfit Likes',
-    description: 'When someone likes your outfit'
-  },
-  {
-    key: 'item_likes',
-    label: 'Item Likes',
-    description: 'When someone likes your closet item'
-  },
-  {
-    key: 'outfit_comments',
-    label: 'Outfit Comments',
-    description: 'When someone comments on your outfit'
-  },
+  // Outfit likes, item likes, and comments are not yet implemented in UI
+  // {
+  //   key: 'outfit_likes',
+  //   label: 'Outfit Likes',
+  //   description: 'When someone likes your outfit'
+  // },
+  // {
+  //   key: 'item_likes',
+  //   label: 'Item Likes',
+  //   description: 'When someone likes your closet item'
+  // },
+  // {
+  //   key: 'outfit_comments',
+  //   label: 'Outfit Comments',
+  //   description: 'When someone comments on your outfit'
+  // },
   {
     key: 'friend_outfit_suggestions',
     label: 'Outfit Suggestions',
