@@ -117,10 +117,10 @@
       <!-- Filters Section (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
         <div :class="`rounded-2xl border p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-          <!-- Search Bar and Filter Buttons Row -->
+          <!-- Search Bar and Clear Filters Row -->
           <div class="flex items-center gap-3 mb-4">
-            <!-- Search Bar (70%) -->
-            <div class="flex-[0.7] relative search-input-group">
+            <!-- Search Bar (85%) -->
+            <div class="flex-[0.85] relative search-input-group">
               <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
               <input
                 ref="searchInputRef"
@@ -141,21 +141,6 @@
               </div>
             </div>
             
-            <!-- Favourites Button (15%) -->
-            <div class="flex-[0.15]">
-              <button
-                @click="showFavoritesOnly = !showFavoritesOnly"
-                :class="`w-full px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
-                  showFavoritesOnly
-                    ? 'bg-red-500 text-white dark:bg-red-600'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-                }`"
-              >
-                <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
-                <span class="hidden sm:inline">Favourites</span>
-              </button>
-            </div>
-            
             <!-- Clear Filters Button (15%) -->
             <div class="flex-[0.15]">
               <button
@@ -171,6 +156,21 @@
                 <span class="hidden sm:inline">Clear Filters</span>
               </button>
             </div>
+          </div>
+          
+          <!-- Favourites Button Row (separate) -->
+          <div class="mb-4">
+            <button
+              @click="showFavoritesOnly = !showFavoritesOnly"
+              :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm flex items-center gap-2 ${
+                showFavoritesOnly
+                  ? 'bg-red-500 text-white dark:bg-red-600'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              }`"
+            >
+              <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
+              Favourites
+            </button>
           </div>
           
           <!-- Filter Dropdowns -->
