@@ -193,7 +193,7 @@
                     v-show="frontFacingCardIndex === idx"
                     class="flex flex-col items-center justify-center pt-2 pb-1"
                   >
-                    <span class="text-xs text-gray-500 mt-0.5">Hover over me to find out more</span>
+                    <span class="text-xs text-gray-500 mt-0.5 text-center">Hover over me to find out more</span>
                   </div>
                 </div>
                 
