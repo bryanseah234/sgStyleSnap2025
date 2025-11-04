@@ -76,11 +76,11 @@
       <!-- Success State - Show Generated Image -->
       <div v-else-if="generatedImageUrl" class="flex-1 flex gap-4 overflow-hidden min-h-0">
         <!-- Left: Image (50%) -->
-        <div class="w-[50%] flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700">
+        <div class="w-[50%] flex-shrink-0 rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 flex items-center justify-center p-4">
           <img
             :src="generatedImageUrl"
             alt="Virtual try-on result"
-            class="w-full h-full object-contain max-h-full max-w-full rounded-xl"
+            class="max-w-full max-h-full w-auto h-auto object-contain rounded-xl"
           />
         </div>
 
