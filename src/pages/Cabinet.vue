@@ -1,46 +1,9 @@
 <template>
   <!-- Main container with theme-aware background -->
-  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden flex flex-col relative">
+  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     
-    <!-- Page Header Section - Positioned at top -->
-    <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="max-w-6xl mx-auto w-full flex-shrink-0 mb-0 relative z-10">
-      <!-- Header with title and navigation buttons -->
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
-        <!-- Dynamic page title and navigation buttons row -->
-        <div class="flex-1 min-w-0 w-full md:w-auto flex items-center justify-between gap-4 flex-wrap">
-          <h1 class="text-4xl font-bold text-foreground break-words text-left">
-            {{ subRouteTitle }}
-          </h1>
-          
-          <!-- Manual Upload and Browse Catalogue Buttons -->
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <button
-              @click="$router.push('/closet/add/manual')"
-              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
-                currentSubRoute === 'manual'
-                  ? 'bg-black text-white dark:bg-white dark:text-black'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-              }`"
-            >
-              <Plus class="w-4 h-4" />
-              Manual Upload
-            </button>
-            <button
-              @click="$router.push('/closet/add/catalogue')"
-              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
-                currentSubRoute === 'catalogue'
-                  ? 'bg-black text-white dark:bg-white dark:text-black'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-              }`"
-            >
-              <Shirt class="w-4 h-4" />
-              Browse Catalogue
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div v-else class="max-w-6xl mx-auto flex-shrink-0 mb-8">
+    <!-- Page Header Section -->
+    <div class="max-w-6xl mx-auto mb-8">
       <!-- Header with title, filter buttons, and add button -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title and navigation buttons row -->
@@ -131,47 +94,40 @@
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Sub-route Content - Vertically Centered -->
-    <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex-1 flex items-center justify-center">
-      <div class="w-full max-w-6xl mx-auto px-4">
-        <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
-        <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
-      </div>
-    </div>
-    
-    <!-- Friend Section -->
-      <div v-if="currentSubRoute === 'friend'" class="max-w-6xl mx-auto mb-8 flex-shrink-0">
-        <div class="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
-          <div class="flex items-center gap-3 mb-4">
-            <Heart class="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">@{{ route.params.username }}'s Closet</h3>
-          </div>
-          <p class="text-purple-700 dark:text-purple-300 mb-4">
-            Browse @{{ route.params.username }}'s clothing collection. Get inspired by their style and see what they're wearing.
-          </p>
-          <div class="text-center py-8">
-            <Heart class="w-16 h-16 text-purple-400 dark:text-purple-500 mx-auto mb-4" />
-            <p class="text-purple-600 dark:text-purple-400">Loading @{{ route.params.username }}'s closet...</p>
-          </div>
+      
+      <!-- Sub-route Content -->
+      <ManualUploadForm v-if="currentSubRoute === 'manual'" @item-added="handleItemAdded" />
+      
+      <CatalogueBrowser v-if="currentSubRoute === 'catalogue'" @item-added="handleItemAdded" />
+      
+      <div v-if="currentSubRoute === 'friend'" class="mb-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
+        <div class="flex items-center gap-3 mb-4">
+          <Heart class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <h3 class="text-xl font-semibold text-purple-900 dark:text-purple-100">@{{ route.params.username }}'s Closet</h3>
+        </div>
+        <p class="text-purple-700 dark:text-purple-300 mb-4">
+          Browse @{{ route.params.username }}'s clothing collection. Get inspired by their style and see what they're wearing.
+        </p>
+        <div class="text-center py-8">
+          <Heart class="w-16 h-16 text-purple-400 dark:text-purple-500 mx-auto mb-4" />
+          <p class="text-purple-600 dark:text-purple-400">Loading @{{ route.params.username }}'s closet...</p>
         </div>
       </div>
 
       <!-- Filters Section (only show for default closet view) -->
-      <div v-if="currentSubRoute === 'default'" class="max-w-6xl mx-auto mb-6 flex-shrink-0">
-        <div :class="`rounded-2xl border bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+      <div v-if="currentSubRoute === 'default'" class="mb-6">
+        <div :class="`rounded-2xl border p-4 md:p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
           <!-- Filter Toggle Button (Mobile Only - At Top) -->
           <button
             @click="filtersExpanded = !filtersExpanded"
-            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-t-2xl bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
+            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
           >
             <span class="font-medium text-sm">Filters</span>
             <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
           </button>
 
           <!-- Desktop: Search Bar, Favourites, and Clear Filters Row -->
-          <div class="hidden md:flex items-center gap-3 mb-2 p-4 md:p-6 pb-2">
+          <div class="hidden md:flex items-center gap-3 mb-4">
             <!-- Search Bar -->
             <div class="flex-1 relative search-input-group">
               <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
@@ -227,7 +183,7 @@
           </div>
 
           <!-- Mobile: Search Bar with Heart Button Inline -->
-          <div class="md:hidden mb-3 p-4 pb-0">
+          <div class="md:hidden mb-3">
             <div class="flex items-center gap-2">
               <!-- Search Bar (full width minus heart button) -->
               <div class="flex-1 relative search-input-group">
@@ -274,7 +230,7 @@
           </div>
           
           <!-- Filter Dropdowns -->
-          <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0 p-4 md:p-6 pt-0 md:pt-2 pb-4 md:pb-6`">
+          <div :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${filtersExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100 md:mt-0'} md:!mt-0`">
             <!-- Category Filter -->
             <div>
               <label :class="`text-sm mb-2 block text-stone-600 dark:text-zinc-400`">

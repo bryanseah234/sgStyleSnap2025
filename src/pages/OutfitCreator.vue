@@ -571,7 +571,7 @@
                   position: 'absolute',
                   left: `${scalePosition(item.x, 'x')}px`,
                   top: `${scalePosition(item.y, 'y')}px`,
-                  zIndex: draggedItem === item.id ? 50 : (selectedItemId === item.id ? (Math.max(2, (item.z_index || 2)) * 10 + 100) : Math.max(2, (item.z_index || 2)) * 10),
+                  zIndex: draggedItem === item.id ? 50 : Math.max(2, (item.z_index || 2)) + (selectedItemId === item.id ? 1000 : 0),
                   transform: `rotate(${item.rotation || 0}deg) scale(${item.scale || 1})`,
                   transformOrigin: 'center center',
                   transition: draggedItem === item.id ? 'none' : 'all duration-200'
@@ -3451,19 +3451,12 @@ const rotateSelectedItem = (degrees) => {
 }
 
 const moveSelectedItemForward = () => {
-  if (!selectedItemId.value) {
-    console.log('moveSelectedItemForward: No item selected')
-    return
-  }
+  if (!selectedItemId.value) return
   
   const itemIndex = canvasItems.value.findIndex(i => i.id === selectedItemId.value)
-  if (itemIndex === -1) {
-    console.log('moveSelectedItemForward: Item not found')
-    return
-  }
+  if (itemIndex === -1) return
   
   const item = canvasItems.value[itemIndex]
-  console.log('moveSelectedItemForward: Starting', { itemId: item.id, currentZIndex: item.z_index })
   
   // Ensure item has a z_index (normalize old items that might have 0 or undefined)
   const currentZIndex = Math.max(2, item.z_index || 2)
@@ -3478,8 +3471,6 @@ const moveSelectedItemForward = () => {
   // Find all items with z-index greater than current
   const itemsAbove = itemsWithZ.filter(i => i.id !== item.id && i.normalizedZ > currentZIndex)
   
-  console.log('moveSelectedItemForward: Items above', itemsAbove.map(i => ({ id: i.id, z: i.normalizedZ })))
-  
   if (itemsAbove.length > 0) {
     // Find the item with the smallest z-index above current (swap with it)
     const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
@@ -3487,54 +3478,42 @@ const moveSelectedItemForward = () => {
     
     if (swapItem) {
       // Swap z-indexes by creating new array with updated items
-      const newItems = canvasItems.value.map((i, idx) => {
+      canvasItems.value = canvasItems.value.map((i, idx) => {
         if (idx === itemIndex) {
           return { ...i, z_index: swapItem.normalizedZ }
         } else if (idx === swapItem.index) {
           return { ...i, z_index: currentZIndex }
         }
-        return { ...i } // Create new object to ensure reactivity
+        return i
       })
-      canvasItems.value = newItems
       console.log(`Swapped z-index: ${item.id} now ${swapItem.normalizedZ}, ${swapItem.id} now ${currentZIndex}`)
     } else {
       // Fallback: just increment
       const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
-      const newItems = canvasItems.value.map((i, idx) => 
-        idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : { ...i }
+      canvasItems.value = canvasItems.value.map((i, idx) => 
+        idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
       )
-      canvasItems.value = newItems
       console.log(`Incremented z-index: ${item.id} now ${maxZIndex + 1}`)
     }
   } else {
     // No items above, move to front
     const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
-    const newItems = canvasItems.value.map((i, idx) => 
-      idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : { ...i }
+    canvasItems.value = canvasItems.value.map((i, idx) => 
+      idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
     )
-    canvasItems.value = newItems
     console.log(`Moved to front: ${item.id} now ${maxZIndex + 1}`)
   }
-  
-  console.log('moveSelectedItemForward: Final z-indexes', canvasItems.value.map(i => ({ id: i.id, z: i.z_index })))
   
   saveToHistory()
 }
 
 const moveSelectedItemBackward = () => {
-  if (!selectedItemId.value) {
-    console.log('moveSelectedItemBackward: No item selected')
-    return
-  }
+  if (!selectedItemId.value) return
   
   const itemIndex = canvasItems.value.findIndex(i => i.id === selectedItemId.value)
-  if (itemIndex === -1) {
-    console.log('moveSelectedItemBackward: Item not found')
-    return
-  }
+  if (itemIndex === -1) return
   
   const item = canvasItems.value[itemIndex]
-  console.log('moveSelectedItemBackward: Starting', { itemId: item.id, currentZIndex: item.z_index })
   
   // Ensure item has a z_index (normalize old items that might have 0 or undefined)
   const currentZIndex = Math.max(2, item.z_index || 2)
@@ -3556,8 +3535,6 @@ const moveSelectedItemBackward = () => {
   // Find all items with z-index less than current
   const itemsBelow = itemsWithZ.filter(i => i.id !== item.id && i.normalizedZ < currentZIndex)
   
-  console.log('moveSelectedItemBackward: Items below', itemsBelow.map(i => ({ id: i.id, z: i.normalizedZ })))
-  
   if (itemsBelow.length > 0) {
     // Find the item with the largest z-index below current (swap with it)
     const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.normalizedZ))
@@ -3565,34 +3542,29 @@ const moveSelectedItemBackward = () => {
     
     if (swapItem) {
       // Swap z-indexes by creating new array with updated items
-      const newItems = canvasItems.value.map((i, idx) => {
+      canvasItems.value = canvasItems.value.map((i, idx) => {
         if (idx === itemIndex) {
           return { ...i, z_index: swapItem.normalizedZ }
         } else if (idx === swapItem.index) {
           return { ...i, z_index: currentZIndex }
         }
-        return { ...i } // Create new object to ensure reactivity
+        return i
       })
-      canvasItems.value = newItems
       console.log(`Swapped z-index: ${item.id} now ${swapItem.normalizedZ}, ${swapItem.id} now ${currentZIndex}`)
     } else {
       // Fallback: just decrement (but ensure minimum of 2)
-      const newItems = canvasItems.value.map((i, idx) => 
-        idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : { ...i }
+      canvasItems.value = canvasItems.value.map((i, idx) => 
+        idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
       )
-      canvasItems.value = newItems
       console.log(`Decremented z-index: ${item.id} now ${Math.max(2, currentZIndex - 1)}`)
     }
   } else {
     // No items below, just decrement (but ensure minimum of 2)
-    const newItems = canvasItems.value.map((i, idx) => 
-      idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : { ...i }
+    canvasItems.value = canvasItems.value.map((i, idx) => 
+      idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
     )
-    canvasItems.value = newItems
     console.log(`Moved backward: ${item.id} now ${Math.max(2, currentZIndex - 1)}`)
   }
-  
-  console.log('moveSelectedItemBackward: Final z-indexes', canvasItems.value.map(i => ({ id: i.id, z: i.z_index })))
   
   saveToHistory()
 }
