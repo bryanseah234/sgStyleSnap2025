@@ -319,15 +319,27 @@ const toggleFavorite = async () => {
       heartBtn.classList.add('heart-pulse')
       setTimeout(() => heartBtn.classList.remove('heart-pulse'), 300)
     }
+    
+    // Optimistic UI update - update immediately for instant feedback
+    const previousValue = props.item.is_favorite
+    props.item.is_favorite = !props.item.is_favorite
+    
+    // Sync with backend asynchronously
     const result = await clothesService.toggleFavorite(props.item.id)
+    
     if (result.success) {
+      // Ensure UI matches server response (in case of any mismatch)
       props.item.is_favorite = result.data.is_favorite
       console.log('Toggled favorite for item:', props.item.name, 'New status:', props.item.is_favorite)
       emit('item-updated')
     } else {
+      // Revert optimistic update on failure
+      props.item.is_favorite = previousValue
       showError('Failed to update favorite status')
     }
   } catch (error) {
+    // Revert optimistic update on error
+    props.item.is_favorite = previousValue
     showError('An error occurred while updating favorite status')
     console.error('Error toggling favorite:', error)
   }

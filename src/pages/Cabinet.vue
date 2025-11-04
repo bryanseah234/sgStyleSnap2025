@@ -709,16 +709,25 @@ const toggleFavorite = async (item) => {
       }
     }
     
-    // Toggle the favorite status using the real Supabase service
+    // Optimistic UI update - update immediately for instant feedback
+    const previousValue = item.is_favorite
+    item.is_favorite = !item.is_favorite
+    
+    // Sync with backend asynchronously
     const result = await clothesService.toggleFavorite(item.id)
     
     if (result.success) {
+      // Ensure UI matches server response (in case of any mismatch)
       item.is_favorite = result.data.is_favorite
       console.log('Cabinet: Toggled favorite for item:', item.name, 'New status:', item.is_favorite)
     } else {
+      // Revert optimistic update on failure
+      item.is_favorite = previousValue
       console.error('Cabinet: Failed to toggle favorite:', result.error)
     }
   } catch (error) {
+    // Revert optimistic update on error
+    item.is_favorite = previousValue
     console.error('Cabinet: Error toggling favorite:', error)
   }
 }
