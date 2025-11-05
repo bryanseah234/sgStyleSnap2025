@@ -51,7 +51,7 @@
 
       <!-- Filters -->
       <div class="mb-6">
-        <!-- Filter Toggle Button (Mobile Only) -->
+        <!-- Filter Toggle Button (Mobile Only) - Only for advanced filters, not category buttons -->
         <button
           @click="filtersExpanded = !filtersExpanded"
           class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
@@ -60,25 +60,24 @@
           <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
         </button>
         
-        <!-- Filter Buttons -->
-        <div :class="`flex flex-wrap gap-2 transition-all duration-300 ${filtersExpanded ? 'max-h-[100px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden md:max-h-none md:opacity-100'} md:!opacity-100`">
-          <!-- Category Filters (All Outfits, Suggestions) -->
+        <!-- Category Filters (All Outfits, Suggestions) - Always visible, side-by-side on mobile -->
+        <div class="flex gap-2 mb-4">
           <button
             v-for="filter in categoryFilters"
             :key="filter.value"
             @click="activeFilter = filter.value"
-            :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base ${
+            :class="`flex-1 md:flex-none px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center justify-center gap-2 ${
               activeFilter === filter.value
                 ? 'bg-black text-white dark:bg-white dark:text-black'
                 : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
-        >
-          {{ filter.label }}
-          <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 
-                class="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white">
-            {{ suggestionStats.pending }}
-          </span>
-        </button>
+          >
+            {{ filter.label }}
+            <span v-if="filter.value === 'suggestions' && suggestionStats.pending > 0" 
+                  class="px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white">
+              {{ suggestionStats.pending }}
+            </span>
+          </button>
         </div>
       </div>
     </div>

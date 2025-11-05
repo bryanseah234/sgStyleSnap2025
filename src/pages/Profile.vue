@@ -43,9 +43,6 @@
                     </span>
                   </div>
                 </div>
-                <p class="text-sm text-stone-600 dark:text-zinc-400">
-                  Profile photo from Google account
-                </p>
               </div>
 
               <!-- Read-only User Info -->

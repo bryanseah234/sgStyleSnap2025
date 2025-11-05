@@ -1,5 +1,12 @@
 <template>
-  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
+  <!-- Full-screen loading for friend outfit creation -->
+  <div v-if="currentSubRoute === 'friend' && (loadingWardrobeItems || loadingFriendProfile)" class="min-h-screen flex flex-col items-center justify-center bg-background">
+    <div class="w-16 h-16 spinner-modern mb-4"></div>
+    <p class="text-base text-stone-600 dark:text-zinc-400">Loading...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div v-else class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
@@ -123,9 +130,9 @@
           <!-- Show Outfit on Model button -->
           <button
             @click="showVirtualTryOn"
-            :disabled="!canShowVirtualTryOn || (generatingTryOn && !virtualTryOnImageUrl)"
+            :disabled="!canShowVirtualTryOn"
             :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
-              canShowVirtualTryOn && (!generatingTryOn || virtualTryOnImageUrl)
+              canShowVirtualTryOn
                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                 : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
             }`"
@@ -247,9 +254,9 @@
             <!-- Show Outfit on Model button -->
             <button
               @click="showVirtualTryOn"
-              :disabled="!canShowVirtualTryOn || (generatingTryOn && !virtualTryOnImageUrl)"
+              :disabled="!canShowVirtualTryOn"
               :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 gradient-button-shimmer ${
-                canShowVirtualTryOn && (!generatingTryOn || virtualTryOnImageUrl)
+                canShowVirtualTryOn
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
                   : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
               }`"
@@ -775,9 +782,9 @@
                 <!-- Model Button -->
                 <button
                   @click="showVirtualTryOn"
-                  :disabled="!canShowVirtualTryOn || (generatingTryOn && !virtualTryOnImageUrl)"
+                  :disabled="!canShowVirtualTryOn"
                   :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
-                    canShowVirtualTryOn && (!generatingTryOn || virtualTryOnImageUrl)
+                    canShowVirtualTryOn
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
@@ -4124,12 +4131,27 @@ const showVirtualTryOn = async () => {
       return
     }
     
+    // If generation is in progress, just reopen the modal to show progress
+    if (generatingTryOn.value) {
+      console.log('🎨 OutfitCreator: Reopening modal during generation')
+      showVirtualTryOnModal.value = true
+      return
+    }
+    
     // If items don't match or no result exists, generate new try-on
     if (virtualTryOnImageUrl.value && !virtualTryOnMatchesCanvas.value) {
       console.log('🎨 OutfitCreator: Canvas items changed, generating new try-on')
       virtualTryOnImageUrl.value = null
       virtualTryOnItemIds.value = null
+      virtualTryOnError.value = null
     }
+    
+    // Clear any previous errors
+    virtualTryOnError.value = null
+    
+    // Open modal immediately to show loading animation
+    showVirtualTryOnModal.value = true
+    generatingTryOn.value = true
     
     // Get top and bottom items from canvas
     const topItem = canvasItems.value.find(item => {

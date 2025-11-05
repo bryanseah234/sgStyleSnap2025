@@ -18,9 +18,9 @@
     <canvas 
       ref="canvasRef" 
       class="avatar-canvas w-full h-full"
-      @click="handleClick"
-      @mouseenter="isHovering = true"
-      @mouseleave="isHovering = false"
+      @click="!isMobile && handleClick()"
+      @mouseenter="!isMobile && (isHovering = true)"
+      @mouseleave="!isMobile && (isHovering = false)"
     ></canvas>
   </div>
 </template>
@@ -64,10 +64,16 @@ const canvasRef = ref(null)
 const isLoading = ref(true)
 const isHovering = ref(false)
 
+// Detect mobile device
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+}
+
 // Three.js variables
 let scene, camera, renderer, loader, avatar = null
 let animationFrameId = null
-let autoRotateSpeed = 0.006
+let autoRotateSpeed = 0.012 // Increased rotation speed (doubled from 0.006)
 
 // Animation state
 let isAnimating = false
@@ -470,8 +476,8 @@ const startAnimationLoop = () => {
         }
         avatar.rotation.y += autoRotateSpeed
         
-        // Faster rotation on hover
-        if (isHovering.value) {
+        // Faster rotation on hover (desktop only)
+        if (!isMobile.value && isHovering.value) {
           avatar.rotation.y += autoRotateSpeed * 2
         }
       }
@@ -649,6 +655,9 @@ watch(() => props.avatarUrl, async (newUrl) => {
 })
 
 onMounted(async () => {
+  checkMobile() // Check if mobile on mount
+  window.addEventListener('resize', checkMobile) // Re-check on resize
+  
   await initThreeJS()
   window.addEventListener('resize', handleResize)
   
@@ -658,6 +667,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('resize', checkMobile)
   
   // Cleanup visibility observer
   if (containerRef.value && containerRef.value._visibilityObserver) {
@@ -699,10 +709,15 @@ onUnmounted(() => {
   height: 100%;
   min-height: 100%;
   display: block;
+  filter: brightness(1.1);
 }
 
-.avatar-canvas {
-  filter: brightness(1.1);
+/* Disable pointer cursor and interaction on mobile */
+@media (max-width: 767px) {
+  .avatar-canvas {
+    cursor: default;
+    pointer-events: none;
+  }
 }
 
 .spinner-modern {

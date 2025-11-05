@@ -8,7 +8,7 @@
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title and navigation buttons row -->
         <div class="flex-1 min-w-0 w-full md:w-auto">
-          <h1 class="text-4xl font-bold text-foreground break-words text-left">
+          <h1 class="text-4xl font-bold text-foreground break-words text-center md:text-left">
             {{ subRouteTitle }}
           </h1>
           

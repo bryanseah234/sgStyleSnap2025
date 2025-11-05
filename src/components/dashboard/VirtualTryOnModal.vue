@@ -1,11 +1,11 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm overflow-y-auto overflow-x-hidden"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1200] p-4 backdrop-blur-sm overflow-y-auto overflow-x-hidden"
     @click="$emit('close')"
   >
     <div
-      class="w-full max-w-4xl rounded-2xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
+      class="w-full max-w-4xl rounded-2xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-2xl md:max-h-[90vh] max-h-[calc(100vh-9rem)] mb-20 md:mb-4 overflow-hidden flex flex-col"
       @click.stop
       style="overflow-x: hidden; max-width: 100%;"
     >
@@ -102,7 +102,7 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex flex-col gap-3 flex-shrink-0 min-w-0 pb-2">
+          <div class="flex flex-col gap-3 flex-shrink-0 min-w-0 pb-2 md:pb-2">
             <button
               @click="downloadImage"
               class="w-full px-6 py-3 rounded-2xl font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-500 text-white hover:bg-purple-600"

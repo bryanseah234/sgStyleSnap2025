@@ -1,10 +1,11 @@
 <template>
   <!-- Apple-style Splash Screen -->
-  <div 
-    v-show="showSplash" 
-    class="splash-screen"
-    :class="{ 'splash-transitioning': isTransitioning }"
-  >
+  <Transition name="splash-fade">
+    <div 
+      v-if="showSplash" 
+      class="splash-screen"
+      :class="{ 'splash-transitioning': isTransitioning, 'splash-fading': splashFading }"
+    >
     <h1 
       class="splash-title" 
       :class="{ 'splash-title-moving': isTransitioning, 'splash-title-frozen': animationComplete }"
@@ -172,7 +173,7 @@
                 :class="{ 'flipped': feature.flipped }"
               >
                 <!-- Front Face -->
-                <div class="carousel-card-face carousel-card-front bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
+                <div class="carousel-card-face carousel-card-front bg-white rounded-xl border-2 border-gray-300 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
                   <div class="flex flex-col items-center justify-center text-center space-y-2 sm:space-y-2.5 flex-1" :class="{ 'mb-0': frontFacingCardIndex === idx, 'mb-auto': frontFacingCardIndex !== idx }">
                     <component 
                       :is="feature.icon" 
@@ -191,14 +192,17 @@
                         v-show="frontFacingCardIndex === idx"
                         class="flex flex-col items-center justify-center"
                       >
-                        <span class="text-xs text-gray-500 mt-0.5 text-center">Hover over me to find out more</span>
+                        <span class="text-xs text-gray-500 mt-0.5 text-center">
+                          <span class="hidden md:inline">Hover over me to find out more</span>
+                          <span class="md:hidden">Tap me to find out more</span>
+                        </span>
                       </div>
                     </Transition>
                   </div>
                 </div>
                 
                 <!-- Back Face -->
-                <div class="carousel-card-face carousel-card-back bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
+                <div class="carousel-card-face carousel-card-back bg-white rounded-xl border-2 border-gray-300 p-4 sm:p-5 shadow-lg min-h-full flex flex-col">
                   <div class="flex flex-col items-center text-center space-y-3 sm:space-y-4 flex-1 justify-center">
                     <p class="text-xs sm:text-sm text-gray-900 leading-relaxed" style="color: #000000 !important;">
                       {{ feature.expandedDescription }}
@@ -594,7 +598,7 @@
     <section 
       class="cta-card-section bg-gray-50 text-gray-900 relative py-16 sm:py-20 md:py-28"
     >
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
+      <div class="max-w-[1200px] mx-auto px-6 sm:px-8 lg:px-12 text-center flex flex-col items-center relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="cta-title text-gray-900 mb-3 sm:mb-5">
           Ready to Transform<span class="md:hidden"><br /></span>Your Closet?
         </h2>
@@ -752,6 +756,11 @@ const canvasRef = ref(null)
 const isPageLoaded = ref(false)
 const displayedTitle = ref('')
 const showTypewriterCursor = ref(true)
+// Detect mobile device - skip splash on mobile
+const isMobileDevice = ref(false)
+const checkMobileDevice = () => {
+  isMobileDevice.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+}
 const showSplash = ref(true)
 const showTerms = ref(false)
 const showPrivacy = ref(false)
@@ -777,6 +786,7 @@ const heroSectionRef = ref(null)
 const heroImageLoaded = ref(false)
 let scrollRafId = null
 let footerDebounceTimer = null
+const splashFading = ref(false)
 
 // Lazy load hero background image
 const heroBackgroundStyle = computed(() => {
@@ -1724,12 +1734,13 @@ const typewriterEffect = () => {
             setTimeout(() => {
               animationComplete.value = true
               
-              // Show hero title and hide splash
+              // Show hero title and fade out splash background
               setTimeout(() => {
                 showHeroTitle.value = true
+                splashFading.value = true
                 setTimeout(() => {
                   showSplash.value = false
-                }, 200)
+                }, 800) // Fade duration
               }, 50)
             }, 1000) // Shorter transition duration for mobile
           })
@@ -1754,14 +1765,17 @@ const skipAnimation = () => {
     // Set transition state
     isTransitioning.value = true
     
-    // After a brief moment, hide splash and show page
+    // After a brief moment, fade out splash and show page
     setTimeout(() => {
       animationComplete.value = true
       enableBodyScroll()
       
       setTimeout(() => {
-        showSplash.value = false
         showHeroTitle.value = true
+        splashFading.value = true
+        setTimeout(() => {
+          showSplash.value = false
+        }, 800) // Fade duration
       }, 100)
     }, 200)
   })
@@ -1843,12 +1857,22 @@ onMounted(async () => {
   // Set page as loaded immediately to prevent flicker
   isPageLoaded.value = true
   
-  // Randomly select an avatar
+  // Check if mobile device
+  checkMobileDevice()
+  
+  // Randomly select an avatar (both mobile and desktop)
   const randomIndex = Math.floor(Math.random() * avatarUrls.length)
   selectedAvatarUrl.value = avatarUrls[randomIndex]
   
-  // Start typewriter effect
-  typewriterEffect()
+  // Skip splash screen on mobile - show landing page directly
+  if (isMobileDevice.value) {
+    showSplash.value = false
+    showHeroTitle.value = true
+    enableBodyScroll()
+  } else {
+    // Start typewriter effect (desktop only)
+    typewriterEffect()
+  }
   
   // Throttle scroll handler with RAF
   const handleScroll = () => {
@@ -2067,8 +2091,28 @@ const setScrollY = (value) => {
 }
 
 .splash-transitioning {
-  background: transparent;
   pointer-events: none;
+}
+
+.splash-fading {
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+
+/* Transition fade animations */
+.splash-fade-enter-active,
+.splash-fade-leave-active {
+  transition: opacity 0.8s ease-out;
+}
+
+.splash-fade-enter-from,
+.splash-fade-leave-to {
+  opacity: 0;
+}
+
+.splash-fade-enter-to,
+.splash-fade-leave-from {
+  opacity: 1;
 }
 
 .splash-title {
@@ -2294,9 +2338,13 @@ const setScrollY = (value) => {
   letter-spacing: normal;
   line-height: 1.2;
   text-align: center;
-  /* Keep title on single line */
-  white-space: nowrap;
+  /* Allow text to wrap naturally */
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
 }
 
 @media (min-width: 768px) {
