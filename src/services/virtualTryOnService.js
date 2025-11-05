@@ -73,9 +73,11 @@ export class VirtualTryOnService {
       
       // Create a descriptive prompt based on the analyzed images
       const prompt = this.createTryOnPrompt(clothingDescription, topImageBase64, bottomImageBase64)
+      const negativePrompt = this.getNegativePrompt()
 
       safeLog('📤 Generating image with Imagen 4.0...')
       safeLog('📝 Prompt:', prompt.substring(0, 200) + '...')
+      safeLog('📝 Negative Prompt:', negativePrompt.substring(0, 100) + '...')
 
       let imageBytes
       
@@ -91,6 +93,7 @@ export class VirtualTryOnService {
             type: 'generateImages',
             model: this.model,
             prompt: prompt,
+            negativePrompt: negativePrompt,
             topImageBase64: topImageBase64, // Send actual clothing images
             bottomImageBase64: bottomImageBase64, // Send actual clothing images
             config: {
@@ -152,6 +155,7 @@ export class VirtualTryOnService {
         const requestConfig = {
           model: this.model,
           prompt: prompt,
+          negativePrompt: negativePrompt,
           config: {
             numberOfImages: 1, // Always return only one image
             aspectRatio: "3:4",
@@ -244,13 +248,23 @@ export class VirtualTryOnService {
         }
 
         // Use REST API directly to avoid SDK method issues
-        const prompt = "Describe these clothing items in detail. Focus on: " +
-          "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) " +
-          "2. Colors and patterns " +
-          "3. Style and fit (e.g., casual, formal, loose, fitted) " +
-          "4. Notable features (e.g., buttons, pockets, collar type, sleeves) " +
-          "5. Material appearance (if visible). " +
-          "Provide a concise but detailed description that would help generate an image of someone wearing these items."
+        const prompt = `Analyze the provided clothing images and produce a detailed description optimized for image generation.
+
+Include:
+
+1. Garment type (e.g., cropped denim jacket, pleated skirt)
+
+2. Dominant colors with precise tone (approximate hex if clear)
+
+3. Patterns or graphics (e.g., floral print, striped, solid)
+
+4. Fit and silhouette (e.g., oversized, slim fit, A-line)
+
+5. Material or texture (e.g., denim, satin, linen)
+
+6. Distinct design features (e.g., front buttons, cuffs, collar, waistband)
+
+Return a single concise paragraph written for text-to-image generation. Avoid subjective or emotional language; focus strictly on visual and structural details.`
         
         const parts = []
         
@@ -329,42 +343,40 @@ export class VirtualTryOnService {
    * @returns {string} Descriptive prompt for Imagen
    */
   createTryOnPrompt(clothingDescription, topImageBase64, bottomImageBase64) {
-    let prompt = "A professional high-quality fashion photograph of a person modeling a complete outfit. "
-    
-    // Emphasize that we're using SPECIFIC clothing items from reference images
-    prompt += "IMPORTANT: The person must be wearing the EXACT clothing items shown in the provided reference images. "
-    
-    if (clothingDescription) {
-      prompt += `The person is wearing the following EXACT clothing items from the reference images: ${clothingDescription}. `
-      prompt += "The generated image must show these SPECIFIC clothing items - match the exact colors, patterns, style, and details from the reference images. "
-      prompt += "DO NOT generate random clothing - use only the garments shown in the reference images. "
-    } else {
-      // Fallback if vision analysis fails - still emphasize using reference images
-      if (topImageBase64 && bottomImageBase64) {
-        prompt += "The person must be wearing the EXACT top garment and EXACT bottom garment shown in the provided reference images. "
-        prompt += "Match the precise appearance, colors, patterns, and details from the reference top and bottom images. "
-        prompt += "The top and bottom should be worn together exactly as shown in the reference images. "
-        prompt += "DO NOT create random clothing - replicate the exact garments from the reference images. "
-      } else if (topImageBase64) {
-        prompt += "The person must be wearing the EXACT top garment shown in the reference image. "
-        prompt += "Match the precise appearance, colors, patterns, and details from the reference image. "
-        prompt += "Show the exact top being worn properly on a fashion model - replicate the reference garment exactly. "
-      } else if (bottomImageBase64) {
-        prompt += "The person must be wearing the EXACT bottom garment shown in the reference image. "
-        prompt += "Match the precise appearance, colors, patterns, and details from the reference image. "
-        prompt += "Show the exact bottom being worn properly on a fashion model - replicate the reference garment exactly. "
-      }
-    }
+    let prompt = `Full-body professional fashion photograph of a single model standing in a relaxed stance against a clean white studio background (3:4 portrait).
 
-    prompt += "The clothing items should match the reference images exactly - same colors, same patterns, same style details. "
-    prompt += "The clothing should be clearly visible, well-fitted, and naturally worn. "
-    prompt += "Full body visible in a natural standing pose. "
-    prompt += "Professional fashion photography style with studio lighting, clean neutral background. "
-    prompt += "High resolution, sharp focus, modern aesthetic. "
-    prompt += "The person should look confident and stylish. "
-    prompt += "CRITICAL: The generated clothing must be identical to the reference images provided - match every detail."
+The model is wearing the following garments from the reference images: ${clothingDescription || 'the exact clothing items shown in the provided reference images'}.
+
+Each garment must precisely match the reference — identical color, pattern, material texture, and fit.
+
+Lighting style: softbox setup with even illumination and soft shadows.
+
+Pose type: relaxed, natural stance with balanced posture.
+
+Background: pure white, free of clutter or environmental elements.
+
+Emphasize garment accuracy, stitching detail, and fabric realism.
+
+Style: modern commercial lookbook, sharp focus, high resolution.
+
+Expression: confident and neutral.
+
+Camera: 50mm lens equivalent, straight-on framing, full outfit visible head-to-toe.
+
+Jewelry is allowed if it complements the outfit naturally.
+
+Do not modify or invent any clothing elements. Reproduce only what appears in the reference images.`
 
     return prompt
+  }
+
+  /**
+   * Get the negative prompt for image generation
+   * 
+   * @returns {string} Negative prompt to avoid unwanted elements
+   */
+  getNegativePrompt() {
+    return `cluttered background, furniture, props, reflections, duplicate people, outdoor scenery, distorted body parts, text overlays, watermarks, heavy shadows, random lighting changes, alternate colors or patterns, added logos, or visual artifacts.`
   }
 
   /**

@@ -16,7 +16,7 @@
   @version 1.0.0
 -->
 <template>
-  <div class="min-h-screen p-4 md:p-12 bg-background max-w-full overflow-x-hidden">
+  <div class="min-h-0 md:min-h-screen p-4 md:p-12 pb-4 md:pb-12 bg-background max-w-full overflow-x-hidden">
     <!-- Right-side Loading Spinner: keeps nav and top content visible -->
     <!-- Debug info -->
     <div v-if="!user" class="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
@@ -25,12 +25,12 @@
     </div>
     
     <!-- Loading Bar Animation -->
-    <div class="h-1 w-full mb-12 rounded-full bg-gradient-to-r from-stone-300 via-black to-stone-300 dark:from-zinc-700 dark:via-white dark:to-zinc-700" />
+    <div class="h-1 w-full mb-8 md:mb-12 rounded-full bg-gradient-to-r from-stone-300 via-black to-stone-300 dark:from-zinc-700 dark:via-white dark:to-zinc-700" />
 
     <!-- Hero Section with Liquid Glass Reveal -->
     <div 
       ref="heroRef"
-      class="max-w-6xl mx-auto mb-12 liquid-reveal relative"
+      class="max-w-6xl mx-auto mb-8 md:mb-12 liquid-reveal relative"
       v-scroll-animate.up
       @mousemove="handleHeroMouseMove"
       @mouseleave="handleHeroMouseLeave"
@@ -69,7 +69,7 @@
       </div>
       <div v-else>
         <!-- Mobile-only themed cards -->
-        <div class="md:hidden grid grid-cols-3 gap-4 mb-16">
+        <div class="md:hidden grid grid-cols-3 gap-4 mb-8 md:mb-16">
           <router-link
             v-for="(stat, index) in stats"
             :key="stat.label"
@@ -94,7 +94,7 @@
         </div>
 
         <!-- Desktop cards (hidden on mobile) -->
-        <div class="hidden md:grid grid-cols-3 gap-6 mb-16">
+        <div class="hidden md:grid grid-cols-3 gap-6 mb-8 md:mb-16">
           <router-link
             v-for="(stat, index) in stats"
             :key="stat.label"

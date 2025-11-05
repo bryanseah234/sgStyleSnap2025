@@ -120,10 +120,11 @@
         <div class="flex justify-center">
           <button
             @click="handleSignUp"
-            class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-white text-black hover:bg-gray-100 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-all duration-200 hover:scale-105"
+            style="background-color: #ffffff !important; color: #000000 !important;"
           >
-            <span class="text-black dark:text-black">Sign Up Now</span>
-            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition text-black dark:text-black" />
+            <span style="color: #000000 !important;">Sign Up Now</span>
+            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" style="color: #000000 !important; stroke: #000000 !important;" />
           </button>
         </div>
       </div>
@@ -133,9 +134,11 @@
     <section id="features" class="landing-section py-[8vh] bg-white relative overflow-hidden">
       <div class="container relative z-10">
         <div class="text-center mb-6 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="features-header">
-          <h2 class="text-3xl font-bold mb-1 sm:mb-2">Powerful Features for Your Style</h2>
+          <h2 class="text-3xl font-bold mb-1 sm:mb-2">
+            Powerful Features<span class="md:hidden"><br /></span>for Your Style
+          </h2>
           <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Everything you need to manage, create, and share your fashion effortlessly
+            Everything you need to<span class="md:hidden"><br /></span>manage, create, and share<span class="md:hidden"><br /></span>your fashion effortlessly
           </p>
         </div>
           
@@ -592,7 +595,9 @@
       class="cta-card-section bg-gray-50 text-gray-900 relative py-16 sm:py-20 md:py-28"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
-        <h2 class="cta-title text-gray-900 mb-3 sm:mb-5">Ready to Transform Your Wardrobe?</h2>
+        <h2 class="cta-title text-gray-900 mb-3 sm:mb-5">
+          Ready to Transform<span class="md:hidden"><br /></span>Your Closet?
+        </h2>
         <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
@@ -626,7 +631,7 @@
             
             <!-- Right: Navigation Links in 2-3 Columns -->
             <div class="flex justify-start md:justify-end">
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-12 w-full md:w-auto">
+              <div class="grid grid-cols-3 gap-6 md:gap-12 w-full md:w-auto">
                 <!-- Column 1: Explore -->
                 <div>
                   <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Explore</h3>
@@ -648,7 +653,7 @@
                 </div>
                 
                 <!-- Column 3: Company -->
-                <div class="col-span-2 md:col-span-1">
+                <div>
                   <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Company</h3>
                   <ul class="space-y-3">
                     <li><a href="https://www.hong-yi.me" target="_blank" rel="noopener noreferrer" class="text-sm text-white hover:text-gray-300 transition">Careers</a></li>
@@ -661,7 +666,7 @@
           </div>
           
           <!-- Bottom Section: Copyright and Legal Links -->
-          <div class="flex flex-col sm:flex-row justify-center md:justify-between items-center pt-0 border-t border-gray-800 gap-4">
+          <div class="flex flex-col sm:flex-row justify-center md:justify-between items-center pt-6 border-t border-gray-800 gap-4">
             <p class="text-xs text-gray-400 text-center md:text-left">
               &copy; StyleSnap 2025. All rights reserved.
             </p>
@@ -2201,7 +2206,7 @@ const setScrollY = (value) => {
   background: white;
   color: black;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  border-radius: 9999px;
   padding: 10px 20px;
   display: inline-flex;
   align-items: center;

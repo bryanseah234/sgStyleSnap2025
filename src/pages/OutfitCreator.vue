@@ -728,7 +728,7 @@
                   {{ currentSubRoute === 'friend' ? "Start Creating Friend's Outfit" : "Start Creating Your Outfit" }}
                 </p>
                 <p class="text-sm text-stone-500 dark:text-zinc-500">
-                  Click on items from the left to add them to the canvas
+                  Click on items to add them to the canvas
                 </p>
               </div>
 

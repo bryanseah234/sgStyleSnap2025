@@ -53,7 +53,7 @@ export default async function handler(req, res) {
 
     if (body.type === 'generateImages') {
       // Generate images using Imagen 4.0 with clothing image references
-      const { prompt, config, topImageBase64, bottomImageBase64 } = body;
+      const { prompt, negativePrompt, config, topImageBase64, bottomImageBase64 } = body;
       
       if (!prompt) {
         return res.status(400).json({ error: 'Prompt is required' });
@@ -61,6 +61,9 @@ export default async function handler(req, res) {
 
       console.log('📤 Generating image with Imagen 4.0...');
       console.log('📝 Prompt:', prompt.substring(0, 200) + '...');
+      if (negativePrompt) {
+        console.log('📝 Negative Prompt:', negativePrompt.substring(0, 100) + '...');
+      }
       console.log('👕 Top image provided:', !!topImageBase64);
       console.log('👖 Bottom image provided:', !!bottomImageBase64);
 
@@ -105,6 +108,14 @@ export default async function handler(req, res) {
           personGeneration: config?.personGeneration || "allow_adult",
         },
       };
+
+      // Add negative prompt if provided (some APIs support this in config)
+      if (negativePrompt) {
+        // Try adding negative prompt to config if API supports it
+        requestConfig.config.negativePrompt = negativePrompt;
+        // Also try as top-level property if config doesn't work
+        requestConfig.negativePrompt = negativePrompt;
+      }
 
       // Pass images to the API if provided
       // Note: Imagen API structure - images may need to be passed differently
@@ -153,13 +164,23 @@ export default async function handler(req, res) {
       console.log('👁️ Analyzing clothing images with Gemini vision...');
 
       // Build request payload for Gemini REST API (since SDK method may not work)
-      const prompt = "Describe these clothing items in detail. Focus on: " +
-        "1. Type of garment (e.g., t-shirt, jeans, dress shirt, shorts) " +
-        "2. Colors and patterns " +
-        "3. Style and fit (e.g., casual, formal, loose, fitted) " +
-        "4. Notable features (e.g., buttons, pockets, collar type, sleeves) " +
-        "5. Material appearance (if visible). " +
-        "Provide a concise but detailed description that would help generate an image of someone wearing these items.";
+      const prompt = `Analyze the provided clothing images and produce a detailed description optimized for image generation.
+
+Include:
+
+1. Garment type (e.g., cropped denim jacket, pleated skirt)
+
+2. Dominant colors with precise tone (approximate hex if clear)
+
+3. Patterns or graphics (e.g., floral print, striped, solid)
+
+4. Fit and silhouette (e.g., oversized, slim fit, A-line)
+
+5. Material or texture (e.g., denim, satin, linen)
+
+6. Distinct design features (e.g., front buttons, cuffs, collar, waistband)
+
+Return a single concise paragraph written for text-to-image generation. Avoid subjective or emotional language; focus strictly on visual and structural details.`;
       
       const parts = [];
       
