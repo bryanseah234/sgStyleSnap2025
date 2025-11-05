@@ -895,12 +895,19 @@
               Based on your closet items
             </p>
           </div>
-          <button
-            @click="showRecommendationsModal = false"
-            class="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            <X class="w-5 h-5 text-stone-600 dark:text-zinc-400" />
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- ESC Key Hint (Desktop only) -->
+            <div v-if="isDesktop" class="keyboard-hint-modal">
+              <span class="keyboard-hint-key">ESC</span>
+            </div>
+            <button
+              @click="showRecommendationsModal = false"
+              class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
+              aria-label="Close dialog"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
         </div>
         
         <!-- Content -->
@@ -4464,6 +4471,12 @@ const handleKeydown = (event) => {
   // Handle Esc key
   if (event.key === 'Escape') {
     event.preventDefault()
+    
+    // Close recommendations modal if open
+    if (showRecommendationsModal.value) {
+      showRecommendationsModal.value = false
+      return
+    }
     
     // Close weather recommendations modal if open
     if (showWeatherRecommendationsModal.value) {

@@ -14,11 +14,7 @@
         </div>
         <button
           @click="$emit('close')"
-          :class="`p-2 rounded-lg transition-all shadow-lg ${
-            theme === 'dark'
-              ? 'bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700'
-              : 'bg-white/90 hover:bg-stone-200 text-stone-600 hover:text-black border border-stone-300'
-          }`"
+          class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
           aria-label="Close dialog"
         >
           <X class="w-5 h-5" />
