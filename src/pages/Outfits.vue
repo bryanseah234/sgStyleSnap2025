@@ -49,17 +49,8 @@
         </div>
       </div>
 
-      <!-- Filters -->
+      <!-- Category Filters -->
       <div class="mb-6">
-        <!-- Filter Toggle Button (Mobile Only) - Only for advanced filters, not category buttons -->
-        <button
-          @click="filtersExpanded = !filtersExpanded"
-          class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
-        >
-          <span class="font-medium text-sm">Filters</span>
-          <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
-        </button>
-        
         <!-- Category Filters (All Outfits, Suggestions) - Always visible, side-by-side on mobile -->
         <div class="flex gap-2 mb-4">
           <button
@@ -452,7 +443,6 @@ const selectedOutfit = ref(null)
 const createdLocation = ref(null)
 const searchTerm = ref('')
 const searchInputRef = ref(null)
-const filtersExpanded = ref(false) // Filters expanded state (mobile only)
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)

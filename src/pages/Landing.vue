@@ -2474,7 +2474,7 @@ const setScrollY = (value) => {
   perspective: 800px; /* Reduced from 1200px for better performance */
   perspective-origin: center center;
   width: 100%;
-  height: 400px;
+  height: 360px;
   position: relative;
   margin: 4rem 0;
   display: flex;
@@ -2490,8 +2490,8 @@ const setScrollY = (value) => {
 
 .carousel-3d-container {
   position: relative;
-  width: 260px;
-  height: 320px;
+  width: 240px;
+  height: 280px;
   transform-style: preserve-3d;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform; /* Only when actively rotating */
@@ -2503,12 +2503,12 @@ const setScrollY = (value) => {
 
 .carousel-3d-item {
   position: absolute;
-  width: 240px;
-  height: 300px;
+  width: 220px;
+  height: 260px;
   left: 50%;
   top: 50%;
-  margin-left: -120px;
-  margin-top: -150px;
+  margin-left: -110px;
+  margin-top: -130px;
   transform-style: preserve-3d;
   transition: transform 0.5s ease, z-index 0.5s ease;
   cursor: pointer;
@@ -2524,7 +2524,7 @@ const setScrollY = (value) => {
 
 .carousel-3d-item.expanded {
   z-index: 10;
-  transform: translateZ(400px) scale(1.1) !important;
+  transform: translateZ(350px) scale(1.1) !important;
 }
 
 .carousel-3d-item.expanded .carousel-card {
@@ -2601,47 +2601,47 @@ const setScrollY = (value) => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .carousel-3d-wrapper {
-    height: 320px;
+    height: 290px;
     margin: 2rem 0;
   }
   
   .carousel-3d-container {
-    width: 220px;
-    height: 280px;
+    width: 200px;
+    height: 250px;
   }
   
   .carousel-3d-item {
-    width: 200px;
-    height: 260px;
-    margin-left: -100px;
-    margin-top: -130px;
+    width: 180px;
+    height: 230px;
+    margin-left: -90px;
+    margin-top: -115px;
   }
   
   .carousel-3d-item.expanded {
-    transform: translateZ(350px) !important;
+    transform: translateZ(310px) !important;
   }
 }
 
 @media (max-width: 640px) {
   .carousel-3d-wrapper {
-    height: 280px;
+    height: 250px;
     margin: 1.5rem 0;
   }
   
   .carousel-3d-container {
-    width: 200px;
-    height: 240px;
+    width: 180px;
+    height: 210px;
   }
   
   .carousel-3d-item {
-    width: 180px;
-    height: 220px;
-    margin-left: -90px;
-    margin-top: -110px;
+    width: 160px;
+    height: 190px;
+    margin-left: -80px;
+    margin-top: -95px;
   }
   
   .carousel-3d-item.expanded {
-    transform: translateZ(300px) !important;
+    transform: translateZ(260px) !important;
   }
 }
 
