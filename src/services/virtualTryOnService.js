@@ -73,11 +73,12 @@ export class VirtualTryOnService {
       
       // Create a descriptive prompt based on the analyzed images
       const prompt = this.createTryOnPrompt(clothingDescription, topImageBase64, bottomImageBase64)
-      const negativePrompt = this.getNegativePrompt()
+      // Negative prompt is not supported in Gemini API
+      // const negativePrompt = this.getNegativePrompt()
 
       safeLog('📤 Generating image with Imagen 4.0...')
       safeLog('📝 Prompt:', prompt.substring(0, 200) + '...')
-      safeLog('📝 Negative Prompt:', negativePrompt.substring(0, 100) + '...')
+      // safeLog('📝 Negative Prompt:', negativePrompt.substring(0, 100) + '...')
 
       let imageBytes
       
@@ -93,7 +94,8 @@ export class VirtualTryOnService {
             type: 'generateImages',
             model: this.model,
             prompt: prompt,
-            negativePrompt: negativePrompt,
+            // Negative prompt is not supported in Gemini API
+            // negativePrompt: negativePrompt,
             topImageBase64: topImageBase64, // Send actual clothing images
             bottomImageBase64: bottomImageBase64, // Send actual clothing images
             config: {
@@ -155,7 +157,8 @@ export class VirtualTryOnService {
         const requestConfig = {
           model: this.model,
           prompt: prompt,
-          negativePrompt: negativePrompt,
+          // Negative prompt is not supported in Gemini API
+          // negativePrompt: negativePrompt,
           config: {
             numberOfImages: 1, // Always return only one image
             aspectRatio: "3:4",

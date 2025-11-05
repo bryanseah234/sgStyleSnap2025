@@ -53,7 +53,7 @@ export default async function handler(req, res) {
 
     if (body.type === 'generateImages') {
       // Generate images using Imagen 4.0 with clothing image references
-      const { prompt, negativePrompt, config, topImageBase64, bottomImageBase64 } = body;
+      const { prompt, /* negativePrompt, */ config, topImageBase64, bottomImageBase64 } = body;
       
       if (!prompt) {
         return res.status(400).json({ error: 'Prompt is required' });
@@ -61,9 +61,10 @@ export default async function handler(req, res) {
 
       console.log('📤 Generating image with Imagen 4.0...');
       console.log('📝 Prompt:', prompt.substring(0, 200) + '...');
-      if (negativePrompt) {
-        console.log('📝 Negative Prompt:', negativePrompt.substring(0, 100) + '...');
-      }
+      // Negative prompt is not supported in Gemini API
+      // if (negativePrompt) {
+      //   console.log('📝 Negative Prompt:', negativePrompt.substring(0, 100) + '...');
+      // }
       console.log('👕 Top image provided:', !!topImageBase64);
       console.log('👖 Bottom image provided:', !!bottomImageBase64);
 
@@ -109,13 +110,13 @@ export default async function handler(req, res) {
         },
       };
 
-      // Add negative prompt if provided (some APIs support this in config)
-      if (negativePrompt) {
-        // Try adding negative prompt to config if API supports it
-        requestConfig.config.negativePrompt = negativePrompt;
-        // Also try as top-level property if config doesn't work
-        requestConfig.negativePrompt = negativePrompt;
-      }
+      // Negative prompt is not supported in Gemini API
+      // if (negativePrompt) {
+      //   // Try adding negative prompt to config if API supports it
+      //   requestConfig.config.negativePrompt = negativePrompt;
+      //   // Also try as top-level property if config doesn't work
+      //   requestConfig.negativePrompt = negativePrompt;
+      // }
 
       // Pass images to the API if provided
       // Note: Imagen API structure - images may need to be passed differently

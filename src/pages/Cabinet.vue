@@ -423,9 +423,12 @@
     <ItemDetailsModal
       :is-open="showItemDetails"
       :item="selectedItem"
+      :items="filteredItems"
+      :current-index="selectedItemIndex"
       @close="closeItemDetails"
       @item-removed="handleItemRemoved"
       @item-updated="handleItemUpdated"
+      @navigate-to="handleNavigateToItem"
     />
   </div>
 </template>
@@ -539,6 +542,7 @@ const showUpload = ref(false)            // Upload modal visibility
 const showAddMenu = ref(false)           // Add item dropdown menu visibility
 const showItemDetails = ref(false)       // Item details modal visibility
 const selectedItem = ref(null)           // Currently selected item for details
+const selectedItemIndex = ref(-1)        // Index of currently selected item in filteredItems
 const selectedCategory = ref(null)      // Selected category filter
 const selectedColor = ref(null)           // Selected color filter
 const selectedBrand = ref(null)          // Selected brand filter
@@ -868,6 +872,9 @@ const openItemDetails = (item) => {
       return
     }
     selectedItem.value = item
+    // Find the index of the item in filteredItems
+    const index = filteredItems.value.findIndex(i => i.id === item.id)
+    selectedItemIndex.value = index >= 0 ? index : -1
     showItemDetails.value = true
   } catch (error) {
     console.error('Cabinet: Error opening item details:', error)
@@ -877,6 +884,14 @@ const openItemDetails = (item) => {
 const closeItemDetails = () => {
   showItemDetails.value = false
   selectedItem.value = null
+  selectedItemIndex.value = -1
+}
+
+const handleNavigateToItem = (index) => {
+  if (index >= 0 && index < filteredItems.value.length) {
+    selectedItem.value = filteredItems.value[index]
+    selectedItemIndex.value = index
+  }
 }
 
 const handleItemRemoved = async (itemId) => {

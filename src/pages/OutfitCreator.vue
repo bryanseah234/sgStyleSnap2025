@@ -4468,19 +4468,20 @@ const handleKeydown = (event) => {
     return
   }
   
-  // Handle Esc key
-  if (event.key === 'Escape') {
+  // Handle Esc key - prioritize closing modals
+  if (event.key === 'Escape' || event.key === 'Esc') {
     event.preventDefault()
+    event.stopPropagation()
+    
+    // Close weather recommendations modal if open (check first since it's more specific)
+    if (showWeatherRecommendationsModal.value) {
+      showWeatherRecommendationsModal.value = false
+      return
+    }
     
     // Close recommendations modal if open
     if (showRecommendationsModal.value) {
       showRecommendationsModal.value = false
-      return
-    }
-    
-    // Close weather recommendations modal if open
-    if (showWeatherRecommendationsModal.value) {
-      showWeatherRecommendationsModal.value = false
       return
     }
     
