@@ -246,7 +246,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-6">
           <!-- Left Sidebar - Catalogue Items -->
           <div class="lg:col-span-2">
-            <div class="rounded-xl p-4 sm:p-6 bg-white border border-gray-200">
+            <div class="rounded-xl p-4 sm:p-6 bg-white border border-gray-200" style="height: 500px; display: flex; flex-direction: column;">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base sm:text-lg font-bold">Catalogue</h3>
                 <span class="text-xs sm:text-sm px-2 py-1 rounded-full bg-gray-100 text-gray-600">
@@ -276,7 +276,8 @@
               <!-- Items List -->
               <div 
                 ref="catalogueScrollRef"
-                class="space-y-2 max-h-96 overflow-y-auto px-2 custom-scrollbar"
+                class="space-y-2 overflow-y-auto px-2 custom-scrollbar flex-1"
+                style="min-height: 0;"
                 @scroll="handleCatalogueScroll"
               >
                 <div
@@ -1369,8 +1370,14 @@ const findNonOverlappingPosition = (existingItems, itemSize, startX, startY, can
 const addCatalogueItemToCanvas = (item) => {
   if (!canvasRef.value) return
   
-  // Check if item already exists on canvas (by id)
-  const itemAlreadyOnCanvas = outfitItems.value.some(canvasItem => canvasItem.id === item.id || canvasItem.originalId === item.id)
+  // Validate: Maximum 10 items on canvas
+  if (outfitItems.value.length >= 10) {
+    showWarning('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
+    return
+  }
+  
+  // Check if item already exists on canvas (by originalId)
+  const itemAlreadyOnCanvas = outfitItems.value.some(canvasItem => canvasItem.originalId === item.id)
   if (itemAlreadyOnCanvas) {
     showWarning('This item is already on the canvas. Each item can only be added once.')
     return
@@ -1378,8 +1385,20 @@ const addCatalogueItemToCanvas = (item) => {
   
   const rect = canvasRef.value.getBoundingClientRect()
   const itemSize = 128
+  
+  // Define button area exclusion zones
+  // Top area: 80px (for top navigation)
+  const TOP_BUTTON_AREA_HEIGHT = 80
+  // Bottom area: 80px (for bottom toolbar/buttons)
+  const BOTTOM_BUTTON_AREA_HEIGHT = 80
+  
+  // Start position: center of canvas, but below top button area and above bottom button area
   const centerX = rect.width / 2
-  const centerY = rect.height / 2
+  const maxYPosition = rect.height - itemSize - BOTTOM_BUTTON_AREA_HEIGHT
+  const centerY = Math.max(
+    TOP_BUTTON_AREA_HEIGHT + 100, // Ensure below top button area
+    Math.min((rect.height / 2), maxYPosition) // And above bottom button area
+  )
   
   // Find a non-overlapping position
   const position = findNonOverlappingPosition(
@@ -1391,14 +1410,21 @@ const addCatalogueItemToCanvas = (item) => {
     rect.height
   )
   
+  // Calculate max Y position to avoid bottom button area
+  const maxYPositionForItem = rect.height - (itemSize * position.scale) - BOTTOM_BUTTON_AREA_HEIGHT
+  
+  // Ensure new items start with z_index >= 2 (above grid)
+  const baseZIndex = Math.max(2, outfitItems.value.length + 2)
+  
   const newItem = {
     ...item,
-    id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    x: position.x,
-    y: position.y,
+    originalId: item.id, // Store original clothing item ID
+    id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID
+    x: Math.max(0, Math.min(position.x, rect.width - (itemSize * position.scale))),
+    y: Math.max(TOP_BUTTON_AREA_HEIGHT, Math.min(position.y, maxYPositionForItem)),
     scale: position.scale,
     rotation: 0,
-    z_index: Math.max(2, outfitItems.value.length + 2),
+    z_index: baseZIndex,
   }
   
   outfitItems.value.push(newItem)
@@ -1417,11 +1443,17 @@ const handleDrop = (event) => {
   if (!canvasRef.value) return
   
   try {
+    // Validate: Maximum 10 items on canvas
+    if (outfitItems.value.length >= 10) {
+      showWarning('Maximum 10 items allowed on canvas. Please remove an item before adding a new one.')
+      return
+    }
+    
     const itemData = event.dataTransfer.getData('text/plain')
     const item = JSON.parse(itemData)
     
-    // Check if item already exists on canvas (by id)
-    const itemAlreadyOnCanvas = outfitItems.value.some(canvasItem => canvasItem.id === item.id || canvasItem.originalId === item.id)
+    // Check if item already exists on canvas (by originalId)
+    const itemAlreadyOnCanvas = outfitItems.value.some(canvasItem => canvasItem.originalId === item.id)
     if (itemAlreadyOnCanvas) {
       showWarning('This item is already on the canvas. Each item can only be added once.')
       return
@@ -1431,6 +1463,12 @@ const handleDrop = (event) => {
     const itemSize = 128
     const dropX = event.clientX - rect.left
     const dropY = event.clientY - rect.top
+    
+    // Define button area exclusion zones
+    // Top area: 80px (for top navigation)
+    const TOP_BUTTON_AREA_HEIGHT = 80
+    // Bottom area: 80px (for bottom toolbar/buttons)
+    const BOTTOM_BUTTON_AREA_HEIGHT = 80
     
     // Find a non-overlapping position
     const position = findNonOverlappingPosition(
@@ -1442,14 +1480,21 @@ const handleDrop = (event) => {
       rect.height
     )
     
+    // Calculate max Y position to avoid bottom button area
+    const maxYPositionForItem = rect.height - (itemSize * position.scale) - BOTTOM_BUTTON_AREA_HEIGHT
+    
+    // Ensure new items start with z_index >= 2 (above grid)
+    const baseZIndex = Math.max(2, outfitItems.value.length + 2)
+    
     const newItem = {
       ...item,
-      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      originalId: item.id, // Store original clothing item ID
+      id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique canvas ID
       x: Math.max(0, Math.min(position.x, rect.width - (itemSize * position.scale))),
-      y: Math.max(0, Math.min(position.y, rect.height - (itemSize * position.scale))),
+      y: Math.max(TOP_BUTTON_AREA_HEIGHT, Math.min(position.y, maxYPositionForItem)),
       scale: position.scale,
       rotation: 0,
-      z_index: Math.max(2, outfitItems.value.length + 2)
+      z_index: baseZIndex
     }
     
     outfitItems.value.push(newItem)

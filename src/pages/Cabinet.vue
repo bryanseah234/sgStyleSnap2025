@@ -496,38 +496,64 @@ const isMac = ref(false)
 // Route-based computed properties for dynamic content
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 
-// Watch for search input ref to become available and register it
-// Only register when on default route (where search input is actually rendered)
-watch([searchInputRef, currentSubRoute], ([newRef, subRoute]) => {
+// Helper function to register search input
+const registerSearchInputIfAvailable = async () => {
   // Only register if we're on the default route where search input is visible
-  if (subRoute !== 'default') {
-    // Don't register if we're not on default route - let CatalogueBrowser handle it
-    console.log('⌨️ Cabinet: Search input not registered (not on default route)')
+  if (currentSubRoute.value !== 'default') {
+    console.log('⌨️ Cabinet: Search input not registered (not on default route, currentSubRoute:', currentSubRoute.value, ')')
     return
   }
   
-  if (newRef) {
+  await nextTick() // Wait for DOM to be ready
+  
+  console.log('⌨️ Cabinet: Attempting to register search input, ref value:', searchInputRef.value)
+  
+  if (searchInputRef.value) {
     // Handle array case (desktop + mobile inputs)
-    if (Array.isArray(newRef)) {
+    if (Array.isArray(searchInputRef.value)) {
+      console.log('⌨️ Cabinet: Search input ref is an array with', searchInputRef.value.length, 'elements')
       // Register the first visible input (prefer desktop)
-      const visibleInput = newRef.find(el => {
+      const visibleInput = searchInputRef.value.find(el => {
         if (!el) return false
         const elem = el.$el || el
         if (!elem) return false
         const style = window.getComputedStyle(elem)
-        return style.display !== 'none'
-      }) || newRef[0]
+        const isVisible = style.display !== 'none'
+        console.log('⌨️ Cabinet: Checking input visibility:', isVisible, 'display:', style.display)
+        return isVisible
+      }) || searchInputRef.value[0]
       
       if (visibleInput) {
         registerSearchInput(visibleInput)
-        console.log('⌨️ Cabinet: Search input registered via watch (from array)', visibleInput)
+        console.log('⌨️ Cabinet: ✅ Search input registered via watch (from array)', visibleInput)
+      } else {
+        console.warn('⚠️ Cabinet: No visible input found in array')
       }
     } else {
-      registerSearchInput(newRef)
-      console.log('⌨️ Cabinet: Search input ref registered via watch')
+      registerSearchInput(searchInputRef.value)
+      console.log('⌨️ Cabinet: ✅ Search input ref registered via watch (single ref)')
     }
+  } else {
+    console.warn('⚠️ Cabinet: Search input ref is null/undefined')
   }
+}
+
+// Watch for search input ref to become available and register it
+// Only register when on default route (where search input is actually rendered)
+watch([searchInputRef, currentSubRoute], async ([newRef, subRoute]) => {
+  await registerSearchInputIfAvailable()
 }, { immediate: true })
+
+// Also watch route changes to re-register when navigating to /closet
+watch(() => route.path, async (newPath) => {
+  if (newPath === '/closet' && currentSubRoute.value === 'default') {
+    // Small delay to ensure DOM is ready
+    await nextTick()
+    setTimeout(() => {
+      registerSearchInputIfAvailable()
+    }, 100)
+  }
+})
 
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
@@ -920,35 +946,8 @@ onMounted(async () => {
   isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
   
   // Register search input for keyboard shortcuts after DOM is rendered
-  // Only register if on default route (where search input is actually rendered)
-  if (currentSubRoute.value === 'default') {
-    await nextTick()
-    if (searchInputRef.value) {
-      // Handle array case (desktop + mobile inputs)
-      if (Array.isArray(searchInputRef.value)) {
-        // Register the first visible input (prefer desktop)
-        const visibleInput = searchInputRef.value.find(el => {
-          if (!el) return false
-          const elem = el.$el || el
-          if (!elem) return false
-          const style = window.getComputedStyle(elem)
-          return style.display !== 'none'
-        }) || searchInputRef.value[0]
-        
-        if (visibleInput) {
-          registerSearchInput(visibleInput)
-          console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut (from array)', visibleInput)
-        }
-      } else {
-        registerSearchInput(searchInputRef.value)
-        console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut')
-      }
-    } else {
-      console.warn('⚠️ Cabinet: Search input ref not found when trying to register')
-    }
-  } else {
-    console.log('⌨️ Cabinet: Search input not registered on mount (not on default route)')
-  }
+  // Use the helper function which handles all the logic
+  await registerSearchInputIfAvailable()
   
   // Ensure auth store is initialized
   if (!authStore.isAuthenticated) {
