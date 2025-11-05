@@ -546,9 +546,12 @@ const authInitPromise = authStore.initializeAuth().then(async () => {
   // Load user theme preferences after auth is ready
   await themeStore.loadUser()
   
-  // Note: Edge Function health checks disabled - endpoint does not exist
-  // The sync functionality is handled automatically by Supabase triggers
-  console.log('ℹ️ Edge Function health check skipped (not required - using database triggers)')
+  // Note: Frontend Edge Function health check is skipped because:
+  // 1. Database triggers automatically call the Edge Function when users sign up
+  // 2. If Edge Function fails, triggers fall back to direct insert
+  // 3. The sync happens server-side, so frontend health checks aren't needed
+  // The Edge Function IS still being used by database triggers (if configured)
+  console.log('ℹ️ Frontend Edge Function health check skipped (sync handled by database triggers with fallback)')
 }).catch(error => {
   console.error('❌ Failed to initialize auth store:', error)
 })
