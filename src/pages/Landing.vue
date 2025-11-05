@@ -137,10 +137,10 @@
       <div class="container relative z-10">
         <div class="text-center mb-6 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="features-header">
           <h2 class="text-3xl font-bold mb-1 sm:mb-2">
-            Powerful Features<span class="md:hidden"><br /></span>for Your Style
+            Powerful Features<span class="md:hidden"><br /></span> for Your Style
           </h2>
           <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Everything you need to<span class="md:hidden"><br /></span>manage, create, and share<span class="md:hidden"><br /></span>your fashion effortlessly
+            Everything you need to <span class="md:hidden"><br /></span>manage, create, and share <span class="md:hidden"><br /></span>your fashion effortlessly
           </p>
         </div>
           

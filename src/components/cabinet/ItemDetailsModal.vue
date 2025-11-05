@@ -51,90 +51,103 @@
 
         <!-- Right: Details with Liquid Reveal -->
         <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
-          <!-- Item Name & Category -->
-          <div>
-            <h2 class="text-2xl font-bold mb-2 text-foreground">
-              {{ item?.name || 'Untitled Item' }}
-            </h2>
-            <span class="inline-block px-3 py-1 text-base rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
-              {{ item?.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Uncategorized' }}
-            </span>
+          <!-- Loading/Fallback State -->
+          <div v-if="!item" class="flex flex-col items-center justify-center py-8">
+            <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
+            <p class="text-stone-600 dark:text-zinc-400">Loading item details...</p>
           </div>
 
-          <!-- Item Details -->
-          <div class="space-y-3">
-            <div v-if="item?.brand">
-              <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Brand</p>
-              <p class="text-base text-foreground">{{ item.brand }}</p>
+          <!-- Item Content -->
+          <template v-else>
+            <!-- Item Name & Category -->
+            <div>
+              <h2 class="text-2xl font-bold mb-2 text-foreground">
+                {{ item.name || 'Untitled Item' }}
+              </h2>
+              <span class="inline-block px-3 py-1 text-base rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
+                {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Uncategorized' }}
+              </span>
             </div>
 
-            <div v-if="item?.color">
-              <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Color</p>
-              <p class="text-base text-foreground">{{ item.color }}</p>
+            <!-- Item Details -->
+            <div class="space-y-3">
+              <div v-if="item.brand">
+                <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Brand</p>
+                <p class="text-base text-foreground">{{ item.brand }}</p>
+              </div>
+
+              <div v-if="item.primary_color || item.color">
+                <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Color</p>
+                <p class="text-base text-foreground">{{ item.primary_color || item.color }}</p>
+              </div>
+
+              <div v-if="item.size">
+                <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Size</p>
+                <p class="text-base text-foreground">{{ item.size }}</p>
+              </div>
+
+              <div v-if="item.season">
+                <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Season</p>
+                <p class="text-base text-foreground">{{ item.season.charAt(0).toUpperCase() + item.season.slice(1) }}</p>
+              </div>
+
+              <!-- Show message if no details available -->
+              <div v-if="!item.brand && !item.primary_color && !item.color && !item.size && !item.season" class="text-sm text-stone-500 dark:text-zinc-500 italic">
+                No additional details available
+              </div>
             </div>
 
-            <div v-if="item?.size">
-              <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Size</p>
-              <p class="text-base text-foreground">{{ item.size }}</p>
+            <!-- Meta Info (Moved above Privacy) -->
+            <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800">
+              <div class="text-sm text-stone-600 dark:text-zinc-400">
+                Added {{ formatDate(item.created_at) }}
+              </div>
+              <button
+                @click="toggleFavorite"
+                :class="`liquid-favorite-btn p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
+                title="Favorite"
+              >
+                <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
+              </button>
             </div>
 
-            <div v-if="item?.season">
-              <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Season</p>
-              <p class="text-base text-foreground">{{ item.season.charAt(0).toUpperCase() + item.season.slice(1) }}</p>
+            <!-- Privacy Setting -->
+            <div>
+              <label class="block text-base font-medium mb-2 text-stone-700 dark:text-zinc-300">
+                Privacy
+              </label>
+              <select
+                v-model="localPrivacy"
+                class="w-full px-4 py-2 text-base rounded-lg border transition-colors bg-white border-stone-300 text-black dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+              >
+                <option value="private">Private (Only Me)</option>
+                <option value="friends">Friends</option>
+                <option value="public">Public</option>
+              </select>
             </div>
-          </div>
 
-          <!-- Meta Info (Moved above Privacy) -->
-          <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800">
-            <div class="text-sm text-stone-600 dark:text-zinc-400">
-              Added {{ formatDate(item?.created_at) }}
+            <!-- Action Buttons -->
+            <div class="space-y-3 pt-4">
+              <button
+                @click="updateItem"
+                :disabled="isUpdating || !hasChanges"
+                class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save class="w-5 h-5" />
+                <span v-if="isUpdating" class="ellipsis-animated">Updating</span>
+                <span v-else>Update Item</span>
+              </button>
+              <button
+                @click="removeItem"
+                :disabled="isRemoving"
+                class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 class="w-5 h-5" />
+                <span v-if="isRemoving" class="ellipsis-animated">Removing</span>
+                <span v-else>Remove Item</span>
+              </button>
             </div>
-            <button
-              v-if="item"
-              @click="toggleFavorite"
-              :class="`liquid-favorite-btn p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
-              title="Favorite"
-            >
-              <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
-            </button>
-          </div>
-
-          <!-- Privacy Setting -->
-          <div>
-            <label class="block text-base font-medium mb-2 text-stone-700 dark:text-zinc-300">
-              Privacy
-            </label>
-            <select
-              v-model="localPrivacy"
-              class="w-full px-4 py-2 text-base rounded-lg border transition-colors bg-white border-stone-300 text-black dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
-            >
-              <option value="private">Private (Only Me)</option>
-              <option value="friends">Friends</option>
-              <option value="public">Public</option>
-            </select>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="space-y-3 pt-4">
-            <button
-              @click="updateItem"
-              :disabled="isUpdating || !hasChanges"
-              class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save class="w-5 h-5" />
-              <span v-if="isUpdating" class="ellipsis-animated">Updating</span>
-              <span v-else>Update Item</span>
-            </button>
-            <button
-              @click="removeItem"
-              :disabled="isRemoving"
-              class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Trash2 class="w-5 h-5" />
-              <span v-if="isRemoving" class="ellipsis-animated">Removing</span>
-              <span v-else>Remove Item</span>
-            </button>
-          </div>
+          </template>
         </div>
       </div>
         </div>

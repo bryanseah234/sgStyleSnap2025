@@ -39,6 +39,7 @@
           </label>
           <div class="relative search-input-group">
             <input
+              ref="searchInputRef"
               v-model="searchQuery"
               type="text"
               placeholder="Enter username or email..."
@@ -131,11 +132,12 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useDebounce } from '@/composables/useDebounce'
 import { useSanitize } from '@/composables/useSanitize'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { UserService } from '@/services/userService'
 import { FriendsService } from '@/services/friendsService'
 import { X } from 'lucide-vue-next'
@@ -147,6 +149,9 @@ const friendsService = new FriendsService()
 
 // Sanitization
 const { sanitizeSearch } = useSanitize()
+
+// Keyboard shortcuts
+const { registerSearchInput } = useKeyboardShortcuts()
 
 // Props
 const props = defineProps({
@@ -178,6 +183,7 @@ const handleEsc = (e) => {
 
 // State
 const searchQuery = ref('')
+const searchInputRef = ref(null)
 const searchResults = ref([])
 const searching = ref(false)
 const sendingRequest = ref(null)
@@ -283,10 +289,16 @@ const sendFriendRequest = async (userId) => {
 }
 
 // Watch for dialog open/close to detect Mac and reset search state
-watch(() => props.isOpen, (isOpen) => {
+watch(() => props.isOpen, async (isOpen) => {
   if (isOpen) {
     // Detect Mac OS when dialog opens
     isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
+    
+    // Register search input for keyboard shortcuts when dialog opens
+    await nextTick()
+    if (searchInputRef.value) {
+      registerSearchInput(searchInputRef.value)
+    }
   } else {
     // Reset search state when dialog closes
     searchQuery.value = ''

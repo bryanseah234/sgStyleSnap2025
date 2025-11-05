@@ -83,10 +83,12 @@
         <div class="flex flex-col md:flex-row gap-4">
           <div class="flex-1">
             <input
+              ref="searchInputRef"
               v-model="searchQuery"
               type="text"
               placeholder="Search items..."
               class="w-full px-4 py-3 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
+              @input="handleSearch"
             />
           </div>
           <div class="flex gap-2">
@@ -185,9 +187,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useSanitize } from '@/composables/useSanitize'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { api } from '@/api/client'
 import { clothesService } from '@/services/clothesService'
 import { formatDate, getFirstName } from '@/utils'
@@ -196,10 +200,13 @@ import { ArrowLeft, User, Shirt, Grid, List } from 'lucide-vue-next'
 
 const route = useRoute()
 const { theme } = useTheme()
+const { sanitizeSearch } = useSanitize()
+const { registerSearchInput } = useKeyboardShortcuts()
 const friend = ref(null)
 const items = ref([])
 const loading = ref(true)
 const searchQuery = ref('')
+const searchInputRef = ref(null)
 const activeCategory = ref('all')
 const viewMode = ref('grid')
 
@@ -266,8 +273,19 @@ const toggleView = () => {
   viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid'
 }
 
+const handleSearch = () => {
+  // Sanitize search input in real-time
+  searchQuery.value = sanitizeSearch(searchQuery.value)
+}
+
 onMounted(async () => {
   await loadFriend()
   await loadFriendItems()
+  
+  // Register search input for keyboard shortcuts after DOM is ready
+  await nextTick()
+  if (searchInputRef.value) {
+    registerSearchInput(searchInputRef.value)
+  }
 })
 </script>

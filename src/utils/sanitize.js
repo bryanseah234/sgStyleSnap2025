@@ -129,9 +129,38 @@ export function sanitizeEmail(input) {
 /**
  * Sanitizes search queries
  * More lenient than general input, but still safe
+ * Allows: letters, numbers, spaces, and basic punctuation (.,-')
  */
 export function sanitizeSearch(input) {
-  return sanitizeInput(input, '.,\'-')
+  if (!input || typeof input !== 'string') {
+    return ''
+  }
+
+  // Remove null bytes
+  let sanitized = input.replace(/\0/g, '')
+  
+  // Explicitly allow: letters, numbers, spaces, period, comma, dash, apostrophe
+  // Note: In regex character class, dash must be escaped or at end, and apostrophe doesn't need escaping
+  // We'll place dash at the end to avoid escaping issues
+  sanitized = sanitized.replace(/[^a-zA-Z0-9\s.,'-]/g, '')
+
+  // Remove any SQL injection keywords and patterns (case insensitive)
+  const sqlPatterns = [
+    /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE|UNION|DECLARE|CAST|CONVERT)\b)/gi,
+    /(--|;|\/\*|\*\/|xp_|sp_)/gi,
+    /("|`)/g, // Remove double quotes and backticks (keep apostrophe for contractions)
+    /(<|>)/g // Remove angle brackets for XSS prevention
+  ]
+
+  sqlPatterns.forEach(pattern => {
+    sanitized = sanitized.replace(pattern, '')
+  })
+
+  // Normalize multiple consecutive spaces to single space, but preserve spaces in search queries
+  // Don't trim - allow spaces at start/end for search flexibility
+  sanitized = sanitized.replace(/\s+/g, ' ')
+
+  return sanitized
 }
 
 /**
