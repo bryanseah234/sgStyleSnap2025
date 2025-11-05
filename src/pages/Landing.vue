@@ -163,7 +163,7 @@
                 'front-facing': isCardFrontFacing(idx)
               }"
               :style="{
-                transform: `translate3d(0, 0, 0) rotateY(${idx * (360 / features.length)}deg) translateZ(250px)`,
+                transform: `translate3d(0, 0, 0) rotateY(${idx * (360 / features.length)}deg) translateZ(220px)`,
                 '--item-index': idx
               }"
               @mouseenter="handleCardHover(idx, feature.id)"
@@ -2436,6 +2436,16 @@ const setScrollY = (value) => {
   border-color: rgba(229, 231, 235, 0.5) !important;
 }
 
+/* Force logo to always be black in navigation bar, independent of theme */
+.landing-nav-pill .stylesnap-logo {
+  filter: none !important;
+}
+
+/* Ensure logo stays black even in dark mode */
+.dark .landing-nav-pill .stylesnap-logo {
+  filter: none !important;
+}
+
 .landing-nav-pill a,
 .landing-nav-pill button,
 .landing-nav-pill span {
@@ -2505,7 +2515,7 @@ const setScrollY = (value) => {
   perspective: 800px; /* Reduced from 1200px for better performance */
   perspective-origin: center center;
   width: 100%;
-  height: 360px;
+  height: 320px;
   position: relative;
   margin: 4rem 0;
   display: flex;
@@ -2513,6 +2523,7 @@ const setScrollY = (value) => {
   justify-content: center;
   pointer-events: none; /* Allow clicks to pass through to cards */
   contain: layout style paint; /* Isolate rendering */
+  overflow: hidden; /* Prevent cards from being cut off */
 }
 
 .carousel-3d-wrapper > * {
@@ -2521,8 +2532,8 @@ const setScrollY = (value) => {
 
 .carousel-3d-container {
   position: relative;
-  width: 240px;
-  height: 280px;
+  width: 200px;
+  height: 240px;
   transform-style: preserve-3d;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform; /* Only when actively rotating */
@@ -2534,12 +2545,12 @@ const setScrollY = (value) => {
 
 .carousel-3d-item {
   position: absolute;
-  width: 220px;
-  height: 260px;
+  width: 180px;
+  height: 220px;
   left: 50%;
   top: 50%;
-  margin-left: -110px;
-  margin-top: -130px;
+  margin-left: -90px;
+  margin-top: -110px;
   transform-style: preserve-3d;
   transition: transform 0.5s ease, z-index 0.5s ease;
   cursor: pointer;
@@ -2555,7 +2566,7 @@ const setScrollY = (value) => {
 
 .carousel-3d-item.expanded {
   z-index: 10;
-  transform: translateZ(350px) scale(1.1) !important;
+  transform: translateZ(300px) scale(1.1) !important;
 }
 
 .carousel-3d-item.expanded .carousel-card {
@@ -2632,47 +2643,47 @@ const setScrollY = (value) => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .carousel-3d-wrapper {
-    height: 290px;
+    height: 260px;
     margin: 2rem 0;
   }
   
   .carousel-3d-container {
-    width: 200px;
-    height: 250px;
-  }
-  
-  .carousel-3d-item {
-    width: 180px;
-    height: 230px;
-    margin-left: -90px;
-    margin-top: -115px;
-  }
-  
-  .carousel-3d-item.expanded {
-    transform: translateZ(310px) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .carousel-3d-wrapper {
-    height: 250px;
-    margin: 1.5rem 0;
-  }
-  
-  .carousel-3d-container {
-    width: 180px;
+    width: 170px;
     height: 210px;
   }
   
   .carousel-3d-item {
-    width: 160px;
+    width: 150px;
     height: 190px;
-    margin-left: -80px;
+    margin-left: -75px;
     margin-top: -95px;
   }
   
   .carousel-3d-item.expanded {
     transform: translateZ(260px) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .carousel-3d-wrapper {
+    height: 220px;
+    margin: 1.5rem 0;
+  }
+  
+  .carousel-3d-container {
+    width: 150px;
+    height: 180px;
+  }
+  
+  .carousel-3d-item {
+    width: 130px;
+    height: 160px;
+    margin-left: -65px;
+    margin-top: -80px;
+  }
+  
+  .carousel-3d-item.expanded {
+    transform: translateZ(220px) !important;
   }
 }
 

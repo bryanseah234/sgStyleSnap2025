@@ -20,6 +20,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 // Global state for keyboard shortcuts
 const isEnabled = ref(true)
 const searchInputRef = ref(null)
+const searchInputPriority = ref(0) // Higher priority = takes precedence
 const canvasItems = ref([])
 const selectedItemIndex = ref(-1)
 const activePopups = ref(new Set())
@@ -36,9 +37,27 @@ export function useKeyboardShortcuts() {
     isEnabled.value = isLargeScreen.value
   }
 
-  // Register search input reference
-  const registerSearchInput = (ref) => {
-    searchInputRef.value = ref
+  // Register search input reference with optional priority
+  // Priority: 0 = default (page-level), 1+ = higher priority (modals/dialogs)
+  const registerSearchInput = (ref, priority = 0) => {
+    // Only register if this has higher or equal priority
+    if (priority >= searchInputPriority.value) {
+      searchInputRef.value = ref
+      searchInputPriority.value = priority
+      console.log(`⌨️ Keyboard: Search input registered with priority ${priority}`)
+    } else {
+      console.log(`⌨️ Keyboard: Search input registration skipped (priority ${priority} < current ${searchInputPriority.value})`)
+    }
+  }
+
+  // Unregister search input (for modals when they close)
+  const unregisterSearchInput = (priority = 0) => {
+    // Only unregister if this matches the current priority
+    if (priority === searchInputPriority.value) {
+      searchInputRef.value = null
+      searchInputPriority.value = 0
+      console.log(`⌨️ Keyboard: Search input unregistered (priority ${priority})`)
+    }
   }
 
   // Register canvas items for navigation
@@ -58,9 +77,33 @@ export function useKeyboardShortcuts() {
 
   // Focus search input
   const focusSearch = () => {
-    if (searchInputRef.value && typeof searchInputRef.value.focus === 'function') {
-      searchInputRef.value.focus()
-      console.log('🔍 Keyboard: Search focused')
+    if (!searchInputRef.value) {
+      console.warn('⚠️ Keyboard: Search input ref not registered')
+      return
+    }
+
+    // Handle case where ref might be an array (multiple elements with same ref)
+    const inputRef = Array.isArray(searchInputRef.value) 
+      ? searchInputRef.value[0] 
+      : searchInputRef.value
+
+    if (inputRef) {
+      if (typeof inputRef.focus === 'function') {
+        // Direct input element
+        inputRef.focus()
+        console.log('🔍 Keyboard: Search focused')
+      } else if (inputRef.$el) {
+        // Vue component ref - find the input element
+        const inputElement = inputRef.$el.querySelector('input') || inputRef.$el
+        if (inputElement && typeof inputElement.focus === 'function') {
+          inputElement.focus()
+          console.log('🔍 Keyboard: Search focused (via component ref)')
+        } else {
+          console.warn('⚠️ Keyboard: Could not find input element in component ref')
+        }
+      } else {
+        console.warn('⚠️ Keyboard: Search input ref is not a valid input element')
+      }
     }
   }
 
@@ -167,7 +210,7 @@ export function useKeyboardShortcuts() {
     const isCtrlOrCmd = ctrlKey || metaKey
 
     // Search focus (Ctrl+K or Cmd+K)
-    if (isCtrlOrCmd && key === 'k') {
+    if (isCtrlOrCmd && (key === 'k' || key === 'K')) {
       event.preventDefault()
       focusSearch()
       return
@@ -281,6 +324,7 @@ export function useKeyboardShortcuts() {
   return {
     isEnabled,
     registerSearchInput,
+    unregisterSearchInput,
     registerCanvasItems,
     registerPopup,
     unregisterPopup,
@@ -290,8 +334,17 @@ export function useKeyboardShortcuts() {
 
 // Export global functions for easy access
 export const keyboardShortcuts = {
-  registerSearchInput: (ref) => {
-    searchInputRef.value = ref
+  registerSearchInput: (ref, priority = 0) => {
+    if (priority >= searchInputPriority.value) {
+      searchInputRef.value = ref
+      searchInputPriority.value = priority
+    }
+  },
+  unregisterSearchInput: (priority = 0) => {
+    if (priority === searchInputPriority.value) {
+      searchInputRef.value = null
+      searchInputPriority.value = 0
+    }
   },
   registerCanvasItems: (items) => {
     canvasItems.value = items

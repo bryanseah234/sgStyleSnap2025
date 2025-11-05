@@ -34,12 +34,25 @@ const corsHeaders = {
  * Get email templates for different notification types
  */
 function getEmailTemplate(notificationType: string, actorName: string = 'A user'): EmailTemplate | null {
-  // StyleSnap Shirt Icon SVG (inline, from Lucide Icons)
-  const shirtIconSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;">
-      <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l1.48 9.24a2 2 0 0 0 2 1.78h10.48a2 2 0 0 0 2-1.78l1.48-9.24a2 2 0 0 0-1.34-2.23Z"/>
-    </svg>
-  `
+  // Construct logo URL
+  // Priority: 1. SITE_URL env var, 2. Extract from SUPABASE_URL (if it's a website URL)
+  // For production, set SITE_URL in Supabase Edge Function settings: https://your-domain.com
+  let siteUrl = Deno.env.get('SITE_URL')
+  
+  if (!siteUrl) {
+    // Fallback: try to extract site URL from SUPABASE_URL
+    // If SUPABASE_URL contains a domain pattern, we can use it
+    // Note: This is a fallback - ideally SITE_URL should be set explicitly
+    const supabaseUrl = SUPABASE_URL
+    // Remove any API paths
+    siteUrl = supabaseUrl.replace('/functions/v1', '').replace('/rest/v1', '').replace('/auth/v1', '')
+  }
+  
+  // Ensure URL doesn't end with slash
+  siteUrl = siteUrl.replace(/\/$/, '')
+  const logoUrl = `${siteUrl}/icons/favicon-192x192.png`
+  
+  console.log('📧 Logo URL constructed:', logoUrl)
   
   const templates: Record<string, EmailTemplate> = {
     friend_request: {
@@ -48,9 +61,7 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
           <!-- Logo/Header -->
           <div style="text-align:center; margin-bottom:24px;">
-            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
-              ${shirtIconSvg.replace('currentColor', '#ffffff')}
-            </div>
+            <img src="${logoUrl}" alt="StyleSnap Logo" style="width:64px; height:64px; margin-bottom:12px; display:block; margin-left:auto; margin-right:auto;" />
             <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
           </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">New friend request 👋</h2>
@@ -65,9 +76,7 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
           <!-- Logo/Header -->
           <div style="text-align:center; margin-bottom:24px;">
-            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
-              ${shirtIconSvg.replace('currentColor', '#ffffff')}
-            </div>
+            <img src="${logoUrl}" alt="StyleSnap Logo" style="width:64px; height:64px; margin-bottom:12px; display:block; margin-left:auto; margin-right:auto;" />
             <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
           </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Friend request accepted 🎉</h2>
@@ -82,9 +91,7 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
           <!-- Logo/Header -->
           <div style="text-align:center; margin-bottom:24px;">
-            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
-              ${shirtIconSvg.replace('currentColor', '#ffffff')}
-            </div>
+            <img src="${logoUrl}" alt="StyleSnap Logo" style="width:64px; height:64px; margin-bottom:12px; display:block; margin-left:auto; margin-right:auto;" />
             <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
           </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Your outfit got a like ❤️</h2>
@@ -99,9 +106,7 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
           <!-- Logo/Header -->
           <div style="text-align:center; margin-bottom:24px;">
-            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
-              ${shirtIconSvg.replace('currentColor', '#ffffff')}
-            </div>
+            <img src="${logoUrl}" alt="StyleSnap Logo" style="width:64px; height:64px; margin-bottom:12px; display:block; margin-left:auto; margin-right:auto;" />
             <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
           </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Your item got a like ❤️</h2>
@@ -116,9 +121,7 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
           <!-- Logo/Header -->
           <div style="text-align:center; margin-bottom:24px;">
-            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
-              ${shirtIconSvg.replace('currentColor', '#ffffff')}
-            </div>
+            <img src="${logoUrl}" alt="StyleSnap Logo" style="width:64px; height:64px; margin-bottom:12px; display:block; margin-left:auto; margin-right:auto;" />
             <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
           </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Outfit shared with you 👗</h2>
@@ -133,9 +136,7 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
           <!-- Logo/Header -->
           <div style="text-align:center; margin-bottom:24px;">
-            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
-              ${shirtIconSvg.replace('currentColor', '#ffffff')}
-            </div>
+            <img src="${logoUrl}" alt="StyleSnap Logo" style="width:64px; height:64px; margin-bottom:12px; display:block; margin-left:auto; margin-right:auto;" />
             <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
           </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">Outfit suggestion 💡</h2>
@@ -150,9 +151,7 @@ function getEmailTemplate(notificationType: string, actorName: string = 'A user'
         <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
           <!-- Logo/Header -->
           <div style="text-align:center; margin-bottom:24px;">
-            <div style="display:inline-block; padding:8px; background-color:#000000; border-radius:8px; margin-bottom:12px;">
-              ${shirtIconSvg.replace('currentColor', '#ffffff')}
-            </div>
+            <img src="${logoUrl}" alt="StyleSnap Logo" style="width:64px; height:64px; margin-bottom:12px; display:block; margin-left:auto; margin-right:auto;" />
             <h1 style="margin:0; color:#1f2937; font-size:24px; font-weight:bold;">StyleSnap</h1>
           </div>
           <h2 style="margin:0 0 12px; color:#1f2937;">New comment 💬</h2>

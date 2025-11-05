@@ -12,11 +12,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET') // Optional: for verifying webhook signatures
 
 // CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, svix-id, svix-timestamp, svix-signature',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
 }
 
@@ -141,42 +142,162 @@ async function upsertUserFromAuth(
 
 /**
  * Extract auth user from webhook payload
- * Supports multiple webhook formats
+ * Supports multiple webhook formats including Database Webhooks and Auth Webhooks
  */
 function extractAuthUserFromPayload(payload: any): AuthUser | null {
-  // Try different webhook payload formats
+  console.log('🔍 Extracting auth user from payload...')
+  console.log('Payload structure:', Object.keys(payload))
+  console.log('Full payload:', JSON.stringify(payload, null, 2))
+  
+  // Try different webhook payload formats (in order of likelihood)
   let record: any = null
 
-  if (payload.record) {
-    // Supabase database webhook format
-    record = payload.record
-  } else if (payload.new) {
-    // PostgreSQL change webhook format
-    record = payload.new
-  } else if (payload.data) {
-    // Generic data field
-    record = payload.data
-  } else if (payload.type === 'INSERT' && payload.table === 'users' && payload.record) {
-    // Direct webhook format
-    record = payload.record
-  } else if (payload.id && payload.email) {
-    // Direct auth user object
+  // Format 1: Supabase Database Webhook - Edge Function type (most common)
+  // When Edge Function is selected as webhook type, Supabase sends the row directly
+  if (payload.id && payload.email && (payload.raw_user_meta_data || payload.user_metadata)) {
+    console.log('✅ Detected Database Webhook format (Edge Function type) - direct row data')
     record = payload
-  } else {
-    // Try entire payload as record
+  }
+  // Format 2: Supabase Database Webhook - HTTP type with record field
+  else if (payload.record) {
+    console.log('✅ Detected Database Webhook format: record field')
+    record = payload.record
+  }
+  // Format 3: Supabase Auth Webhook format (type: "user.created" or "user.updated")
+  else if (payload.type && (payload.type === 'user.created' || payload.type === 'user.updated')) {
+    console.log('✅ Detected Supabase Auth Webhook format')
+    record = payload.user || payload.record
+  }
+  // Format 4: PostgreSQL change webhook format (new field)
+  else if (payload.new) {
+    console.log('✅ Detected PostgreSQL change webhook format: new field')
+    record = payload.new
+  }
+  // Format 5: Generic data field
+  else if (payload.data) {
+    console.log('✅ Detected generic data field format')
+    record = payload.data
+  }
+  // Format 6: Direct webhook format with type and table
+  else if (payload.type === 'INSERT' && payload.table && payload.record) {
+    console.log('✅ Detected direct webhook format with type/table')
+    record = payload.record
+  }
+  // Format 7: Direct auth user object (has id and email)
+  else if (payload.id && payload.email) {
+    console.log('✅ Detected direct auth user object')
+    record = payload
+  }
+  // Format 8: Try entire payload as record (last resort)
+  else {
+    console.log('⚠️ Trying entire payload as record (fallback)')
     record = payload
   }
 
-  if (!record || !record.id) {
+  // Validate record has required fields
+  if (!record) {
+    console.error('❌ Could not extract user record from payload')
+    console.error('Payload:', JSON.stringify(payload, null, 2))
     return null
   }
+
+  if (!record.id) {
+    console.error('❌ Extracted record missing required field: id')
+    console.error('Record:', JSON.stringify(record, null, 2))
+    return null
+  }
+
+  // Validate it's an auth user (has email or is from auth.users)
+  if (!record.email && !record.raw_user_meta_data && !record.user_metadata) {
+    console.warn('⚠️ Record might not be an auth user (no email or metadata)')
+    // Still proceed if it has an id - might be partial data
+  }
+
+  console.log('✅ Extracted user record:', {
+    id: record.id,
+    email: record.email || '(no email)',
+    has_metadata: !!(record.raw_user_meta_data || record.user_metadata),
+    metadata_keys: record.raw_user_meta_data 
+      ? Object.keys(record.raw_user_meta_data) 
+      : record.user_metadata 
+        ? Object.keys(record.user_metadata) 
+        : []
+  })
+
+  // Extract metadata (handle both field names)
+  const metadata = record.raw_user_meta_data || record.user_metadata || {}
 
   return {
     id: record.id,
     email: record.email,
-    raw_user_meta_data: record.raw_user_meta_data || record.user_metadata,
+    raw_user_meta_data: metadata,
     created_at: record.created_at,
     updated_at: record.updated_at
+  }
+}
+
+/**
+ * Verify webhook signature (optional but recommended for security)
+ * Uses the webhook secret to verify requests are from Supabase
+ */
+async function verifyWebhookSignature(
+  req: Request,
+  body: string
+): Promise<boolean> {
+  // If no secret configured, skip verification (for testing)
+  if (!WEBHOOK_SECRET) {
+    console.log('⚠️ WEBHOOK_SECRET not set, skipping signature verification')
+    return true
+  }
+
+  try {
+    // Get signature headers (Supabase uses svix headers)
+    const svixId = req.headers.get('svix-id')
+    const svixTimestamp = req.headers.get('svix-timestamp')
+    const svixSignature = req.headers.get('svix-signature')
+
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      console.warn('⚠️ Missing svix headers, skipping verification')
+      return true // Allow if headers missing (for backwards compatibility)
+    }
+
+    // Extract secret from format: v1,whsec_xxxxx
+    const secret = WEBHOOK_SECRET.replace(/^v1,whsec_/, '')
+    
+    // Verify signature using crypto
+    const signedPayload = `${svixId}.${svixTimestamp}.${body}`
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+
+    const signature = svixSignature.split(',')[1]?.split('=')[1] || svixSignature
+    const signatureBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0))
+    const dataBytes = encoder.encode(signedPayload)
+
+    const isValid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signatureBytes,
+      dataBytes
+    )
+
+    if (!isValid) {
+      console.error('❌ Webhook signature verification failed')
+      return false
+    }
+
+    console.log('✅ Webhook signature verified')
+    return true
+  } catch (error) {
+    console.error('❌ Error verifying webhook signature:', error)
+    // Allow request if verification fails (for backwards compatibility)
+    // In production, you might want to reject instead
+    return true
   }
 }
 
@@ -235,13 +356,57 @@ serve(async (req) => {
 
     // Parse request body
     let payload: any
+    let bodyText: string
     try {
-      const bodyText = await req.text()
-      console.log('Raw request body:', bodyText)
+      bodyText = await req.text()
+      console.log('📥 Raw request body length:', bodyText.length)
+      console.log('📥 Raw request body (first 500 chars):', bodyText.substring(0, 500))
+      
+      // Log headers for debugging
+      console.log('📥 Request headers:', {
+        'content-type': req.headers.get('content-type'),
+        'x-supabase-webhook-id': req.headers.get('x-supabase-webhook-id'),
+        'user-agent': req.headers.get('user-agent')
+      })
+      
+      // Verify webhook signature (optional but recommended)
+      // Skip for Database Webhooks using Edge Function type (they're authenticated internally)
+      const hasSignatureHeaders = req.headers.get('svix-id') || req.headers.get('x-supabase-webhook-id')
+      if (hasSignatureHeaders && WEBHOOK_SECRET) {
+        const isValid = await verifyWebhookSignature(req, bodyText)
+        if (!isValid) {
+          console.error('❌ Webhook signature verification failed')
+          return new Response(
+            JSON.stringify({ error: 'Invalid webhook signature' }),
+            {
+              status: 401,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+      } else {
+        console.log('ℹ️ Skipping signature verification (no secret or signature headers)')
+      }
+      
+      // Parse JSON payload
+      if (!bodyText || bodyText.trim() === '') {
+        console.error('❌ Empty request body')
+        return new Response(
+          JSON.stringify({ error: 'Empty request body' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
       payload = JSON.parse(bodyText)
-      console.log('Parsed payload:', JSON.stringify(payload, null, 2))
+      console.log('✅ Parsed payload successfully')
+      console.log('📦 Payload type:', typeof payload)
+      console.log('📦 Payload keys:', Object.keys(payload))
     } catch (parseError) {
       console.error('❌ Error parsing request body:', parseError)
+      console.error('❌ Body text:', bodyText)
       return new Response(
         JSON.stringify({
           error: 'Invalid JSON in request body',
@@ -259,10 +424,12 @@ serve(async (req) => {
 
     if (!authUser) {
       console.error('❌ Invalid payload format: could not extract auth user')
+      console.error('❌ Received payload:', JSON.stringify(payload, null, 2))
       return new Response(
         JSON.stringify({
           error: 'Invalid payload format: could not extract auth user data',
-          received: payload
+          received: payload,
+          hint: 'Expected payload with id and email fields, or record/user object containing user data'
         }),
         {
           status: 400,
@@ -273,7 +440,8 @@ serve(async (req) => {
 
     console.log('✅ Extracted auth user:', {
       id: authUser.id,
-      email: authUser.email
+      email: authUser.email || '(no email)',
+      has_metadata: !!(authUser.raw_user_meta_data && Object.keys(authUser.raw_user_meta_data).length > 0)
     })
 
     // Sync user

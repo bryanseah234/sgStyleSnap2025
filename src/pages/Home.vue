@@ -100,7 +100,7 @@
             :key="stat.label"
             :to="stat.route"
             v-scroll-animate.up
-            class="p-6 rounded-xl cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all hover:shadow-md"
+            class="nav-item-liquid p-6 rounded-xl cursor-pointer bg-white border border-stone-200 hover:border-stone-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all hover:shadow-md"
             :style="{ transitionDelay: `${index * 100}ms` }"
           >
             <div class="flex flex-col items-center text-center">

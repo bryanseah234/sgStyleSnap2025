@@ -452,7 +452,7 @@
  */
 
 // Vue 3 Composition API imports
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // Composables and stores
@@ -486,6 +486,14 @@ const { registerSearchInput } = useKeyboardShortcuts()
 
 // Search input ref
 const searchInputRef = ref(null)
+
+// Watch for search input ref to become available and register it
+watch(searchInputRef, (newRef) => {
+  if (newRef) {
+    registerSearchInput(newRef)
+    console.log('⌨️ Cabinet: Search input ref registered via watch')
+  }
+}, { immediate: true })
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
@@ -870,8 +878,14 @@ onMounted(async () => {
   // Detect Mac OS
   isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
   
-  // Register search input for keyboard shortcuts
-  registerSearchInput(searchInputRef.value)
+  // Register search input for keyboard shortcuts after DOM is rendered
+  await nextTick()
+  if (searchInputRef.value) {
+    registerSearchInput(searchInputRef.value)
+    console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut')
+  } else {
+    console.warn('⚠️ Cabinet: Search input ref not found when trying to register')
+  }
   
   // Ensure auth store is initialized
   if (!authStore.isAuthenticated) {

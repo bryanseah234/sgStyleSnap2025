@@ -151,7 +151,7 @@ const friendsService = new FriendsService()
 const { sanitizeSearch } = useSanitize()
 
 // Keyboard shortcuts
-const { registerSearchInput } = useKeyboardShortcuts()
+const { registerSearchInput, unregisterSearchInput } = useKeyboardShortcuts()
 
 // Props
 const props = defineProps({
@@ -191,6 +191,15 @@ const searchPerformed = ref(false) // Track if a search has been performed
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
+
+// Watch for search input ref to become available and register it with priority
+watch(searchInputRef, async (newRef) => {
+  if (newRef && props.isOpen) {
+    await nextTick()
+    registerSearchInput(newRef, 1)
+    console.log('⌨️ AddFriendDialog: Search input ref registered via watch with priority 1')
+  }
+}, { immediate: true })
 
 // Create debounced search function
 const { debounce } = useDebounce()
@@ -295,11 +304,17 @@ watch(() => props.isOpen, async (isOpen) => {
     isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
     
     // Register search input for keyboard shortcuts when dialog opens
+    // Use priority 1 to ensure modal search takes precedence over page-level search
     await nextTick()
     if (searchInputRef.value) {
-      registerSearchInput(searchInputRef.value)
+      registerSearchInput(searchInputRef.value, 1)
+      console.log('⌨️ AddFriendDialog: Modal search input registered with priority 1')
     }
   } else {
+    // Unregister search input when dialog closes (priority 1)
+    unregisterSearchInput(1)
+    console.log('⌨️ AddFriendDialog: Modal search input unregistered')
+    
     // Reset search state when dialog closes
     searchQuery.value = ''
     searchResults.value = []

@@ -1,11 +1,7 @@
 <template>
   <!-- Confirmation Popup -->
   <div v-if="show" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-[1200] p-4 backdrop-blur-sm" @click="handleBackdropClick">
-    <div :class="`relative w-full max-w-md rounded-xl p-6 shadow-2xl border ${
-      theme === 'dark' 
-        ? 'bg-zinc-900 border-zinc-800' 
-        : 'bg-white border-stone-200'
-    }`" @click.stop>
+    <div class="relative w-full max-w-md rounded-xl p-6 shadow-2xl border bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800" @click.stop>
       <!-- Close Button -->
       <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
         <!-- ESC Key Hint (Desktop only) -->
@@ -14,7 +10,7 @@
         </div>
         <button
           @click="$emit('close')"
-          class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
+          class="p-2 rounded-lg transition-all bg-white/90 dark:bg-zinc-900/90 shadow-lg hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-500 dark:text-zinc-300 hover:text-black dark:hover:text-white"
           aria-label="Close dialog"
         >
           <X class="w-5 h-5" />
@@ -35,27 +31,23 @@
         <div v-else class="w-10 h-10 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center flex-shrink-0">
           <Info class="w-5 h-5 text-white" />
         </div>
-        <h3 :class="`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`">
+        <h3 class="text-xl font-bold text-black dark:text-white">
           {{ title }}
         </h3>
       </div>
 
       <!-- Message -->
-      <p :class="`text-sm mb-4 leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-stone-700'}`">
+      <p class="text-sm mb-4 leading-relaxed text-stone-700 dark:text-zinc-300">
         {{ message }}
       </p>
 
       <!-- Image (if provided) -->
       <div v-if="imageUrl" class="mb-6">
-        <p :class="`text-xs mb-2 text-center ${theme === 'dark' ? 'text-zinc-400' : 'text-stone-600'}`">
+        <p :class="`text-xs mb-2 text-center text-stone-600 dark:text-zinc-400`">
           Processed image (background removed):
         </p>
         <div class="flex justify-center">
-          <div :class="`relative rounded-lg overflow-hidden border-2 ${
-            theme === 'dark' 
-              ? 'border-zinc-700 bg-zinc-800/50' 
-              : 'border-stone-200 bg-stone-50'
-          }`">
+          <div class="relative rounded-lg overflow-hidden border-2 border-stone-200 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800/50">
             <img
               :src="imageUrl"
               alt="Processed image"
@@ -72,11 +64,7 @@
         <button 
           v-if="showCancel"
           @click="handleCancel" 
-          :class="`px-6 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-            theme === 'dark' 
-              ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700' 
-              : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-300'
-          }`"
+          class="px-6 py-2.5 rounded-lg font-medium transition-all duration-200 bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 border border-stone-300 dark:border-zinc-700"
         >
           {{ cancelText }}
         </button>
