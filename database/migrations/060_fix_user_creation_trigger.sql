@@ -1,30 +1,12 @@
 -- ============================================
 -- Migration: Fix User Creation Trigger Issue
 -- Description: Ensures trigger exists and has proper permissions
---              Fixes RLS policies if needed
+--              The SECURITY DEFINER function should bypass RLS automatically
 -- Date: 2025-01-XX
 -- ============================================
 
 -- ============================================
--- 1. VERIFY TRIGGER EXISTS
--- ============================================
-
--- Check if trigger exists (this will show in Supabase logs)
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 FROM pg_trigger 
-        WHERE tgname = 'sync_auth_user_to_public' 
-        AND tgrelid = 'auth.users'::regclass
-    ) THEN
-        RAISE NOTICE '✅ Trigger sync_auth_user_to_public EXISTS';
-    ELSE
-        RAISE WARNING '❌ Trigger sync_auth_user_to_public DOES NOT EXIST';
-    END IF;
-END $$;
-
--- ============================================
--- 2. RECREATE FUNCTION WITH BETTER ERROR HANDLING
+-- 1. RECREATE FUNCTION WITH BETTER ERROR HANDLING
 -- ============================================
 
 DROP FUNCTION IF EXISTS sync_auth_user_to_public() CASCADE;
@@ -114,7 +96,7 @@ END;
 $$;
 
 -- ============================================
--- 3. RECREATE TRIGGER
+-- 2. RECREATE TRIGGER
 -- ============================================
 
 DROP TRIGGER IF EXISTS sync_auth_user_to_public ON auth.users;
@@ -127,7 +109,7 @@ CREATE TRIGGER sync_auth_user_to_public
 COMMENT ON TRIGGER sync_auth_user_to_public ON auth.users IS 'Automatically syncs new auth users to public.users table';
 
 -- ============================================
--- 4. ENSURE FUNCTION HAS PROPER PERMISSIONS
+-- 3. ENSURE FUNCTION HAS PROPER PERMISSIONS
 -- ============================================
 
 -- Grant execute permissions to service_role and postgres
@@ -137,55 +119,9 @@ GRANT EXECUTE ON FUNCTION sync_auth_user_to_public() TO authenticated;
 GRANT EXECUTE ON FUNCTION sync_auth_user_to_public() TO anon;
 
 -- ============================================
--- 5. CHECK AND FIX RLS POLICIES ON public.users
+-- 4. ENSURE GENERATE_UNIQUE_USERNAME FUNCTION EXISTS
 -- ============================================
 
--- Ensure the function can bypass RLS when inserting
--- The SECURITY DEFINER should handle this, but let's verify RLS policies
-
--- Check current RLS status
-DO $$
-BEGIN
-    IF (SELECT relrowsecurity FROM pg_class WHERE relname = 'users' AND relnamespace = 'public'::regnamespace) THEN
-        RAISE NOTICE 'ℹ️ RLS is enabled on public.users';
-        RAISE NOTICE 'ℹ️ SECURITY DEFINER function should bypass RLS';
-    ELSE
-        RAISE NOTICE 'ℹ️ RLS is disabled on public.users';
-    END IF;
-END $$;
-
--- Ensure RLS policy exists for service_role to insert
-DROP POLICY IF EXISTS "Service role can insert users" ON users;
-
-CREATE POLICY "Service role can insert users" ON users
-    FOR INSERT 
-    TO service_role, postgres
-    WITH CHECK (true);
-
--- Grant table permissions
-GRANT INSERT ON public.users TO service_role;
-GRANT INSERT ON public.users TO postgres;
-GRANT SELECT ON public.users TO service_role;
-GRANT SELECT ON public.users TO postgres;
-
--- ============================================
--- 6. VERIFY GENERATE_UNIQUE_USERNAME FUNCTION EXISTS
--- ============================================
-
--- Check if function exists and create if missing
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_proc 
-        WHERE proname = 'generate_unique_username'
-    ) THEN
-        RAISE NOTICE '❌ Function generate_unique_username DOES NOT EXIST - creating it...';
-    ELSE
-        RAISE NOTICE '✅ Function generate_unique_username EXISTS';
-    END IF;
-END $$;
-
--- Create the function (will replace if exists)
 CREATE OR REPLACE FUNCTION generate_unique_username(
     user_id UUID,
     user_email TEXT
@@ -220,8 +156,12 @@ BEGIN
 END;
 $$;
 
+-- Grant execute permissions
+GRANT EXECUTE ON FUNCTION generate_unique_username(UUID, TEXT) TO service_role;
+GRANT EXECUTE ON FUNCTION generate_unique_username(UUID, TEXT) TO postgres;
+
 -- ============================================
--- 7. SUCCESS MESSAGE
+-- 5. SUCCESS MESSAGE
 -- ============================================
 
 DO $$
@@ -230,6 +170,6 @@ BEGIN
     RAISE NOTICE '✅ User creation trigger fixed!';
     RAISE NOTICE '✅ Trigger: sync_auth_user_to_public';
     RAISE NOTICE '✅ Function: sync_auth_user_to_public()';
+    RAISE NOTICE '✅ Function uses SECURITY DEFINER (bypasses RLS)';
     RAISE NOTICE '==============================================';
 END $$;
-
