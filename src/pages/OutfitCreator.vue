@@ -115,24 +115,27 @@
                 : 'opacity-50 cursor-not-allowed'
             }`"
           >
-            <Save class="w-5 h-5" />
+            <Share2 v-if="currentSubRoute === 'friend'" class="w-5 h-5" />
+            <Save v-else class="w-5 h-5" />
             <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
           </button>
           
           <!-- Show Outfit on Model button -->
           <button
             @click="showVirtualTryOn"
-            :disabled="!canShowVirtualTryOn || generatingTryOn"
+            :disabled="!canShowVirtualTryOn || (generatingTryOn && !virtualTryOnImageUrl)"
             :class="`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer ${
-              canShowVirtualTryOn && !generatingTryOn
+              canShowVirtualTryOn && (!generatingTryOn || virtualTryOnImageUrl)
                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                 : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
             }`"
-            title="Show Outfit on AI Model Person"
+            :title="virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
           >
-            <User class="w-5 h-5" />
+            <Eye v-if="virtualTryOnImageUrl" class="w-5 h-5" />
+            <User v-else class="w-5 h-5" />
             <span class="hidden sm:inline whitespace-nowrap">
               <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
+              <span v-else-if="virtualTryOnImageUrl">View</span>
               <span v-else>Try On</span>
             </span>
           </button>
@@ -244,17 +247,19 @@
             <!-- Show Outfit on Model button -->
             <button
               @click="showVirtualTryOn"
-              :disabled="!canShowVirtualTryOn || generatingTryOn"
+              :disabled="!canShowVirtualTryOn || (generatingTryOn && !virtualTryOnImageUrl)"
               :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 gradient-button-shimmer ${
-                canShowVirtualTryOn && !generatingTryOn
+                canShowVirtualTryOn && (!generatingTryOn || virtualTryOnImageUrl)
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
                   : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
               }`"
-              title="Show Outfit on AI Model Person"
+              :title="virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
             >
-              <User class="w-4 h-4" />
+              <Eye v-if="virtualTryOnImageUrl" class="w-4 h-4" />
+              <User v-else class="w-4 h-4" />
               <span class="text-xs whitespace-nowrap">
                 <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
+                <span v-else-if="virtualTryOnImageUrl">View</span>
                 <span v-else>Try On</span>
               </span>
             </button>
@@ -306,7 +311,8 @@
                   : 'opacity-50 cursor-not-allowed'
               }`"
             >
-              <Save class="w-4 h-4" />
+              <Share2 v-if="currentSubRoute === 'friend'" class="w-4 h-4" />
+              <Save v-else class="w-4 h-4" />
               <span class="text-xs">{{ saveButtonLabel }}</span>
             </button>
           </div>
@@ -433,15 +439,15 @@
         <div class="lg:col-span-2">
 
           <!-- Items Section -->
-          <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
+          <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col" style="height: 600px;">
             <!-- Loading State -->
-            <div v-if="loadingWardrobeItems" class="flex flex-col items-center justify-center py-24">
+            <div v-if="loadingWardrobeItems" class="flex flex-col items-center justify-center py-24 flex-1">
               <div class="w-16 h-16 spinner-modern mb-4"></div>
             </div>
             
             <!-- Content (when loaded) -->
             <template v-else>
-              <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center justify-between mb-4 flex-shrink-0">
                 <h3 class="text-lg font-bold text-black dark:text-white">
                   {{ itemsSectionTitle }}
                 </h3>
@@ -451,7 +457,7 @@
               </div>
               
               <!-- Category Filters -->
-              <div class="flex flex-wrap gap-2 mb-4">
+              <div class="flex flex-wrap gap-2 mb-4 flex-shrink-0">
                 <button
                   v-for="category in categoryOptions"
                   :key="category"
@@ -467,66 +473,68 @@
               </div>
 
               <!-- Items List -->
-              <div class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-              <div
-                v-for="item in filteredItems"
-                :key="item.id"
-                draggable="true"
-                @dragstart="handleDragStart(item, $event)"
-                @click="addItemToCanvas(item)"
-                @contextmenu.prevent="showItemContextMenu(item, $event)"
-                class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600 relative"
-              >
-                <div class="flex items-center gap-3">
-                  <!-- Item Image -->
-                  <div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-sm bg-white dark:bg-zinc-900">
-                    <img
-                      v-if="item.image_url"
-                      :src="item.image_url"
-                      :alt="item.name"
-                      class="w-full h-full object-cover"
-                      draggable="false"
-                    />
-                    <div class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
-                      <Shirt class="w-6 h-6 text-stone-400 dark:text-zinc-500" />
+              <div class="flex-1 overflow-y-auto px-2 custom-scrollbar min-h-0">
+                <div v-if="filteredItems.length > 0" class="space-y-2">
+                  <div
+                    v-for="item in filteredItems"
+                    :key="item.id"
+                    draggable="true"
+                    @dragstart="handleDragStart(item, $event)"
+                    @click="addItemToCanvas(item)"
+                    @contextmenu.prevent="showItemContextMenu(item, $event)"
+                    class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600 relative"
+                  >
+                    <div class="flex items-center gap-3">
+                      <!-- Item Image -->
+                      <div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-sm bg-white dark:bg-zinc-900">
+                        <img
+                          v-if="item.image_url"
+                          :src="item.image_url"
+                          :alt="item.name"
+                          class="w-full h-full object-cover"
+                          draggable="false"
+                        />
+                        <div class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+                          <Shirt class="w-6 h-6 text-stone-400 dark:text-zinc-500" />
+                        </div>
+                      </div>
+                      
+                      <!-- Item Info -->
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate mb-1 text-black dark:text-white">
+                          {{ item.name }}
+                        </p>
+                        <p class="text-xs truncate capitalize text-stone-500 dark:text-zinc-400">
+                          {{ item.category }}
+                        </p>
+                      </div>
+                      
+                      <!-- Add Icon -->
+                      <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-zinc-400">
+                        <Plus class="w-5 h-5" />
+                      </div>
                     </div>
                   </div>
-                  
-                  <!-- Item Info -->
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium truncate mb-1 text-black dark:text-white">
-                      {{ item.name }}
-                    </p>
-                    <p class="text-xs truncate capitalize text-stone-500 dark:text-zinc-400">
-                      {{ item.category }}
-                    </p>
-                  </div>
-                  
-                  <!-- Add Icon -->
-                  <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-zinc-400">
-                    <Plus class="w-5 h-5" />
-                  </div>
                 </div>
-              </div>
-            </div>
-            
-              <!-- Empty State -->
-              <div v-if="filteredItems.length === 0" class="text-center py-12">
-                <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
-                  <Shirt v-if="itemsSource === 'my-cabinet'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
-                  <Users v-else-if="itemsSource === 'friends'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
-                  <Sparkles v-else class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+                
+                <!-- Empty State -->
+                <div v-else class="flex flex-col items-center justify-center h-full py-12">
+                  <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-stone-100 dark:bg-zinc-800">
+                    <Shirt v-if="itemsSource === 'my-cabinet'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+                    <Users v-else-if="itemsSource === 'friends'" class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+                    <Sparkles v-else class="w-8 h-8 text-stone-400 dark:text-zinc-600" />
+                  </div>
+                  <p class="text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
+                    {{ itemsSource === 'my-cabinet' ? 'No items in your closet' : 
+                       itemsSource === 'friends' ? "No friend's items available" :
+                       'No AI suggestions available' }}
+                  </p>
+                  <p class="text-xs text-stone-500 dark:text-zinc-500">
+                    {{ itemsSource === 'my-cabinet' ? 'Add items to your closet to get started' : 
+                       itemsSource === 'friends' ? 'Connect with friends to access their items' :
+                       'AI suggestions are coming soon!' }}
+                  </p>
                 </div>
-                <p class="text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
-                  {{ itemsSource === 'my-cabinet' ? 'No items in your closet' : 
-                     itemsSource === 'friends' ? "No friend's items available" :
-                     'No AI suggestions available' }}
-                </p>
-                <p class="text-xs text-stone-500 dark:text-zinc-500">
-                  {{ itemsSource === 'my-cabinet' ? 'Add items to your closet to get started' : 
-                     itemsSource === 'friends' ? 'Connect with friends to access their items' :
-                     'AI suggestions are coming soon!' }}
-                </p>
               </div>
             </template>
           </div>
@@ -747,17 +755,19 @@
                 <!-- Model Button -->
                 <button
                   @click="showVirtualTryOn"
-                  :disabled="!canShowVirtualTryOn || generatingTryOn"
+                  :disabled="!canShowVirtualTryOn || (generatingTryOn && !virtualTryOnImageUrl)"
                   :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
-                    canShowVirtualTryOn && !generatingTryOn
+                    canShowVirtualTryOn && (!generatingTryOn || virtualTryOnImageUrl)
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
-                  title="Show Outfit on AI Model Person"
+                  :title="virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
                 >
-                  <User class="w-5 h-5" />
+                  <Eye v-if="virtualTryOnImageUrl" class="w-5 h-5" />
+                  <User v-else class="w-5 h-5" />
                   <span class="hidden sm:inline whitespace-nowrap">
                     <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
+                    <span v-else-if="virtualTryOnImageUrl">View</span>
                     <span v-else>Try On</span>
                   </span>
                 </button>
@@ -800,9 +810,10 @@
                   @click="saveOutfit"
                   :disabled="canvasItems.length < 2 || savingOutfit"
                   :class="`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${canvasItems.length >= 2 && !savingOutfit ? 'bg-black text-white dark:bg-white dark:text-black' : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'}`"
-                  title="Save Outfit"
+                  :title="currentSubRoute === 'friend' ? 'Share Outfit' : 'Save Outfit'"
                 >
-                  <Save class="w-4 h-4" />
+                  <Share2 v-if="currentSubRoute === 'friend'" class="w-4 h-4" />
+                  <Save v-else class="w-4 h-4" />
                   <span class="hidden sm:inline">{{ saveButtonLabel }}</span>
                 </button>
               </div>
@@ -1105,7 +1116,9 @@ import {
   Grid3X3, 
   Trash2, 
   Save, 
+  Share2,
   User, 
+  Eye,
   Shirt, 
   Sparkles,
   Plus,
@@ -3477,11 +3490,11 @@ const moveSelectedItemForward = () => {
     const swapItem = itemsWithZ.find(i => i.id !== item.id && i.normalizedZ === minAboveZIndex)
     
     if (swapItem) {
-      // Swap z-indexes by creating new array with updated items
-      canvasItems.value = canvasItems.value.map((i, idx) => {
-        if (idx === itemIndex) {
+      // Swap z-indexes by creating new array with updated items - use ID to identify items
+      canvasItems.value = canvasItems.value.map((i) => {
+        if (i.id === item.id) {
           return { ...i, z_index: swapItem.normalizedZ }
-        } else if (idx === swapItem.index) {
+        } else if (i.id === swapItem.id) {
           return { ...i, z_index: currentZIndex }
         }
         return i
@@ -3490,16 +3503,16 @@ const moveSelectedItemForward = () => {
     } else {
       // Fallback: just increment
       const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
-      canvasItems.value = canvasItems.value.map((i, idx) => 
-        idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+      canvasItems.value = canvasItems.value.map((i) => 
+        i.id === item.id ? { ...i, z_index: maxZIndex + 1 } : i
       )
       console.log(`Incremented z-index: ${item.id} now ${maxZIndex + 1}`)
     }
   } else {
     // No items above, move to front
     const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
-    canvasItems.value = canvasItems.value.map((i, idx) => 
-      idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+    canvasItems.value = canvasItems.value.map((i) => 
+      i.id === item.id ? { ...i, z_index: maxZIndex + 1 } : i
     )
     console.log(`Moved to front: ${item.id} now ${maxZIndex + 1}`)
   }
@@ -3541,11 +3554,11 @@ const moveSelectedItemBackward = () => {
     const swapItem = itemsWithZ.find(i => i.id !== item.id && i.normalizedZ === maxBelowZIndex)
     
     if (swapItem) {
-      // Swap z-indexes by creating new array with updated items
-      canvasItems.value = canvasItems.value.map((i, idx) => {
-        if (idx === itemIndex) {
+      // Swap z-indexes by creating new array with updated items - use ID to identify items
+      canvasItems.value = canvasItems.value.map((i) => {
+        if (i.id === item.id) {
           return { ...i, z_index: swapItem.normalizedZ }
-        } else if (idx === swapItem.index) {
+        } else if (i.id === swapItem.id) {
           return { ...i, z_index: currentZIndex }
         }
         return i
@@ -3553,15 +3566,15 @@ const moveSelectedItemBackward = () => {
       console.log(`Swapped z-index: ${item.id} now ${swapItem.normalizedZ}, ${swapItem.id} now ${currentZIndex}`)
     } else {
       // Fallback: just decrement (but ensure minimum of 2)
-      canvasItems.value = canvasItems.value.map((i, idx) => 
-        idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+      canvasItems.value = canvasItems.value.map((i) => 
+        i.id === item.id ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
       )
       console.log(`Decremented z-index: ${item.id} now ${Math.max(2, currentZIndex - 1)}`)
     }
   } else {
     // No items below, just decrement (but ensure minimum of 2)
-    canvasItems.value = canvasItems.value.map((i, idx) => 
-      idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+    canvasItems.value = canvasItems.value.map((i) => 
+      i.id === item.id ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
     )
     console.log(`Moved backward: ${item.id} now ${Math.max(2, currentZIndex - 1)}`)
   }
@@ -3826,6 +3839,13 @@ const showVirtualTryOn = async () => {
       return
     }
     
+    // If we already have a result, just reopen the modal
+    if (virtualTryOnImageUrl.value && !generatingTryOn.value) {
+      console.log('🎨 OutfitCreator: Reopening modal with existing result')
+      showVirtualTryOnModal.value = true
+      return
+    }
+    
     // Open modal
     showVirtualTryOnModal.value = true
     generatingTryOn.value = true
@@ -4019,6 +4039,16 @@ const handleKeydown = (event) => {
   if (event.key.startsWith('Arrow')) {
     event.preventDefault()
     moveItemWithArrows(event.key, event.shiftKey ? 50 : 10) // Shift + Arrow = move 50px
+    return
+  }
+  
+  // Handle Delete key to delete selected item
+  if (event.key === 'Delete' || event.key === 'Backspace') {
+    event.preventDefault()
+    if (selectedItemId.value) {
+      deleteSelectedItem()
+    }
+    return
   }
 }
 
@@ -4212,7 +4242,10 @@ onMounted(async () => {
         break
       
       case 'keyboard-remove-item':
-        if (event.detail && event.detail.index >= 0) {
+        // Handle via selectedItemId if available, otherwise use index
+        if (selectedItemId.value) {
+          deleteSelectedItem()
+        } else if (event.detail && event.detail.index >= 0) {
           const item = canvasItems.value[event.detail.index]
           if (item) {
             removeItemFromCanvas(item.id)

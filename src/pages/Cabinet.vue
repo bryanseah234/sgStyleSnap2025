@@ -274,7 +274,7 @@
               >
                 <option :value="null">All Brands</option>
                 <option v-for="brand in availableBrands" :key="brand" :value="brand">
-                  {{ brand }}
+                  {{ toProperCase(brand) }}
                 </option>
               </select>
             </div>
@@ -460,6 +460,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { ClothesService } from '@/services/clothesService'
 import { useLiquidPress } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { toProperCase } from '@/utils/textFormatting'
 
 // UI Components
 import { Plus, Heart, Shirt, Search, ChevronDown, X } from 'lucide-vue-next'

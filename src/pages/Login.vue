@@ -31,8 +31,8 @@
 
       <!-- Logo and Title -->
       <div class="text-center mb-4 sm:mb-6">
-        <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 rounded-2xl flex items-center justify-center bg-black dark:bg-white">
-          <Shirt class="w-8 h-8 sm:w-10 sm:h-10 text-white dark:text-black" />
+        <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 flex items-center justify-center">
+          <StyleSnapLogo size="4xl" />
         </div>
         <h1 class="text-3xl sm:text-4xl font-bold mb-1 sm:mb-2 text-foreground">
           <StyleSnapBrand size="4xl" />
@@ -169,7 +169,7 @@ import { Shirt, Layers, Users, AlertCircle } from 'lucide-vue-next'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
-import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
+import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
 
 const router = useRouter()
 const route = useRoute()

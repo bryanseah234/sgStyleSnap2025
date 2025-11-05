@@ -42,9 +42,7 @@
           @click="scrollToTop"
           class="flex items-center gap-2 min-w-0 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
         >
-          <div class="bg-black rounded-lg p-1.5 flex items-center justify-center">
-            <Shirt class="w-4 h-4 text-white" />
-          </div>
+          <StyleSnapLogo size="base" />
           <StyleSnapBrand class="font-bold text-base truncate text-gray-900" size="base" />
         </div>
 
@@ -111,32 +109,32 @@
       <div class="container relative z-10 text-center flex flex-col items-center">
         <h1 
           ref="heroTitleRef"
-          class="hero-title text-white mb-4 sm:mb-6"
+          class="hero-title text-white mb-3 sm:mb-5"
           :class="{ 'hero-title-visible': showHeroTitle }"
         >
           Transform Your Fashion Game
         </h1>
-        <p class="text-xl md:text-2xl text-white max-w-2xl mx-auto mb-8 sm:mb-10" style="color: #ffffff !important;">
+        <p class="text-lg md:text-xl text-white max-w-2xl mx-auto mb-6 sm:mb-8" style="color: #ffffff !important;">
           Organise your closet, create stunning outfits, and discover new styles with AI-powered suggestions. Share your fashion journey with friends.
         </p>
         <div class="flex justify-center">
           <button
             @click="handleSignUp"
-            class="flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-white text-black hover:bg-gray-100 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-white text-black hover:bg-gray-100 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             <span>Get Started</span>
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
+            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" />
           </button>
         </div>
       </div>
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="landing-section py-[10vh] bg-white relative overflow-hidden">
+    <section id="features" class="landing-section py-[8vh] bg-white relative overflow-hidden">
       <div class="container relative z-10">
-        <div class="text-center mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="features-header">
-          <h2 class="text-4xl font-bold mb-1 sm:mb-2">Powerful Features for Your Style</h2>
-          <p class="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto">
+        <div class="text-center mb-6 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="features-header">
+          <h2 class="text-3xl font-bold mb-1 sm:mb-2">Powerful Features for Your Style</h2>
+          <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
             Everything you need to manage, create, and share your fashion effortlessly
           </p>
         </div>
@@ -228,11 +226,11 @@
     </section>
     
     <!-- Demo Section -->
-    <section id="demo" class="landing-section py-[10vh] relative overflow-hidden bg-white">
+    <section id="demo" class="landing-section py-[8vh] relative overflow-hidden bg-white">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center mb-8 sm:mb-16 scroll-hidden animate-slideInFromBottom" id="demo-header">
-          <h2 class="text-4xl font-bold mb-1 sm:mb-2">Try the Outfit Creator</h2>
-          <p class="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto">
+        <div class="text-center mb-6 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="demo-header">
+          <h2 class="text-3xl font-bold mb-1 sm:mb-2">Try the Outfit Creator</h2>
+          <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
             Click items to add them, then drag to adjust positions in your outfit
           </p>
         </div>
@@ -270,7 +268,7 @@
               <!-- Items List -->
               <div 
                 ref="catalogueScrollRef"
-                class="space-y-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar"
+                class="space-y-2 max-h-96 overflow-y-auto px-2 custom-scrollbar"
                 @scroll="handleCatalogueScroll"
               >
                 <div
@@ -507,7 +505,7 @@
                   <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-gray-200">
                     <Sparkles class="w-12 h-12 text-stone-500 dark:text-zinc-400" />
                   </div>
-                  <p class="text-xl font-medium mb-2 text-gray-700">
+                  <p class="text-lg font-medium mb-2 text-gray-700">
                     Start Creating Your Outfit
                   </p>
                   <p class="text-sm text-gray-500">
@@ -550,11 +548,11 @@
     </section>
 
     <!-- Why Choose Section -->
-    <section id="why" class="landing-section py-[10vh] bg-white relative overflow-hidden">
+    <section id="why" class="landing-section py-[8vh] bg-white relative overflow-hidden">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <!-- Centered Title -->
-        <div class="text-center mb-8 sm:mb-12 scroll-hidden animate-slideInFromBottom" id="why-content">
-          <h2 class="text-4xl font-bold mb-6 sm:mb-8">Why Choose StyleSnap?</h2>
+        <div class="text-center mb-6 sm:mb-10 scroll-hidden animate-slideInFromBottom" id="why-content">
+          <h2 class="text-3xl font-bold mb-5 sm:mb-6">Why Choose StyleSnap?</h2>
         </div>
 
         <!-- Avatar and Cards Layout -->
@@ -580,8 +578,8 @@
               </div>
               <!-- Title and subtitle on right, stacked -->
               <div class="flex-1 flex flex-col">
-                <h3 class="font-bold text-xl md:text-2xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
-                <p class="text-xl md:text-2xl text-gray-600">{{ item.description }}</p>
+                <h3 class="font-bold text-lg md:text-xl mb-2 group-hover:text-gray-600 transition">{{ item.title }}</h3>
+                <p class="text-lg md:text-xl text-gray-600">{{ item.description }}</p>
               </div>
             </div>
           </div>
@@ -592,20 +590,21 @@
     <!-- CTA Section -->
     <section 
       class="cta-card-section text-gray-900 relative"
-      style="background-color: rgb(245, 246, 247); padding-top: 9rem; padding-bottom: 9rem;"
+      style="background-color: rgb(245, 246, 247); padding-top: 7.2rem; padding-bottom: 7.2rem;"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
-        <h2 class="cta-title text-gray-900 mb-4 sm:mb-6">Ready to Transform Your Wardrobe?</h2>
-        <p class="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto mb-8 sm:mb-10">
+        <h2 class="cta-title text-gray-900 mb-3 sm:mb-5">Ready to Transform Your Wardrobe?</h2>
+        <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
         <div class="flex justify-center">
         <button
             @click="handleSignUp"
-            class="flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            class="cta-signup-button flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
+            style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff !important; box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4);"
         >
-            Sign Up Now
-            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition" />
+            <span style="color: #ffffff !important;">Sign Up Now</span>
+            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" style="color: #ffffff !important;" />
         </button>
         </div>
       </div>
@@ -619,9 +618,7 @@
             <!-- Left: Logo and Tagline -->
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-3">
-                <div class="bg-white rounded-xl p-2 flex items-center justify-center">
-                  <Shirt class="w-6 h-6 text-black" />
-                </div>
+                <StyleSnapLogo size="xl" />
                 <StyleSnapBrand class="font-bold text-xl text-white" size="xl" />
               </div>
               <p class="text-sm text-gray-400 max-w-xs">
@@ -721,7 +718,7 @@ import {
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
-import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
+import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
 import SingleAvatar3D from '@/components/SingleAvatar3D.vue'
 import { useLazyLoad } from '@/composables/useLazyLoad'
 
@@ -1019,6 +1016,15 @@ const handleKeyboardNavigation = (event) => {
   // Only handle arrow keys if not typing in an input field
   if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
     return
+  }
+  
+  // Handle Delete key to delete selected canvas item
+  if (event.key === 'Delete' || event.key === 'Backspace') {
+    if (selectedItemId.value) {
+      event.preventDefault()
+      deleteSelectedItem()
+      return
+    }
   }
   
   if (event.key === 'ArrowRight') {
@@ -1509,14 +1515,14 @@ const moveSelectedItemForward = () => {
   if (itemsAbove.length > 0) {
     // Find the item with the smallest z-index above current (swap with it)
     const minAboveZIndex = Math.min(...itemsAbove.map(i => i.normalizedZ))
-    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === minAboveZIndex)
+    const swapItem = itemsWithZ.find(i => i.id !== item.id && i.normalizedZ === minAboveZIndex)
     
-    if (swapItemIndex !== -1) {
-      // Swap z-indexes by creating new array with updated items
-      outfitItems.value = outfitItems.value.map((i, idx) => {
-        if (idx === itemIndex) {
-          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
-        } else if (idx === swapItemIndex) {
+    if (swapItem) {
+      // Swap z-indexes by creating new array with updated items - use ID to identify items
+      outfitItems.value = outfitItems.value.map((i) => {
+        if (i.id === item.id) {
+          return { ...i, z_index: swapItem.normalizedZ }
+        } else if (i.id === swapItem.id) {
           return { ...i, z_index: currentZIndex }
         }
         return i
@@ -1524,15 +1530,15 @@ const moveSelectedItemForward = () => {
     } else {
       // Fallback: just increment
       const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
-      outfitItems.value = outfitItems.value.map((i, idx) => 
-        idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+      outfitItems.value = outfitItems.value.map((i) => 
+        i.id === item.id ? { ...i, z_index: maxZIndex + 1 } : i
       )
     }
   } else {
     // No items above, move to front
     const maxZIndex = Math.max(...itemsWithZ.map(i => i.normalizedZ), 2)
-    outfitItems.value = outfitItems.value.map((i, idx) => 
-      idx === itemIndex ? { ...i, z_index: maxZIndex + 1 } : i
+    outfitItems.value = outfitItems.value.map((i) => 
+      i.id === item.id ? { ...i, z_index: maxZIndex + 1 } : i
     )
   }
 }
@@ -1567,28 +1573,28 @@ const moveSelectedItemBackward = () => {
   if (itemsBelow.length > 0) {
     // Find the item with the largest z-index below current (swap with it)
     const maxBelowZIndex = Math.max(...itemsBelow.map(i => i.normalizedZ))
-    const swapItemIndex = itemsWithZ.findIndex(i => i.id !== item.id && i.normalizedZ === maxBelowZIndex)
+    const swapItem = itemsWithZ.find(i => i.id !== item.id && i.normalizedZ === maxBelowZIndex)
     
-    if (swapItemIndex !== -1) {
-      // Swap z-indexes by creating new array with updated items
-      outfitItems.value = outfitItems.value.map((i, idx) => {
-        if (idx === itemIndex) {
-          return { ...i, z_index: itemsWithZ[swapItemIndex].normalizedZ }
-        } else if (idx === swapItemIndex) {
+    if (swapItem) {
+      // Swap z-indexes by creating new array with updated items - use ID to identify items
+      outfitItems.value = outfitItems.value.map((i) => {
+        if (i.id === item.id) {
+          return { ...i, z_index: swapItem.normalizedZ }
+        } else if (i.id === swapItem.id) {
           return { ...i, z_index: currentZIndex }
         }
         return i
       })
     } else {
       // Fallback: just decrement (but ensure minimum of 2)
-      outfitItems.value = outfitItems.value.map((i, idx) => 
-        idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+      outfitItems.value = outfitItems.value.map((i) => 
+        i.id === item.id ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
       )
     }
   } else {
     // No items below, just decrement (but ensure minimum of 2)
-    outfitItems.value = outfitItems.value.map((i, idx) => 
-      idx === itemIndex ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
+    outfitItems.value = outfitItems.value.map((i) => 
+      i.id === item.id ? { ...i, z_index: Math.max(2, currentZIndex - 1) } : i
     )
   }
 }
@@ -2044,7 +2050,7 @@ const setScrollY = (value) => {
 }
 
 .splash-title {
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: normal; /* Match hero title from start */
@@ -2071,29 +2077,29 @@ const setScrollY = (value) => {
 
 @media (min-width: 768px) {
   .splash-title:not(.splash-title-moving):not(.splash-title-frozen) {
-    font-size: 4.5rem;
+    font-size: 3.6rem;
   }
   
   .splash-title-moving {
-    font-size: 4.5rem;
+    font-size: 3.6rem;
   }
   
   .splash-title-frozen {
-    font-size: 4.5rem !important;
+    font-size: 3.6rem !important;
   }
 }
 
 @media (min-width: 1024px) {
   .splash-title:not(.splash-title-moving):not(.splash-title-frozen) {
-    font-size: 5rem;
+    font-size: 4rem;
   }
   
   .splash-title-moving {
-    font-size: 5rem;
+    font-size: 4rem;
   }
   
   .splash-title-frozen {
-    font-size: 5rem !important;
+    font-size: 4rem !important;
   }
 }
 
@@ -2225,7 +2231,7 @@ const setScrollY = (value) => {
 
 /* Hero title styling */
 .hero-title {
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
   color: #ffffff !important;
   position: relative;
@@ -2243,13 +2249,13 @@ const setScrollY = (value) => {
 
 @media (min-width: 768px) {
   .hero-title {
-    font-size: 4.5rem;
+    font-size: 3.6rem;
   }
 }
 
 @media (min-width: 1024px) {
   .hero-title {
-    font-size: 5rem;
+    font-size: 4rem;
   }
 }
 
@@ -2259,29 +2265,27 @@ const setScrollY = (value) => {
 
 /* CTA Title - matches hero title styling except color */
 .cta-title {
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
   color: #111827 !important; /* text-gray-900 */
   position: relative;
   letter-spacing: normal;
   line-height: 1.2;
   text-align: center;
-  /* Preserve text layout - match hero title */
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  /* Keep title on single line */
+  white-space: nowrap;
   width: 100%;
 }
 
 @media (min-width: 768px) {
   .cta-title {
-    font-size: 4.5rem;
+    font-size: 3.6rem;
   }
 }
 
 @media (min-width: 1024px) {
   .cta-title {
-    font-size: 5rem;
+    font-size: 4rem;
   }
 }
 
@@ -2658,6 +2662,29 @@ const setScrollY = (value) => {
   .cta-card-section {
     border-radius: 0; /* Remove all rounded corners on desktop too */
   }
+}
+
+/* CTA Sign Up Button - Theme-independent styling */
+.cta-signup-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4) !important;
+}
+
+.cta-signup-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.5) !important;
+}
+
+.cta-signup-button span,
+.cta-signup-button svg {
+  color: #ffffff !important;
+}
+
+.cta-signup-button:hover span,
+.cta-signup-button:hover svg {
+  color: #ffffff !important;
 }
 
 /* Footer - Static at bottom of content */

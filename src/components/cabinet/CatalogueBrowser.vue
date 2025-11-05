@@ -11,7 +11,7 @@
             ref="searchInputRef"
             v-model="searchTerm"
             type="text"
-            placeholder="Search catalog (name, brand, category, color)..."
+            placeholder="Search catalog..."
             class="w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 dark:bg-zinc-800 border-stone-300 dark:border-zinc-700 text-black dark:text-white placeholder-stone-500 dark:placeholder-zinc-400 search-input"
             @input="handleSearch"
             @focus="handleSearchFocus"
@@ -79,7 +79,7 @@
           >
             <option :value="null">All Colors</option>
             <option v-for="color in colors" :key="color" :value="color">
-              {{ color.charAt(0).toUpperCase() + color.slice(1) }}
+              {{ formatColor(color) }}
             </option>
           </select>
         </div>
@@ -95,7 +95,7 @@
           >
             <option :value="null">All Brands</option>
             <option v-for="brand in brands" :key="brand" :value="brand">
-              {{ brand }}
+              {{ toProperCase(brand) }}
             </option>
           </select>
         </div>
@@ -146,7 +146,7 @@
           <div class="mb-3">
             <span :class="`text-xs text-stone-500 dark:text-zinc-400`">
               {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
-              <span v-if="item.category && item.brand">,</span>
+              <span v-if="item.category && item.brand">, </span>
               <span v-if="item.brand" :class="`text-xs font-medium text-stone-600 dark:text-zinc-500`">
                 {{ item.brand }}
               </span>
@@ -216,6 +216,7 @@ import { useSanitize } from '@/composables/useSanitize'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { catalogService } from '@/services/catalogService'
 import { Plus, Check, X, Shirt, Search, ChevronDown } from 'lucide-vue-next'
+import { toProperCase, formatColor } from '@/utils/textFormatting'
 
 const { theme } = useTheme()
 const { showError, showSuccess } = usePopup()

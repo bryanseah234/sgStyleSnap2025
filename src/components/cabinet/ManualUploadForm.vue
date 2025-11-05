@@ -144,14 +144,11 @@
             <label for="manual-upload-brand" :class="`text-base mb-2 block text-stone-700 dark:text-zinc-300`">
               Brand
             </label>
-            <input
+            <BrandAutocomplete
               id="manual-upload-brand"
               v-model="formData.brand"
               placeholder="e.g., Nike"
               maxlength="50"
-              :class="`w-full h-12 px-4 rounded-xl transition-colors bg-stone-50 border-stone-200 text-black border
-              dark:bg-zinc-800 dark:border-zinc-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white`"
-              @blur="formData.brand = sanitizeText(formData.brand)"
             />
           </div>
 
@@ -245,6 +242,7 @@ import { usePopup } from '@/composables/usePopup'
 import { ClothesService } from '@/services/clothesService'
 import { cloudinary } from '@/lib/cloudinary'
 import { Upload, X } from 'lucide-vue-next'
+import BrandAutocomplete from '@/components/ui/BrandAutocomplete.vue'
 
 const { theme } = useTheme()
 const { sanitizeText } = useSanitize()

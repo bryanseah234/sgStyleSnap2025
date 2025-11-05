@@ -30,14 +30,11 @@
           <Sparkles class="w-7 h-7 text-purple-500" />
           Virtual Try On
         </h3>
-        <p class="text-sm text-stone-600 dark:text-zinc-400 mt-2">
-          using Gemini
-        </p>
       </div>
 
       <!-- Loading State -->
       <div v-if="generating" class="flex flex-col items-center justify-center py-16">
-        <div class="spinner-modern mb-6" style="color: rgb(168, 85, 247);"></div>
+        <div class="spinner-modern mb-6"></div>
         <p class="text-lg font-medium text-black dark:text-white mb-2">
           Generating virtual try-on...
         </p>
@@ -75,8 +72,8 @@
 
       <!-- Success State - Show Generated Image -->
       <div v-else-if="generatedImageUrl" class="flex-1 flex gap-4 overflow-hidden min-h-0">
-        <!-- Left: Image (50%) -->
-        <div class="w-[50%] flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700">
+        <!-- Left: Image -->
+        <div class="flex-1 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 min-w-0">
           <img
             :src="generatedImageUrl"
             alt="Virtual try-on result"
@@ -84,19 +81,19 @@
           />
         </div>
 
-        <!-- Right: Content (50%) -->
-        <div class="w-[50%] flex-shrink-0 flex flex-col gap-3 overflow-y-auto min-h-0">
+        <!-- Right: Content -->
+        <div class="flex-1 flex-shrink-0 flex flex-col gap-3 overflow-y-auto min-h-0 min-w-0 max-w-[50%]">
           <!-- Image Info -->
-          <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-200 dark:border-purple-800 flex-shrink-0">
-            <div class="flex items-center gap-3">
+          <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-200 dark:border-purple-800 flex-shrink-0 min-w-0">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0">
                 <Check class="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
-              <div>
-                <p class="text-sm font-medium text-purple-900 dark:text-purple-100">
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-purple-900 dark:text-purple-100 truncate">
                   Virtual try-on generated successfully!
                 </p>
-                <p class="text-xs text-purple-700 dark:text-purple-300">
+                <p class="text-xs text-purple-700 dark:text-purple-300 truncate">
                   Powered by Gemini
                 </p>
               </div>
@@ -104,13 +101,13 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex flex-col gap-3 flex-shrink-0">
+          <div class="flex flex-col gap-3 flex-shrink-0 min-w-0">
             <button
               @click="downloadImage"
               class="w-full px-6 py-3 rounded-2xl font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-500 text-white hover:bg-purple-600"
             >
-              <Download class="w-5 h-5" />
-              Download Image
+              <Download class="w-5 h-5 flex-shrink-0" />
+              <span class="truncate">Download Image</span>
             </button>
             <button
               @click="$emit('close')"

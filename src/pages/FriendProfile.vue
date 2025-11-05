@@ -114,7 +114,7 @@
                   <input
                     v-model="itemSearchTerm"
                     type="text"
-                    :placeholder="`Search ${friend?.username || 'friend'}'s closet (name, brand, category, color)...`"
+                    :placeholder="`Search ${friend?.username || 'friend'}'s closet...`"
                     :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
                       dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
                   />
@@ -181,7 +181,7 @@
                   >
                     <option :value="null">All Colors</option>
                     <option v-for="color in availableItemColors" :key="color" :value="color">
-                      {{ color.charAt(0).toUpperCase() + color.slice(1) }}
+                      {{ formatColor(color) }}
                     </option>
                   </select>
                 </div>
@@ -197,7 +197,7 @@
                   >
                     <option :value="null">All Brands</option>
                     <option v-for="brand in availableItemBrands" :key="brand" :value="brand">
-                      {{ brand }}
+                      {{ toProperCase(brand) }}
                     </option>
                   </select>
                 </div>
@@ -237,7 +237,7 @@
               <input
                 v-model="outfitSearchTerm"
                 type="text"
-                :placeholder="`Search ${friend?.username || 'friend'}'s outfits (name, tags, occasion, style, items)...`"
+                :placeholder="`Search ${friend?.username || 'friend'}'s outfits...`"
                 :class="`w-full pl-10 pr-32 py-3 rounded-lg border bg-stone-100 border-stone-300 text-black placeholder-stone-500 search-input
                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400`"
               />
@@ -415,6 +415,7 @@ import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.
 import { X, Search, Shirt, ChevronDown } from 'lucide-vue-next'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { toProperCase, formatColor } from '@/utils/textFormatting'
 
 const { theme } = useTheme()
 const route = useRoute()
@@ -608,7 +609,7 @@ const availableItemCategoriesForDropdown = computed(() => {
 const availableItemColors = computed(() => {
   const colors = new Set(
     (publicItems.value || [])
-      .map(i => i.color)
+      .map(i => i.primary_color || i.color) // Support both primary_color (from DB) and color (fallback)
       .filter(Boolean)
   )
   return Array.from(colors).sort()
@@ -659,7 +660,10 @@ const filteredItems = computed(() => {
 
   // Apply color filter
   if (selectedItemColor.value !== null) {
-    filtered = filtered.filter(item => item.color?.toLowerCase() === selectedItemColor.value.toLowerCase())
+    filtered = filtered.filter(item => {
+      const itemColor = (item.primary_color || item.color)?.toLowerCase()
+      return itemColor === selectedItemColor.value.toLowerCase()
+    })
   }
 
   // Apply brand filter
@@ -675,7 +679,7 @@ const filteredItems = computed(() => {
       item.brand?.toLowerCase().includes(query) ||
       item.type?.toLowerCase().includes(query) ||
       item.category?.toLowerCase().includes(query) ||
-      item.color?.toLowerCase().includes(query)
+      (item.primary_color || item.color)?.toLowerCase().includes(query)
     )
   }
 
@@ -689,15 +693,34 @@ const filteredOutfits = computed(() => {
   let filtered = publicOutfits.value
 
   // Apply search filter
-  if (outfitSearchTerm.value) {
-    const query = outfitSearchTerm.value.toLowerCase()
-    filtered = filtered.filter(outfit => 
-      outfit.outfit_name?.toLowerCase().includes(query) ||
-      outfit.description?.toLowerCase().includes(query) ||
-      (outfit.outfit_items && outfit.outfit_items.some(item => 
-        item.clothing_item?.name?.toLowerCase().includes(query)
-      ))
-    )
+  if (outfitSearchTerm.value && outfitSearchTerm.value.trim()) {
+    const query = outfitSearchTerm.value.toLowerCase().trim()
+    filtered = filtered.filter(outfit => {
+      // Search main fields
+      const matchMain = (
+        outfit.outfit_name?.toLowerCase().includes(query) ||
+        outfit.name?.toLowerCase().includes(query) ||
+        outfit.description?.toLowerCase().includes(query) ||
+        outfit.occasion?.toLowerCase().includes(query) ||
+        outfit.weather_condition?.toLowerCase().includes(query) ||
+        outfit.style?.toLowerCase().includes(query) ||
+        outfit.season?.toLowerCase().includes(query) ||
+        outfit.color_palette?.toLowerCase().includes(query) ||
+        outfit.notes?.toLowerCase().includes(query) ||
+        (Array.isArray(outfit.tags) && outfit.tags.some(tag => tag?.toLowerCase().includes(query)))
+      )
+      // Search inside items
+      const matchItems = Array.isArray(outfit.outfit_items) && outfit.outfit_items.some(item =>
+        item.clothing_item?.name?.toLowerCase().includes(query) ||
+        item.clothing_item?.brand?.toLowerCase().includes(query) ||
+        (item.clothing_item?.primary_color || item.clothing_item?.color)?.toLowerCase().includes(query) ||
+        item.clothing_item?.material?.toLowerCase().includes(query) ||
+        item.clothing_item?.category?.toLowerCase().includes(query) ||
+        item.clothing_item?.type?.toLowerCase().includes(query) ||
+        (Array.isArray(item.clothing_item?.tags) && item.clothing_item.tags.some(tag => tag?.toLowerCase().includes(query)))
+      )
+      return matchMain || matchItems
+    })
   }
 
   return filtered

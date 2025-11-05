@@ -60,11 +60,9 @@
       <!-- Brand -->
       <div class="form-section">
         <label class="form-label">Brand</label>
-        <input
+        <BrandAutocomplete
           v-model="formData.brand"
-          type="text"
           placeholder="Enter brand (optional)"
-          class="form-input"
         />
       </div>
 
@@ -122,6 +120,7 @@ import { Brain, AlertCircle, X } from 'lucide-vue-next'
 import { classifyClothingItem, validateImageForClassification } from '@/services/fashion-rnn-service'
 import { ClothesService } from '@/services/clothesService'
 import { removeBackground } from 'modern-rembg'
+import BrandAutocomplete from '@/components/ui/BrandAutocomplete.vue'
 // Added prop for owned categories
 const props = defineProps({
   isOpen: {

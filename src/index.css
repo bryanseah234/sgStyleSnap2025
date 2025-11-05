@@ -1615,6 +1615,169 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
 }
 
 /* ============================================
+   ENHANCED DROPDOWN/SELECT STYLING
+   ============================================ */
+
+/* Base select styling - applies to all select elements */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 1rem !important;
+  padding-right: 2.5rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Light mode select styling */
+select {
+  border-radius: 0.5rem !important; /* rounded-lg */
+}
+
+select:hover {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+select:active {
+  transform: scale(0.98) !important;
+}
+
+/* Dark mode select styling */
+.dark select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+
+.dark select:hover {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark select:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Option styling */
+select option {
+  padding: 0.5rem 0.75rem;
+  background-color: rgb(255 255 255);
+  color: rgb(0 0 0);
+}
+
+.dark select option {
+  background-color: rgb(39 39 42); /* zinc-800 */
+  color: rgb(255 255 255);
+}
+
+/* Disabled state */
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgb(245 245 244); /* stone-100 */
+}
+
+.dark select:disabled {
+  background-color: rgb(39 39 42); /* zinc-800 */
+}
+
+/* Error state styling */
+select.error,
+select[aria-invalid="true"] {
+  border-color: rgb(239 68 68) !important; /* red-500 */
+}
+
+select.error:focus,
+select[aria-invalid="true"]:focus {
+  border-color: rgb(239 68 68) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.dark select.error:focus,
+.dark select[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Select wrapper for custom styling */
+.select-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid rgb(102 102 102);
+  transition: transform 0.2s ease;
+}
+
+.select-wrapper:hover::after {
+  transform: translateY(-50%) translateY(-1px);
+}
+
+.dark .select-wrapper::after {
+  border-top-color: rgb(153 153 153);
+}
+
+/* Enhanced select with icon */
+.select-with-icon {
+  padding-left: 2.5rem;
+}
+
+.select-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: rgb(102 102 102);
+  width: 1rem;
+  height: 1rem;
+}
+
+.dark .select-icon {
+  color: rgb(153 153 153);
+}
+
+/* Smooth transitions for all select interactions */
+select,
+.select-wrapper {
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              transform 0.1s ease;
+}
+
+/* Accessibility: Remove animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  select,
+  .select-wrapper,
+  .select-wrapper::after {
+    transition: none !important;
+  }
+  
+  select:active {
+    transform: none !important;
+  }
+}
+
+/* ============================================
    REUSABLE TAB BUTTONS
    ============================================ */
 .btn-tab {

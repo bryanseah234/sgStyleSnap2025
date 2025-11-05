@@ -50,13 +50,14 @@
                 : 'bg-black dark:bg-white'
             }`"
           >
-            <!-- Shirt icon - morphs out on hover when collapsed -->
-            <Shirt 
-              :class="`w-5 h-5 absolute text-white dark:text-black transition-all duration-300 ease-out ${
+            <!-- Logo - morphs out on hover when collapsed -->
+            <StyleSnapLogo 
+              :class="`absolute transition-all duration-300 ease-out ${
                 logoHovered 
                   ? 'opacity-0 scale-50 rotate-180' 
                   : 'opacity-100 scale-100 rotate-0'
               }`" 
+              size="lg"
               style="transform-origin: center; will-change: transform, opacity;"
             />
             <!-- PanelLeftOpen icon - morphs in on hover when collapsed -->
@@ -77,9 +78,7 @@
           to="/home" 
           class="liquid-reveal flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0 justify-start"
         >
-          <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-black dark:bg-white flex-shrink-0">
-            <Shirt class="w-5 h-5 text-white dark:text-black"/>
-          </div>
+          <StyleSnapLogo size="lg" />
           <h1 class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out opacity-100">
             <StyleSnapBrand size="2xl" />
           </h1>
@@ -259,6 +258,7 @@
           @click="scrollToTop"
           class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
         >
+          <StyleSnapLogo size="xl" />
           <h1 class="text-xl font-bold tracking-tight text-black dark:text-white">
             <StyleSnapBrand size="xl" />
           </h1>
@@ -350,7 +350,7 @@ import { createPageUrl } from '@/utils'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
-import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
+import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
 import { NotificationsService } from '@/services/notificationsService'
 import { useNavbarLiquid, useLiquidPress, useLiquidHover, useReducedMotion } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -408,7 +408,7 @@ const isActiveRoute = (itemPath) => {
          (currentPath.startsWith('/outfits/add') && itemPath === '/outfits') || 
          (currentPath.startsWith('/outfits/edit') && itemPath === '/outfits') ||
          (currentPath.startsWith('/closet/') && itemPath === '/closet') ||
-         (currentPath.startsWith('/friends') && itemPath === '/friends')
+         ((currentPath.startsWith('/friends') || currentPath.startsWith('/friend/')) && itemPath === '/friends')
 }
 
 // Service instances for data prefetching
