@@ -488,6 +488,7 @@
                     :key="item.id"
                     draggable="true"
                     @dragstart="handleDragStart(item, $event)"
+                    @touchstart="handleWardrobeTouchStart(item, $event)"
                     @click="addItemToCanvas(item)"
                     @contextmenu.prevent="showItemContextMenu(item, $event)"
                     class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600 relative"
@@ -560,6 +561,8 @@
               @drop="handleDrop"
               @dragover.prevent
               @dragenter.prevent
+              @touchmove.prevent="handleCanvasTouchMove($event)"
+              @touchend.prevent="handleCanvasTouchEnd($event)"
               @click="deselectItem"
               @mousemove="handleMouseMove"
               @mouseup="handleMouseUp"
@@ -601,8 +604,6 @@
                 ]"
                 @mousedown.stop="startDrag(item, $event)"
                 @touchstart.stop.prevent="handleTouchStart(item, $event)"
-                @touchmove.stop.prevent="handleTouchMoveTooltip"
-                @touchend.stop="handleTouchEndTooltip"
                 @click.stop="handleItemClick(item.id, $event)"
               >
                 <div class="w-32 h-32 overflow-hidden">
@@ -3326,6 +3327,81 @@ const handleDragStart = (item, event) => {
   event.dataTransfer.effectAllowed = 'move'
 }
 
+// Touch-based drag and drop state for mobile
+const touchDragItem = ref(null)
+const touchDragStartPos = ref({ x: 0, y: 0 })
+
+const handleWardrobeTouchStart = (item, event) => {
+  const touch = event.touches[0]
+  touchDragItem.value = item
+  touchDragStartPos.value = { x: touch.clientX, y: touch.clientY }
+  
+  // Attach document-level listeners for better tracking
+  document.addEventListener('touchmove', handleWardrobeTouchMove, { passive: false })
+  document.addEventListener('touchend', handleWardrobeTouchEnd)
+  document.addEventListener('touchcancel', handleWardrobeTouchEnd)
+}
+
+const handleWardrobeTouchMove = (event) => {
+  // Track dragging but don't prevent default scrolling unless actually dragging
+  if (touchDragItem.value && event.touches.length > 0) {
+    const touch = event.touches[0]
+    const deltaX = Math.abs(touch.clientX - touchDragStartPos.value.x)
+    const deltaY = Math.abs(touch.clientY - touchDragStartPos.value.y)
+    
+    // If moved more than 10px, consider it a drag
+    if (deltaX > 10 || deltaY > 10) {
+      event.preventDefault() // Prevent scrolling while dragging
+    }
+  }
+}
+
+const handleWardrobeTouchEnd = (event) => {
+  // Clean up listeners
+  document.removeEventListener('touchmove', handleWardrobeTouchMove)
+  document.removeEventListener('touchend', handleWardrobeTouchEnd)
+  document.removeEventListener('touchcancel', handleWardrobeTouchEnd)
+  
+  // If touch ended without significant movement, let click handler add item
+  touchDragItem.value = null
+  touchDragStartPos.value = { x: 0, y: 0 }
+}
+
+const handleCanvasTouchMove = (event) => {
+  // Allow dragging if we're dragging from wardrobe
+  if (touchDragItem.value && event.touches.length > 0) {
+    event.preventDefault()
+  }
+}
+
+const handleCanvasTouchEnd = (event) => {
+  // Handle drop from wardrobe on mobile
+  if (touchDragItem.value && canvasContainer.value && event.changedTouches.length > 0) {
+    const touch = event.changedTouches[0]
+    const rect = canvasContainer.value.getBoundingClientRect()
+    
+    // Check if touch ended within canvas bounds
+    if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+        touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+      
+      // Create a synthetic drop event
+      const syntheticEvent = {
+        preventDefault: () => {},
+        dataTransfer: {
+          getData: () => touchDragItem.value.id
+        },
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      }
+      
+      handleDrop(syntheticEvent)
+    }
+    
+    touchDragItem.value = null
+    touchDragStartPos.value = { x: 0, y: 0 }
+  }
+}
+
 const handleDrop = (event) => {
   event.preventDefault()
   
@@ -3418,10 +3494,10 @@ const handleTouchStart = (item, event) => {
   }
   
   // Show tooltip after 500ms if user hasn't moved (long press)
+  // Allow tooltip to show even if item is selected (user might want to see info again)
   tooltipTimeout.value = setTimeout(() => {
     // Only show tooltip if user is still touching and hasn't dragged
-    // Also don't show if item is already selected (toolkit is shown)
-    if (touchStartItemId.value === item.id && !hasDragged.value && !draggedItem.value && selectedItemId.value !== item.id) {
+    if (touchStartItemId.value === item.id && !hasDragged.value && !draggedItem.value) {
       showTooltip(item, event)
     }
   }, 500)
@@ -3445,6 +3521,16 @@ const handleTouchStart = (item, event) => {
   
   // Set selected item immediately (for visual feedback)
   selectedItemId.value = item.id
+  
+  // Initialize drag offset for when dragging actually starts
+  // Don't set draggedItem immediately - wait until user actually moves
+  // This allows tooltip to show on long press
+  // draggedItem will be set in handleTouchMove when movement is detected
+  if (canvasContainer.value) {
+    const rect = canvasContainer.value.getBoundingClientRect()
+    dragOffset.x = clientX - rect.left - scalePosition(item.x, 'x')
+    dragOffset.y = clientY - rect.top - scalePosition(item.y, 'y')
+  }
 }
 
 const handleTouchMoveTooltip = (e) => {
@@ -3623,7 +3709,6 @@ const handleTouchMove = (e) => {
     clearTimeout(tooltipTimeout.value)
     tooltipTimeout.value = null
   }
-  hideTooltip()
   
   // Detect if user is actually dragging (moved more than 5px)
   if (e.touches && e.touches.length > 0 && touchStartPosition.value) {
@@ -3635,6 +3720,9 @@ const handleTouchMove = (e) => {
     if (deltaX > 5 || deltaY > 5) {
       isDragging.value = true
       hasDragged.value = true // Mark that dragging occurred
+      
+      // Hide tooltip when dragging starts
+      hideTooltip()
       
       // Initialize drag state if not already set
       if (!draggedItem.value && touchStartItemId.value) {
@@ -3653,8 +3741,42 @@ const handleTouchMove = (e) => {
     }
   }
   
-  if (isDragging.value && draggedItem.value) {
-    handleMouseMove(e) // Reuse the same logic
+  // If dragging is active, update item position
+  if (draggedItem.value && canvasContainer.value) {
+    const coords = getClientCoordinates(e)
+    const rect = canvasContainer.value.getBoundingClientRect()
+    const x = coords.x - rect.left - dragOffset.x
+    const y = coords.y - rect.top - dragOffset.y
+    
+    const item = canvasItems.value.find(i => i.id === draggedItem.value)
+    if (item) {
+      // Calculate item size (scaled)
+      const itemSize = 128 * (item.scale || 1)
+      const normalizedItemSize = normalizePosition(itemSize, 'x')
+      
+      // Define button area exclusion zones
+      // Top area: 80px (for top-center buttons)
+      const TOP_BUTTON_AREA_HEIGHT = 80
+      const normalizedTopButtonArea = normalizePosition(TOP_BUTTON_AREA_HEIGHT, 'y')
+      
+      // Bottom area: 80px (for bottom-center toolbar)
+      const BOTTOM_BUTTON_AREA_HEIGHT = 80
+      const normalizedBottomButtonArea = normalizePosition(BOTTOM_BUTTON_AREA_HEIGHT, 'y')
+      const maxY = normalizePosition(rect.height - itemSize, 'y')
+      const minY = maxY - normalizedBottomButtonArea // Prevent items from going into bottom button area
+      
+      // Normalize positions to reference canvas size for consistent storage
+      const normalizedX = normalizePosition(x, 'x')
+      const normalizedY = normalizePosition(y, 'y')
+      
+      // Constrain X: stay within canvas bounds
+      // Constrain Y: stay above top button area AND above bottom button area
+      item.x = Math.max(0, Math.min(normalizedX, normalizePosition(rect.width - itemSize, 'x')))
+      item.y = Math.max(
+        normalizedTopButtonArea, // Above top buttons
+        Math.min(normalizedY, minY) // Above bottom buttons
+      )
+    }
   }
 }
 
@@ -3675,6 +3797,17 @@ const handleTouchEnd = (e) => {
   document.removeEventListener('touchmove', handleTouchMove)
   document.removeEventListener('touchend', handleTouchEnd)
   document.removeEventListener('touchcancel', handleTouchEnd)
+  
+  // Hide tooltip after a short delay if user didn't drag (was just a tap/long press)
+  if (!wasDragging && tooltipItemId.value) {
+    // Keep tooltip visible for a bit longer so user can read it
+    setTimeout(() => {
+      hideTooltip()
+    }, 2000)
+  } else if (wasDragging) {
+    // Hide tooltip immediately if user was dragging
+    hideTooltip()
+  }
   
   // Reset flags after a short delay to allow click prevention
   setTimeout(() => {

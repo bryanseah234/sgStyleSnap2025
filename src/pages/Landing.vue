@@ -75,7 +75,7 @@
 
           <!-- Mobile Menu Button -->
           <button
-            class="md:hidden"
+            class="md:hidden flex items-center justify-center p-1.5"
             @click="isMenuOpen = !isMenuOpen"
           >
             <X v-if="isMenuOpen" class="w-5 h-5 text-gray-900" />
@@ -402,6 +402,7 @@
                     transition: draggedItem === item.id ? 'none' : 'all 0.2s'
                   }"
                   @mousedown.stop="handleMouseDown(item, $event)"
+                  @touchstart.stop.prevent="handleTouchStart(item, $event)"
                   @click.stop="selectItem(item.id)"
                 >
                   <div class="w-32 h-32 overflow-hidden">
@@ -1470,20 +1471,41 @@ const clearOutfit = () => {
 const handleMouseDown = (item, event) => {
   if (!canvasRef.value) return
   
+  // Handle both mouse and touch events
+  const isTouch = event.touches && event.touches.length > 0
+  const clientX = isTouch ? event.touches[0].clientX : event.clientX
+  const clientY = isTouch ? event.touches[0].clientY : event.clientY
+  
   selectedItemId.value = item.id
   draggedItem.value = item.id
   const rect = canvasRef.value.getBoundingClientRect()
-  dragOffset.x = event.clientX - rect.left - item.x
-  dragOffset.y = event.clientY - rect.top - item.y
+  dragOffset.x = clientX - rect.left - item.x
+  dragOffset.y = clientY - rect.top - item.y
+  
+  if (isTouch) {
+    event.preventDefault()
+    document.addEventListener('touchmove', handleMouseMove, { passive: false })
+    document.addEventListener('touchend', handleMouseUp)
+    document.addEventListener('touchcancel', handleMouseUp)
+  }
+}
+
+const handleTouchStart = (item, event) => {
+  handleMouseDown(item, event)
 }
 
 const handleMouseMove = (e) => {
   // Handle drag
   if (!draggedItem.value || !canvasRef.value) return
 
+  // Handle both mouse and touch events
+  const isTouch = e.touches && e.touches.length > 0
+  const clientX = isTouch ? e.touches[0].clientX : e.clientX
+  const clientY = isTouch ? e.touches[0].clientY : e.clientY
+
   const rect = canvasRef.value.getBoundingClientRect()
-  const x = e.clientX - rect.left - dragOffset.x
-  const y = e.clientY - rect.top - dragOffset.y
+  const x = clientX - rect.left - dragOffset.x
+  const y = clientY - rect.top - dragOffset.y
 
   // Constrain to canvas bounds
   const itemSize = 128
@@ -1493,10 +1515,19 @@ const handleMouseMove = (e) => {
   outfitItems.value = outfitItems.value.map(item =>
     item.id === draggedItem.value ? { ...item, x: constrainedX, y: constrainedY } : item
   )
+  
+  if (isTouch) {
+    e.preventDefault() // Prevent scrolling while dragging
+  }
 }
 
 const handleMouseUp = () => {
   draggedItem.value = null
+  
+  // Remove touch event listeners if they were added
+  document.removeEventListener('touchmove', handleMouseMove)
+  document.removeEventListener('touchend', handleMouseUp)
+  document.removeEventListener('touchcancel', handleMouseUp)
 }
 
 // Selection and toolbar functions

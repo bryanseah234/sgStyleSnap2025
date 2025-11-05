@@ -40,6 +40,7 @@
         transform: isDragging && dragStart.itemId === item.id ? `translate(${dragOffset.x}px, ${dragOffset.y}px)` : 'none'
       }"
       @mousedown="startDrag(item.id, $event)"
+      @touchstart.prevent="startDrag(item.id, $event)"
       @click="setSelectedItemId(item.id)"
     >
       <!-- Item Image -->
@@ -196,25 +197,49 @@ const setSelectedItemId = (id) => {
  */
 const startDrag = (itemId, event) => {
   event.preventDefault()
+  
+  // Handle both mouse and touch events
+  const isTouch = event.touches && event.touches.length > 0
+  const clientX = isTouch ? event.touches[0].clientX : event.clientX
+  const clientY = isTouch ? event.touches[0].clientY : event.clientY
+  
+  const item = props.items.find(i => i.id === itemId)
+  if (!item) return
+  
   isDragging.value = true
   dragStart.value = {
-    x: event.clientX,
-    y: event.clientY,
+    x: clientX,
+    y: clientY,
     itemId
   }
   dragOffset.value = { x: 0, y: 0 }
   
-  document.addEventListener('mousemove', handleDrag)
-  document.addEventListener('mouseup', stopDrag)
+  if (isTouch) {
+    document.addEventListener('touchmove', handleDrag, { passive: false })
+    document.addEventListener('touchend', stopDrag)
+    document.addEventListener('touchcancel', stopDrag)
+  } else {
+    document.addEventListener('mousemove', handleDrag)
+    document.addEventListener('mouseup', stopDrag)
+  }
 }
 
 const handleDrag = (event) => {
   if (!isDragging.value) return
   
-  const deltaX = event.clientX - dragStart.value.x
-  const deltaY = event.clientY - dragStart.value.y
+  // Handle both mouse and touch events
+  const isTouch = event.touches && event.touches.length > 0
+  const clientX = isTouch ? event.touches[0].clientX : event.clientX
+  const clientY = isTouch ? event.touches[0].clientY : event.clientY
+  
+  const deltaX = clientX - dragStart.value.x
+  const deltaY = clientY - dragStart.value.y
   
   dragOffset.value = { x: deltaX, y: deltaY }
+  
+  if (isTouch) {
+    event.preventDefault() // Prevent scrolling while dragging
+  }
 }
 
 const stopDrag = () => {
@@ -234,6 +259,9 @@ const stopDrag = () => {
   
   document.removeEventListener('mousemove', handleDrag)
   document.removeEventListener('mouseup', stopDrag)
+  document.removeEventListener('touchmove', handleDrag)
+  document.removeEventListener('touchend', stopDrag)
+  document.removeEventListener('touchcancel', stopDrag)
 }
 
 const removeItem = (itemId) => {
@@ -345,5 +373,8 @@ defineExpose({ findNonOverlappingPosition })
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleDrag)
   document.removeEventListener('mouseup', stopDrag)
+  document.removeEventListener('touchmove', handleDrag)
+  document.removeEventListener('touchend', stopDrag)
+  document.removeEventListener('touchcancel', stopDrag)
 })
 </script>

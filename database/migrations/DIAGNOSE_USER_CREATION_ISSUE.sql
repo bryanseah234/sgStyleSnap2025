@@ -121,7 +121,10 @@ SELECT
             SELECT 1 FROM pg_policies
             WHERE tablename = 'users'
               AND cmd = 'INSERT'
-              AND (roles @> ARRAY['service_role'] OR roles @> ARRAY['postgres'])
+              AND (
+                  'service_role' = ANY(roles::text[]) 
+                  OR 'postgres' = ANY(roles::text[])
+              )
         ) 
         THEN '✅ INSERT policy exists for service_role/postgres'
         ELSE '❌ NO INSERT policy for service_role/postgres - THIS IS THE PROBLEM!'
