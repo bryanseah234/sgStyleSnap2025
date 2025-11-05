@@ -649,7 +649,12 @@ function isBrowserExtensionError(messageOrObj) {
     'ERR_FILE_NOT_FOUND',
     'utils.js',
     'extensionState.js',
-    'heuristicsRedefinitions.js'
+    'heuristicsRedefinitions.js',
+    'content_script.js',
+    'Cannot read properties of undefined',
+    'reading \'control\'',
+    'control\'',
+    'shouldOfferCompletionListForField'
   ]
   
   return message && extensionErrorPatterns.some(pattern => 
@@ -676,6 +681,13 @@ window.onerror = function(message, source, lineno, colno, error) {
 // cannot be suppressed via JavaScript as they're resource loading failures.
 // These errors appear in the Network tab and console but don't affect app functionality.
 // They're safe to ignore - they're caused by browser extensions trying to load missing files.
+
+// Note: CSS MIME type errors (e.g., "Refused to apply style from '...css' because its MIME type ('text/html')")
+// are typically deployment/build issues:
+// 1. Vercel may be serving a 404 HTML page instead of the CSS file
+// 2. Build output path may be incorrect
+// 3. Asset path configuration may need adjustment
+// Solution: Check Vercel build logs, verify CSS files are in dist/assets/, and ensure proper Content-Type headers
 
 // Note: loadUser() is already called inside authInitPromise (line ~355)
 // No need to call it again here to avoid duplicate API requests

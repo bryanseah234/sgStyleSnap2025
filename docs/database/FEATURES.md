@@ -9,7 +9,7 @@
 - **Theme Preferences** - Light/dark mode with system preference detection
 - **User Settings** - Comprehensive profile customization
 
-### 👕 **Digital Wardrobe Management**
+### 👕 **Digital Closet Management**
 - **Item Upload** - Upload clothing items with images
 - **Categorisation** - Organise by type, brand, colour, style
 - **Search & Filter** - Advanced filtering and search capabilities

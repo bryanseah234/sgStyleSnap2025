@@ -660,7 +660,10 @@ const deleteOutfit = async (outfit) => {
 const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const day = date.getDate()
+  const month = date.toLocaleDateString('en-US', { month: 'short' })
+  const year = date.getFullYear()
+  return `${day} ${month} ${year}`
 }
 
 // Get where the outfit was created
@@ -686,7 +689,7 @@ const getCreatedLocation = async (outfit) => {
             name
           )
         `)
-        .eq('generated_outfit_id', outfit.id)
+        .eq('outfit_id', outfit.id)
         .single()
       
       if (!error && suggestion && suggestion.suggester) {

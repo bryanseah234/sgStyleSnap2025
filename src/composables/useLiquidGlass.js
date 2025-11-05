@@ -319,6 +319,25 @@ export function useLiquidPress() {
       // Apply elastic compression effect
       if (animate && spring && typeof animate === 'function') {
         try {
+          // Get spring easing function safely
+          let springEasing = null
+          try {
+            const springResult = spring({ 
+              stiffness: 400,                // High stiffness for immediate response
+              damping: 15                    // Low damping for elastic feel
+            })
+            
+            // Handle spring result - it can be an array [function] or a function directly
+            if (Array.isArray(springResult) && springResult.length > 0) {
+              springEasing = springResult[0]
+            } else if (typeof springResult === 'function') {
+              springEasing = springResult
+            }
+          } catch (springError) {
+            console.warn('⚠️ Spring easing creation failed:', springError)
+            springEasing = null
+          }
+          
           await animate(
             element,
             {
@@ -328,10 +347,7 @@ export function useLiquidPress() {
             },
             {
               duration: 0.1,                   // Quick compression
-              easing: spring({ 
-                stiffness: 400,                // High stiffness for immediate response
-                damping: 15                    // Low damping for elastic feel
-              })
+              easing: springEasing || 'ease-out'  // Fallback to ease-out if spring fails
             }
           )
         } catch (animError) {
@@ -386,6 +402,38 @@ export function useLiquidPress() {
       // Apply elastic release with overshoot effect
       if (animate && spring && typeof animate === 'function') {
         try {
+          // Get spring easing functions safely
+          let releaseSpringEasing = null
+          let settleSpringEasing = null
+          
+          try {
+            const releaseSpringResult = spring({ 
+              stiffness: 300,                // Moderate stiffness for smooth release
+              damping: 20                    // Moderate damping for controlled motion
+            })
+            
+            if (Array.isArray(releaseSpringResult) && releaseSpringResult.length > 0) {
+              releaseSpringEasing = releaseSpringResult[0]
+            } else if (typeof releaseSpringResult === 'function') {
+              releaseSpringEasing = releaseSpringResult
+            }
+            
+            const settleSpringResult = spring({ 
+              stiffness: 250,              // Lower stiffness for gentle settle
+              damping: 25                  // Higher damping for smooth settling
+            })
+            
+            if (Array.isArray(settleSpringResult) && settleSpringResult.length > 0) {
+              settleSpringEasing = settleSpringResult[0]
+            } else if (typeof settleSpringResult === 'function') {
+              settleSpringEasing = settleSpringResult
+            }
+          } catch (springError) {
+            console.warn('⚠️ Spring easing creation failed:', springError)
+            releaseSpringEasing = null
+            settleSpringEasing = null
+          }
+          
           await animate(
             element,
             {
@@ -395,15 +443,12 @@ export function useLiquidPress() {
             },
             {
               duration: 0.2,                   // Release animation duration
-              easing: spring({ 
-                stiffness: 300,                // Moderate stiffness for smooth release
-                damping: 20                    // Moderate damping for controlled motion
-              })
+              easing: releaseSpringEasing || 'ease-out'  // Fallback if spring fails
             }
           )
           
           // Final settle animation to return to exact original state
-          if (animate && spring && element && element.style) {
+          if (animate && element && element.style) {
             await animate(
               element,
               {
@@ -413,10 +458,7 @@ export function useLiquidPress() {
               },
               {
                 duration: 0.15,                // Quick settle animation
-                easing: spring({ 
-                  stiffness: 250,              // Lower stiffness for gentle settle
-                  damping: 25                  // Higher damping for smooth settling
-                })
+                easing: settleSpringEasing || 'ease-out'  // Fallback if spring fails
               }
             )
           } else {
@@ -510,6 +552,24 @@ export function useLiquidReveal() {
 
     // Apply viscous stretch-in effect
     if (animate && spring) {
+      // Get spring easing function safely
+      let springEasing = null
+      try {
+        const springResult = spring({ 
+          stiffness: 200,                // Moderate stiffness for fluid motion
+          damping: 20                    // Moderate damping for smooth settling
+        })
+        
+        if (Array.isArray(springResult) && springResult.length > 0) {
+          springEasing = springResult[0]
+        } else if (typeof springResult === 'function') {
+          springEasing = springResult
+        }
+      } catch (springError) {
+        console.warn('⚠️ Spring easing creation failed:', springError)
+        springEasing = null
+      }
+      
       animate(
         elementRef.value,
         {
@@ -521,10 +581,7 @@ export function useLiquidReveal() {
         },
         {
           duration: 0.6,                  // Longer duration for liquid effect
-          easing: spring({ 
-            stiffness: 200,                // Moderate stiffness for fluid motion
-            damping: 20                    // Moderate damping for smooth settling
-          })
+          easing: springEasing || 'ease-out'  // Fallback if spring fails
         }
       )
     } else {
@@ -558,6 +615,24 @@ export function useLiquidReveal() {
 
     // Apply viscous compress-out effect
     if (animate && spring) {
+      // Get spring easing function safely
+      let springEasing = null
+      try {
+        const springResult = spring({ 
+          stiffness: 300,                // Higher stiffness for quick compression
+          damping: 15                    // Lower damping for elastic feel
+        })
+        
+        if (Array.isArray(springResult) && springResult.length > 0) {
+          springEasing = springResult[0]
+        } else if (typeof springResult === 'function') {
+          springEasing = springResult
+        }
+      } catch (springError) {
+        console.warn('⚠️ Spring easing creation failed:', springError)
+        springEasing = null
+      }
+      
       animate(
         elementRef.value,
         {
@@ -569,10 +644,7 @@ export function useLiquidReveal() {
         },
         {
           duration: 0.4,                  // Shorter duration for quick hide
-          easing: spring({ 
-            stiffness: 300,                // Higher stiffness for quick compression
-            damping: 15                    // Lower damping for elastic feel
-          })
+          easing: springEasing || 'ease-in'  // Fallback if spring fails
         }
       )
     } else {

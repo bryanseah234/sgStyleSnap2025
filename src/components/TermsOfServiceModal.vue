@@ -45,7 +45,7 @@
               If you do not agree to these Terms, please do not use our service.
             </p>
             <p>
-              StyleSnap ("we," "our," or "us") provides a digital wardrobe management and outfit creation platform. 
+              StyleSnap ("we," "our," or "us") provides a digital closet management and outfit creation platform. 
               These Terms govern your access to and use of our website, mobile applications, and related services (collectively, the "Service").
             </p>
           </section>

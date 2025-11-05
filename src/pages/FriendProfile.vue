@@ -274,7 +274,7 @@
               </div>
               <div class="p-4">
                 <p class="text-sm font-medium text-black dark:text-white">{{ outfit.outfit_name || 'Outfit' }}</p>
-                <p class="text-xs text-stone-600 dark:text-zinc-400">{{ new Date(outfit.created_at).toLocaleDateString() }}</p>
+                <p class="text-xs text-stone-600 dark:text-zinc-400">{{ formatDate(outfit.created_at) }}</p>
               </div>
             </div>
           </div>
@@ -387,7 +387,7 @@
               </h3>
               <div class="flex items-center gap-3 text-sm mb-4 text-stone-600 dark:text-zinc-400">
                 <span v-if="selectedOutfit?.outfit_items" >{{ selectedOutfit.outfit_items.length }} items</span>
-                <span v-if="selectedOutfit?.created_at">Created {{ new Date(selectedOutfit.created_at).toLocaleDateString() }}</span>
+                <span v-if="selectedOutfit?.created_at">Created {{ formatDate(selectedOutfit.created_at) }}</span>
                 <span v-if="selectedOutfit?.description" class="truncate max-w-[50%]">{{ selectedOutfit.description }}</span>
               </div>
 

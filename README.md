@@ -35,7 +35,7 @@ Fashion enthusiasts struggle to organize their wardrobes, plan outfits efficient
 - No weather-based or occasion-specific outfit suggestions
 
 **Solution Overview:**  
-StyleSnap is a comprehensive digital wardrobe management platform that helps users organize their clothing, create outfit combinations, connect with fashion-forward friends, and receive AI-powered style suggestions based on their preferences and external factors.
+StyleSnap is a comprehensive digital closet management platform that helps users organize their clothing, create outfit combinations, connect with fashion-forward friends, and receive AI-powered style suggestions based on their preferences and external factors.
 
 ---
 
@@ -53,7 +53,7 @@ StyleSnap targets three primary user groups:
 
 | Feature | Description | User Benefit |
 |:--|:--|:--|
-| Digital Wardrobe | Upload and organize clothing items with photos | Keep all clothing information in one place, accessible from any device |
+| Digital Closet | Upload and organize clothing items with photos | Keep all clothing information in one place, accessible from any device |
 | Interactive Outfit Creator | Drag-and-drop canvas to create outfit combinations | Visualize outfits before wearing them, discover new combinations |
 | AI-Powered Suggestions | Get automated outfit recommendations | Save time planning outfits, discover unexpected combinations |
 | Friend Connections | Add friends and view their closets | Get style inspiration from people you know and trust |

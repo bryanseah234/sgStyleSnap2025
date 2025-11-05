@@ -58,7 +58,7 @@
       <p 
         class="text-xl md:text-2xl liquid-text text-stone-600 dark:text-zinc-400 max-w-2xl"
       >
-        Your digital wardrobe awaits. Create stunning outfits, discover new styles, and share your fashion journey.
+        Your digital closet awaits. Create stunning outfits, discover new styles, and share your fashion journey.
       </p>
     </div>
 
@@ -813,7 +813,11 @@ const formatTimeAgo = (dateString) => {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  // For older dates, show full date in "28 Oct 2025" format
+  const day = date.getDate()
+  const month = date.toLocaleDateString('en-US', { month: 'short' })
+  const year = date.getFullYear()
+  return `${day} ${month} ${year}`
 }
 
 /**

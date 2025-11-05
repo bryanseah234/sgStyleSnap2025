@@ -688,7 +688,11 @@ const formatDate = (dateString) => {
   if (diffDays === 1) return 'yesterday'
   if (diffDays < 7) return `${diffDays} days ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) === 1 ? '' : 's'} ago`
-  return date.toLocaleDateString()
+  // For older dates, show full date in "28 Oct 2025" format
+  const day = date.getDate()
+  const month = date.toLocaleDateString('en-US', { month: 'short' })
+  const year = date.getFullYear()
+  return `${day} ${month} ${year}`
 }
 
 const viewFriendProfile = (friendUsername) => {

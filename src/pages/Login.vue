@@ -38,7 +38,7 @@
           </h1>
         </div>
         <p class="text-base sm:text-lg text-stone-600 dark:text-zinc-400">
-          Your digital wardrobe awaits
+          Your digital closet awaits
         </p>
       </div>
 

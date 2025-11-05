@@ -40,22 +40,21 @@ export function createPageUrl(pageName) {
  * Formats a date to a human-readable string
  * 
  * Converts a Date object or date string into a formatted string
- * using the US locale format (e.g., "Jan 15, 2024").
+ * in the format "28 Oct 2025" (day month year).
  * 
  * @param {Date|string} date - The date to format (Date object or ISO string)
- * @returns {string} Formatted date string in US locale format
+ * @returns {string} Formatted date string in "DD MMM YYYY" format
  * 
  * @example
- * formatDate(new Date()) // Returns "Jan 15, 2024"
- * formatDate('2024-01-15T10:30:00Z') // Returns "Jan 15, 2024"
+ * formatDate(new Date()) // Returns "28 Oct 2025"
+ * formatDate('2025-10-28T10:30:00Z') // Returns "28 Oct 2025"
  */
 export function formatDate(date) {
   const d = new Date(date);
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  const day = d.getDate();
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const year = d.getFullYear();
+  return `${day} ${month} ${year}`;
 }
 
 /**

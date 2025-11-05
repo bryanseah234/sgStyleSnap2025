@@ -79,7 +79,7 @@ Welcome to the StyleSnap documentation! This directory contains comprehensive do
 ## 📋 Project Overview
 
 StyleSnap is a modern fashion application that helps users:
-- 📱 Manage their digital wardrobe
+- 📱 Manage their digital closet
 - 👥 Connect with friends
 - 🤖 Get AI-powered outfit suggestions
 - 🛍️ Browse curated fashion catalog

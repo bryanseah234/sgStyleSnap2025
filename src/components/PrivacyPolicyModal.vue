@@ -45,7 +45,7 @@
               This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service.
             </p>
             <p>
-              StyleSnap ("we," "our," or "us") operates a digital wardrobe management platform. 
+              StyleSnap ("we," "our," or "us") operates a digital closet management platform. 
               This policy applies to all users of our website, mobile applications, and related services.
             </p>
           </section>

@@ -196,7 +196,7 @@ Add `.no-enhance` class to disable for specific buttons
 - Structured data ready
 
 **Social Sharing Preview:**
-- Title: "StyleSnap - Your Digital Wardrobe"
+- Title: "StyleSnap - Your Digital Closet"
 - Description: "Organize your clothes, create stunning outfits, and discover your personal style with StyleSnap."
 - Image placeholders ready (og-image.jpg, twitter-image.jpg)
 

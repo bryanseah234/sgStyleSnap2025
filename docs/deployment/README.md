@@ -28,7 +28,7 @@ A Progressive Web App for managing your wardrobe and getting AI-powered outfit s
 1. **Documentation Index**: [docs/README.md](docs/README.md) - Complete guide catalog
 2. **Feature Guides**: `docs/*_GUIDE.md` - Implementation details for each feature
    - `AUTHENTICATION_GUIDE.md` - Google OAuth (SSO only)
-   - `CLOSET_GUIDE.md` - Digital wardrobe management
+   - `CLOSET_GUIDE.md` - Digital closet management
    - `CATALOG_GUIDE.md` - Pre-populated item catalog
    - `CATALOG_SEEDING.md` - **Bulk catalog upload from CSV**
    - `COLOR_DETECTION_GUIDE.md` - AI color recognition

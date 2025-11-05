@@ -83,27 +83,51 @@ export function useKeyboardShortcuts() {
     }
 
     // Handle case where ref might be an array (multiple elements with same ref)
-    const inputRef = Array.isArray(searchInputRef.value) 
-      ? searchInputRef.value[0] 
-      : searchInputRef.value
+    // This happens when there are multiple inputs with the same ref (desktop + mobile)
+    let inputRef = searchInputRef.value
+    
+    // If it's an array, prioritize the visible one (desktop first, then mobile)
+    if (Array.isArray(inputRef)) {
+      // Prefer desktop input (usually first in DOM), but check visibility
+      const desktopInput = inputRef.find(el => {
+        const elem = el.$el || el
+        return elem && window.getComputedStyle(elem).display !== 'none'
+      })
+      inputRef = desktopInput || inputRef[0]
+    }
 
     if (inputRef) {
-      if (typeof inputRef.focus === 'function') {
-        // Direct input element
-        inputRef.focus()
-        console.log('🔍 Keyboard: Search focused')
-      } else if (inputRef.$el) {
-        // Vue component ref - find the input element
+      // Handle Vue component ref
+      if (inputRef.$el) {
         const inputElement = inputRef.$el.querySelector('input') || inputRef.$el
         if (inputElement && typeof inputElement.focus === 'function') {
           inputElement.focus()
+          inputElement.select() // Select all text for better UX
           console.log('🔍 Keyboard: Search focused (via component ref)')
-        } else {
-          console.warn('⚠️ Keyboard: Could not find input element in component ref')
+          return
         }
-      } else {
-        console.warn('⚠️ Keyboard: Search input ref is not a valid input element')
       }
+      
+      // Handle direct input element
+      if (typeof inputRef.focus === 'function') {
+        inputRef.focus()
+        inputRef.select() // Select all text for better UX
+        console.log('🔍 Keyboard: Search focused')
+        return
+      }
+      
+      // Try to find input element if ref is a container
+      if (inputRef.querySelector) {
+        const inputElement = inputRef.querySelector('input')
+        if (inputElement && typeof inputElement.focus === 'function') {
+          inputElement.focus()
+          inputElement.select()
+          console.log('🔍 Keyboard: Search focused (via querySelector)')
+          return
+        }
+      }
+      
+      console.warn('⚠️ Keyboard: Could not find valid input element to focus')
     }
   }
 
@@ -199,20 +223,24 @@ export function useKeyboardShortcuts() {
   const handleKeydown = (event) => {
     if (!isEnabled.value) return
 
-    // Don't trigger shortcuts when typing in inputs
-    if (event.target.tagName === 'INPUT' || 
-        event.target.tagName === 'TEXTAREA' || 
-        event.target.contentEditable === 'true') {
+    const { key, ctrlKey, metaKey, shiftKey } = event
+    const isCtrlOrCmd = ctrlKey || metaKey
+    
+    // Check if we're in an input/textarea (but allow Ctrl+K to work anywhere)
+    const isInInput = event.target.tagName === 'INPUT' || 
+                      event.target.tagName === 'TEXTAREA' || 
+                      event.target.contentEditable === 'true'
+
+    // Search focus (Ctrl+K or Cmd+K) - ALWAYS works, even when typing in inputs
+    if (isCtrlOrCmd && (key === 'k' || key === 'K')) {
+      event.preventDefault()
+      event.stopPropagation()
+      focusSearch()
       return
     }
 
-    const { key, ctrlKey, metaKey, shiftKey } = event
-    const isCtrlOrCmd = ctrlKey || metaKey
-
-    // Search focus (Ctrl+K or Cmd+K)
-    if (isCtrlOrCmd && (key === 'k' || key === 'K')) {
-      event.preventDefault()
-      focusSearch()
+    // Don't trigger other shortcuts when typing in inputs
+    if (isInInput) {
       return
     }
 

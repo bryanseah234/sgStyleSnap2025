@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Closet feature is the core of StyleSnap - a digital wardrobe where users can upload, organize, and manage their clothing items. Each user can store up to 200 items total: 50 uploaded items + unlimited items added from the catalog.
+The Closet feature is the core of StyleSnap - a digital closet where users can upload, organize, and manage their clothing items. Each user can store up to 200 items total: 50 uploaded items + unlimited items added from the catalog.
 
 ---
 

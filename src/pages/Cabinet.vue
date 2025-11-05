@@ -378,7 +378,7 @@
           <div class="p-4">
             <div class="flex items-start justify-between gap-2">
               <div class="flex-1 min-w-0">
-                <h3 class="font-semibold mb-1 text-black dark:text-white">
+                <h3 class="font-semibold mb-1 text-black dark:text-white truncate" :title="item.name">
                   {{ item.name }}
                 </h3>
                 <!-- Category and Brand on same row -->
@@ -490,8 +490,25 @@ const searchInputRef = ref(null)
 // Watch for search input ref to become available and register it
 watch(searchInputRef, (newRef) => {
   if (newRef) {
-    registerSearchInput(newRef)
-    console.log('⌨️ Cabinet: Search input ref registered via watch')
+    // Handle array case (desktop + mobile inputs)
+    if (Array.isArray(newRef)) {
+      // Register the first visible input (prefer desktop)
+      const visibleInput = newRef.find(el => {
+        if (!el) return false
+        const elem = el.$el || el
+        if (!elem) return false
+        const style = window.getComputedStyle(elem)
+        return style.display !== 'none'
+      }) || newRef[0]
+      
+      if (visibleInput) {
+        registerSearchInput(visibleInput)
+        console.log('⌨️ Cabinet: Search input registered via watch (from array)', visibleInput)
+      }
+    } else {
+      registerSearchInput(newRef)
+      console.log('⌨️ Cabinet: Search input ref registered via watch')
+    }
   }
 }, { immediate: true })
 
@@ -881,8 +898,25 @@ onMounted(async () => {
   // Register search input for keyboard shortcuts after DOM is rendered
   await nextTick()
   if (searchInputRef.value) {
-    registerSearchInput(searchInputRef.value)
-    console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut')
+    // Handle array case (desktop + mobile inputs)
+    if (Array.isArray(searchInputRef.value)) {
+      // Register the first visible input (prefer desktop)
+      const visibleInput = searchInputRef.value.find(el => {
+        if (!el) return false
+        const elem = el.$el || el
+        if (!elem) return false
+        const style = window.getComputedStyle(elem)
+        return style.display !== 'none'
+      }) || searchInputRef.value[0]
+      
+      if (visibleInput) {
+        registerSearchInput(visibleInput)
+        console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut (from array)', visibleInput)
+      }
+    } else {
+      registerSearchInput(searchInputRef.value)
+      console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut')
+    }
   } else {
     console.warn('⚠️ Cabinet: Search input ref not found when trying to register')
   }
@@ -969,6 +1003,9 @@ const handleSearchBlur = (event) => {
     const dateString = item?.created_at || item?.inserted_at || item?.addedAt
     if (!dateString) return ''
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+    const day = date.getDate()
+    const month = date.toLocaleDateString('en-US', { month: 'short' })
+    const year = date.getFullYear()
+    return `${day} ${month} ${year}`
+  }
 </script>
