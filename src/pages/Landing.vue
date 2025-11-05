@@ -627,7 +627,7 @@
             <!-- Left: Logo and Tagline -->
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-3">
-                <StyleSnapLogo size="xl" />
+                <StyleSnapLogo size="xl" class="footer-logo-white" />
                 <StyleSnapBrand class="font-bold text-xl text-white" size="xl" />
               </div>
               <p class="text-sm text-gray-400 max-w-xs">
@@ -2794,6 +2794,11 @@ const setScrollY = (value) => {
   clear: both;
   /* Ensure footer doesn't get clipped */
   overflow: visible;
+}
+
+/* Force footer logo to be white */
+.footer-static .footer-logo-white.stylesnap-logo {
+  filter: brightness(0) invert(1) !important;
 }
 
 /* Ensure footer appears below all content sections */
