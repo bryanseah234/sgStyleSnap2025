@@ -1005,9 +1005,10 @@
             </div>
             <button
               @click="showWeatherRecommendationsModal = false"
-              class="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+              class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white"
+              aria-label="Close dialog"
             >
-              <X class="w-5 h-5 text-stone-600 dark:text-zinc-400" />
+              <X class="w-5 h-5" />
             </button>
           </div>
         </div>

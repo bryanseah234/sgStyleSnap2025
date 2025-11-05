@@ -15,6 +15,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import AddItemForm from './AddItemForm.vue'
 
 // Props
@@ -27,6 +28,21 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['close', 'itemAdded'])
+
+// ESC key handler
+const handleEsc = (e) => {
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleEsc)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleEsc)
+})
 
 // Methods
 const handleItemAdded = () => {
