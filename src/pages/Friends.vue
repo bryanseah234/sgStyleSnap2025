@@ -349,6 +349,7 @@
                 type="text"
                 placeholder="Enter at least 4 characters"
                 class="w-full px-3 py-2 rounded-lg border bg-white border-stone-300 text-black placeholder-stone-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white dark:placeholder-zinc-400"
+                @input="handleFriendSearchInput"
                 @keyup.enter="addFriendSearch && addFriendSearch.trim().length >= 4 && searchAndAddFriend()"
               />
               <!-- Results count / No results message - shown below input -->
@@ -493,6 +494,9 @@ const isSearchingFriends = ref(false)
 const friendSearchPerformed = ref(false)
 const isLoading = ref(true)
 
+// Debounce timer for friend search
+let friendSearchDebounceTimer = null
+
 // Computed
 const filteredFriends = computed(() => {
   const query = searchTerm.value.toLowerCase();
@@ -536,7 +540,37 @@ const loadFriendsData = async () => {
 const handleSearch = () => {
   // Sanitize search input in real-time
   searchTerm.value = sanitizeSearch(searchTerm.value)
+}
+
+// Handle friend search input with debouncing
+const handleFriendSearchInput = () => {
+  // Sanitize input in real-time
   addFriendSearch.value = sanitizeSearch(addFriendSearch.value)
+  
+  // Clear previous debounce timer if exists
+  if (friendSearchDebounceTimer) {
+    clearTimeout(friendSearchDebounceTimer)
+    friendSearchDebounceTimer = null
+  }
+  
+  // If less than 4 characters, clear results and don't search
+  if (!addFriendSearch.value || addFriendSearch.value.trim().length < 4) {
+    addFriendResults.value = []
+    friendSearchPerformed.value = false
+    isSearchingFriends.value = false
+    return
+  }
+  
+  // Set loading state while waiting for debounce
+  isSearchingFriends.value = true
+  friendSearchPerformed.value = false
+  
+  // Debounce: wait 2 seconds after user stops typing
+  friendSearchDebounceTimer = setTimeout(() => {
+    // User stopped typing for 2 seconds, perform search
+    searchAndAddFriend()
+    friendSearchDebounceTimer = null
+  }, 2000) // 2 second delay
 }
 
 // Handle image loading errors
@@ -550,6 +584,7 @@ const searchAndAddFriend = async () => {
   if (!raw || raw.length < 4) {
     addFriendResults.value = []
     friendSearchPerformed.value = false
+    isSearchingFriends.value = false
     return
   }
 
@@ -739,6 +774,11 @@ const handleEsc = (e) => {
 // Reset search state when modal closes
 watch(showAddFriendModal, (isOpen) => {
   if (!isOpen) {
+    // Clear debounce timer
+    if (friendSearchDebounceTimer) {
+      clearTimeout(friendSearchDebounceTimer)
+      friendSearchDebounceTimer = null
+    }
     // Reset search state when modal closes
     addFriendSearch.value = ''
     addFriendResults.value = []
@@ -783,6 +823,12 @@ onUnmounted(() => {
   // Clean up event listeners
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('keydown', handleEsc)
+  
+  // Clear debounce timer on unmount
+  if (friendSearchDebounceTimer) {
+    clearTimeout(friendSearchDebounceTimer)
+    friendSearchDebounceTimer = null
+  }
 })
 
 // Removed auto-search on keypress; search happens on explicit action only

@@ -16,6 +16,17 @@ module.exports = {
   plugins: [
     'vue'
   ],
+  ignorePatterns: [
+    'dist/**',
+    'node_modules/**',
+    '*.config.js',
+    '*.config.cjs',
+    '*.config.mjs',
+    'scripts/**',
+    'public/**',
+    '**/*.backup.*',
+    '**/*.optimized.*'
+  ],
   rules: {
     'vue/multi-word-component-names': 'off',
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',

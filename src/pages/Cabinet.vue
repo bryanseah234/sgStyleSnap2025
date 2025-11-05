@@ -485,13 +485,27 @@ const router = useRouter()                      // Router for navigation
 const { elementRef: favoriteButtonRefs, pressIn: favoritePressIn, pressOut: favoritePressOut } = useLiquidPress()
 
 // Keyboard shortcuts
-const { registerSearchInput } = useKeyboardShortcuts()
+const { registerSearchInput, unregisterSearchInput } = useKeyboardShortcuts()
 
 // Search input ref
 const searchInputRef = ref(null)
 
+// Detect Mac for keyboard shortcut display
+const isMac = ref(false)
+
+// Route-based computed properties for dynamic content
+const currentSubRoute = computed(() => route.meta.subRoute || 'default')
+
 // Watch for search input ref to become available and register it
-watch(searchInputRef, (newRef) => {
+// Only register when on default route (where search input is actually rendered)
+watch([searchInputRef, currentSubRoute], ([newRef, subRoute]) => {
+  // Only register if we're on the default route where search input is visible
+  if (subRoute !== 'default') {
+    // Don't register if we're not on default route - let CatalogueBrowser handle it
+    console.log('⌨️ Cabinet: Search input not registered (not on default route)')
+    return
+  }
+  
   if (newRef) {
     // Handle array case (desktop + mobile inputs)
     if (Array.isArray(newRef)) {
@@ -515,11 +529,6 @@ watch(searchInputRef, (newRef) => {
   }
 }, { immediate: true })
 
-// Detect Mac for keyboard shortcut display
-const isMac = ref(false)
-
-// Route-based computed properties for dynamic content
-const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
     case 'manual': return 'Add Your Item'
@@ -911,29 +920,34 @@ onMounted(async () => {
   isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
   
   // Register search input for keyboard shortcuts after DOM is rendered
-  await nextTick()
-  if (searchInputRef.value) {
-    // Handle array case (desktop + mobile inputs)
-    if (Array.isArray(searchInputRef.value)) {
-      // Register the first visible input (prefer desktop)
-      const visibleInput = searchInputRef.value.find(el => {
-        if (!el) return false
-        const elem = el.$el || el
-        if (!elem) return false
-        const style = window.getComputedStyle(elem)
-        return style.display !== 'none'
-      }) || searchInputRef.value[0]
-      
-      if (visibleInput) {
-        registerSearchInput(visibleInput)
-        console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut (from array)', visibleInput)
+  // Only register if on default route (where search input is actually rendered)
+  if (currentSubRoute.value === 'default') {
+    await nextTick()
+    if (searchInputRef.value) {
+      // Handle array case (desktop + mobile inputs)
+      if (Array.isArray(searchInputRef.value)) {
+        // Register the first visible input (prefer desktop)
+        const visibleInput = searchInputRef.value.find(el => {
+          if (!el) return false
+          const elem = el.$el || el
+          if (!elem) return false
+          const style = window.getComputedStyle(elem)
+          return style.display !== 'none'
+        }) || searchInputRef.value[0]
+        
+        if (visibleInput) {
+          registerSearchInput(visibleInput)
+          console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut (from array)', visibleInput)
+        }
+      } else {
+        registerSearchInput(searchInputRef.value)
+        console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut')
       }
     } else {
-      registerSearchInput(searchInputRef.value)
-      console.log('⌨️ Cabinet: Search input registered for Ctrl+K shortcut')
+      console.warn('⚠️ Cabinet: Search input ref not found when trying to register')
     }
   } else {
-    console.warn('⚠️ Cabinet: Search input ref not found when trying to register')
+    console.log('⌨️ Cabinet: Search input not registered on mount (not on default route)')
   }
   
   // Ensure auth store is initialized

@@ -61,7 +61,7 @@ class MockAuthService {
     return updatedUser
   }
 
-  async login(email, password) {
+  async login(email, _password) {
     await new Promise(resolve => setTimeout(resolve, 500))
     const user = {
       email,

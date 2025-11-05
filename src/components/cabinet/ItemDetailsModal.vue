@@ -35,36 +35,6 @@
       <div class="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
         <!-- Left: Image with Liquid Scale -->
         <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
-          <!-- Navigation Toolbar -->
-          <div v-if="canNavigate" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 p-1.5 rounded-lg shadow-lg backdrop-blur-sm bg-white/95 border border-gray-200 dark:bg-zinc-800/95 dark:border-zinc-700">
-            <!-- Previous Item (Up Arrow) -->
-            <button
-              @click.stop="navigateToPrevious"
-              :disabled="!hasPrevious"
-              :class="`p-1.5 rounded transition-colors ${
-                hasPrevious 
-                  ? 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300' 
-                  : 'opacity-30 cursor-not-allowed text-gray-400 dark:text-zinc-600'
-              }`"
-              title="Previous Item"
-            >
-              <ChevronUp class="w-4 h-4" />
-            </button>
-            <!-- Next Item (Down Arrow) -->
-            <button
-              @click.stop="navigateToNext"
-              :disabled="!hasNext"
-              :class="`p-1.5 rounded transition-colors ${
-                hasNext 
-                  ? 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300' 
-                  : 'opacity-30 cursor-not-allowed text-gray-400 dark:text-zinc-600'
-              }`"
-              title="Next Item"
-            >
-              <ChevronDown class="w-4 h-4" />
-            </button>
-          </div>
-          
           <img
             v-if="item?.image_url"
             :src="item.image_url"
@@ -200,7 +170,7 @@ import { useTheme } from '@/composables/useTheme'
 import { usePopup } from '@/composables/usePopup'
 import { useLiquidPress, useLiquidReveal } from '@/composables/useLiquidGlass'
 import { ClothesService } from '@/services/clothesService'
-import { X, Trash2, Shirt, Heart, Save, ChevronUp, ChevronDown } from 'lucide-vue-next'
+import { X, Trash2, Shirt, Heart, Save } from 'lucide-vue-next'
 
 const { theme } = useTheme()
 const { showError, showSuccess, showConfirm } = usePopup()
@@ -218,18 +188,10 @@ const props = defineProps({
   item: {
     type: Object,
     default: null
-  },
-  items: {
-    type: Array,
-    default: () => []
-  },
-  currentIndex: {
-    type: Number,
-    default: -1
   }
 })
 
-const emit = defineEmits(['close', 'item-removed', 'item-updated', 'navigate-to'])
+const emit = defineEmits(['close', 'item-removed', 'item-updated'])
 
 const localPrivacy = ref(props.item?.privacy || 'friends')
 const originalPrivacy = ref(props.item?.privacy || 'friends')
@@ -246,17 +208,6 @@ const handleResize = () => {
 const handleEsc = (e) => {
   if (e.key === 'Escape' && props.isOpen) {
     closeModal()
-  }
-  
-  // Arrow keys for navigation (only if navigation is available)
-  if (canNavigate.value && props.isOpen) {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      navigateToPrevious()
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      navigateToNext()
-    }
   }
 }
 
@@ -384,7 +335,6 @@ const handleCloseRelease = (event) => {
   closePressOut(event.target)
 }
 
-
 const toggleFavorite = async () => {
   if (!props.item) return
   try {
@@ -509,54 +459,5 @@ const getTextColor = (colorName) => {
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
   return brightness > 128 ? '#000000' : '#ffffff'
 }
-
-// Navigation between items
-const canNavigate = computed(() => {
-  return props.items && props.items.length > 1 && props.currentIndex >= 0
-})
-
-const hasPrevious = computed(() => {
-  return canNavigate.value && props.currentIndex > 0
-})
-
-const hasNext = computed(() => {
-  return canNavigate.value && props.currentIndex < props.items.length - 1
-})
-
-const navigateToPrevious = () => {
-  if (!hasPrevious.value) return
-  const newIndex = props.currentIndex - 1
-  emit('navigate-to', newIndex)
-}
-
-const navigateToNext = () => {
-  if (!hasNext.value) return
-  const newIndex = props.currentIndex + 1
-  emit('navigate-to', newIndex)
-}
-
-// Check if desktop/laptop (not mobile)
-const handleResize = () => {
-  isDesktop.value = window.innerWidth >= 1024
-}
-
-// Add ESC key listener and arrow key navigation
-const handleEsc = (e) => {
-  if (e.key === 'Escape' && props.isOpen) {
-    closeModal()
-  }
-  
-  // Arrow keys for navigation (only if navigation is available)
-  if (canNavigate.value && props.isOpen) {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      navigateToPrevious()
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      navigateToNext()
-    }
-  }
-}
-
 </script>
 

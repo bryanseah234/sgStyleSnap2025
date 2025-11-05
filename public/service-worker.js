@@ -22,7 +22,7 @@ const AVATAR_URLS = [
 ]
 
 // Install event - don't pre-cache avatars, too large
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (_event) => {
   console.log('[ServiceWorker] Installing...')
   self.skipWaiting()
 })

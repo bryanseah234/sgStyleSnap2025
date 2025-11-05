@@ -21,13 +21,19 @@
   <!-- <BlobCursor /> -->
   
   <!-- Page Transition Curtain Effect -->
-  <PageTransition :bar-count="10" :duration="900" />
+  <PageTransition
+    :bar-count="10"
+    :duration="900"
+  />
   
   <!-- Performance Monitor (Development Only) -->
   <FPSCounter v-if="isDevelopment" />
   
   <!-- Debug Overlay (Hidden by default, toggle with "debug" keyword) -->
-  <DebugOverlay :visible="isDebugMode" @close="disableDebugMode" />
+  <DebugOverlay
+    :visible="isDebugMode"
+    @close="disableDebugMode"
+  />
 </template>
 
 <script setup>
