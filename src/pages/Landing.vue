@@ -29,7 +29,8 @@
       <span>Skip Animation</span>
       <ArrowRight class="w-5 h-5 text-black group-hover:translate-x-1 transition" style="color: #000000 !important; stroke: #000000 !important;" />
     </button>
-  </div>
+    </div>
+  </Transition>
 
   <div 
     class="min-h-screen bg-white text-gray-900 landing-page"
