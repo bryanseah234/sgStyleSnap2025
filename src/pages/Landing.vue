@@ -122,8 +122,8 @@
             @click="handleSignUp"
             class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-white text-black hover:bg-gray-100 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            <span>Get Started</span>
-            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" />
+            <span class="text-black dark:text-black">Sign Up Now</span>
+            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition text-black dark:text-black" />
           </button>
         </div>
       </div>
@@ -589,8 +589,7 @@
     
     <!-- CTA Section -->
     <section 
-      class="cta-card-section text-gray-900 relative"
-      style="background-color: rgb(245, 246, 247); padding-top: 7.2rem; padding-bottom: 7.2rem;"
+      class="cta-card-section bg-gray-50 text-gray-900 relative py-16 sm:py-20 md:py-28"
     >
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="cta-title text-gray-900 mb-3 sm:mb-5">Ready to Transform Your Wardrobe?</h2>
@@ -600,11 +599,10 @@
         <div class="flex justify-center">
         <button
             @click="handleSignUp"
-            class="cta-signup-button flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
-            style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff !important; box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4);"
+            class="cta-signup-button flex items-center gap-2 px-6 py-3 rounded-full font-medium text-sm bg-black text-white hover:bg-gray-900 transition-all duration-200 shadow-md hover:shadow-lg"
         >
-            <span style="color: #ffffff !important;">Sign Up Now</span>
-            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" style="color: #ffffff !important;" />
+            <span class="whitespace-nowrap">Sign Up Now</span>
+            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" />
         </button>
         </div>
       </div>
@@ -719,14 +717,19 @@ import {
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
+import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 import SingleAvatar3D from '@/components/SingleAvatar3D.vue'
 import { useLazyLoad } from '@/composables/useLazyLoad'
+import { usePopup } from '@/composables/usePopup'
 
 // Import landing page animations
 import '@/assets/css/landing-page-animations.css'
 
 // Router instance
 const router = useRouter()
+
+// Popup composable
+const { showWarning } = usePopup()
 
 // Reactive state
 const authStore = useAuthStore()
@@ -1349,6 +1352,13 @@ const findNonOverlappingPosition = (existingItems, itemSize, startX, startY, can
 const addCatalogueItemToCanvas = (item) => {
   if (!canvasRef.value) return
   
+  // Check if item already exists on canvas (by id)
+  const itemAlreadyOnCanvas = outfitItems.value.some(canvasItem => canvasItem.id === item.id || canvasItem.originalId === item.id)
+  if (itemAlreadyOnCanvas) {
+    showWarning('This item is already on the canvas. Each item can only be added once.')
+    return
+  }
+  
   const rect = canvasRef.value.getBoundingClientRect()
   const itemSize = 128
   const centerX = rect.width / 2
@@ -1392,6 +1402,13 @@ const handleDrop = (event) => {
   try {
     const itemData = event.dataTransfer.getData('text/plain')
     const item = JSON.parse(itemData)
+    
+    // Check if item already exists on canvas (by id)
+    const itemAlreadyOnCanvas = outfitItems.value.some(canvasItem => canvasItem.id === item.id || canvasItem.originalId === item.id)
+    if (itemAlreadyOnCanvas) {
+      showWarning('This item is already on the canvas. Each item can only be added once.')
+      return
+    }
     
     const rect = canvasRef.value.getBoundingClientRect()
     const itemSize = 128
@@ -2664,27 +2681,10 @@ const setScrollY = (value) => {
   }
 }
 
-/* CTA Sign Up Button - Theme-independent styling */
+/* CTA Sign Up Button - Matches site's black/white theme */
 .cta-signup-button {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4) !important;
-}
-
-.cta-signup-button:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.5) !important;
-}
-
-.cta-signup-button span,
-.cta-signup-button svg {
-  color: #ffffff !important;
-}
-
-.cta-signup-button:hover span,
-.cta-signup-button:hover svg {
-  color: #ffffff !important;
+  /* Uses Tailwind classes: bg-black text-white hover:bg-gray-900 */
+  /* No custom styling needed - matches "Join for free" button styling */
 }
 
 /* Footer - Static at bottom of content */

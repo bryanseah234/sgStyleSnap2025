@@ -129,13 +129,13 @@
                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                 : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
             }`"
-            :title="virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
+            :title="virtualTryOnMatchesCanvas && virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
           >
-            <Eye v-if="virtualTryOnImageUrl" class="w-5 h-5" />
+            <Eye v-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl" class="w-5 h-5" />
             <User v-else class="w-5 h-5" />
             <span class="hidden sm:inline whitespace-nowrap">
               <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
-              <span v-else-if="virtualTryOnImageUrl">View</span>
+              <span v-else-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl">View</span>
               <span v-else>Try On</span>
             </span>
           </button>
@@ -253,13 +253,13 @@
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
                   : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
               }`"
-              :title="virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
+              :title="virtualTryOnMatchesCanvas && virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
             >
-              <Eye v-if="virtualTryOnImageUrl" class="w-4 h-4" />
+              <Eye v-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl" class="w-4 h-4" />
               <User v-else class="w-4 h-4" />
               <span class="text-xs whitespace-nowrap">
                 <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
-                <span v-else-if="virtualTryOnImageUrl">View</span>
+                <span v-else-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl">View</span>
                 <span v-else>Try On</span>
               </span>
             </button>
@@ -441,8 +441,9 @@
           <!-- Items Section -->
           <div class="rounded-xl p-6 bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col" style="height: 600px;">
             <!-- Loading State -->
-            <div v-if="loadingWardrobeItems" class="flex flex-col items-center justify-center py-24 flex-1">
+            <div v-if="loadingWardrobeItems || loadingFriendProfile" class="flex flex-col items-center justify-center py-24 flex-1">
               <div class="w-16 h-16 spinner-modern mb-4"></div>
+              <p class="text-base text-stone-600 dark:text-zinc-400">Loading items...</p>
             </div>
             
             <!-- Content (when loaded) -->
@@ -473,8 +474,8 @@
               </div>
 
               <!-- Items List -->
-              <div class="flex-1 overflow-y-auto px-2 custom-scrollbar min-h-0">
-                <div v-if="filteredItems.length > 0" class="space-y-2">
+              <div class="flex-1 overflow-y-auto px-2 pt-3 pb-3 custom-scrollbar min-h-0">
+                <div v-if="filteredItems.length > 0" class="space-y-2 pt-2">
                   <div
                     v-for="item in filteredItems"
                     :key="item.id"
@@ -483,6 +484,7 @@
                     @click="addItemToCanvas(item)"
                     @contextmenu.prevent="showItemContextMenu(item, $event)"
                     class="group p-3 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] bg-stone-50 hover:bg-stone-100 border border-stone-200 hover:border-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:hover:border-zinc-600 relative"
+                    style="transform-origin: center; will-change: transform;"
                   >
                     <div class="flex items-center gap-3">
                       <!-- Item Image -->
@@ -542,11 +544,11 @@
 
         <!-- Right Area - Outfit Canvas -->
         <div class="lg:col-span-3">
-          <div class="rounded-xl overflow-visible bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
+          <div class="rounded-xl overflow-hidden bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800">
             <!-- Canvas Area -->
             <div
               ref="canvasContainer"
-              class="relative w-full rounded-lg overflow-visible bg-stone-50 dark:bg-zinc-800"
+              class="relative w-full rounded-lg overflow-hidden bg-stone-50 dark:bg-zinc-800"
               style="height: 600px;"
               @drop="handleDrop"
               @dragover.prevent
@@ -591,7 +593,9 @@
                   }
                 ]"
                 @mousedown.stop="startDrag(item, $event)"
-                @touchstart.stop.prevent="startDrag(item, $event)"
+                @touchstart.stop.prevent="handleTouchStart(item, $event)"
+                @touchmove.stop.prevent="handleTouchMoveTooltip"
+                @touchend.stop="handleTouchEndTooltip"
                 @click.stop="handleItemClick(item.id, $event)"
               >
                 <div class="w-32 h-32 overflow-hidden">
@@ -696,6 +700,22 @@
                 </div>
               </div>
               
+              <!-- Mobile Tooltip -->
+              <div
+                v-if="tooltipItemId && !draggedItem"
+                :style="{
+                  position: 'absolute',
+                  left: `${tooltipPosition.x}px`,
+                  top: `${tooltipPosition.y}px`,
+                  transform: 'translateX(-50%)',
+                  zIndex: 10000,
+                  pointerEvents: 'none'
+                }"
+                class="px-3 py-2 rounded-lg shadow-lg backdrop-blur-sm bg-black/90 text-white text-sm whitespace-nowrap dark:bg-black/90"
+              >
+                {{ getTooltipText(tooltipItemId) }}
+              </div>
+              
               <!-- Empty State -->
               <div
                 v-if="canvasItems.length === 0"
@@ -761,13 +781,13 @@
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
-                  :title="virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
+                  :title="virtualTryOnMatchesCanvas && virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
                 >
-                  <Eye v-if="virtualTryOnImageUrl" class="w-5 h-5" />
+                  <Eye v-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl" class="w-5 h-5" />
                   <User v-else class="w-5 h-5" />
                   <span class="hidden sm:inline whitespace-nowrap">
                     <span v-if="generatingTryOn" class="ellipsis-animated">Generating</span>
-                    <span v-else-if="virtualTryOnImageUrl">View</span>
+                    <span v-else-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl">View</span>
                     <span v-else>Try On</span>
                   </span>
                 </button>
@@ -921,13 +941,11 @@
               </div>
               
               <!-- Item Names -->
-              <div class="space-y-1 mb-3">
-                <p
-                  v-for="item in rec.items"
-                  :key="item.id"
-                  class="text-xs text-stone-600 dark:text-zinc-400 truncate"
-                >
-                  {{ item.name }}
+              <div class="mb-3">
+                <p class="text-xs text-stone-600 dark:text-zinc-400 truncate">
+                  <span v-for="(item, index) in rec.items" :key="item.id">
+                    {{ item.name }}<span v-if="index < rec.items.length - 1">, </span>
+                  </span>
                 </p>
               </div>
               
@@ -1027,25 +1045,25 @@
                 <div
                   v-for="item in rec.items"
                   :key="item.id"
-                  class="aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-800"
+                  class="rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-800 flex flex-col"
                 >
-                  <img
-                    :src="item.image_url || item.thumbnail_url"
-                    :alt="item.name"
-                    class="w-full h-full object-cover"
-                  />
+                  <div class="aspect-square relative overflow-hidden">
+                    <img
+                      :src="item.image_url || item.thumbnail_url"
+                      :alt="item.name"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <!-- Item Name and Category -->
+                  <div class="p-2 bg-white dark:bg-zinc-900">
+                    <p class="text-sm font-semibold mb-0.5 text-black dark:text-white truncate">
+                      {{ item.name }}
+                    </p>
+                    <p class="text-xs text-stone-600 dark:text-zinc-400 truncate">
+                      {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '' }}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              
-              <!-- Item Names -->
-              <div class="space-y-1 mb-3">
-                <p
-                  v-for="item in rec.items"
-                  :key="item.id"
-                  class="text-xs text-stone-600 dark:text-zinc-400 truncate"
-                >
-                  {{ item.name }}
-                </p>
               </div>
               
               <!-- Load Button -->
@@ -1178,6 +1196,9 @@ const loadingWardrobeItems = ref(false)
 const canvasItems = ref([])
 const selectedItemId = ref(null)
 const showGrid = ref(false)
+const tooltipItemId = ref(null)
+const tooltipPosition = ref({ x: 0, y: 0 })
+const tooltipTimeout = ref(null)
 const savingOutfit = ref(false)
 const scoringOutfit = ref(false)
 const outfitScore = ref(null)
@@ -1324,6 +1345,7 @@ const friendProfile = ref(null)
 const friendUsername = computed(() => route.params.username)
 const friendsList = ref([]) // List of friends for selection
 const loadingFriends = ref(false) // Loading state for friends list
+const loadingFriendProfile = ref(false) // Loading state for friend profile
 const showAddFriendModal = ref(false) // Modal state for adding friends
 const showShareOutfitDialog = ref(false) // Modal state for sharing outfit with friend
 
@@ -1336,6 +1358,7 @@ const showVirtualTryOnModal = ref(false)
 const generatingTryOn = ref(false)
 const virtualTryOnImageUrl = ref(null)
 const virtualTryOnError = ref(null)
+const virtualTryOnItemIds = ref(null) // Track which items were used for generation
 
 // Set itemsSource based on current sub-route
 const initializeItemsSource = () => {
@@ -1435,6 +1458,39 @@ const canShowVirtualTryOn = computed(() => {
   return hasTop && hasBottom
 })
 
+// Check if current canvas items match the items used for virtual try-on generation
+const virtualTryOnMatchesCanvas = computed(() => {
+  if (!virtualTryOnImageUrl.value || !virtualTryOnItemIds.value) {
+    return false
+  }
+  
+  // Get current top and bottom item IDs
+  const topItem = canvasItems.value.find(item => {
+    const category = item.category?.toLowerCase()
+    return category === 'tops' || category === 'top' || category === 't-shirt' || 
+           category === 'shirt' || category === 'blouse' || category === 'hoodie' || 
+           category === 'longsleeve' || category === 'polo' || category === 'body' || 
+           category === 'undershirt' || category === 'outerwear' || category === 'blazer'
+  })
+  
+  const bottomItem = canvasItems.value.find(item => {
+    const category = item.category?.toLowerCase()
+    return category === 'bottoms' || category === 'bottom' || category === 'pants' || 
+           category === 'shorts' || category === 'skirt'
+  })
+  
+  if (!topItem || !bottomItem) {
+    return false
+  }
+  
+  // Compare using originalId (the actual clothing item ID, not canvas ID)
+  const currentTopId = topItem.originalId || topItem.id
+  const currentBottomId = bottomItem.originalId || bottomItem.id
+  
+  return virtualTryOnItemIds.value.topId === currentTopId && 
+         virtualTryOnItemIds.value.bottomId === currentBottomId
+})
+
 // Watch for changes in items source and reload items
 watch(itemsSource, async (newSource, oldSource) => {
   if (newSource !== oldSource) {
@@ -1443,9 +1499,49 @@ watch(itemsSource, async (newSource, oldSource) => {
   }
 })
 
+// Watch for canvas items changes - clear virtual try-on if items don't match
+watch(() => canvasItems.value.map(item => ({
+  id: item.originalId || item.id,
+  category: item.category?.toLowerCase()
+})), (newItems, oldItems) => {
+  // Only check if we have a generated image
+  if (virtualTryOnImageUrl.value && virtualTryOnItemIds.value) {
+    // If items array changed length (add/remove), clear try-on
+    if (oldItems && newItems.length !== oldItems.length) {
+      console.log('🎨 OutfitCreator: Canvas items count changed, clearing virtual try-on')
+      virtualTryOnImageUrl.value = null
+      virtualTryOnItemIds.value = null
+      return
+    }
+    
+    // Check if top or bottom items changed
+    const newTop = newItems.find(item => {
+      const cat = item.category
+      return cat === 'tops' || cat === 'top' || cat === 't-shirt' || 
+             cat === 'shirt' || cat === 'blouse' || cat === 'hoodie' || 
+             cat === 'longsleeve' || cat === 'polo' || cat === 'body' || 
+             cat === 'undershirt' || cat === 'outerwear' || cat === 'blazer'
+    })
+    const newBottom = newItems.find(item => {
+      const cat = item.category
+      return cat === 'bottoms' || cat === 'bottom' || cat === 'pants' || 
+             cat === 'shorts' || cat === 'skirt'
+    })
+    
+    // If top or bottom changed and doesn't match stored IDs, clear try-on
+    if (newTop && newTop.id !== virtualTryOnItemIds.value.topId ||
+        newBottom && newBottom.id !== virtualTryOnItemIds.value.bottomId) {
+      console.log('🎨 OutfitCreator: Canvas items changed, clearing virtual try-on')
+      virtualTryOnImageUrl.value = null
+      virtualTryOnItemIds.value = null
+    }
+  }
+}, { deep: true })
+
 // Methods
 const loadFriendProfile = async (username) => {
   try {
+    loadingFriendProfile.value = true
     console.log('OutfitCreator: Loading friend profile:', username)
     const friend = await friendsService.getFriendByUsername(username)
     
@@ -1459,6 +1555,8 @@ const loadFriendProfile = async (username) => {
   } catch (error) {
     console.error('OutfitCreator: Error loading friend profile:', error)
     friendProfile.value = null
+  } finally {
+    loadingFriendProfile.value = false
   }
 }
 
@@ -3156,6 +3254,13 @@ const addItemToCanvas = (item) => {
     return
   }
   
+  // Check if item already exists on canvas (by originalId)
+  const itemAlreadyOnCanvas = canvasItems.value.some(canvasItem => canvasItem.originalId === item.id)
+  if (itemAlreadyOnCanvas) {
+    showWarning('This item is already on the canvas. Each item can only be added once.')
+    return
+  }
+  
   if (!canvasContainer.value) return
   
   const rect = canvasContainer.value.getBoundingClientRect()
@@ -3227,6 +3332,13 @@ const handleDrop = (event) => {
   const item = wardrobeItems.value.find(i => i.id === itemId)
   
   if (item) {
+    // Check if item already exists on canvas (by originalId)
+    const itemAlreadyOnCanvas = canvasItems.value.some(canvasItem => canvasItem.originalId === item.id)
+    if (itemAlreadyOnCanvas) {
+      showWarning('This item is already on the canvas. Each item can only be added once.')
+      return
+    }
+    
     const rect = canvasContainer.value.getBoundingClientRect()
     const itemSize = 128
     const dropX = event.clientX - rect.left
@@ -3282,11 +3394,142 @@ const isDragging = ref(false)
 const touchStartPosition = ref({ x: 0, y: 0 })
 const hasDragged = ref(false) // Track if user actually dragged vs just tapped
 
+// Mobile tooltip handlers
+const touchStartTime = ref(0)
+const touchStartItemId = ref(null)
+
+const handleTouchStart = (item, event) => {
+  // Store touch start time and item for tooltip detection
+  touchStartTime.value = Date.now()
+  touchStartItemId.value = item.id
+  hasDragged.value = false
+  
+  // Clear any existing tooltip timeout
+  if (tooltipTimeout.value) {
+    clearTimeout(tooltipTimeout.value)
+    tooltipTimeout.value = null
+  }
+  
+  // Show tooltip after 500ms if user hasn't moved (long press)
+  tooltipTimeout.value = setTimeout(() => {
+    // Only show tooltip if user is still touching and hasn't dragged
+    // Also don't show if item is already selected (toolkit is shown)
+    if (touchStartItemId.value === item.id && !hasDragged.value && !draggedItem.value && selectedItemId.value !== item.id) {
+      showTooltip(item, event)
+    }
+  }, 500)
+  
+  // Initialize drag state but don't actually start dragging until movement is detected
+  const isTouch = event.touches && event.touches.length > 0
+  const clientX = isTouch ? event.touches[0].clientX : event.clientX
+  const clientY = isTouch ? event.touches[0].clientY : event.clientY
+  
+  // Store touch start position for drag detection
+  touchStartPosition.value = { x: clientX, y: clientY }
+  
+  // Prevent default to avoid scrolling on mobile
+  if (isTouch) {
+    event.preventDefault()
+    // Attach touch event listeners to document for better mobile support
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleTouchEnd)
+    document.addEventListener('touchcancel', handleTouchEnd)
+  }
+  
+  // Set selected item immediately (for visual feedback)
+  selectedItemId.value = item.id
+}
+
+const handleTouchMoveTooltip = (e) => {
+  // Cancel tooltip if user moves finger (dragging detected)
+  if (tooltipTimeout.value) {
+    clearTimeout(tooltipTimeout.value)
+    tooltipTimeout.value = null
+  }
+  
+  // Detect if user is actually dragging (moved more than 5px)
+  if (e.touches && e.touches.length > 0 && touchStartPosition.value) {
+    const touch = e.touches[0]
+    const deltaX = Math.abs(touch.clientX - touchStartPosition.value.x)
+    const deltaY = Math.abs(touch.clientY - touchStartPosition.value.y)
+    
+    if (deltaX > 5 || deltaY > 5) {
+      hasDragged.value = true
+      hideTooltip()
+    }
+  } else {
+    hideTooltip()
+  }
+}
+
+const handleTouchEndTooltip = (e) => {
+  // Clear tooltip timeout
+  if (tooltipTimeout.value) {
+    clearTimeout(tooltipTimeout.value)
+    tooltipTimeout.value = null
+  }
+  
+  // Hide tooltip after a short delay (unless user is dragging)
+  if (!hasDragged.value && tooltipItemId.value) {
+    setTimeout(() => {
+      hideTooltip()
+    }, 2000)
+  } else {
+    hideTooltip()
+  }
+  
+  touchStartItemId.value = null
+}
+
+const showTooltip = (item, event) => {
+  if (!canvasContainer.value) return
+  
+  const rect = canvasContainer.value.getBoundingClientRect()
+  // Get touch position from the event or use stored position
+  const touch = event?.touches?.[0] || event?.changedTouches?.[0]
+  
+  if (!touch && !touchStartPosition.value) return
+  
+  // Use touch position or fallback to stored position
+  const clientX = touch?.clientX || touchStartPosition.value.x
+  const clientY = touch?.clientY || touchStartPosition.value.y
+  
+  tooltipItemId.value = item.id
+  
+  // Get item position for better tooltip placement
+  const itemX = scalePosition(item.x, 'x')
+  const itemY = scalePosition(item.y, 'y')
+  
+  // Position tooltip above the item, centered horizontally
+  tooltipPosition.value = {
+    x: itemX + 64, // Center on item (item is 128px wide, so center is at 64px)
+    y: itemY - 40 // Position above touch point
+  }
+  
+  // Ensure tooltip stays within canvas bounds (accounting for transform translateX(-50%))
+  if (tooltipPosition.value.x < 100) tooltipPosition.value.x = 100
+  if (tooltipPosition.value.x > rect.width - 100) tooltipPosition.value.x = rect.width - 100
+  if (tooltipPosition.value.y < 10) tooltipPosition.value.y = itemY + 140 // Show below if no space above
+}
+
+const hideTooltip = () => {
+  tooltipItemId.value = null
+}
+
+const getTooltipText = (itemId) => {
+  const item = canvasItems.value.find(i => i.id === itemId)
+  if (!item) return ''
+  return `${item.name}${item.category ? ` - ${item.category.charAt(0).toUpperCase() + item.category.slice(1)}` : ''}`
+}
+
 const startDrag = (item, event) => {
   // Handle both mouse and touch events
   const isTouch = event.touches && event.touches.length > 0
   const clientX = isTouch ? event.touches[0].clientX : event.clientX
   const clientY = isTouch ? event.touches[0].clientY : event.clientY
+  
+  // Hide tooltip when dragging starts
+  hideTooltip()
   
   // Prevent default to avoid scrolling on mobile
   if (isTouch) {
@@ -3368,33 +3611,58 @@ const handleMouseUp = () => {
 
 // Touch event handlers
 const handleTouchMove = (e) => {
-  if (!draggedItem.value) return
+  // Cancel tooltip if dragging
+  if (tooltipTimeout.value) {
+    clearTimeout(tooltipTimeout.value)
+    tooltipTimeout.value = null
+  }
+  hideTooltip()
   
   // Detect if user is actually dragging (moved more than 5px)
-  if (e.touches && e.touches.length > 0) {
+  if (e.touches && e.touches.length > 0 && touchStartPosition.value) {
     const touch = e.touches[0]
     const deltaX = Math.abs(touch.clientX - touchStartPosition.value.x)
     const deltaY = Math.abs(touch.clientY - touchStartPosition.value.y)
     
-    // If moved more than 5px, consider it a drag
+    // If moved more than 5px, consider it a drag and start dragging
     if (deltaX > 5 || deltaY > 5) {
       isDragging.value = true
       hasDragged.value = true // Mark that dragging occurred
+      
+      // Initialize drag state if not already set
+      if (!draggedItem.value && touchStartItemId.value) {
+        const item = canvasItems.value.find(i => i.id === touchStartItemId.value)
+        if (item) {
+          draggedItem.value = item.id
+          if (canvasContainer.value) {
+            const rect = canvasContainer.value.getBoundingClientRect()
+            dragOffset.x = touch.clientX - rect.left - scalePosition(item.x, 'x')
+            dragOffset.y = touch.clientY - rect.top - scalePosition(item.y, 'y')
+          }
+        }
+      }
+      
       e.preventDefault() // Prevent scrolling while dragging
     }
   }
   
-  if (isDragging.value) {
+  if (isDragging.value && draggedItem.value) {
     handleMouseMove(e) // Reuse the same logic
   }
 }
 
 const handleTouchEnd = (e) => {
-  if (!draggedItem.value) return
+  // Clear tooltip timeout
+  if (tooltipTimeout.value) {
+    clearTimeout(tooltipTimeout.value)
+    tooltipTimeout.value = null
+  }
   
   const wasDragging = hasDragged.value
   
-  handleMouseUp() // Reuse the same logic
+  if (draggedItem.value) {
+    handleMouseUp() // Reuse the same logic
+  }
   
   // Remove touch event listeners
   document.removeEventListener('touchmove', handleTouchMove)
@@ -3404,11 +3672,14 @@ const handleTouchEnd = (e) => {
   // Reset flags after a short delay to allow click prevention
   setTimeout(() => {
     isDragging.value = false
+    draggedItem.value = null
     touchStartPosition.value = { x: 0, y: 0 }
     if (!wasDragging) {
       hasDragged.value = false
     }
   }, 100)
+  
+  touchStartItemId.value = null
 }
 
 const selectItem = (itemId) => {
@@ -3418,6 +3689,9 @@ const selectItem = (itemId) => {
 
 // Handle item click (only if not dragging)
 const handleItemClick = (itemId, event) => {
+  // Hide tooltip on click
+  hideTooltip()
+  
   // Don't select if user just dragged (not a tap)
   if (!hasDragged.value) {
     selectItem(itemId)
@@ -3430,11 +3704,15 @@ const handleItemClick = (itemId, event) => {
 
 const deselectItem = () => {
   selectedItemId.value = null
+  hideTooltip() // Hide tooltip when deselecting
 }
 
 const clearCanvas = () => {
   canvasItems.value = []
   selectedItemId.value = null
+  // Clear virtual try-on when canvas is cleared
+  virtualTryOnImageUrl.value = null
+  virtualTryOnItemIds.value = null
   saveToHistory()
 }
 
@@ -3839,18 +4117,19 @@ const showVirtualTryOn = async () => {
       return
     }
     
-    // If we already have a result, just reopen the modal
-    if (virtualTryOnImageUrl.value && !generatingTryOn.value) {
+    // If we already have a result and items match, just reopen the modal
+    if (virtualTryOnImageUrl.value && !generatingTryOn.value && virtualTryOnMatchesCanvas.value) {
       console.log('🎨 OutfitCreator: Reopening modal with existing result')
       showVirtualTryOnModal.value = true
       return
     }
     
-    // Open modal
-    showVirtualTryOnModal.value = true
-    generatingTryOn.value = true
-    virtualTryOnError.value = null
-    virtualTryOnImageUrl.value = null
+    // If items don't match or no result exists, generate new try-on
+    if (virtualTryOnImageUrl.value && !virtualTryOnMatchesCanvas.value) {
+      console.log('🎨 OutfitCreator: Canvas items changed, generating new try-on')
+      virtualTryOnImageUrl.value = null
+      virtualTryOnItemIds.value = null
+    }
     
     // Get top and bottom items from canvas
     const topItem = canvasItems.value.find(item => {
@@ -3924,10 +4203,16 @@ const showVirtualTryOn = async () => {
     
     if (result.success) {
       virtualTryOnImageUrl.value = result.imageUrl
+      // Store the item IDs used for this generation
+      virtualTryOnItemIds.value = {
+        topId: topItem.originalId || topItem.id,
+        bottomId: bottomItem.originalId || bottomItem.id
+      }
       showSuccess('Virtual try-on generated successfully!')
       console.log('✅ OutfitCreator: Virtual try-on generated')
     } else {
       virtualTryOnError.value = result.error || 'Failed to generate virtual try-on'
+      virtualTryOnItemIds.value = null // Clear IDs on error
       // Error will be shown in the modal, no need for separate pop-up
       console.error('❌ OutfitCreator: Virtual try-on failed:', result.error)
     }
@@ -4059,6 +4344,10 @@ watch(currentSubRoute, async (newRoute, oldRoute) => {
   // Clear canvas when switching tabs (blank slate for new tab)
   canvasItems.value = []
   selectedItemId.value = null
+  
+  // Clear virtual try-on state when switching tabs (items don't match anymore)
+  virtualTryOnImageUrl.value = null
+  virtualTryOnItemIds.value = null
   
   // Clear friend profile when navigating away from friend routes
   if (newRoute !== 'friend' && newRoute !== 'friendSelect') {
@@ -4268,6 +4557,12 @@ onMounted(async () => {
 
   // Cleanup on unmount
   onUnmounted(() => {
+    // Clean up tooltip timeout
+    if (tooltipTimeout.value) {
+      clearTimeout(tooltipTimeout.value)
+      tooltipTimeout.value = null
+    }
+    
     // Clean up any remaining touch event listeners
     document.removeEventListener('touchmove', handleTouchMove)
     document.removeEventListener('touchend', handleTouchEnd)

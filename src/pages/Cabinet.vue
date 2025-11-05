@@ -7,19 +7,19 @@
       <!-- Header with title, filter buttons, and add button -->
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <!-- Dynamic page title and navigation buttons row -->
-        <div class="flex-1 min-w-0 w-full md:w-auto flex items-center justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0 w-full md:w-auto flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-4 flex-wrap">
           <h1 
-            :class="`text-4xl font-bold text-foreground break-words ${
-              currentSubRoute === 'default' ? 'text-left' : 'text-left'
+            :class="`text-4xl font-bold text-foreground break-words w-full md:w-auto text-center md:text-left mb-4 md:mb-0 ${
+              currentSubRoute === 'default' ? 'md:text-left' : 'md:text-left'
             }`">
             {{ subRouteTitle }}
           </h1>
           
           <!-- Manual Upload and Browse Catalogue Buttons (only shown on manual/catalogue sub-routes) -->
-          <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="flex items-center gap-2 flex-shrink-0">
+          <div v-if="currentSubRoute === 'manual' || currentSubRoute === 'catalogue'" class="w-full md:w-auto flex items-center gap-2 flex-shrink-0">
             <button
               @click="$router.push('/closet/add/manual')"
-              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+              :class="`flex-1 md:flex-none px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center justify-center gap-2 ${
                 currentSubRoute === 'manual'
                   ? 'bg-black text-white dark:bg-white dark:text-black'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
@@ -30,7 +30,7 @@
             </button>
             <button
               @click="$router.push('/closet/add/catalogue')"
-              :class="`px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center gap-2 ${
+              :class="`flex-1 md:flex-none px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base flex items-center justify-center gap-2 ${
                 currentSubRoute === 'catalogue'
                   ? 'bg-black text-white dark:bg-white dark:text-black'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
@@ -354,6 +354,7 @@
         <div
           v-for="(item, index) in filteredItems"
           :key="item.id"
+          :data-item-id="item.id"
           @click="openItemDetails(item)"
           tabindex="0"
           @keydown.enter.prevent="openItemDetails(item)"
@@ -398,6 +399,10 @@
                 @click.stop="toggleFavorite(item)"
                 @mousedown="handleFavoritePress($event, item)"
                 @mouseup="handleFavoriteRelease($event, item)"
+                @mouseleave="handleFavoriteRelease($event, item)"
+                @touchstart.prevent="handleFavoritePress($event, item)"
+                @touchend.prevent="handleFavoriteRelease($event, item)"
+                @touchcancel.prevent="handleFavoriteRelease($event, item)"
                 class="liquid-favorite-btn flex-shrink-0 p-2 rounded-full transition-all duration-200"
                 :class="item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'"
                 title="Favorite"
@@ -757,6 +762,26 @@ const loadItems = async () => {
 
 const toggleFavorite = async (item) => {
   try {
+    // Find the button element and ensure press state is reset
+    const card = document.querySelector(`[data-item-id="${item.id}"]`)
+    const favoriteBtn = card?.querySelector('.liquid-favorite-btn')
+    
+    if (favoriteBtn) {
+      try {
+        favoritePressOut(favoriteBtn)
+      } catch (e) {
+        // Reset transform manually if pressOut fails
+        favoriteBtn.style.transform = ''
+        favoriteBtn.style.filter = ''
+      }
+    }
+    
+    // Also ensure card transform is reset
+    if (card) {
+      card.style.transform = ''
+      card.style.transition = ''
+    }
+    
     // Add pulse animation to heart
     const event = window.event
     if (event && event.target) {
@@ -778,6 +803,21 @@ const toggleFavorite = async (item) => {
       // Ensure UI matches server response (in case of any mismatch)
       item.is_favorite = result.data.is_favorite
       console.log('Cabinet: Toggled favorite for item:', item.name, 'New status:', item.is_favorite)
+      
+      // Ensure press state is fully reset after favorite action
+      setTimeout(() => {
+        if (favoriteBtn) {
+          try {
+            favoritePressOut(favoriteBtn)
+          } catch (e) {
+            favoriteBtn.style.transform = ''
+            favoriteBtn.style.filter = ''
+          }
+        }
+        if (card) {
+          card.style.transform = ''
+        }
+      }, 100)
     } else {
       // Revert optimistic update on failure
       item.is_favorite = previousValue
@@ -870,16 +910,33 @@ onMounted(async () => {
 
 
 const handleFavoritePress = (event, item) => {
-  favoritePressIn(event.target)
+  try {
+    const target = event.target.closest('button') || event.target
+    if (target) {
+      favoritePressIn(target)
+    }
+  } catch (error) {
+    console.warn('Error in handleFavoritePress:', error)
+  }
 }
 
 const handleFavoriteRelease = (event, item) => {
-  favoritePressOut(event.target)
-  // Add heart pulse animation
-  event.target.classList.add('heart-pulse')
-  setTimeout(() => {
-    event.target.classList.remove('heart-pulse')
-  }, 300)
+  try {
+    const target = event.target.closest('button') || event.target
+    if (target) {
+      favoritePressOut(target)
+      // Add heart pulse animation
+      const heartIcon = target.querySelector('svg')
+      if (heartIcon) {
+        heartIcon.classList.add('heart-pulse')
+        setTimeout(() => {
+          heartIcon.classList.remove('heart-pulse')
+        }, 300)
+      }
+    }
+  } catch (error) {
+    console.warn('Error in handleFavoriteRelease:', error)
+  }
 }
 
 const handleSearch = () => {

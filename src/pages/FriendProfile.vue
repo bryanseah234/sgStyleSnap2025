@@ -281,8 +281,8 @@
         </div>
 
         <!-- Friend Item Details Modal -->
-        <div v-if="showItemDetails" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm" @click="closeItemDetails">
-          <div class="w-full max-w-2xl rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh]" @click.stop>
+        <div v-if="showItemDetails" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm overflow-y-auto" @click="closeItemDetails">
+          <div class="w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-[500px] md:min-h-[600px]" @click.stop>
             <!-- Close Button with ESC Hint -->
             <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
               <!-- ESC Key Hint (Desktop only) -->
@@ -291,7 +291,7 @@
               </div>
               <button
                 @click="closeItemDetails"
-                class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-500 hover:text-black dark:bg-zinc-800/90 dark:hover:bg-zinc-700 dark:text-zinc-300 dark:hover:text-white"
+                class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-700 hover:text-black dark:bg-zinc-800/90 dark:hover:bg-zinc-700 dark:text-zinc-300 dark:hover:text-white"
                 aria-label="Close dialog"
               >
                 <X class="w-5 h-5" />
@@ -299,14 +299,14 @@
             </div>
 
             <!-- Content: Image on left, Details on right -->
-            <div class="flex flex-col md:flex-row overflow-hidden">
+            <div class="flex flex-col md:flex-row flex-1 min-h-[500px] md:min-h-[600px] overflow-hidden">
               <!-- Left: Image -->
-              <div class="w-full md:w-1/2 h-[250px] sm:h-[300px] md:h-[400px] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+              <div class="w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[600px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
                 <img
                   v-if="selectedItem?.image_url"
                   :src="selectedItem.image_url"
                   :alt="selectedItem.name"
-                  class="w-full h-full object-contain p-4"
+                  class="w-full h-full object-contain"
                 />
                 <div
                   v-else
@@ -317,13 +317,13 @@
               </div>
 
               <!-- Right: Details -->
-              <div class="w-full md:w-1/2 p-4 sm:p-6 pb-4 sm:pb-6 space-y-3 overflow-y-auto">
+              <div class="w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-[500px] md:min-h-0">
                 <!-- Item Name & Category -->
                 <div>
-                  <h2 class="text-2xl font-bold mb-2 text-black dark:text-white">
-                    {{ selectedItem?.name || 'Item Details' }}
+                  <h2 class="text-2xl font-bold mb-2 text-foreground">
+                    {{ selectedItem?.name || 'Untitled Item' }}
                   </h2>
-                  <span v-if="selectedItem?.category" class="inline-block px-3 py-1 text-sm rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
+                  <span v-if="selectedItem?.category" class="inline-block px-3 py-1 text-base rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
                     {{ selectedItem.category.charAt(0).toUpperCase() + selectedItem.category.slice(1) }}
                   </span>
                 </div>
@@ -331,19 +331,39 @@
                 <!-- Item Details -->
                 <div class="space-y-3">
                   <div v-if="selectedItem?.brand">
-                    <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Brand</p>
-                    <p class="text-base text-black dark:text-white">{{ selectedItem.brand }}</p>
+                    <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Brand</p>
+                    <p class="text-base text-foreground">{{ selectedItem.brand }}</p>
                   </div>
 
                   <div v-if="selectedItem?.color">
-                    <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Color</p>
-                    <p class="text-base text-black dark:text-white capitalize">{{ selectedItem.color }}</p>
+                    <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Color</p>
+                    <p class="text-base text-foreground capitalize">{{ selectedItem.color }}</p>
                   </div>
 
                   <div v-if="selectedItem?.size">
-                    <p class="text-sm font-medium text-stone-600 dark:text-zinc-400">Size</p>
-                    <p class="text-base text-black dark:text-white">{{ selectedItem.size }}</p>
+                    <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Size</p>
+                    <p class="text-base text-foreground">{{ selectedItem.size }}</p>
                   </div>
+
+                  <div v-if="selectedItem?.season">
+                    <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Season</p>
+                    <p class="text-base text-foreground">{{ selectedItem.season.charAt(0).toUpperCase() + selectedItem.season.slice(1) }}</p>
+                  </div>
+                </div>
+
+                <!-- Meta Info -->
+                <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800">
+                  <div class="text-sm text-stone-600 dark:text-zinc-400">
+                    Added {{ formatDate(selectedItem?.created_at) }}
+                  </div>
+                  <button
+                    v-if="selectedItem"
+                    @click="toggleFavorite"
+                    :class="`p-2 rounded-full transition-all duration-200 ${selectedItem.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
+                    title="Favorite"
+                  >
+                    <Heart :class="`w-5 h-5 ${selectedItem.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -412,10 +432,12 @@ import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
 import OutfitCanvasMiniature from '@/components/dashboard/OutfitCanvasMiniature.vue'
-import { X, Search, Shirt, ChevronDown } from 'lucide-vue-next'
+import { X, Search, Shirt, ChevronDown, Heart } from 'lucide-vue-next'
 import { getProxiedImageUrl } from '@/utils/imageProxy'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { toProperCase, formatColor } from '@/utils/textFormatting'
+import { formatDate } from '@/utils'
+import { catalogService } from '@/services/catalogService'
 
 const { theme } = useTheme()
 const route = useRoute()
@@ -443,6 +465,10 @@ const selectedItemCategory = ref(null)
 const selectedItemColor = ref(null)
 const selectedItemBrand = ref(null)
 const filtersExpanded = ref(false) // Filters expanded state (mobile only)
+
+// Catalog filter options (loaded from catalog service)
+const catalogColors = ref([])
+const catalogBrands = ref([])
 
 // Keyboard shortcuts
 const { isMac } = useKeyboardShortcuts()
@@ -504,6 +530,19 @@ async function loadProfile() {
     isLoading.value = true
     errorMessage.value = ''
 
+    // Load filter options from catalog service (for comprehensive filtering)
+    try {
+      const [colorsData, brandsData] = await Promise.all([
+        catalogService.getColors(),
+        catalogService.getBrands(),
+      ])
+      catalogColors.value = colorsData || []
+      catalogBrands.value = brandsData || []
+    } catch (error) {
+      console.error('FriendProfile: Error loading catalog filter options:', error)
+      // Continue even if catalog options fail to load
+    }
+
     // Friend basic info - get by username
     friend.value = await userService.getUserByUsername(username)
     
@@ -562,6 +601,37 @@ function closeItemDetails() {
   selectedItem.value = null
 }
 
+// Toggle favorite for friend's item
+const toggleFavorite = async () => {
+  if (!selectedItem.value) return
+  try {
+    // Optimistic UI update - update immediately for instant feedback
+    const previousValue = selectedItem.value.is_favorite
+    selectedItem.value.is_favorite = !selectedItem.value.is_favorite
+    
+    // Sync with backend asynchronously
+    const result = await clothesService.toggleFavorite(selectedItem.value.id)
+    
+    if (result.success) {
+      // Ensure UI matches server response (in case of any mismatch)
+      selectedItem.value.is_favorite = result.data.is_favorite
+      // Also update in the items list
+      const itemInList = publicItems.value.find(item => item.id === selectedItem.value.id)
+      if (itemInList) {
+        itemInList.is_favorite = result.data.is_favorite
+      }
+      console.log('Toggled favorite for friend item:', selectedItem.value.name, 'New status:', selectedItem.value.is_favorite)
+    } else {
+      // Revert optimistic update on failure
+      selectedItem.value.is_favorite = previousValue
+    }
+  } catch (error) {
+    // Revert optimistic update on error
+    selectedItem.value.is_favorite = previousValue
+    console.error('Error toggling favorite:', error)
+  }
+}
+
 // Outfit details modal functions
 function openOutfitDetails(outfit) {
   selectedOutfit.value = outfit
@@ -605,26 +675,38 @@ const availableItemCategoriesForDropdown = computed(() => {
 
 /**
  * Available colors for dropdown filter
+ * Merges colors from friend's items with catalog colors for comprehensive filtering
  */
 const availableItemColors = computed(() => {
-  const colors = new Set(
+  // Get colors from friend's items
+  const itemColors = new Set(
     (publicItems.value || [])
       .map(i => i.primary_color || i.color) // Support both primary_color (from DB) and color (fallback)
       .filter(Boolean)
+      .map(c => c.toLowerCase()) // Normalize to lowercase for comparison
   )
-  return Array.from(colors).sort()
+  // Merge with catalog colors (also normalized)
+  const catalogColorsLower = (catalogColors.value || []).map(c => c.toLowerCase())
+  const allColors = new Set([...itemColors, ...catalogColorsLower])
+  return Array.from(allColors).sort()
 })
 
 /**
  * Available brands for dropdown filter
+ * Merges brands from friend's items with catalog brands for comprehensive filtering
  */
 const availableItemBrands = computed(() => {
-  const brands = new Set(
+  // Get brands from friend's items
+  const itemBrands = new Set(
     (publicItems.value || [])
       .map(i => i.brand)
       .filter(Boolean)
+      .map(b => b.toLowerCase()) // Normalize to lowercase for comparison
   )
-  return Array.from(brands).sort()
+  // Merge with catalog brands (also normalized)
+  const catalogBrandsLower = (catalogBrands.value || []).map(b => b.toLowerCase())
+  const allBrands = new Set([...itemBrands, ...catalogBrandsLower])
+  return Array.from(allBrands).sort()
 })
 
 /**

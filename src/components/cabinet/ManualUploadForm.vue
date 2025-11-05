@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="w-full dark:bg-transparent">
     <!-- Upload Form -->
-    <div :class="`rounded-2xl border p-6 lg:p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
+    <div :class="`rounded-2xl border p-6 lg:p-8 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 shadow-sm dark:shadow-none`">
       <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
         <!-- Image Upload - Left Side (smaller) -->
         <div class="w-full lg:w-2/5 flex-shrink-0">
@@ -198,7 +198,6 @@
             >
               <option value="private">Private (Only Me)</option>
               <option value="friends">Friends</option>
-              <option value="public">Public (Everyone)</option>
             </select>
             <p v-if="hasError('privacy')" class="mt-1 text-sm text-red-500">
               {{ fieldErrors.privacy }}

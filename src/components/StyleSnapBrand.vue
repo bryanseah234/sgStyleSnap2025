@@ -2,12 +2,12 @@
   StyleSnap Brand Component
   
   Displays the StyleSnap brand name with split typography:
-  - "Style" in serif italic font
-  - "Snap" in bold sans-serif font
+  - "style" in lowercase serif italic font
+  - "snap" in lowercase bold sans-serif font
 -->
 <template>
   <span :class="[sizeClass, brandClass]">
-    <span class="brand-style">Style</span><span class="brand-snap">Snap</span>
+    <span class="brand-style">style</span><span class="brand-snap">snap</span>
   </span>
 </template>
 

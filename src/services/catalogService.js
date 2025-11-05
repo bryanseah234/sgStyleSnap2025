@@ -313,17 +313,39 @@ export class CatalogService {
    */
   async getCategories() {
     try {
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select('category')
-        .eq('is_active', true)
+      const allCategories = []
+      let offset = 0
+      const limit = 1000 // Supabase default limit
+      let hasMore = true
 
-      if (error) throw error
+      // Fetch all categories using pagination to handle large catalogs
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('catalog_items')
+          .select('category')
+          .eq('is_active', true)
+          .range(offset, offset + limit - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          // Extract categories from this batch
+          allCategories.push(...data)
+          
+          // If we got fewer items than requested, we've reached the end
+          hasMore = data.length === limit
+          offset += limit
+        } else {
+          hasMore = false
+        }
+      }
 
       // Count items per category
       const categoryCounts = {}
-      data.forEach(item => {
-        categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1
+      allCategories.forEach(item => {
+        if (item.category) {
+          categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1
+        }
       })
 
       return Object.entries(categoryCounts).map(([category, count]) => ({
@@ -344,16 +366,37 @@ export class CatalogService {
    */
   async getColors() {
     try {
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select('primary_color')
-        .eq('is_active', true)
-        .not('primary_color', 'is', null)
+      const allColors = []
+      let offset = 0
+      const limit = 1000 // Supabase default limit
+      let hasMore = true
 
-      if (error) throw error
+      // Fetch all colors using pagination to handle large catalogs
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('catalog_items')
+          .select('primary_color')
+          .eq('is_active', true)
+          .not('primary_color', 'is', null)
+          .range(offset, offset + limit - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          // Extract colors from this batch
+          const batchColors = data.map(item => item.primary_color).filter(Boolean)
+          allColors.push(...batchColors)
+          
+          // If we got fewer items than requested, we've reached the end
+          hasMore = data.length === limit
+          offset += limit
+        } else {
+          hasMore = false
+        }
+      }
 
       // Get unique colors
-      const uniqueColors = [...new Set(data.map(item => item.primary_color).filter(Boolean))]
+      const uniqueColors = [...new Set(allColors)]
       return uniqueColors.sort()
 
     } catch (error) {
@@ -368,16 +411,37 @@ export class CatalogService {
    */
   async getBrands() {
     try {
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .select('brand')
-        .eq('is_active', true)
-        .not('brand', 'is', null)
+      const allBrands = []
+      let offset = 0
+      const limit = 1000 // Supabase default limit
+      let hasMore = true
 
-      if (error) throw error
+      // Fetch all brands using pagination to handle large catalogs
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('catalog_items')
+          .select('brand')
+          .eq('is_active', true)
+          .not('brand', 'is', null)
+          .range(offset, offset + limit - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          // Extract brands from this batch
+          const batchBrands = data.map(item => item.brand).filter(Boolean)
+          allBrands.push(...batchBrands)
+          
+          // If we got fewer items than requested, we've reached the end
+          hasMore = data.length === limit
+          offset += limit
+        } else {
+          hasMore = false
+        }
+      }
 
       // Get unique brands
-      const uniqueBrands = [...new Set(data.map(item => item.brand).filter(Boolean))]
+      const uniqueBrands = [...new Set(allBrands)]
       return uniqueBrands.sort()
 
     } catch (error) {

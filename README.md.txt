@@ -2,12 +2,12 @@
 
 ---
 
-## Section & Group Number
-G3 Group 4
+## Section & Team Number
+G3 Team 4
 
 ---
 
-## Group Members
+## Team Members
 
 | Photo | Full Name | Role / Features Responsible For |
 |:--:|:--|:--|

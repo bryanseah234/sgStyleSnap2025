@@ -31,12 +31,12 @@
 
       <!-- Logo and Title -->
       <div class="text-center mb-4 sm:mb-6">
-        <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 flex items-center justify-center">
+        <div class="flex items-center justify-center gap-3 mb-2 sm:mb-3">
           <StyleSnapLogo size="4xl" />
+          <h1 class="text-3xl sm:text-4xl font-bold text-foreground">
+            <StyleSnapBrand size="4xl" />
+          </h1>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-bold mb-1 sm:mb-2 text-foreground">
-          <StyleSnapBrand size="4xl" />
-        </h1>
         <p class="text-base sm:text-lg text-stone-600 dark:text-zinc-400">
           Your digital wardrobe awaits
         </p>
@@ -170,6 +170,7 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
 import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
+import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 
 const router = useRouter()
 const route = useRoute()

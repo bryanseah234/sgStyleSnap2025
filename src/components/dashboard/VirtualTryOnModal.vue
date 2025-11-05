@@ -1,12 +1,13 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm overflow-y-auto overflow-x-hidden"
     @click="$emit('close')"
   >
     <div
       class="w-full max-w-4xl rounded-2xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
       @click.stop
+      style="overflow-x: hidden; max-width: 100%;"
     >
       <!-- Close Button -->
       <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
@@ -71,9 +72,9 @@
       </div>
 
       <!-- Success State - Show Generated Image -->
-      <div v-else-if="generatedImageUrl" class="flex-1 flex gap-4 overflow-hidden min-h-0">
+      <div v-else-if="generatedImageUrl" class="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden min-h-0 max-w-full">
         <!-- Left: Image -->
-        <div class="flex-1 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 min-w-0">
+        <div class="flex-[1.2] md:flex-[1.2] flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 min-w-0 max-w-full">
           <img
             :src="generatedImageUrl"
             alt="Virtual try-on result"
@@ -82,7 +83,7 @@
         </div>
 
         <!-- Right: Content -->
-        <div class="flex-1 flex-shrink-0 flex flex-col gap-3 overflow-y-auto min-h-0 min-w-0 max-w-[50%]">
+        <div class="flex-shrink-0 flex flex-col gap-3 min-h-0 w-full md:w-[280px] max-w-full overflow-y-auto overflow-x-hidden">
           <!-- Image Info -->
           <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-200 dark:border-purple-800 flex-shrink-0 min-w-0">
             <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -101,7 +102,7 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex flex-col gap-3 flex-shrink-0 min-w-0">
+          <div class="flex flex-col gap-3 flex-shrink-0 min-w-0 pb-2">
             <button
               @click="downloadImage"
               class="w-full px-6 py-3 rounded-2xl font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-500 text-white hover:bg-purple-600"
@@ -244,4 +245,14 @@ watch(() => props.isOpen, (isOpen) => {
 })
 </script>
 
+<style scoped>
+/* Ensure buttons maintain rounded corners on hover - prevent clipping from parent overflow */
+.scrollable-content button {
+  position: relative;
+  z-index: 1;
+}
 
+.scrollable-content button:hover {
+  z-index: 2;
+}
+</style>
