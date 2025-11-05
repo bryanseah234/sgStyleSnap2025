@@ -61,12 +61,24 @@
           <template v-else>
             <!-- Item Name & Category -->
             <div>
-              <h2 class="text-2xl font-bold mb-2 text-black dark:text-white break-words">
+              <h2 class="text-2xl font-bold mb-3 text-black dark:text-white break-words">
                 {{ item.name || 'Untitled Item' }}
               </h2>
-              <span class="inline-block px-3 py-1 text-base rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
-                {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Uncategorized' }}
-              </span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-block px-3 py-1 text-base rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
+                  {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Uncategorized' }}
+                </span>
+                <span 
+                  v-if="item.primary_color || item.color"
+                  class="inline-block px-3 py-1 text-base rounded-full font-medium shadow-sm"
+                  :style="{ 
+                    backgroundColor: getColorHex(item.primary_color || item.color),
+                    color: getTextColor(item.primary_color || item.color)
+                  }"
+                >
+                  {{ formatColorName(item.primary_color || item.color) }}
+                </span>
+              </div>
             </div>
 
             <!-- Item Details -->
@@ -74,11 +86,6 @@
               <div v-if="item.brand">
                 <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Brand</p>
                 <p class="text-base text-foreground">{{ item.brand }}</p>
-              </div>
-
-              <div v-if="item.primary_color || item.color">
-                <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Color</p>
-                <p class="text-base text-foreground">{{ item.primary_color || item.color }}</p>
               </div>
 
               <div v-if="item.size">
@@ -92,7 +99,7 @@
               </div>
 
               <!-- Show message if no details available -->
-              <div v-if="!item.brand && !item.primary_color && !item.color && !item.size && !item.season" class="text-sm text-stone-500 dark:text-zinc-500 italic">
+              <div v-if="!item.brand && !item.size && !item.season" class="text-sm text-stone-500 dark:text-zinc-500 italic">
                 No additional details available
               </div>
             </div>
@@ -118,6 +125,7 @@
               </label>
               <select
                 v-model="localPrivacy"
+                @change="handlePrivacyChange"
                 class="w-full px-4 py-2 text-base rounded-lg border transition-colors bg-white border-stone-300 text-black dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
               >
                 <option value="private">Private (Only Me)</option>
@@ -235,6 +243,12 @@ watch(() => props.item, (newItem) => {
 const hasChanges = computed(() => {
   return localPrivacy.value !== originalPrivacy.value
 })
+
+// Auto-save privacy when changed
+const handlePrivacyChange = async () => {
+  if (!props.item || !hasChanges.value) return
+  await updateItem()
+}
 
 const closeModal = () => {
   emit('close')
@@ -355,6 +369,96 @@ const toggleFavorite = async () => {
     showError('An error occurred while updating favorite status')
     console.error('Error toggling favorite:', error)
   }
+}
+
+// Color palette mapping (RGB values)
+const COLOR_PALETTE = {
+  black: [0, 0, 0],
+  white: [255, 255, 255],
+  gray: [128, 128, 128],
+  grey: [128, 128, 128],
+  beige: [245, 245, 220],
+  brown: [139, 69, 19],
+  red: [255, 0, 0],
+  blue: [0, 0, 255],
+  yellow: [255, 255, 0],
+  green: [0, 128, 0],
+  orange: [255, 165, 0],
+  purple: [128, 0, 128],
+  pink: [255, 192, 203],
+  navy: [0, 0, 128],
+  teal: [0, 128, 128],
+  maroon: [128, 0, 0],
+  olive: [128, 128, 0],
+  gold: [255, 215, 0],
+  silver: [192, 192, 192],
+  charcoal: [54, 69, 79],
+  burgundy: [128, 0, 32],
+  coral: [255, 127, 80],
+  peach: [255, 218, 185],
+  salmon: [250, 128, 114],
+  turquoise: [64, 224, 208],
+  mint: [189, 252, 201],
+  lavender: [230, 230, 250],
+  indigo: [75, 0, 130]
+}
+
+// Convert RGB array to hex color
+const rgbToHex = (rgb) => {
+  if (!rgb || !Array.isArray(rgb)) return '#808080' // Default gray
+  const [r, g, b] = rgb
+  return '#' + [r, g, b].map(x => {
+    const hex = x.toString(16)
+    return hex.length === 1 ? '0' + hex : hex
+  }).join('')
+}
+
+// Get hex color code from color name
+const getColorHex = (colorName) => {
+  if (!colorName) return '#808080' // Default gray
+  const normalizedName = colorName.toLowerCase().trim()
+  const rgb = COLOR_PALETTE[normalizedName]
+  if (rgb) {
+    return rgbToHex(rgb)
+  }
+  // If color name is not found, try to match partial names
+  for (const [name, rgbValue] of Object.entries(COLOR_PALETTE)) {
+    if (name.includes(normalizedName) || normalizedName.includes(name)) {
+      return rgbToHex(rgbValue)
+    }
+  }
+  return '#808080' // Default gray fallback
+}
+
+// Format color name to proper case
+const formatColorName = (colorName) => {
+  if (!colorName) return ''
+  return colorName.charAt(0).toUpperCase() + colorName.slice(1).toLowerCase()
+}
+
+// Determine appropriate text color based on background color brightness
+const getTextColor = (colorName) => {
+  if (!colorName) return '#ffffff'
+  const normalizedName = colorName.toLowerCase().trim()
+  const rgb = COLOR_PALETTE[normalizedName]
+  
+  if (!rgb) {
+    // Try to find matching color
+    for (const [name, rgbValue] of Object.entries(COLOR_PALETTE)) {
+      if (name.includes(normalizedName) || normalizedName.includes(name)) {
+        const [r, g, b] = rgbValue
+        // Calculate brightness using relative luminance formula
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000
+        return brightness > 128 ? '#000000' : '#ffffff'
+      }
+    }
+    return '#ffffff'
+  }
+  
+  const [r, g, b] = rgb
+  // Calculate brightness using relative luminance formula
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000
+  return brightness > 128 ? '#000000' : '#ffffff'
 }
 </script>
 
