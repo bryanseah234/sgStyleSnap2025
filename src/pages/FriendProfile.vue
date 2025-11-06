@@ -373,13 +373,20 @@
         <!-- Friend Outfit Details Modal -->
         <div v-if="showOutfitDetails" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="closeOutfitDetails">
           <div class="w-full max-w-2xl rounded-xl p-6 relative bg-white dark:bg-zinc-900" @click.stop>
-            <!-- Close Button -->
-            <button
-              @click="closeOutfitDetails"
-              class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
-            >
-              <X class="w-5 h-5" />
-            </button>
+            <!-- Close Button with ESC Hint -->
+            <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
+              <!-- ESC Key Hint (Desktop only) -->
+              <div v-if="isDesktop" class="keyboard-hint-modal">
+                <span class="keyboard-hint-key">ESC</span>
+              </div>
+              <button
+                @click="closeOutfitDetails"
+                class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-700 hover:text-black dark:bg-zinc-800/90 dark:hover:bg-zinc-700 dark:text-zinc-300 dark:hover:text-white"
+                aria-label="Close dialog"
+              >
+                <X class="w-5 h-5" />
+              </button>
+            </div>
 
             <div class="pr-8">
               <h3 class="text-xl font-bold mb-1 text-black dark:text-white">
