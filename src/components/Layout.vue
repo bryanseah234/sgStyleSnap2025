@@ -732,8 +732,11 @@ onUnmounted(() => {
 :deep(.collapsed-sidebar-logo.stylesnap-logo) {
   filter: invert(1) !important;
 }
+</style>
 
-html.dark :deep(.collapsed-sidebar-logo.stylesnap-logo) {
+<style>
+/* Global style for dark mode collapsed sidebar logo - needs to be outside scoped */
+html.dark .collapsed-sidebar-logo.stylesnap-logo {
   filter: none !important;
 }
 </style>  
