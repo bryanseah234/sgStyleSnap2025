@@ -118,15 +118,6 @@
           </div>
         </div>
       </div>
-      
-      <div class="flex gap-3 mt-6">
-        <button
-          @click="$emit('close')"
-          class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-        >
-          Cancel
-        </button>
-      </div>
     </div>
   </div>
 </template>
