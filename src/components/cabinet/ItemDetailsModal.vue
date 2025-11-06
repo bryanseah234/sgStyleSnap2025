@@ -30,7 +30,7 @@
             </button>
           </div>
 
-          <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0">
+          <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0 md:min-h-[500px]">
             <!-- Left: Image with Liquid Scale -->
             <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[50vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
               <img
@@ -48,7 +48,7 @@
             </div>
 
             <!-- Right: Details with Liquid Reveal -->
-            <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 pb-4 sm:pb-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 flex flex-col min-h-0">
+            <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 pb-4 sm:pb-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 flex flex-col min-h-0 md:min-h-[500px]">
               <!-- Loading/Fallback State -->
               <div v-if="!item" class="flex flex-col items-center justify-center py-8">
                 <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
