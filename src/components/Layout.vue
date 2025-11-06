@@ -256,9 +256,8 @@
       <div class="flex items-center justify-center">
         <button
           @click="scrollToTop"
-          class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          class="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
         >
-          <StyleSnapLogo size="xl" class="hidden" />
           <h1 class="text-xl font-bold tracking-tight text-black dark:text-white">
             <StyleSnapBrand size="xl" />
           </h1>
