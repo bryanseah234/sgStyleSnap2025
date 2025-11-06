@@ -4,7 +4,7 @@
   Animated indicator that suggests to users they can scroll down
   to see more content. Automatically hides after user scrolls.
   
-  @author Stylesnap Team
+  @author StyleSnap Team
   @version 1.0.0
 -->
 <template>

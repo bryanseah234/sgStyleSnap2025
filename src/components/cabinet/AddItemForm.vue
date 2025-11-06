@@ -1,5 +1,5 @@
 <!--
-  Add Item Form - Stylesnap
+  Add Item Form - StyleSnap
   
   Simple form with exactly 4 fields: Name, Category, Brand, Image
   Matches the design from the provided image

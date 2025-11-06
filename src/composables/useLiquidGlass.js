@@ -11,7 +11,7 @@
  * - Fallback animations when Motion library unavailable
  * - Performance-optimized lazy loading
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

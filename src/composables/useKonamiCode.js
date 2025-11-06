@@ -4,7 +4,7 @@
  * Detects the classic Konami code input: ↑↑↓↓←→←→
  * Triggers a callback when the sequence is completed.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

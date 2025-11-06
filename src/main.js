@@ -1,10 +1,10 @@
 /**
- * Stylesnap - Main Application Entry Point
+ * StyleSnap - Main Application Entry Point
  * 
  * This file initializes the Vue 3 application with all necessary plugins,
  * routing configuration, and authentication guards.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

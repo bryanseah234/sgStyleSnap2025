@@ -4,7 +4,7 @@
  * Provides Intersection Observer functionality for scroll-triggered animations.
  * Detects when elements enter the viewport and adds animation classes.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

@@ -44,8 +44,8 @@
           @click="scrollToTop"
           class="flex items-center gap-2 min-w-0 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
         >
-          <StylesnapLogo size="base" />
-          <StylesnapBrand class="font-bold text-base truncate text-gray-900" size="base" />
+          <StyleSnapLogo size="base" />
+          <StyleSnapBrand class="font-bold text-base truncate text-gray-900" size="base" />
         </div>
 
         <!-- Desktop Menu and Auth Buttons - Right Side -->
@@ -562,7 +562,7 @@
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <!-- Centered Title -->
         <div class="text-center mb-6 sm:mb-10 scroll-hidden animate-slideInFromBottom" id="why-content">
-          <h2 class="text-3xl font-bold mb-5 sm:mb-6">Why Choose Stylesnap?</h2>
+          <h2 class="text-3xl font-bold mb-5 sm:mb-6">Why Choose StyleSnap?</h2>
         </div>
 
         <!-- Avatar and Cards Layout -->
@@ -606,7 +606,7 @@
           Ready to Transform<span class="md:hidden"><br /></span>Your Closet?
         </h2>
         <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8">
-          Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with Stylesnap.
+          Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.
         </p>
         <div class="flex justify-center">
         <button
@@ -628,11 +628,11 @@
             <!-- Left: Logo and Tagline -->
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-3">
-                <StylesnapLogo size="xl" class="footer-logo-white" />
-                <StylesnapBrand class="font-bold text-xl text-white" size="xl" />
+                <StyleSnapLogo size="xl" class="footer-logo-white" />
+                <StyleSnapBrand class="font-bold text-xl text-white" size="xl" />
               </div>
               <p class="text-sm text-gray-400 max-w-xs">
-                Transform your fashion game with Stylesnap.
+                Transform your fashion game with StyleSnap.
               </p>
             </div>
             
@@ -645,7 +645,7 @@
                   <ul class="space-y-3">
                     <li><a href="#features" class="text-sm text-white hover:text-gray-300 transition">Features</a></li>
                     <li><a href="#demo" class="text-sm text-white hover:text-gray-300 transition">Demo</a></li>
-                    <li><a href="#why" class="text-sm text-white hover:text-gray-300 transition">Why Stylesnap</a></li>
+                    <li><a href="#why" class="text-sm text-white hover:text-gray-300 transition">Why StyleSnap</a></li>
                   </ul>
                 </div>
                 
@@ -675,7 +675,7 @@
           <!-- Bottom Section: Copyright and Legal Links -->
           <div class="flex flex-col sm:flex-row justify-center md:justify-between items-center pt-6 border-t border-gray-800 gap-4">
             <p class="text-xs text-gray-400 text-center md:text-left">
-              &copy; Stylesnap 2025. All rights reserved.
+              &copy; StyleSnap 2025. All rights reserved.
             </p>
             <div class="flex items-center gap-6">
               <button
@@ -728,8 +728,8 @@ import {
 } from 'lucide-vue-next'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
-import StylesnapLogo from '@/components/StylesnapLogo.vue'
-import StylesnapBrand from '@/components/StylesnapBrand.vue'
+import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
+import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
 import SingleAvatar3D from '@/components/SingleAvatar3D.vue'
 import { useLazyLoad } from '@/composables/useLazyLoad'
 import { usePopup } from '@/composables/usePopup'

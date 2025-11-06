@@ -1,7 +1,7 @@
-// Standalone API client for Stylesnap
+// Standalone API client for StyleSnap
 // Local data management with localStorage persistence
 
-class StylesnapAPI {
+class StyleSnapAPI {
   constructor() {
     this.auth = new AuthService();
     this.entities = {
@@ -41,7 +41,7 @@ class AuthService {
       email: 'demo@stylesnap.com',
       full_name: 'Demo User',
       id: 'user-demo',
-      bio: 'Welcome to Stylesnap!',
+      bio: 'Welcome to StyleSnap!',
       gender: '',
       profile_image: ''
     };
@@ -245,7 +245,7 @@ class EntityService {
 }
 
 // Export the API client
-export const api = new StylesnapAPI();
+export const api = new StyleSnapAPI();
 
 // Export with base44 alias for compatibility
 export const base44 = api;

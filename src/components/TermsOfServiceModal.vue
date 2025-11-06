@@ -41,11 +41,11 @@
               1. Acceptance of Terms
             </h2>
             <p class="mb-2">
-              Welcome to Stylesnap! By accessing or using our service, you agree to be bound by these Terms of Service ("Terms"). 
+              Welcome to StyleSnap! By accessing or using our service, you agree to be bound by these Terms of Service ("Terms"). 
               If you do not agree to these Terms, please do not use our service.
             </p>
             <p>
-              Stylesnap ("we," "our," or "us") provides a digital closet management and outfit creation platform. 
+              StyleSnap ("we," "our," or "us") provides a digital closet management and outfit creation platform. 
               These Terms govern your access to and use of our website, mobile applications, and related services (collectively, the "Service").
             </p>
           </section>
@@ -64,7 +64,7 @@
               and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use of your account.
             </p>
             <p>
-              <strong>Age Requirement:</strong> You must be at least 13 years old to use Stylesnap. 
+              <strong>Age Requirement:</strong> You must be at least 13 years old to use StyleSnap. 
               If you are under 18, you must have permission from a parent or guardian.
             </p>
           </section>
@@ -79,7 +79,7 @@
               ("User Content"), including photos of clothing items and outfit combinations.
             </p>
             <p class="mb-2">
-              <strong>License to Stylesnap:</strong> By uploading User Content, you grant Stylesnap a worldwide, non-exclusive, 
+              <strong>License to StyleSnap:</strong> By uploading User Content, you grant StyleSnap a worldwide, non-exclusive, 
               royalty-free license to use, reproduce, modify, adapt, publish, and display your User Content solely for the purpose 
               of providing and improving the Service.
             </p>
@@ -128,7 +128,7 @@
               6. Intellectual Property
             </h2>
             <p class="mb-2">
-              The Service and its original content (excluding User Content), features, and functionality are owned by Stylesnap 
+              The Service and its original content (excluding User Content), features, and functionality are owned by StyleSnap 
               and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
             </p>
             <p>
@@ -142,7 +142,7 @@
               7. AI and Automated Features
             </h2>
             <p class="mb-2">
-              Stylesnap may use artificial intelligence and machine learning to provide outfit suggestions and recommendations. 
+              StyleSnap may use artificial intelligence and machine learning to provide outfit suggestions and recommendations. 
               These suggestions are provided "as is" and should be considered as general guidance only.
             </p>
             <p>
@@ -161,7 +161,7 @@
               INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
             </p>
             <p>
-              Stylesnap does not warrant that the Service will be uninterrupted, secure, or error-free, 
+              StyleSnap does not warrant that the Service will be uninterrupted, secure, or error-free, 
               or that defects will be corrected.
             </p>
           </section>
@@ -172,7 +172,7 @@
               9. Limitation of Liability
             </h2>
             <p>
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, Stylesnap SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, 
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, StyleSnap SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, 
               CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, 
               OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES RESULTING FROM YOUR USE OF THE SERVICE.
             </p>
@@ -211,7 +211,7 @@
               12. Governing Law
             </h2>
             <p>
-              These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Stylesnap operates, 
+              These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which StyleSnap operates, 
               without regard to its conflict of law provisions.
             </p>
           </section>
@@ -226,7 +226,7 @@
             </p>
             <p class="mt-2 font-medium">
               Email: legal@stylesnap.com<br>
-              Address: Stylesnap, Inc.<br>
+              Address: StyleSnap, Inc.<br>
               Last Updated: January 2025
             </p>
           </section>

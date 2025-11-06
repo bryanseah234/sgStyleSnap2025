@@ -4,7 +4,7 @@
  * Provides programmatic control over page transitions with curtain effect.
  * Handles transition state management, motion preferences, and router integration.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

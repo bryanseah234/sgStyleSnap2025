@@ -10,7 +10,7 @@
  * - Reactive scroll position
  * - Proper lifecycle management
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

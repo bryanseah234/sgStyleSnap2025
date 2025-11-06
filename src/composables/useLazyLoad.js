@@ -4,7 +4,7 @@
  * Provides utilities for lazy loading content, images, and components
  * using IntersectionObserver for better performance and UX.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

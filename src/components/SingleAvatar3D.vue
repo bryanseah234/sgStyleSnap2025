@@ -4,7 +4,7 @@
   Displays a single Three.js avatar model with auto-rotation and interaction.
   No controls, just the avatar.
   
-  @author Stylesnap Team
+  @author StyleSnap Team
   @version 1.0.0
 -->
 <template>

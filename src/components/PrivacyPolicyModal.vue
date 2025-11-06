@@ -41,11 +41,11 @@
               1. Introduction
             </h2>
             <p class="mb-2">
-              Welcome to Stylesnap's Privacy Policy. We respect your privacy and are committed to protecting your personal data. 
+              Welcome to StyleSnap's Privacy Policy. We respect your privacy and are committed to protecting your personal data. 
               This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service.
             </p>
             <p>
-              Stylesnap ("we," "our," or "us") operates a digital closet management platform. 
+              StyleSnap ("we," "our," or "us") operates a digital closet management platform. 
               This policy applies to all users of our website, mobile applications, and related services.
             </p>
           </section>
@@ -104,7 +104,7 @@
               4. AI and Machine Learning
             </h2>
             <p class="mb-2">
-              Stylesnap uses artificial intelligence and machine learning technologies to provide outfit suggestions, 
+              StyleSnap uses artificial intelligence and machine learning technologies to provide outfit suggestions, 
               color matching, and style recommendations.
             </p>
             <p class="mb-2">
@@ -150,7 +150,7 @@
             <h3 class="font-semibold mb-2 mt-4">5.3 For Legal Reasons</h3>
             <p>
               We may disclose your information if required by law, court order, or to protect the rights, 
-              property, or safety of Stylesnap, our users, or the public.
+              property, or safety of StyleSnap, our users, or the public.
             </p>
           </section>
 
@@ -287,7 +287,7 @@
             </p>
             <p class="mt-2 font-medium">
               Email: privacy@stylesnap.com<br>
-              Address: Stylesnap, Inc.<br>
+              Address: StyleSnap, Inc.<br>
               Data Protection Officer: dpo@stylesnap.com<br>
               Last Updated: January 2025
             </p>

@@ -13,7 +13,7 @@
   - @avatar-loaded: Emitted when an avatar successfully loads (payload: index)
   - @loading-error: Emitted when loading fails (payload: { index, error })
   
-  @author Stylesnap Team
+  @author StyleSnap Team
   @version 1.0.0
 -->
 <template>

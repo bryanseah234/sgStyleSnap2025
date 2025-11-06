@@ -1,5 +1,5 @@
 /**
- * Stylesnap - Theme Management Composable
+ * StyleSnap - Theme Management Composable
  * 
  * Provides theme management functionality including light/dark mode switching,
  * theme persistence, and user preference synchronization.
@@ -7,7 +7,7 @@
  * This composable now uses the global theme store for consistent state
  * management across all components.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

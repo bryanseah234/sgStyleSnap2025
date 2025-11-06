@@ -1,11 +1,11 @@
 /**
- * FashionRNN Service - Stylesnap
+ * FashionRNN Service - StyleSnap
  *
  * Service to use the Hugging Face FashionRNN model for clothing classification
  * Provides automatic item recognition using the provided model
  */
 
-// Category mapping from FashionRNN to Stylesnap categories
+// Category mapping from FashionRNN to StyleSnap categories
 const CATEGORY_MAPPING = {
   'T-Shirt': 'top',
   Shirt: 'top',
@@ -327,11 +327,11 @@ export function getFashionRnnCategories() {
 }
 
 /**
- * Get Stylesnap category for a FashionRNN category
+ * Get StyleSnap category for a FashionRNN category
  * @param {string} fashionRnnCategory - FashionRNN category name
- * @returns {string} Stylesnap category
+ * @returns {string} StyleSnap category
  */
-export function getStylesnapCategory(fashionRnnCategory) {
+export function getStyleSnapCategory(fashionRnnCategory) {
   return CATEGORY_MAPPING[fashionRnnCategory] || 'top'
 }
 

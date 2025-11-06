@@ -1,10 +1,10 @@
 <!--
   Custom Loading Animation Component
   
-  Branded loading animation that matches Stylesnap's design aesthetic.
+  Branded loading animation that matches StyleSnap's design aesthetic.
   Features a morphing geometric shape with smooth animations.
   
-  @author Stylesnap Team
+  @author StyleSnap Team
   @version 1.0.0
 -->
 <template>

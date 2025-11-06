@@ -1,5 +1,5 @@
 /**
- * Stylesnap - Clothing Items Service
+ * StyleSnap - Clothing Items Service
  * 
  * Handles all operations related to clothing items including CRUD operations,
  * image uploads, favorites management, and search functionality.
@@ -12,7 +12,7 @@
  * - Privacy controls
  * - Category management
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

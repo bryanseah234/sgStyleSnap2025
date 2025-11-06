@@ -1,5 +1,5 @@
 <!--
-  Stylesnap - Home Page Component
+  StyleSnap - Home Page Component
   
   The main dashboard page that displays user statistics, recent items,
   and quick access to key features. Provides an overview of the user's
@@ -12,7 +12,7 @@
   - Quick action cards
   - Responsive design
   
-  @author Stylesnap Team
+  @author StyleSnap Team
   @version 1.0.0
 -->
 <template>

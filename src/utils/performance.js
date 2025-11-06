@@ -4,7 +4,7 @@
  * Provides tools for monitoring FPS, detecting device capabilities,
  * and implementing performance optimizations.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

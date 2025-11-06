@@ -450,7 +450,7 @@
  * - Liquid glass hover effects for enhanced UX
  * - Theme-aware styling (dark/light mode)
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

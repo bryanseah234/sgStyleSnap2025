@@ -1,5 +1,5 @@
 /**
- * Fashion Transformer Service - Stylesnap
+ * Fashion Transformer Service - StyleSnap
  *
  * Service to use the fashion-transformer API for AI-powered outfit scoring
  * and complementary item recommendations.

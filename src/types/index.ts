@@ -1,10 +1,10 @@
 /**
- * Stylesnap - Type Definitions
+ * StyleSnap - Type Definitions
  * 
  * Centralized type definitions for the entire application.
  * Provides type safety across components, stores, and services.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

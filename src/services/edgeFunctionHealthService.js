@@ -1,10 +1,10 @@
 /**
- * Stylesnap - Edge Function Health Service
+ * StyleSnap - Edge Function Health Service
  * 
  * This service monitors the health and status of the
  * sync-auth-users-realtime Edge Function.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

@@ -4,7 +4,7 @@
   Displays skeleton placeholder UI that mirrors the layout of actual content.
   Features a subtle shimmer/pulse animation.
   
-  @author Stylesnap Team
+  @author StyleSnap Team
   @version 1.0.0
 -->
 <template>

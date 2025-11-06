@@ -1,5 +1,5 @@
 /**
- * Stylesnap - Hybrid API Client
+ * StyleSnap - Hybrid API Client
  *
  * Purpose: Combines mock development client with real Supabase API service
  *
@@ -38,7 +38,7 @@ class MockAuthService {
       email: 'demo@stylesnap.com',
       full_name: 'Demo User',
       id: 'user-demo',
-      bio: 'Welcome to Stylesnap!',
+      bio: 'Welcome to StyleSnap!',
       gender: '',
       profile_image: ''
     }

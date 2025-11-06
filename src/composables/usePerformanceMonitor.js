@@ -3,7 +3,7 @@
  * 
  * Provides reactive FPS monitoring and performance tracking
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

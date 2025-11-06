@@ -1,10 +1,10 @@
 /**
- * Stylesnap - Main API Client
+ * StyleSnap - Main API Client
  * 
  * Centralized API client that aggregates all service methods and provides
  * a unified interface for frontend components to interact with backend services.
  * 
- * @author Stylesnap Team
+ * @author StyleSnap Team
  * @version 1.0.0
  */
 

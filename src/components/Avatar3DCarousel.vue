@@ -8,7 +8,7 @@
   - Device-based settings: Adjust quality based on device
   - Strategic will-change: Add/remove dynamically
   
-  @author Stylesnap Team
+  @author StyleSnap Team
   @version 2.0.0 (Optimized)
 -->
 <template>
