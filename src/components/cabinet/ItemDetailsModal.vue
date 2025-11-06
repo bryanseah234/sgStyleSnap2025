@@ -11,7 +11,7 @@
       <Transition name="modal" appear>
         <div
           v-if="props.isOpen"
-          class="relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-[500px] md:min-h-[600px]"
+          class="relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-0 md:min-h-[600px]"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -32,7 +32,7 @@
           </div>
 
           <!-- Content wrapper for proper flex layout -->
-          <div class="flex flex-col md:flex-row flex-1 min-h-[500px] md:min-h-[600px] overflow-hidden">
+          <div class="flex flex-col md:flex-row flex-1 min-h-0 md:min-h-[600px] overflow-hidden">
             <!-- Image Section (Left - 1/2 width) -->
             <div class="w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-[600px] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
             <!-- Loading/Fallback State -->
@@ -57,7 +57,7 @@
             </div>
 
             <!-- Details Section (Right - 1/2 width) -->
-            <div class="w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-[500px] md:min-h-0">
+            <div class="w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 md:min-h-0">
             <template v-if="item">
               <!-- Item Name & Category -->
               <div>
