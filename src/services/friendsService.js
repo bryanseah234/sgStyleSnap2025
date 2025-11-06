@@ -700,15 +700,6 @@ export class FriendsService {
     }
   }
 
-  /**
-   * Decline friend request (alias for rejectFriendRequest)
-   * @param {string} requestId - Friend request ID
-   * @returns {Promise<{success: boolean}>}
-   */
-  async declineFriendRequest(requestId) {
-    return this.rejectFriendRequest(requestId)
-  }
-
   async getSentRequests() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()

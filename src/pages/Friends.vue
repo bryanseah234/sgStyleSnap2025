@@ -670,7 +670,7 @@ const declineFriendRequest = async (requestId) => {
     // Optimistic: remove from incoming list immediately
     const prev = [...friendRequests.value]
     friendRequests.value = friendRequests.value.filter(r => r.id !== requestId)
-    const res = await friendsService.declineFriendRequest(requestId)
+    const res = await friendsService.rejectFriendRequest(requestId)
     if (!res || !res.success) throw new Error('Failed to decline request')
     showToast('Friend request declined', 'success')
   } catch (error) {
