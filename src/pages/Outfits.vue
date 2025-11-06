@@ -103,10 +103,10 @@
         <div v-if="activeFilter === 'all'" class="flex-[0.15]">
           <button
             @click="showFavoritesOnly = !showFavoritesOnly"
-            :class="`w-full px-3 py-3 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+            :class="`w-full h-12 rounded-lg font-medium transition-all duration-200 text-sm flex items-center justify-center gap-2 border ${
               showFavoritesOnly
-                ? 'bg-red-500 text-white dark:bg-red-600'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                ? 'bg-red-500 text-white dark:bg-red-600 border-0'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 border-stone-300 dark:border-zinc-700'
             }`"
           >
             <Heart :class="`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`" />
