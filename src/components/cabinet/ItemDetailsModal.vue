@@ -10,7 +10,7 @@
       <Transition name="modal" appear>
         <div
           v-if="isOpen"
-          class="liquid-modal-card relative w-[90%] h-[90vh] md:w-[60%] md:h-auto md:max-h-[90vh] max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col"
+          class="liquid-modal-card relative w-[90%] h-[90vh] md:w-[60%] md:h-auto md:max-h-[95vh] max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -32,7 +32,7 @@
 
           <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0">
             <!-- Left: Image with Liquid Scale -->
-            <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[50vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+            <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[500px] md:max-h-[70vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
               <img
                 v-if="item?.image_url"
                 :src="item.image_url"
