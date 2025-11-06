@@ -880,7 +880,7 @@
     <!-- Recommendations Modal -->
     <div
       v-if="showRecommendationsModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       @click.self="showRecommendationsModal = false"
     >
       <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
@@ -987,7 +987,7 @@
     <!-- Weather Recommendations Modal -->
     <div
       v-if="showWeatherRecommendationsModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       @click.self="showWeatherRecommendationsModal = false"
     >
       <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">

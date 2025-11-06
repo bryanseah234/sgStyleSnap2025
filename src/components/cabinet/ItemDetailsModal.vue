@@ -3,7 +3,7 @@
   <Transition name="modal-backdrop">
     <div
       v-if="isOpen"
-      class="fixed inset-0 z-[1200] flex items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+      class="fixed inset-0 z-[1200] flex items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70"
       @click.self="closeModal"
     >
       <!-- Modal Card with Fluid Expansion -->
