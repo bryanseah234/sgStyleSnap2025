@@ -13,7 +13,7 @@
  * - Performance optimized (transform/opacity only)
  * - Proper cleanup and memory management
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

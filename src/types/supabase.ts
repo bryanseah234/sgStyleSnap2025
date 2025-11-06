@@ -1,9 +1,9 @@
 /**
- * StyleSnap - Supabase Type Definitions
+ * Stylesnap - Supabase Type Definitions
  * 
  * Type definitions for Supabase database tables and relationships.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

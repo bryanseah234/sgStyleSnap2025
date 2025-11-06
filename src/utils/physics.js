@@ -4,7 +4,7 @@
  * Provides spring/mass/damping calculations for realistic
  * liquid glass interactions with iOS 26-inspired physics.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

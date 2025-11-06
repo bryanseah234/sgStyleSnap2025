@@ -1,5 +1,5 @@
 /**
- * Session Management Service - StyleSnap
+ * Session Management Service - Stylesnap
  *
  * Purpose: Manages user sessions and provides session switching functionality
  *

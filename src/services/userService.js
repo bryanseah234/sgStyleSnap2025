@@ -1,9 +1,9 @@
 /**
- * StyleSnap - User Service
+ * Stylesnap - User Service
  * 
  * Handles user search and profile operations.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

@@ -1,10 +1,10 @@
 <!--
-  StyleSnap - Main Application Component
+  Stylesnap - Main Application Component
   
   Root component that wraps the entire application with the main layout
   and provides the router-view for page navigation.
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>
@@ -40,7 +40,7 @@
 /**
  * Main Application Component
  * 
- * This is the root component of the StyleSnap application. It provides
+ * This is the root component of the Stylesnap application. It provides
  * conditional layout rendering based on the current route. The main layout
  * is only shown for authenticated pages, while the login page renders
  * without the layout wrapper.

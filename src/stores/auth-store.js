@@ -1,5 +1,5 @@
 /**
- * Auth Store - StyleSnap
+ * Auth Store - Stylesnap
  *
  * Purpose: Manages authentication state and user session using Pinia
  *

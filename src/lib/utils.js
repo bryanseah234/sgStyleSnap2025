@@ -1,10 +1,10 @@
 /**
- * StyleSnap - Utility Functions
+ * Stylesnap - Utility Functions
  * 
  * Provides utility functions for styling and class management,
  * particularly for combining Tailwind CSS classes safely.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

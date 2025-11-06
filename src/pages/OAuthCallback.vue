@@ -1,11 +1,11 @@
 <!--
-  StyleSnap - OAuth Callback Component
+  Stylesnap - OAuth Callback Component
   
   Handles OAuth callback from Google authentication.
   This component processes the OAuth response and redirects
   the user to the appropriate page.
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>

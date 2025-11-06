@@ -1,7 +1,7 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 
 /**
- * Quota Service - StyleSnap
+ * Quota Service - Stylesnap
  * 
  * Handles quota checking and warnings for user content limits.
  * Implements soft caps: 50 outfits, 50 items, 50 friends.

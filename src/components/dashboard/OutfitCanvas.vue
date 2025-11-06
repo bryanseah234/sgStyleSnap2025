@@ -1,5 +1,5 @@
 <!--
-  StyleSnap - Outfit Canvas Component
+  Stylesnap - Outfit Canvas Component
   
   Interactive canvas component for creating and editing outfits by dragging
   and dropping clothing items. Provides visual feedback, item manipulation,
@@ -14,7 +14,7 @@
   - Real-time position updates
   - Theme-aware styling
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>

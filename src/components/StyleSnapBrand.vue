@@ -1,7 +1,7 @@
 <!--
-  StyleSnap Brand Component
+  Stylesnap Brand Component
   
-  Displays the StyleSnap brand name with split typography:
+  Displays the Stylesnap brand name with split typography:
   - "style" in lowercase serif italic font
   - "snap" in lowercase bold sans-serif font
 -->

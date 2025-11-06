@@ -4,7 +4,7 @@
  * Provides spring/mass/damping physics for realistic liquid glass
  * interactions with iOS 26-inspired microphysics.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

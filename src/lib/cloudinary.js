@@ -1,5 +1,5 @@
 /**
- * StyleSnap - Cloudinary Image Service
+ * Stylesnap - Cloudinary Image Service
  * 
  * Provides image upload, transformation, and management functionality
  * using Cloudinary's cloud-based image and video management platform.
@@ -11,7 +11,7 @@
  * - Image deletion
  * - Format optimization
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

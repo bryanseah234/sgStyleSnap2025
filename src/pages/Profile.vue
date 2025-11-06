@@ -313,7 +313,7 @@
  * - Logout button with confirmation
  * - Responsive design with theme-aware styling
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

@@ -11,7 +11,7 @@
  * - Outfit actions (Ctrl+S to save, etc.)
  * - Responsive detection (disabled on mobile/tablet)
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

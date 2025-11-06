@@ -12,7 +12,7 @@
   - Touch device detection (disabled on mobile)
   - Edge case handling
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>

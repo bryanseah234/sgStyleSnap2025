@@ -1,5 +1,5 @@
 <!--
-  StyleSnap - Main Layout Component
+  Stylesnap - Main Layout Component
   
   Provides the main application layout with responsive navigation,
   theme management, and user authentication controls.
@@ -12,7 +12,7 @@
   - Loading state management
   - Responsive design
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>
@@ -51,7 +51,7 @@
             }`"
           >
             <!-- Logo - morphs out on hover when collapsed -->
-            <StyleSnapLogo 
+            <StylesnapLogo 
               :class="`absolute transition-all duration-300 ease-out collapsed-sidebar-logo ${
                 logoHovered 
                   ? 'opacity-0 scale-50 rotate-180' 
@@ -78,9 +78,9 @@
           to="/home" 
           class="liquid-reveal flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0 justify-start"
         >
-          <StyleSnapLogo size="lg" />
+          <StylesnapLogo size="lg" />
           <h1 class="text-2xl font-bold tracking-tight text-foreground whitespace-nowrap transition-all duration-300 ease-in-out opacity-100">
-            <StyleSnapBrand size="2xl" />
+            <StylesnapBrand size="2xl" />
           </h1>
         </router-link>
         
@@ -259,7 +259,7 @@
           class="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
         >
           <h1 class="text-xl font-bold tracking-tight text-black dark:text-white">
-            <StyleSnapBrand size="xl" />
+            <StylesnapBrand size="xl" />
           </h1>
         </button>
       </div>
@@ -349,8 +349,8 @@ import { createPageUrl } from '@/utils'
 import { ClothesService } from '@/services/clothesService'
 import { OutfitsService } from '@/services/outfitsService'
 import { FriendsService } from '@/services/friendsService'
-import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
-import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
+import StylesnapLogo from '@/components/StylesnapLogo.vue'
+import StylesnapBrand from '@/components/StylesnapBrand.vue'
 import { NotificationsService } from '@/services/notificationsService'
 import { useNavbarLiquid, useLiquidPress, useLiquidHover, useReducedMotion } from '@/composables/useLiquidGlass'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'

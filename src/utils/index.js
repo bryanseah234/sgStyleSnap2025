@@ -1,11 +1,11 @@
 /**
- * StyleSnap - Utility Functions
+ * Stylesnap - Utility Functions
  * 
  * Collection of utility functions used throughout the application
  * for common operations like URL generation, date formatting, and
  * performance optimization.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

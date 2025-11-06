@@ -1,5 +1,5 @@
 <!--
-  StyleSnap - Theme Toggle Component
+  Stylesnap - Theme Toggle Component
   
   A reusable dropdown component that allows users to select between
   light, dark, and system themes. Displays appropriate icons for each option.
@@ -11,7 +11,7 @@
   - Accessible dropdown menu
   - Responsive design
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 2.0.0
 -->
 <template>

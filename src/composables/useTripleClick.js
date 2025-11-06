@@ -4,7 +4,7 @@
  * Detects triple-click events on elements and triggers a callback.
  * Used for hidden easter egg interactions.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

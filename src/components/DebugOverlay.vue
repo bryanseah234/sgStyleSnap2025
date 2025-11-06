@@ -11,7 +11,7 @@
   
   Toggle with "debug" keyword or Shift+D
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>

@@ -8,7 +8,7 @@
   - Toggle with Shift + F keyboard shortcut
   - Development mode only (auto-hides in production)
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>

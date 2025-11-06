@@ -1,10 +1,10 @@
 /**
- * StyleSnap - Theme Store
+ * Stylesnap - Theme Store
  *
  * Global theme state management using Pinia for consistent theme
  * state across all components and pages.
  *
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

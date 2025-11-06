@@ -1,10 +1,10 @@
 /**
- * StyleSnap - Supabase Client Configuration
+ * Stylesnap - Supabase Client Configuration
  * 
  * Configures and exports the Supabase client with authentication settings
  * and provides utility functions for error handling and user management.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

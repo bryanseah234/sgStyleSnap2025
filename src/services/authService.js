@@ -1,10 +1,10 @@
 /**
- * StyleSnap - Authentication Service
+ * Stylesnap - Authentication Service
  * 
  * Handles user authentication, profile management, and session control
  * using Supabase Auth with Google OAuth integration.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

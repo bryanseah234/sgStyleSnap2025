@@ -1,5 +1,5 @@
 <!--
-  StyleSnap - Outfit Canvas Miniature Component
+  Stylesnap - Outfit Canvas Miniature Component
   
   A non-interactive miniature version of the outfit canvas for displaying
   outfit previews in cards and thumbnails.
@@ -10,7 +10,7 @@
   - No interaction (view-only)
   - Theme-aware styling
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>

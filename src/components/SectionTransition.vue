@@ -11,7 +11,7 @@
   - threshold: number - Intersection observer threshold (0-1)
   - once: boolean - Play animation only once
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>

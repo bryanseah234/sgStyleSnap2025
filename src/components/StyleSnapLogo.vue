@@ -1,5 +1,5 @@
 <!--
-  StyleSnap Logo Component
+  Stylesnap Logo Component
   
   Uses favicon.svg and adapts to theme:
   - Light mode: Black background, white icon (original)
@@ -8,7 +8,7 @@
 <template>
   <img 
     :src="logoPath" 
-    :alt="'StyleSnap Logo'"
+    :alt="'Stylesnap Logo'"
     :class="[sizeClass, 'stylesnap-logo']"
     :style="{ width: sizeValue, height: sizeValue }"
   />

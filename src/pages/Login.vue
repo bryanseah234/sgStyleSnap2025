@@ -1,5 +1,5 @@
 <!--
-  StyleSnap - Login Page Component
+  Stylesnap - Login Page Component
   
   Authentication page that allows users to sign in with Google OAuth.
   Features theme toggle functionality that works even when not logged in,
@@ -14,7 +14,7 @@
   - Error handling
   - Auto-redirect for authenticated users
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>
@@ -32,9 +32,9 @@
       <!-- Logo and Title -->
       <div class="text-center mb-4 sm:mb-6">
         <div class="flex items-center justify-center gap-3 mb-2 sm:mb-3">
-          <StyleSnapLogo size="4xl" />
+          <StylesnapLogo size="4xl" />
           <h1 class="text-3xl sm:text-4xl font-bold text-foreground">
-            <StyleSnapBrand size="4xl" />
+            <StylesnapBrand size="4xl" />
           </h1>
         </div>
         <p class="text-base sm:text-lg text-stone-600 dark:text-zinc-400">
@@ -169,8 +169,8 @@ import { Shirt, Layers, Users, AlertCircle } from 'lucide-vue-next'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import TermsOfServiceModal from '@/components/TermsOfServiceModal.vue'
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal.vue'
-import StyleSnapLogo from '@/components/StyleSnapLogo.vue'
-import StyleSnapBrand from '@/components/StyleSnapBrand.vue'
+import StylesnapLogo from '@/components/StylesnapLogo.vue'
+import StylesnapBrand from '@/components/StylesnapBrand.vue'
 
 const router = useRouter()
 const route = useRoute()

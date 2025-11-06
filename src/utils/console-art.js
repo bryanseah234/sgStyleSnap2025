@@ -7,12 +7,12 @@
  * 
  * To add new ASCII art, simply add it to the PAGE_NAVIGATION_ART array below.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 2.0.0
  */
 
 /**
- * StyleSnap ASCII Logo Variants Collection
+ * Stylesnap ASCII Logo Variants Collection
  * 
  * 📝 HOW TO ADD MORE LOGO VARIANTS:
  * 
@@ -197,7 +197,7 @@ $$    $$/ $$ | $$$ |$$ |  $$ |$$ |
 ]
 
 /**
- * Get a random StyleSnap logo variant
+ * Get a random Stylesnap logo variant
  * @returns {string} Random logo ASCII art
  */
 function getRandomLogo() {
@@ -315,7 +315,7 @@ export const PAGE_NAVIGATION_ART = [
  * Welcome messages with brand personality
  */
 const WELCOME_MESSAGES = [
-  "🎨 Like StyleSnap? Share us with a friend!",
+  "🎨 Like Stylesnap? Share us with a friend!",
   "💡 Pro tip: Press Shift+D to see performance stats",
   "🔍 Type 'debug' anywhere to unlock developer mode",
   "✨ We put love into every pixel. Hope you enjoy!",
@@ -330,7 +330,7 @@ const DEVELOPER_MESSAGES = [
   "🐰 Hidden Secret: Triple-click on an avatar for a surprise",
   "🎪 Tech Stack: Vue 3 + Three.js + Tailwind CSS + Vite",
   "💼 We're building the future of fashion organization",
-  "🚀 Built with passion by the StyleSnap team",
+  "🚀 Built with passion by the Stylesnap team",
   "🌟 Fun fact: This page has 5+ easter eggs. Can you find them all?"
 ]
 
@@ -490,7 +490,7 @@ export function addNavigationArt(artObject) {
 }
 
 /**
- * Add a new StyleSnap logo variant
+ * Add a new Stylesnap logo variant
  * 
  * Helper function to easily add new logo styles from anywhere in the codebase
  * 

@@ -1,7 +1,7 @@
 {
-  "name": "StyleSnap - Your Digital Closet",
-  "short_name": "StyleSnap",
-  "description": "Organize your clothes, create stunning outfits, and discover your personal style with StyleSnap.",
+  "name": "Stylesnap - Your Digital Closet",
+  "short_name": "Stylesnap",
+  "description": "Organize your clothes, create stunning outfits, and discover your personal style with Stylesnap.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

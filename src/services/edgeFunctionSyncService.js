@@ -1,10 +1,10 @@
 /**
- * StyleSnap - Edge Function Sync Service
+ * Stylesnap - Edge Function Sync Service
  * 
  * This service handles monitoring and interaction with the
  * sync-auth-users-realtime Edge Function for user synchronization.
  * 
- * @author StyleSnap Team
+ * @author Stylesnap Team
  * @version 1.0.0
  */
 

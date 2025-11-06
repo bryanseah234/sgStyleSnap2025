@@ -5,7 +5,7 @@
   down/up during navigation. Respects user motion preferences and maintains
   consistent 60fps performance.
   
-  @author StyleSnap Team
+  @author Stylesnap Team
   @version 1.0.0
 -->
 <template>
