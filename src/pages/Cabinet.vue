@@ -455,7 +455,7 @@
  */
 
 // Vue 3 Composition API imports
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // Composables and stores
@@ -496,6 +496,39 @@ const isMac = ref(false)
 // Route-based computed properties for dynamic content
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 
+// Helper function to check if element is actually visible (including parent containers)
+const isElementVisible = (element) => {
+  if (!element) return false
+  
+  // Get the actual DOM element (handle Vue component refs)
+  const elem = element.$el || element
+  if (!elem || typeof elem.getBoundingClientRect !== 'function') return false
+  
+  // Check computed style
+  const style = window.getComputedStyle(elem)
+  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+    return false
+  }
+  
+  // Check if element has dimensions (actually rendered)
+  const rect = elem.getBoundingClientRect()
+  if (rect.width === 0 && rect.height === 0) {
+    return false
+  }
+  
+  // Check parent containers recursively
+  let parent = elem.parentElement
+  while (parent && parent !== document.body) {
+    const parentStyle = window.getComputedStyle(parent)
+    if (parentStyle.display === 'none' || parentStyle.visibility === 'hidden') {
+      return false
+    }
+    parent = parent.parentElement
+  }
+  
+  return true
+}
+
 // Helper function to register search input
 const registerSearchInputIfAvailable = async () => {
   // Only register if we're on the default route where search input is visible
@@ -512,26 +545,40 @@ const registerSearchInputIfAvailable = async () => {
     // Handle array case (desktop + mobile inputs)
     if (Array.isArray(searchInputRef.value)) {
       console.log('⌨️ Cabinet: Search input ref is an array with', searchInputRef.value.length, 'elements')
-      // Register the first visible input (prefer desktop)
+      
+      // Find the actually visible input by checking dimensions and visibility
       const visibleInput = searchInputRef.value.find(el => {
         if (!el) return false
         const elem = el.$el || el
-        if (!elem) return false
-        const style = window.getComputedStyle(elem)
-        const isVisible = style.display !== 'none'
-        console.log('⌨️ Cabinet: Checking input visibility:', isVisible, 'display:', style.display)
-        return isVisible
-      }) || searchInputRef.value[0]
+        return isElementVisible(elem)
+      })
       
       if (visibleInput) {
-        registerSearchInput(visibleInput)
-        console.log('⌨️ Cabinet: ✅ Search input registered via watch (from array)', visibleInput)
+        // Extract the actual DOM element (handle Vue component refs)
+        const actualElement = visibleInput.$el || visibleInput
+        registerSearchInput(actualElement)
+        console.log('⌨️ Cabinet: ✅ Search input registered (from array)', actualElement)
       } else {
-        console.warn('⚠️ Cabinet: No visible input found in array')
+        // Fallback: register first element if none are clearly visible
+        // This might happen during initial render
+        const fallbackElement = searchInputRef.value[0]
+        const actualElement = fallbackElement?.$el || fallbackElement
+        if (actualElement) {
+          registerSearchInput(actualElement)
+          console.log('⌨️ Cabinet: ✅ Search input registered (fallback to first element)')
+        }
       }
     } else {
-      registerSearchInput(searchInputRef.value)
-      console.log('⌨️ Cabinet: ✅ Search input ref registered via watch (single ref)')
+      // Single input - register it if visible
+      const actualElement = searchInputRef.value.$el || searchInputRef.value
+      if (isElementVisible(actualElement)) {
+        registerSearchInput(actualElement)
+        console.log('⌨️ Cabinet: ✅ Search input ref registered (single ref)')
+      } else {
+        // Still register it - might become visible later
+        registerSearchInput(actualElement)
+        console.log('⌨️ Cabinet: ✅ Search input ref registered (may not be visible yet)')
+      }
     }
   } else {
     console.warn('⚠️ Cabinet: Search input ref is null/undefined')
@@ -939,6 +986,18 @@ const handleItemUpdated = async () => {
   await loadItems()
 }
 
+// Handle window resize to re-register search input when switching desktop/mobile
+let resizeTimeout = null
+const handleResize = () => {
+  // Debounce resize events
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
+  resizeTimeout = setTimeout(() => {
+    registerSearchInputIfAvailable()
+  }, 150)
+}
+
 onMounted(async () => {
   console.log('Cabinet: Component mounted, initializing...')
   
@@ -948,6 +1007,9 @@ onMounted(async () => {
   // Register search input for keyboard shortcuts after DOM is rendered
   // Use the helper function which handles all the logic
   await registerSearchInputIfAvailable()
+  
+  // Add resize listener to re-register when switching between desktop/mobile
+  window.addEventListener('resize', handleResize)
   
   // Ensure auth store is initialized
   if (!authStore.isAuthenticated) {
@@ -978,6 +1040,14 @@ onMounted(async () => {
   } else {
     console.log('Cabinet: User not authenticated, skipping item loading')
     loading.value = false
+  }
+})
+
+onUnmounted(() => {
+  // Clean up resize listener
+  window.removeEventListener('resize', handleResize)
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
   }
 })
 
