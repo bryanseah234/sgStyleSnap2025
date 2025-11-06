@@ -746,19 +746,20 @@
               <!-- Top Center Buttons - Regenerate (suggested only) and Show on Model (personal, suggested & edit) -->
               <div
                 v-if="currentSubRoute === 'personal' || currentSubRoute === 'suggested' || currentSubRoute === 'edit'"
-                class="absolute top-4 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 pointer-events-none"
+                class="absolute top-4 left-1/2 -translate-x-1/2 z-[40] flex items-center gap-2 pointer-events-none"
               >
                 <!-- Regenerate Button - Only for suggested route -->
                 <button
                   v-if="currentSubRoute === 'suggested'"
                   @click.stop="generateAISuggestion"
+                  @touchstart.stop.prevent="generateAISuggestion"
                   :disabled="wardrobeItems.length === 0"
                   :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto cursor-pointer ${
                     wardrobeItems.length > 0
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
-                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 101;"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 41;"
                   title="Regenerate AI Outfit Suggestion"
                 >
                   <Sparkles class="w-5 h-5" />
@@ -769,13 +770,14 @@
                 <button
                   v-if="currentSubRoute === 'suggested'"
                   @click.stop="generateWeatherBasedOutfit"
+                  @touchstart.stop.prevent="generateWeatherBasedOutfit"
                   :disabled="generatingWeatherOutfit || wardrobeItems.length < 2"
                   :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto cursor-pointer ${
                     !generatingWeatherOutfit && wardrobeItems.length >= 2
                       ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
-                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 101;"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 41;"
                   title="Generate Weather-Based Outfit"
                 >
                   <CloudSun class="w-5 h-5" />
@@ -788,13 +790,14 @@
                 <!-- Model Button -->
                 <button
                   @click.stop="showVirtualTryOn"
+                  @touchstart.stop.prevent="showVirtualTryOn"
                   :disabled="!canShowVirtualTryOn"
                   :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto cursor-pointer ${
                     canShowVirtualTryOn
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
-                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 101;"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 41;"
                   :title="virtualTryOnMatchesCanvas && virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
                 >
                   <Eye v-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl" class="w-5 h-5" />
