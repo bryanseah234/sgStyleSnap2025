@@ -11,7 +11,7 @@
       <Transition name="modal" appear>
         <div
           v-if="props.isOpen"
-          class="liquid-modal-card relative w-[90%] max-w-6xl max-h-[90vh] md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row my-4 md:my-auto flex-shrink-0"
+          class="liquid-modal-card relative w-[90%] max-w-6xl max-h-[90vh] md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-y-auto md:overflow-hidden flex flex-col my-4 md:my-auto flex-shrink-0"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -31,8 +31,10 @@
             </button>
           </div>
 
-          <!-- Image Section (Left - 2/3 width) -->
-          <div class="liquid-modal-image w-full md:w-2/3 h-[300px] md:h-full relative overflow-auto bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+          <!-- Content wrapper for proper flex layout -->
+          <div class="flex flex-col md:flex-row flex-1 min-h-[500px] md:min-h-[600px] overflow-hidden">
+            <!-- Image Section (Left - 2/3 width) -->
+            <div class="liquid-modal-image w-full md:w-2/3 h-[300px] md:h-[600px] relative overflow-auto bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
             <!-- Loading/Fallback State -->
             <div v-if="!item" class="flex flex-col items-center justify-center py-8">
               <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
@@ -52,10 +54,10 @@
                 <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600" />
               </div>
             </template>
-          </div>
+            </div>
 
-          <!-- Details Section (Right - 1/3 width) -->
-          <div class="liquid-modal-content w-full md:w-1/3 p-6 md:p-8 flex flex-col overflow-y-auto overflow-x-hidden flex-shrink-0 min-h-0">
+            <!-- Details Section (Right - 1/3 width) -->
+            <div class="liquid-modal-content w-full md:w-1/3 p-6 md:p-8 flex flex-col overflow-y-auto overflow-x-hidden flex-shrink-0 min-h-[500px] md:min-h-0">
             <template v-if="item">
               <!-- Item Name -->
               <h2 class="text-3xl md:text-4xl font-bold mb-4 text-black dark:text-white break-words">
@@ -147,6 +149,7 @@
                 </button>
               </div>
             </template>
+            </div>
           </div>
         </div>
       </Transition>
