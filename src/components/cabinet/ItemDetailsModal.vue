@@ -30,14 +30,14 @@
             </button>
           </div>
 
-          <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0">
-            <!-- Left: Image with Liquid Scale -->
-            <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-full md:max-h-full relative overflow-auto bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
+          <div class="flex flex-col flex-1 overflow-y-auto min-h-0">
+            <!-- Image with Liquid Scale -->
+            <div class="liquid-modal-image w-full h-[200px] sm:h-[250px] md:h-[300px] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
               <img
                 v-if="item?.image_url"
                 :src="item.image_url"
                 :alt="item.name"
-                class="w-full h-auto object-contain"
+                class="max-w-full max-h-full w-auto h-auto object-contain"
               />
               <div
                 v-else
@@ -47,8 +47,8 @@
               </div>
             </div>
 
-            <!-- Right: Details with Liquid Reveal -->
-            <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 pb-2 sm:pb-4 space-y-3 sm:space-y-4 overflow-y-auto flex-1 flex flex-col min-h-0">
+            <!-- Details with Liquid Reveal -->
+            <div class="liquid-modal-content w-full p-4 sm:p-6 pb-2 sm:pb-4 space-y-3 sm:space-y-4 flex flex-col flex-shrink-0">
               <!-- Loading/Fallback State -->
               <div v-if="!item" class="flex flex-col items-center justify-center py-8">
                 <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
