@@ -235,9 +235,11 @@
               </div>
               <button
                 @click.stop="toggleFavorite(outfit)"
+                @touchstart.stop.prevent="toggleFavorite(outfit)"
                 class="flex-shrink-0 p-2 rounded-full transition-all duration-200"
                 :class="outfit.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'"
                 title="Favorite"
+                style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
               >
                 <Heart :class="`w-5 h-5 ${outfit.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
               </button>
@@ -380,12 +382,14 @@
         <div class="p-4 md:p-6 border-t flex items-center justify-end gap-3 border-stone-200 dark:border-zinc-800">
           <button
             @click="toggleFavorite(selectedOutfit)"
+            @touchstart.prevent="toggleFavorite(selectedOutfit)"
             :class="`p-3 rounded-xl transition-all duration-200 ${
               selectedOutfit.is_favorite
                 ? 'bg-red-500 text-white dark:bg-red-600'
                 : 'bg-stone-100 text-stone-500 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`"
             title="Toggle Favourite"
+            style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
           >
             <Heart :class="`w-5 h-5 ${selectedOutfit.is_favorite ? 'fill-current text-white' : ''}`" />
           </button>

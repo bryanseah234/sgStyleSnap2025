@@ -3,8 +3,9 @@
   <Transition name="modal-backdrop">
     <div
       v-if="isOpen"
-      class="fixed inset-0 z-[1200] flex items-start md:items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70"
+      class="fixed inset-0 z-[1200] flex items-start md:items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70 pointer-events-auto"
       @click.self="closeModal"
+      @touchstart.self="handleBackdropTouch"
     >
       <!-- Modal Card with Fluid Expansion -->
       <Transition name="modal" appear>
@@ -75,9 +76,11 @@
                 </div>
                 <button
                   @click="toggleFavorite"
+                  @touchstart.prevent="toggleFavorite"
                   class="liquid-favorite-btn p-2 rounded-full transition-all duration-200 flex-shrink-0"
                   :class="item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400'"
                   title="Favorite"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Heart :class="`w-6 h-6 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
                 </button>
@@ -239,6 +242,13 @@ const handlePrivacyChange = async () => {
 
 const closeModal = () => {
   emit('close')
+}
+
+const handleBackdropTouch = (event) => {
+  // Close modal on backdrop touch (mobile)
+  if (event.target === event.currentTarget) {
+    closeModal()
+  }
 }
 
 const updateItem = async () => {
