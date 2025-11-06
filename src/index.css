@@ -258,6 +258,21 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   z-index: 2;
 }
 
+/* Mobile touch optimization for gradient buttons */
+@media (max-width: 768px) {
+  .gradient-button-shimmer {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  
+  .gradient-button-shimmer::before {
+    pointer-events: none;
+    touch-action: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gradient-button-shimmer::before {
     display: none !important;
