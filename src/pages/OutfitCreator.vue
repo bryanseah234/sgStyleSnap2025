@@ -811,43 +811,53 @@
               </div>
 
               <!-- Bottom-Center Canvas Toolbar -->
-              <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700">
+              <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700 pointer-events-auto">
                 <button
-                  @click="undoAction"
+                  @click.stop="undoAction"
+                  @touchstart.stop.prevent="undoAction"
                   :disabled="!canUndo"
                   :class="`p-2 rounded-lg transition-all ${canUndo ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
                   title="Undo"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Undo class="w-4 h-4" />
                 </button>
                 <button
-                  @click="redoAction"
+                  @click.stop="redoAction"
+                  @touchstart.stop.prevent="redoAction"
                   :disabled="!canRedo"
                   :class="`p-2 rounded-lg transition-all ${canRedo ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
                   title="Redo"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Redo class="w-4 h-4" />
                 </button>
                 <button
-                  @click="toggleGrid"
+                  @click.stop="toggleGrid"
+                  @touchstart.stop.prevent="toggleGrid"
                   :class="`p-2 rounded-lg transition-all ${showGrid ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'}`"
                   title="Toggle Grid"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Grid3X3 class="w-4 h-4" />
                 </button>
                 <button
-                  @click="clearCanvas"
+                  @click.stop="clearCanvas"
+                  @touchstart.stop.prevent="clearCanvas"
                   :disabled="canvasItems.length === 0"
                   :class="`p-2 rounded-lg transition-all flex items-center gap-1 ${canvasItems.length > 0 ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
                   title="Clear Canvas"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Trash2 class="w-4 h-4" />
                 </button>
                 <button
-                  @click="saveOutfit"
+                  @click.stop="saveOutfit"
+                  @touchstart.stop.prevent="saveOutfit"
                   :disabled="canvasItems.length < 2 || savingOutfit"
                   :class="`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${canvasItems.length >= 2 && !savingOutfit ? 'bg-black text-white dark:bg-white dark:text-black' : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'}`"
                   :title="currentSubRoute === 'friend' ? 'Share Outfit' : 'Save Outfit'"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Share2 v-if="currentSubRoute === 'friend'" class="w-4 h-4" />
                   <Save v-else class="w-4 h-4" />

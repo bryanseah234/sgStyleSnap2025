@@ -3,14 +3,14 @@
   <Transition name="modal-backdrop">
     <div
       v-if="isOpen"
-      class="fixed inset-0 z-[1200] flex items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70"
+      class="fixed inset-0 z-[1200] flex items-start md:items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70"
       @click.self="closeModal"
     >
       <!-- Modal Card with Fluid Expansion -->
       <Transition name="modal" appear>
         <div
           v-if="isOpen"
-          class="liquid-modal-card relative w-[90%] max-w-6xl h-[90vh] md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col md:flex-row my-auto"
+          class="liquid-modal-card relative w-[90%] max-w-6xl max-h-[90vh] md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row my-4 md:my-auto flex-shrink-0"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
