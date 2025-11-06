@@ -696,7 +696,17 @@ export class FriendsService {
       return { success: true }
     } catch (error) {
       handleSupabaseError(error, 'reject friend request')
+      throw // Re-throw to ensure error propagates
     }
+  }
+
+  /**
+   * Decline friend request (alias for rejectFriendRequest)
+   * @param {string} requestId - Friend request ID
+   * @returns {Promise<{success: boolean}>}
+   */
+  async declineFriendRequest(requestId) {
+    return this.rejectFriendRequest(requestId)
   }
 
   async getSentRequests() {

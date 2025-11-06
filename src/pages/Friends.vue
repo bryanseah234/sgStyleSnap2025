@@ -672,6 +672,7 @@ const declineFriendRequest = async (requestId) => {
     if (!res || !res.success) throw new Error('Failed to decline request')
     showToast('Friend request declined', 'success')
   } catch (error) {
+    console.error('Error declining friend request:', error)
     await loadFriendsData()
     showToast(error.message || 'Failed to decline friend request', 'error')
   }
