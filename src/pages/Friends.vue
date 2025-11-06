@@ -216,14 +216,16 @@
               <!-- Action Buttons -->
               <div class="flex gap-2">
                 <button
-                  @click="acceptFriendRequest(request.id)"
+                  @click.stop="acceptFriendRequest(request.id)"
+                  @touchstart.stop.prevent="acceptFriendRequest(request.id)"
                   class="p-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all duration-200 flex items-center justify-center"
                   title="Accept"
                 >
                   <Check class="w-5 h-5" />
                 </button>
                 <button
-                  @click="declineFriendRequest(request.id)"
+                  @click.stop="declineFriendRequest(request.id)"
+                  @touchstart.stop.prevent="declineFriendRequest(request.id)"
                   class="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200 flex items-center justify-center"
                   title="Decline"
                 >
