@@ -4,70 +4,56 @@ Complete documentation for the StyleSnap application, organized by category.
 
 ---
 
-## 📚 Quick Navigation
+## 🚀 Start Here - Essential Guides
 
-### Core Documentation
-- [README](README.md) - Main project documentation
-- [API Guide](API.md) - Complete API reference
-- [Components](COMPONENTS.md) - UI component documentation
-- [Database](DATABASE.md) - Database schema and queries
-- [Deployment](DEPLOYMENT.md) - Deployment instructions
-- [Changelog](CHANGELOG.md) - Version history and updates
-- [Feature Overview](FEATURE_OVERVIEW.md) - All features at a glance
-- [Project Structure](PROJECT_STRUCTURE.md) - Codebase organization
-- [Routes](ROUTES.md) - Application routing
-- [Quick Reference](QUICK_REFERENCE.md) - Cheat sheet for developers
+**New to StyleSnap? Start with these:**
+
+1. **[Getting Started Guide](GETTING_STARTED.md)** ⭐ - Complete beginner-friendly setup from scratch
+2. **[Complete Setup Guide](guides/SETUP_COMPLETE.md)** - Detailed step-by-step setup for all services
+3. **[Troubleshooting Guide](TROUBLESHOOTING.md)** ⭐ - Comprehensive troubleshooting guide covering all known issues
+
+---
+
+## 📖 Core Documentation
+
+### Essential Guides
+- **[Getting Started](GETTING_STARTED.md)** ⭐ - Quick start guide for beginners
+- **[Complete Setup](guides/SETUP_COMPLETE.md)** - Comprehensive setup guide
+- **[Troubleshooting](TROUBLESHOOTING.md)** ⭐ - Fix common issues and errors
+
+### Detailed Guides
+- **[OAuth Guide](guides/OAUTH_GUIDE.md)** - Complete Google OAuth setup and troubleshooting
+- **[Database Guide](guides/DATABASE_GUIDE.md)** - Database setup, migrations, and schema
+- **[Cloudinary Setup](guides/CLOUDINARY_SETUP.md)** - Image upload service configuration
+- **[Authentication Guide](guides/AUTHENTICATION_GUIDE.md)** - Authentication implementation details
+- **[Project Structure](guides/PROJECT_STRUCTURE.md)** - Codebase organization
+
+### Documentation Index
+- **[README](README.md)** - Main documentation overview
+- **[API Guide](api/API_GUIDE.md)** - Complete API reference
+- **[Components](COMPONENTS.md)** - UI component documentation
+- **[Routes](ROUTES.md)** - Application routing
+- **[Quick Reference](guides/QUICK_REFERENCE.md)** - Cheat sheet for developers
 
 ---
 
 ## 🎨 Features
 
-### Easter Eggs & Polish
-**Location:** `docs/features/easter-eggs/`
+**Location:** `docs/features/`
+
+### Core Features
+- [Feature Overview](features/FEATURE_OVERVIEW.md) - All features at a glance
+- [AI Outfit Suggestions](features/AI_OUTFIT_SUGGESTIONS.md) - AI-powered outfit generation
+- [Friend Notifications](features/FRIEND_NOTIFICATIONS.md) - Social notification system
+- [Friend Outfit Creation](features/FRIEND_OUTFIT_CREATION.md) - Collaborative outfit creation
+- [Google Profile Sync](features/GOOGLE_PROFILE_SYNC.md) - OAuth integration
+- [Edge Function Sync](features/EDGE_FUNCTION_SYNC.md) - Edge Function-based user synchronization
+- [Edit Outfit](features/EDIT_OUTFIT.md) - Outfit editing capabilities
+
+### Advanced Features
 - [Easter Eggs Summary](features/easter-eggs/EASTER_EGGS_AND_POLISH_SUMMARY.md) - Complete feature list
-- [Quick Test Guide](features/easter-eggs/EASTER_EGGS_QUICK_TEST_GUIDE.md) - How to test all features
-- [Bug Fixes Summary](features/easter-eggs/BUG_FIXES_SUMMARY.md) - All fixes applied
-
-### Avatar Carousel
-**Location:** `docs/features/avatar-carousel/`
 - [Avatar Carousel Guide](features/avatar-carousel/AVATAR_CAROUSEL_GUIDE.md) - Complete guide
-- [Quick Start](features/avatar-carousel/AVATAR_CAROUSEL_QUICKSTART.md) - Getting started
-- [Customization Map](features/avatar-carousel/AVATAR_CAROUSEL_CUSTOMIZATION_MAP.md) - Customization options
-- [Summary](features/avatar-carousel/AVATAR_CAROUSEL_SUMMARY.md) - Overview
-- [3D Parallax Implementation](features/avatar-carousel/AVATAR_3D_PARALLAX_IMPLEMENTATION.md) - Parallax effects
-- [Parallax Test Guide](features/avatar-carousel/AVATAR_PARALLAX_TEST_GUIDE.md) - Testing parallax
-- [Momentum Physics](features/avatar-carousel/AVATAR_MOMENTUM_PHYSICS_IMPLEMENTATION.md) - Physics system
-- [Momentum Test Guide](features/avatar-carousel/AVATAR_MOMENTUM_TEST_GUIDE.md) - Testing physics
-
-### Page Transitions
-**Location:** `docs/features/`
 - [Page Transitions](features/PAGE_TRANSITIONS.md) - Feature overview
-- [Implementation](features/PAGE_TRANSITION_IMPLEMENTATION.md) - How it works
-- [Test Checklist](features/PAGE_TRANSITION_TEST_CHECKLIST.md) - Testing guide
-- [SVG Mask Transitions](features/SVG_MASK_TRANSITIONS_IMPLEMENTATION.md) - Advanced transitions
-- [SVG Quick Start](features/SVG_MASK_TRANSITIONS_QUICK_START.md) - Getting started with SVG
-- [SVG Test Guide](features/SVG_MASK_TRANSITIONS_TEST_GUIDE.md) - Testing SVG transitions
-
-### Other Features
-**Location:** `docs/features/`
-- [AI Outfit Suggestions](features/AI_OUTFIT_SUGGESTIONS.md)
-- [Edge Function Sync](features/EDGE_FUNCTION_SYNC.md)
-- [Edit Outfit](features/EDIT_OUTFIT.md)
-- [Friend Notifications](features/FRIEND_NOTIFICATIONS.md)
-- [Friend Outfit Creation](features/FRIEND_OUTFIT_CREATION.md)
-- [Frontend Edge Function Integration](features/FRONTEND_EDGE_FUNCTION_INTEGRATION.md)
-- [Google Profile Sync](features/GOOGLE_PROFILE_SYNC.md)
-
----
-
-## ⚡ Performance
-
-**Location:** `docs/performance/`
-- [Performance Optimizations](performance/PERFORMANCE_OPTIMIZATION_SUMMARY.md) - All optimizations
-- [Performance Quick Start](performance/PERFORMANCE_QUICK_START.md) - Getting started
-- [Performance Optimizations Complete](performance/PERFORMANCE_OPTIMIZATIONS_COMPLETE.md) - Completion report
-- [Performance Report](performance/PERFORMANCE_REPORT.md) - Detailed metrics
-- [Quick Start Testing](performance/QUICK_START_TESTING.md) - Performance testing guide
 
 ---
 
@@ -89,10 +75,9 @@ Complete documentation for the StyleSnap application, organized by category.
 - [Project Structure](guides/PROJECT_STRUCTURE.md)
 - [Tests Guide](guides/TESTS_GUIDE.md)
 - [User Flows](guides/USER_FLOWS.md)
-- [Page Transition Examples](guides/page-transition-examples.md)
 
 ### Database & Backend
-- [Database Guide](guides/DATABASE_GUIDE.md)
+- [Database Guide](guides/DATABASE_GUIDE.md) - Complete database documentation
 - [Catalog Guide](guides/CATALOG_GUIDE.md)
 - [Catalog Seeding](guides/CATALOG_SEEDING.md)
 - [Seeding Guide](guides/SEEDING_GUIDE.md)
@@ -107,11 +92,6 @@ Complete documentation for the StyleSnap application, organized by category.
 - [Outfit Generation Guide](guides/OUTFIT_GENERATION_GUIDE.md)
 - [Social Guide](guides/SOCIAL_GUIDE.md)
 
-### OAuth & Authentication
-- [OAuth Complete Guide](guides/OAUTH_COMPLETE_GUIDE.md)
-- [OAuth Quick Start](guides/OAUTH_QUICK_START.md)
-- [OAuth Fix Redirect](guides/OAUTH_FIX_REDIRECT.md)
-
 ### Configuration & Secrets
 - [Secrets Reference](guides/SECRETS_REFERENCE.md)
 
@@ -120,64 +100,44 @@ Complete documentation for the StyleSnap application, organized by category.
 - [Current System Status](guides/CURRENT_SYSTEM_STATUS.md)
 - [Codebase Improvements Summary](guides/CODEBASE_IMPROVEMENTS_SUMMARY.md)
 - [UI Improvements Summary](guides/UI_IMPROVEMENTS_SUMMARY.md)
-- [Solution Summary](guides/SOLUTION_SUMMARY.md)
-- [Recommendation Implementation Plan](guides/RECOMMENDATION_IMPLEMENTATION_PLAN.md)
 
-#### Requirements
-**Location:** `docs/guides/requirements/`
-- [Color Detection](guides/requirements/color-detection.md)
-- [Database Schema](guides/requirements/database-schema.md)
-- [Error Handling](guides/requirements/error-handling.md)
-- [Frontend Components](guides/requirements/frontend-components.md)
-- [Item Catalog](guides/requirements/item-catalog.md)
-- [Outfit Generation](guides/requirements/outfit-generation.md)
-- [Performance](guides/requirements/performance.md)
-- [Security](guides/requirements/security.md)
+---
 
-#### Tasks
-**Location:** `docs/guides/tasks/`
-- [01 - Infrastructure Setup](guides/tasks/01-infrastructure-setup.md)
-- [02 - Authentication & Database](guides/tasks/02-authentication-database.md)
-- [03 - Closet CRUD & Image Management](guides/tasks/03-closet-crud-image-management.md)
-- [04 - Social Features & Privacy](guides/tasks/04-social-features-privacy.md)
-- [05 - Suggestion System](guides/tasks/05-suggestion-system.md)
-- [06 - Quotas & Maintenance](guides/tasks/06-quotas-maintenance.md)
-- [07 - QA, Security & Launch](guides/tasks/07-qa-security-launch.md)
-- [08 - Mobile Mockups](guides/tasks/08-mobile-mockups.md)
-- [09 - Item Catalog System](guides/tasks/09-item-catalog-system.md)
-- [10 - Color Detection AI](guides/tasks/10-color-detection-ai.md)
-- [11 - Outfit Generation](guides/tasks/11-outfit-generation.md)
-- [12 - Likes Feature](guides/tasks/12-likes-feature.md)
-- [13 - Advanced Outfit Features](guides/tasks/13-advanced-outfit-features.md)
-- [14 - Notification System](guides/tasks/14-notification-system.md)
+## 🗄️ Database
 
-#### Templates
-**Location:** `docs/guides/templates/`
-- [API Template](guides/templates/api-template.md)
-- [Component Template](guides/templates/component-template.md)
+**Location:** `docs/database/` and `docs/guides/`
+
+- **[Database Guide](guides/DATABASE_GUIDE.md)** - Complete database documentation
+- **[Database Features](database/FEATURES.md)** - Database feature overview
+- **[Database Deployment](database/DEPLOYMENT.md)** - Database deployment guide
+- **[Migrations](../database/migrations/)** - Database migration files
 
 ---
 
 ## 🔧 API
 
 **Location:** `docs/api/`
+
 - [API Guide](api/API_GUIDE.md) - Complete API documentation
 - [Architecture](api/ARCHITECTURE.md) - API architecture overview
 - [API CORS Issue](API_CORS_ISSUE.md) - CORS troubleshooting
 - [Transformer Integration Status](api/TRANSFORMER_INTEGRATION_STATUS.md)
-- [Transformer API Update Summary](api/TRANSFORMER_API_UPDATE_SUMMARY.md)
 - [Fashion Transformer Integration](api/FASHION_TRANSFORMER_INTEGRATION.md)
-- [Frontend Edge Function Update](api/FRONTEND_EDGE_FUNCTION_UPDATE_SUMMARY.md)
 
 ---
 
-## 🚨 Emergency Fixes
+## 🆘 Emergency Fixes (Archived)
 
 **Location:** `docs/emergency-fixes/`
-- [OAuth Emergency Fix](emergency-fixes/OAUTH_EMERGENCY_FIX.md)
-- [Routing Fix](emergency-fixes/ROUTING_FIX.md)
+
+**Note:** All emergency fixes have been consolidated into the **[Troubleshooting Guide](TROUBLESHOOTING.md)**.
+
+These files are kept for historical reference but should be consulted via the main troubleshooting guide for current solutions.
+
+- [Fixes Summary](emergency-fixes/FIXES_SUMMARY.md) - Summary of all fixes
+- [OAuth Emergency Fix](emergency-fixes/OAUTH_EMERGENCY_FIX.md) - Archived (see OAuth Guide)
+- [Routing Fix](emergency-fixes/ROUTING_FIX.md) - Archived (see Troubleshooting Guide)
 - [Fix Get Friend Outfits Type Mismatch](emergency-fixes/FIX_GET_FRIEND_OUTFITS_TYPE_MISMATCH.md)
-- [Fixes Summary](emergency-fixes/FIXES_SUMMARY.md)
 - [New User Friend Request Fix](emergency-fixes/NEW_USER_FRIEND_REQUEST_FIX.md)
 - [Friend Request Error Handling Fix](emergency-fixes/FRIEND_REQUEST_ERROR_HANDLING_FIX.md)
 - [Catalog and Mobile Nav Fixes](emergency-fixes/CATALOG_AND_MOBILE_NAV_FIXES.md)
@@ -185,164 +145,88 @@ Complete documentation for the StyleSnap application, organized by category.
 
 ---
 
-## 📦 Implementation
+## 📦 Implementation (Archived)
 
-**Location:** `docs/implementation/`
-- [Implementation Summary](implementation/IMPLEMENTATION_SUMMARY.md)
-- [Implementation Complete](implementation/IMPLEMENTATION_COMPLETE.md)
-- [Build Fixes Summary](implementation/BUILD_FIXES_SUMMARY.md)
-- [Prompt 7 Completion Summary](implementation/PROMPT_7_COMPLETION_SUMMARY.md)
-- [Prompt 8 Completion Summary](implementation/PROMPT_8_COMPLETION_SUMMARY.md)
+**Location:** `docs/implementation/` and `docs/archive/implementation/`
+
+**Note:** Implementation summaries have been archived. See troubleshooting guide for current solutions.
+
+- [Implementation Summary](implementation/IMPLEMENTATION_SUMMARY.md) - Archived
+- [Implementation Complete](implementation/IMPLEMENTATION_COMPLETE.md) - Archived
+- [Build Fixes Summary](implementation/BUILD_FIXES_SUMMARY.md) - Archived
+- [Codebase Cleanup Summary](archive/implementation/CODEBASE_CLEANUP_SUMMARY.md) - Archived
 
 ---
 
 ## 🚀 Deployment
 
 **Location:** `docs/deployment/`
-- [Deployment Guide](deployment/DEPLOYMENT_GUIDE.md)
-- [Requirements](deployment/REQUIREMENTS.md)
-- [Tasks](deployment/TASKS.md)
-- [Contributing](deployment/CONTRIBUTING.md)
-- [Project Context](deployment/PROJECT_CONTEXT.md)
-- [Model Deployment Guide](deployment/MODEL_DEPLOYMENT_GUIDE.md)
-- [HuggingFace Integration](deployment/HUGGINGFACE_INTEGRATION.md)
-- [README](deployment/README.md)
+
+- [Deployment Guide](deployment/DEPLOYMENT_GUIDE.md) - Comprehensive deployment
+- [Deployment README](deployment/README.md) - Deployment overview
+- [Contributing](deployment/CONTRIBUTING.md) - Contribution guidelines
+- [Requirements](deployment/REQUIREMENTS.md) - System requirements
+- [Hugging Face Integration](deployment/HUGGINGFACE_INTEGRATION.md) - AI model deployment
+- [Model Deployment](deployment/MODEL_DEPLOYMENT_GUIDE.md) - AI model setup
 
 ---
 
-## 🔐 Security
+## 🔒 Security
 
 **Location:** `docs/security/`
-- [Security Overview](security/SECURITY_OVERVIEW.md)
-- [RLS Policies Reference](security/RLS_POLICIES_REFERENCE.md)
+
+- [Security Overview](security/SECURITY_OVERVIEW.md) - Comprehensive security implementation
+- [RLS Policies Reference](security/RLS_POLICIES_REFERENCE.md) - Complete RLS policy documentation
 
 ---
 
 ## 🎨 Design
 
 **Location:** `docs/design/`
-- [Design Reference](design/DESIGN_REFERENCE.md)
-- Mobile Mockups (PNG files in `design/mobile-mockups/`)
+
+- [Design Reference](design/DESIGN_REFERENCE.md) - UI/UX design guidelines
+- [Mobile Mockups](design/mobile-mockups/) - Mobile design mockups
 
 ---
 
-## 🎨 Theme
+## 🔧 Scripts
 
-**Location:** `docs/theme/`
-- [Theme Customization Guide](theme/THEME_CUSTOMIZATION_GUIDE.md)
+**Location:** `docs/scripts/` and `scripts/`
 
----
-
-## 🔑 OAuth
-
-**Location:** `docs/oauth/`
-- [OAuth Fix Guide](oauth/OAUTH_FIX_GUIDE.md)
+- [Scripts README](../scripts/README.md) - Utility scripts documentation
+- [Catalog Seeding Quickstart](scripts/CATALOG_SEEDING_QUICKSTART.md) - Data seeding guide
 
 ---
 
-## 📜 Scripts
+## 📊 Performance
 
-**Location:** `docs/scripts/`
-- [Scripts README](scripts/scripts-readme.md)
-- [Catalog Seeding Quick Start](scripts/CATALOG_SEEDING_QUICKSTART.md)
+**Location:** `docs/performance/`
 
----
-
-## ⌨️ Keyboard Shortcuts
-
-- [Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md)
-- [Keyboard Visuals](KEYBOARD_VISUALS.md)
+- [Performance Optimizations](performance/PERFORMANCE_OPTIMIZATION_SUMMARY.md) - All optimizations
+- [Performance Quick Start](performance/PERFORMANCE_QUICK_START.md) - Getting started
+- [Performance Report](performance/PERFORMANCE_REPORT.md) - Detailed metrics
 
 ---
 
-## 🤖 AI Models
+## 📝 Documentation Changes
 
-**Location:** `docs/ai-models/`
-- Model files and notebooks for AI outfit suggestions
-- HuggingFace deployment files
+**Recent Consolidation (January 2025):**
 
----
+- ✅ Created comprehensive **[Troubleshooting Guide](TROUBLESHOOTING.md)** consolidating all emergency fixes
+- ✅ Created **[Getting Started Guide](GETTING_STARTED.md)** for beginners
+- ✅ Created **[Complete Setup Guide](guides/SETUP_COMPLETE.md)** with all services
+- ✅ Consolidated OAuth documentation into **[OAuth Guide](guides/OAUTH_GUIDE.md)**
+- ✅ Enhanced **[Database Guide](guides/DATABASE_GUIDE.md)** with complete documentation
+- ✅ Archived old emergency fixes and implementation summaries
+- ✅ Updated navigation in README.md and INDEX.md
 
-## 📋 Additional Documentation
-
-### Database
-**Location:** `database/`
-- [Database Deployment](../database/DEPLOYMENT.md)
-- [Database Features](../database/FEATURES.md)
-- [Migration README](../database/migrations/README.md)
-
-### Scripts
-**Location:** `scripts/`
-- [Scripts README](../scripts/README.md)
-
-### GitHub Workflows
-**Location:** `.github/`
-- [Workflows Documentation](../.github/WORKFLOWS.md)
+**All documentation is now:**
+- ✅ Beginner-friendly and verbose
+- ✅ Well-organized and easy to navigate
+- ✅ Comprehensive and detailed
+- ✅ Consolidated with no duplicates
 
 ---
 
-## 🗂️ Documentation Structure
-
-```
-docs/
-├── api/                    # API documentation
-├── deployment/             # Deployment guides
-├── design/                 # Design references and mockups
-├── emergency-fixes/        # Quick fixes and troubleshooting
-├── features/              # Feature documentation
-│   ├── avatar-carousel/   # Avatar carousel feature
-│   └── easter-eggs/       # Easter eggs and polish
-├── guides/                # Development guides
-│   ├── requirements/      # Project requirements
-│   ├── tasks/            # Task breakdowns
-│   └── templates/        # Code templates
-├── implementation/        # Implementation summaries
-├── oauth/                # OAuth documentation
-├── performance/          # Performance optimization
-├── scripts/              # Script documentation
-├── security/             # Security documentation
-└── theme/                # Theme customization
-```
-
----
-
-## 📝 Contributing to Documentation
-
-When adding new documentation:
-
-1. **Choose the right location:**
-   - Features → `docs/features/`
-   - Guides → `docs/guides/`
-   - API → `docs/api/`
-   - Fixes → `docs/emergency-fixes/`
-   - Implementation → `docs/implementation/`
-
-2. **Use clear naming:**
-   - Use descriptive filenames
-   - Use UPPERCASE for summaries and guides
-   - Use lowercase-with-dashes for specific features
-
-3. **Update this index:**
-   - Add your document to the appropriate section
-   - Include a brief description
-   - Keep the structure organized
-
-4. **Follow the templates:**
-   - Use existing docs as examples
-   - Include code examples where helpful
-   - Add diagrams or screenshots when useful
-
----
-
-## 🔍 Search Tips
-
-- Use Ctrl+F to search within this index
-- Check the appropriate category first
-- Many guides are cross-referenced
-- Look in `emergency-fixes/` for troubleshooting
-
----
-
-**Last Updated:** October 28, 2025  
+**Last Updated:** January 2025  
 **Maintained by:** StyleSnap Team
-

@@ -38,7 +38,7 @@
   >
     <!-- Navigation - Floating Pill Header (Always Visible) -->
     <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 landing-nav-pill">
-      <div class="flex items-center justify-between gap-4 py-2.5 px-5 rounded-full bg-gray-100/70 backdrop-blur-md border border-gray-200/50 shadow-lg">
+      <div class="flex items-center justify-between gap-4 py-2.5 px-6 md:px-5 rounded-full bg-gray-100/70 backdrop-blur-md border border-gray-200/50 shadow-lg landing-nav-container">
         <!-- Logo and Brand -->
         <div 
           @click="scrollToTop"
@@ -75,7 +75,7 @@
 
           <!-- Mobile Menu Button -->
           <button
-            class="md:hidden flex items-center justify-center p-1.5"
+            class="md:hidden flex items-center justify-center px-3 py-2"
             @click="isMenuOpen = !isMenuOpen"
           >
             <X v-if="isMenuOpen" class="w-5 h-5 text-gray-900" />
@@ -568,14 +568,14 @@
         <!-- Avatar and Cards Layout -->
         <div class="flex flex-col md:flex-row gap-6 sm:gap-8 items-stretch">
           <!-- 3D Avatar on Left -->
-          <div class="w-full md:w-1/2" ref="avatarSectionRef">
+          <div class="w-full md:w-1/2 order-2 md:order-1" ref="avatarSectionRef">
             <div class="w-full h-full flex items-center justify-center" style="min-height: 100%;">
               <SingleAvatar3D :avatar-url="selectedAvatarUrl" :auto-rotate="isAvatarVisible" />
             </div>
           </div>
 
           <!-- Three Cards Stacked on Right -->
-          <div class="w-full md:w-1/2 flex flex-col gap-6 sm:gap-8">
+          <div class="w-full md:w-1/2 flex flex-col gap-6 sm:gap-8 order-1 md:order-2">
             <div
               v-for="(item, idx) in whyChooseItems"
               :key="idx"
@@ -2479,6 +2479,19 @@ const setScrollY = (value) => {
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   border-color: rgba(229, 231, 235, 0.5) !important;
+}
+
+/* Ensure consistent padding with safe-area-inset support for devices with notches */
+.landing-nav-container {
+  padding-left: max(1.5rem, calc(1.5rem + env(safe-area-inset-left))) !important;
+  padding-right: max(1.5rem, calc(1.5rem + env(safe-area-inset-right))) !important;
+}
+
+@media (min-width: 768px) {
+  .landing-nav-container {
+    padding-left: max(1.25rem, calc(1.25rem + env(safe-area-inset-left))) !important;
+    padding-right: max(1.25rem, calc(1.25rem + env(safe-area-inset-right))) !important;
+  }
 }
 
 /* Force logo to always be black in navigation bar, independent of theme */

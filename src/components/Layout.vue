@@ -52,7 +52,7 @@
           >
             <!-- Logo - morphs out on hover when collapsed -->
             <StyleSnapLogo 
-              :class="`absolute transition-all duration-300 ease-out ${
+              :class="`absolute transition-all duration-300 ease-out collapsed-sidebar-logo ${
                 logoHovered 
                   ? 'opacity-0 scale-50 rotate-180' 
                   : 'opacity-100 scale-100 rotate-0'
@@ -258,7 +258,7 @@
           @click="scrollToTop"
           class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
         >
-          <StyleSnapLogo size="xl" />
+          <StyleSnapLogo size="xl" class="hidden" />
           <h1 class="text-xl font-bold tracking-tight text-black dark:text-white">
             <StyleSnapBrand size="xl" />
           </h1>
@@ -725,5 +725,15 @@ onUnmounted(() => {
 .dark .mobile-nav-blur {
   background: rgba(0, 0, 0, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Prevent logo invert filter in collapsed sidebar dark mode
+   Container is white in dark mode, so logo should keep original black bg with white icon */
+:deep(.collapsed-sidebar-logo.stylesnap-logo) {
+  filter: none !important;
+}
+
+.dark :deep(.collapsed-sidebar-logo.stylesnap-logo) {
+  filter: none !important;
 }
 </style>  
