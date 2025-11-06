@@ -10,10 +10,17 @@
  * - Only the service_role key can bypass RLS to perform admin operations like DELETE
  * 
  * ⚠️  FOREIGN KEY CONSTRAINT WARNING:
- * - Users' clothes reference catalog_items via catalog_item_id
+ * - Users' clothes reference catalog_items via catalog_item_id (FK constraint)
+ * - Wishlist may reference catalog_items via catalog_item_id (if wishlist table exists)
  * - Outfits reference clothes (not catalog_items directly), so outfits won't break
  * - But deletion will FAIL if users have clothes linked to catalog items
  * - This script will clear catalog_item_id references BEFORE deleting catalog items
+ * 
+ * 📋 OTHER DEPENDENCIES (won't block deletion, but may need attention):
+ * - Functions that query catalog_items: get_catalog_excluding_owned(), search_catalog(), 
+ *   is_catalog_item_owned() - these will fail if called after deletion, but won't block it
+ * - Trigger auto_contribute_to_catalog_trigger is already disabled (migration 016)
+ * - No views or materialized views depend on catalog_items
  * 
  * Usage:
  * 1. Set environment variables:
