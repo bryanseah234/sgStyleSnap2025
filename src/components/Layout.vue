@@ -727,10 +727,11 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Prevent logo invert filter in collapsed sidebar dark mode
-   Container is white in dark mode, so logo should keep original black bg with white icon */
+/* Collapsed sidebar logo visibility fix:
+   Light mode: Container is black, so invert logo to white
+   Dark mode: Container is white, so keep logo black (original) */
 :deep(.collapsed-sidebar-logo.stylesnap-logo) {
-  filter: none !important;
+  filter: invert(1) !important;
 }
 
 .dark :deep(.collapsed-sidebar-logo.stylesnap-logo) {
