@@ -352,9 +352,7 @@
           v-for="(item, index) in filteredItems"
           :key="item.id"
           :data-item-id="item.id"
-          @click="openItemDetails(item)"
-          @touchstart.prevent="handleCardTouchStart(item, $event)"
-          @touchend.prevent="handleCardTouchEnd(item, $event)"
+          @click="handleCardClick(item, $event)"
           tabindex="0"
           @keydown.enter.prevent="openItemDetails(item)"
           @keydown.space.prevent="openItemDetails(item)"
@@ -1023,42 +1021,12 @@ const handleSearchBlur = (event) => {
   event.target.classList.remove('search-input-focus')
 }
 
-// Touch event handlers for card clicks
-let cardTouchStartTime = 0
-let cardTouchStartPosition = { x: 0, y: 0 }
-
-const handleCardTouchStart = (item, event) => {
-  cardTouchStartTime = Date.now()
-  if (event.touches && event.touches.length > 0) {
-    cardTouchStartPosition = {
-      x: event.touches[0].clientX,
-      y: event.touches[0].clientY
-    }
-  }
-}
-
-const handleCardTouchEnd = (item, event) => {
-  const touchDuration = Date.now() - cardTouchStartTime
-  let touchMoved = false
-  
-  if (event.changedTouches && event.changedTouches.length > 0) {
-    const endX = event.changedTouches[0].clientX
-    const endY = event.changedTouches[0].clientY
-    const distance = Math.sqrt(
-      Math.pow(endX - cardTouchStartPosition.x, 2) + 
-      Math.pow(endY - cardTouchStartPosition.y, 2)
-    )
-    // If touch moved more than 10px, consider it a drag/swipe
-    touchMoved = distance > 10
-  }
-  
-  // Only open modal if it was a quick tap (not a drag) and didn't touch favorite button
-  if (touchDuration < 300 && !touchMoved) {
-    const target = event.target
-    const favoriteButton = target.closest('.liquid-favorite-btn')
-    if (!favoriteButton) {
-      openItemDetails(item)
-    }
+// Handle card clicks - prevents favorite button clicks from opening modal
+const handleCardClick = (item, event) => {
+  // Don't open modal if clicking on favorite button
+  const favoriteButton = event.target.closest('.liquid-favorite-btn')
+  if (!favoriteButton) {
+    openItemDetails(item)
   }
 }
 
