@@ -412,24 +412,6 @@
               </div>
             </div>
           </div>
-          
-          <div class="flex gap-3 mt-6">
-            <button
-              @click="showAddFriendModal = false"
-              class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-            >
-              Cancel
-            </button>
-            <button
-              @click="searchAndAddFriend"
-              :disabled="!addFriendSearch || addFriendSearch.trim().length < 4"
-              :class="!addFriendSearch || addFriendSearch.trim().length < 4
-                ? 'flex-1 px-4 py-2 rounded-lg font-medium bg-zinc-600 text-zinc-300 cursor-not-allowed'
-                : 'flex-1 px-4 py-2 rounded-lg font-medium bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'"
-            >
-              Search
-            </button>
-          </div>
         </div>
       </div>
 
