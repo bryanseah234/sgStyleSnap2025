@@ -30,7 +30,7 @@
             </button>
           </div>
 
-          <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0 md:min-h-[500px]">
+          <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0">
             <!-- Left: Image with Liquid Scale -->
             <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[50vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
               <img
@@ -48,7 +48,7 @@
             </div>
 
             <!-- Right: Details with Liquid Reveal -->
-            <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 pb-4 sm:pb-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 flex flex-col min-h-0 md:min-h-[500px]">
+            <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 pb-2 sm:pb-4 space-y-3 sm:space-y-4 overflow-y-auto flex-1 flex flex-col min-h-0">
               <!-- Loading/Fallback State -->
               <div v-if="!item" class="flex flex-col items-center justify-center py-8">
                 <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
@@ -59,7 +59,7 @@
               <template v-else>
                 <!-- Item Name & Category -->
                 <div>
-                  <h2 class="text-2xl font-bold mb-3 text-black dark:text-white break-words">
+                  <h2 class="text-2xl font-bold mb-2 text-black dark:text-white break-words">
                     {{ item.name || 'Untitled Item' }}
                   </h2>
                   <div class="flex items-center gap-2 flex-wrap">
@@ -80,7 +80,7 @@
                 </div>
 
                 <!-- Item Details -->
-                <div class="space-y-3">
+                <div class="space-y-2">
                   <div v-if="item.brand">
                     <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Brand</p>
                     <p class="text-base text-foreground">{{ item.brand }}</p>
@@ -103,7 +103,7 @@
                 </div>
 
                 <!-- Meta Info (Moved above Privacy) -->
-                <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800 flex-shrink-0">
+                <div class="flex items-center justify-between gap-4 pb-3 border-b border-stone-200 dark:border-zinc-800 flex-shrink-0">
                   <div class="text-sm text-stone-600 dark:text-zinc-400">
                     Added {{ formatDate(item.created_at) }}
                   </div>
@@ -119,7 +119,7 @@
 
                 <!-- Privacy Setting -->
                 <div class="flex-shrink-0">
-                  <label class="block text-base font-medium mb-2 text-stone-700 dark:text-zinc-300">
+                  <label class="block text-base font-medium mb-1.5 text-stone-700 dark:text-zinc-300">
                     Privacy
                   </label>
                   <select
@@ -134,7 +134,7 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="space-y-3 pt-4 pb-2 md:pb-0 mt-auto flex-shrink-0">
+                <div class="space-y-2 pt-3 mt-auto flex-shrink-0">
                   <button
                     @click="updateItem"
                     :disabled="isUpdating || !hasChanges"
