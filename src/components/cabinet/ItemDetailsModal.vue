@@ -10,7 +10,7 @@
       <Transition name="modal" appear>
         <div
           v-if="isOpen"
-          class="liquid-modal-card relative w-[90%] max-w-6xl h-[90vh] md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col md:flex-row"
+          class="liquid-modal-card relative w-[90%] max-w-6xl h-[90vh] md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col md:flex-row my-auto"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -31,7 +31,7 @@
           </div>
 
           <!-- Image Section (Left - 2/3 width) -->
-          <div class="liquid-modal-image w-full md:w-2/3 h-[300px] md:h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+          <div class="liquid-modal-image w-full md:w-2/3 h-[300px] md:h-full relative overflow-auto bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
             <!-- Loading/Fallback State -->
             <div v-if="!item" class="flex flex-col items-center justify-center py-8">
               <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
@@ -54,7 +54,7 @@
           </div>
 
           <!-- Details Section (Right - 1/3 width) -->
-          <div class="liquid-modal-content w-full md:w-1/3 p-6 md:p-8 flex flex-col overflow-y-auto flex-shrink-0">
+          <div class="liquid-modal-content w-full md:w-1/3 p-6 md:p-8 flex flex-col overflow-y-auto overflow-x-hidden flex-shrink-0 min-h-0">
             <template v-if="item">
               <!-- Item Name -->
               <h2 class="text-3xl md:text-4xl font-bold mb-4 text-black dark:text-white break-words">
@@ -127,7 +127,7 @@
                 <button
                   @click="updateItem"
                   :disabled="isUpdating || !hasChanges"
-                  class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="hidden w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save class="w-5 h-5" />
                   <span v-if="isUpdating" class="ellipsis-animated">Updating</span>
