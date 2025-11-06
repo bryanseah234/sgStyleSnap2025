@@ -603,7 +603,7 @@
     >
       <div class="max-w-[1200px] mx-auto px-6 sm:px-8 lg:px-12 text-center flex flex-col items-center relative z-10 scroll-hidden animate-scaleIn" id="cta-content">
         <h2 class="cta-title text-gray-900 mb-3 sm:mb-5">
-          Ready to Transform<span class="md:hidden"><br /></span>Your Closet?
+          Ready to Transform<span class="md:hidden"><br /></span> Your Closet?
         </h2>
         <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8">
           Join thousands of fashion enthusiasts who are already organising their closets and creating stunning outfits with StyleSnap.

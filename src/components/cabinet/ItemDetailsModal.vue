@@ -181,6 +181,9 @@ const props = defineProps({
   }
 })
 
+// Computed property for template reactivity
+const item = computed(() => props.item)
+
 const emit = defineEmits(['close', 'item-removed', 'item-updated'])
 
 const localPrivacy = ref(props.item?.privacy || 'friends')

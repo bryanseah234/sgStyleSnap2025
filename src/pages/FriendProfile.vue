@@ -282,7 +282,7 @@
 
         <!-- Friend Item Details Modal -->
         <div v-if="showItemDetails" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto" @click="closeItemDetails">
-          <div class="w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-[500px] md:min-h-[600px]" @click.stop>
+          <div class="relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-[500px] md:min-h-[600px]" @click.stop>
             <!-- Close Button with ESC Hint -->
             <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
               <!-- ESC Key Hint (Desktop only) -->
