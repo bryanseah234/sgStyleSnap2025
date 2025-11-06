@@ -181,13 +181,24 @@ const props = defineProps({
   }
 })
 
-// Computed property for template reactivity
-const item = computed(() => props.item)
-
 const emit = defineEmits(['close', 'item-removed', 'item-updated'])
+
+// Computed property for template reactivity - ensures proper reactivity
+const item = computed(() => props.item)
 
 const localPrivacy = ref(props.item?.privacy || 'friends')
 const originalPrivacy = ref(props.item?.privacy || 'friends')
+
+// Watch for item changes to update local privacy when item changes
+watch(() => props.item, (newItem) => {
+  if (newItem) {
+    localPrivacy.value = newItem.privacy || 'friends'
+    originalPrivacy.value = newItem.privacy || 'friends'
+  } else {
+    localPrivacy.value = 'friends'
+    originalPrivacy.value = 'friends'
+  }
+}, { immediate: true })
 const isRemoving = ref(false)
 const isUpdating = ref(false)
 const isDesktop = ref(false)
@@ -224,13 +235,6 @@ watch(() => props.isOpen, (newValue) => {
   }
 })
 
-// Watch for item changes to update local privacy
-watch(() => props.item, (newItem) => {
-  if (newItem) {
-    localPrivacy.value = newItem.privacy || 'friends'
-    originalPrivacy.value = newItem.privacy || 'friends'
-  }
-}, { immediate: true })
 
 // Check if there are changes to save
 const hasChanges = computed(() => {
