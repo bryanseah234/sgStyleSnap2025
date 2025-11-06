@@ -3,19 +3,19 @@
   <Transition name="modal-backdrop">
       <div
         v-if="isOpen"
-        class="liquid-modal-backdrop fixed inset-0 z-[1200] flex items-start md:items-center justify-center p-4 overflow-y-auto"
+        class="liquid-modal-backdrop fixed inset-0 z-[1200] flex items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70 backdrop-blur-sm"
         @click.self="closeModal"
       >
         <!-- Modal Card with Fluid Expansion -->
         <Transition name="modal" appear>
           <div
             v-if="isOpen"
-            :class="`liquid-modal-card relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col my-4 md:my-0 max-h-[calc(100vh-2rem)] md:max-h-[90vh] min-h-[400px]`"
+            :class="`liquid-modal-card relative w-[90%] md:w-full max-w-2xl min-w-[320px] h-[90vh] md:h-auto md:max-h-[90vh] rounded-2xl shadow-2xl bg-white border border-stone-200
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col my-auto`"
             @click.stop
           >
           <!-- Close Button with Liquid Press -->
-          <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
+          <div class="absolute top-4 right-4 z-50 flex items-center gap-2 flex-shrink-0">
             <!-- ESC Key Hint (Desktop only) -->
             <div v-if="isDesktop" class="keyboard-hint-modal">
               <span class="keyboard-hint-key">ESC</span>
@@ -34,12 +34,12 @@
 
       <div class="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
+        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-full md:max-h-[50vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
             :alt="item.name"
-            class="w-full h-full object-contain"
+            class="max-w-full max-h-full w-auto h-auto object-contain"
           />
           <div
             v-else
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Right: Details with Liquid Reveal -->
-        <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
+        <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 flex flex-col min-h-0">
           <!-- Loading/Fallback State -->
           <div v-if="!item" class="flex flex-col items-center justify-center py-8">
             <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
@@ -105,13 +105,13 @@
             </div>
 
             <!-- Meta Info (Moved above Privacy) -->
-            <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800">
+            <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800 flex-shrink-0">
               <div class="text-sm text-stone-600 dark:text-zinc-400">
                 Added {{ formatDate(item.created_at) }}
               </div>
               <button
                 @click="toggleFavorite"
-                :class="`liquid-favorite-btn p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
+                :class="`liquid-favorite-btn p-2 rounded-full transition-all duration-200 flex-shrink-0 ${item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
                 title="Favorite"
               >
                 <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
@@ -119,7 +119,7 @@
             </div>
 
             <!-- Privacy Setting -->
-            <div>
+            <div class="flex-shrink-0">
               <label class="block text-base font-medium mb-2 text-stone-700 dark:text-zinc-300">
                 Privacy
               </label>
@@ -135,7 +135,7 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="space-y-3 pt-4">
+            <div class="space-y-3 pt-4 mt-auto flex-shrink-0">
               <button
                 @click="updateItem"
                 :disabled="isUpdating || !hasChanges"
