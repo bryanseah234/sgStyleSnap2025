@@ -10,7 +10,7 @@
       <Transition name="modal" appear>
         <div
           v-if="isOpen"
-          class="liquid-modal-card relative w-[90%] max-w-6xl h-[90vh] md:h-auto md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col md:flex-row"
+          class="liquid-modal-card relative w-[90%] max-w-6xl h-[90vh] md:max-h-[95vh] min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col md:flex-row"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -31,7 +31,7 @@
           </div>
 
           <!-- Image Section (Left - 2/3 width) -->
-          <div class="liquid-modal-image w-full md:w-2/3 h-[300px] md:h-auto relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+          <div class="liquid-modal-image w-full md:w-2/3 h-[300px] md:h-full relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
             <!-- Loading/Fallback State -->
             <div v-if="!item" class="flex flex-col items-center justify-center py-8">
               <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />

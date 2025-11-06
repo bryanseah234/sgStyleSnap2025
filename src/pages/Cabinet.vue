@@ -421,14 +421,11 @@
 
     <!-- Item Details Modal -->
     <ItemDetailsModal
-      :is-open="showItemDetails"
+      :isOpen="showItemDetails"
       :item="selectedItem"
-      :items="filteredItems"
-      :current-index="selectedItemIndex"
       @close="closeItemDetails"
       @item-removed="handleItemRemoved"
       @item-updated="handleItemUpdated"
-      @navigate-to="handleNavigateToItem"
     />
   </div>
 </template>
