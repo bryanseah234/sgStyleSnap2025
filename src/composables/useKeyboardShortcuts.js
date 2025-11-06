@@ -74,10 +74,12 @@ const focusSearch = () => {
   if (!inputElement || typeof inputElement.focus !== 'function') {
     // Try common selectors for search inputs
     const selectors = [
-      '.search-input input',
-      'input[placeholder*="Search"]',
+      '.search-input-group input', // Try this first - most specific
+      'input.search-input', // Direct class match
+      'input[placeholder*="Search your closet"]', // Cabinet page specific
+      'input[placeholder*="Search"]', // Generic search placeholder
       'input[placeholder*="search"]',
-      '.search-input-group input'
+      '.search-input input'
     ]
     
     for (const selector of selectors) {
@@ -86,9 +88,23 @@ const focusSearch = () => {
         // Check if element is visible
         const style = window.getComputedStyle(found)
         if (style.display !== 'none' && style.visibility !== 'hidden') {
-          inputElement = found
-          console.log(`🔍 Keyboard: Found search input via DOM query: ${selector}`)
-          break
+          // Check parent visibility too
+          let parent = found.parentElement
+          let parentVisible = true
+          while (parent && parent !== document.body) {
+            const parentStyle = window.getComputedStyle(parent)
+            if (parentStyle.display === 'none' || parentStyle.visibility === 'hidden') {
+              parentVisible = false
+              break
+            }
+            parent = parent.parentElement
+          }
+          
+          if (parentVisible) {
+            inputElement = found
+            console.log(`🔍 Keyboard: Found search input via DOM query: ${selector}`)
+            break
+          }
         }
       }
     }

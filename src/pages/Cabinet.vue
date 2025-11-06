@@ -114,22 +114,13 @@
       <!-- Filters Section (only show for default closet view) -->
       <div v-if="currentSubRoute === 'default'" class="mb-6">
         <div :class="`rounded-2xl border p-4 md:p-6 bg-white border-stone-200 dark:bg-zinc-900 dark:border-zinc-800`">
-          <!-- Filter Toggle Button (Mobile Only - At Top) -->
-          <button
-            @click="filtersExpanded = !filtersExpanded"
-            class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mb-4"
-          >
-            <span class="font-medium text-sm">Filters</span>
-            <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
-          </button>
-
           <!-- Desktop: Search Bar, Favourites, and Clear Filters Row -->
           <div class="hidden md:flex items-center gap-3 mb-4">
             <!-- Search Bar -->
             <div class="flex-1 relative search-input-group">
               <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
               <input
-                ref="searchInputRef"
+                ref="desktopSearchInputRef"
                 v-model="searchTerm"
                 type="text"
                 placeholder="Search your closet..."
@@ -186,7 +177,7 @@
               <div class="flex-1 relative search-input-group">
                 <Search :class="`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400 dark:text-zinc-400`" />
                 <input
-                  ref="searchInputRef"
+                  ref="mobileSearchInputRef"
                   v-model="searchTerm"
                   type="text"
                   placeholder="Search your closet..."
@@ -210,6 +201,15 @@
                 <Heart :class="`w-5 h-5 ${showFavoritesOnly ? 'fill-current' : ''}`" />
               </button>
             </div>
+            
+            <!-- Filter Toggle Button (Mobile Only - Below Search Bar) -->
+            <button
+              @click="filtersExpanded = !filtersExpanded"
+              class="md:hidden w-full flex items-center justify-between py-3 px-4 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all duration-200 mt-3"
+            >
+              <span class="font-medium text-sm">Filters</span>
+              <ChevronDown :class="`w-5 h-5 transition-transform duration-200 ${filtersExpanded ? 'rotate-180' : ''}`" />
+            </button>
             
             <!-- Clear Filters Button (below search bar on mobile) -->
             <button
@@ -487,8 +487,9 @@ const { elementRef: favoriteButtonRefs, pressIn: favoritePressIn, pressOut: favo
 // Keyboard shortcuts
 const { registerSearchInput, unregisterSearchInput } = useKeyboardShortcuts()
 
-// Search input ref
-const searchInputRef = ref(null)
+// Search input refs (separate for desktop and mobile)
+const desktopSearchInputRef = ref(null)
+const mobileSearchInputRef = ref(null)
 
 // Detect Mac for keyboard shortcut display
 const isMac = ref(false)
@@ -496,111 +497,37 @@ const isMac = ref(false)
 // Route-based computed properties for dynamic content
 const currentSubRoute = computed(() => route.meta.subRoute || 'default')
 
-// Helper function to check if element is actually visible (including parent containers)
-const isElementVisible = (element) => {
-  if (!element) return false
-  
-  // Get the actual DOM element (handle Vue component refs)
-  const elem = element.$el || element
-  if (!elem || typeof elem.getBoundingClientRect !== 'function') return false
-  
-  // Check computed style
-  const style = window.getComputedStyle(elem)
-  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
-    return false
-  }
-  
-  // Check if element has dimensions (actually rendered)
-  const rect = elem.getBoundingClientRect()
-  if (rect.width === 0 && rect.height === 0) {
-    return false
-  }
-  
-  // Check parent containers recursively
-  let parent = elem.parentElement
-  while (parent && parent !== document.body) {
-    const parentStyle = window.getComputedStyle(parent)
-    if (parentStyle.display === 'none' || parentStyle.visibility === 'hidden') {
-      return false
-    }
-    parent = parent.parentElement
-  }
-  
-  return true
-}
-
-// Helper function to register search input
-const registerSearchInputIfAvailable = async () => {
+// Helper function to register the visible search input
+const registerVisibleSearchInput = () => {
   // Only register if we're on the default route where search input is visible
   if (currentSubRoute.value !== 'default') {
-    console.log('⌨️ Cabinet: Search input not registered (not on default route, currentSubRoute:', currentSubRoute.value, ')')
     return
   }
   
-  await nextTick() // Wait for DOM to be ready
+  // Check which input is visible (desktop or mobile)
+  // Desktop is hidden on mobile (hidden md:flex), mobile is hidden on desktop (md:hidden)
+  const isDesktop = window.innerWidth >= 768 // md breakpoint
   
-  console.log('⌨️ Cabinet: Attempting to register search input, ref value:', searchInputRef.value)
-  
-  if (searchInputRef.value) {
-    // Handle array case (desktop + mobile inputs)
-    if (Array.isArray(searchInputRef.value)) {
-      console.log('⌨️ Cabinet: Search input ref is an array with', searchInputRef.value.length, 'elements')
-      
-      // Find the actually visible input by checking dimensions and visibility
-      const visibleInput = searchInputRef.value.find(el => {
-        if (!el) return false
-        const elem = el.$el || el
-        return isElementVisible(elem)
-      })
-      
-      if (visibleInput) {
-        // Extract the actual DOM element (handle Vue component refs)
-        const actualElement = visibleInput.$el || visibleInput
-        registerSearchInput(actualElement)
-        console.log('⌨️ Cabinet: ✅ Search input registered (from array)', actualElement)
-      } else {
-        // Fallback: register first element if none are clearly visible
-        // This might happen during initial render
-        const fallbackElement = searchInputRef.value[0]
-        const actualElement = fallbackElement?.$el || fallbackElement
-        if (actualElement) {
-          registerSearchInput(actualElement)
-          console.log('⌨️ Cabinet: ✅ Search input registered (fallback to first element)')
-        }
-      }
-    } else {
-      // Single input - register it if visible
-      const actualElement = searchInputRef.value.$el || searchInputRef.value
-      if (isElementVisible(actualElement)) {
-        registerSearchInput(actualElement)
-        console.log('⌨️ Cabinet: ✅ Search input ref registered (single ref)')
-      } else {
-        // Still register it - might become visible later
-        registerSearchInput(actualElement)
-        console.log('⌨️ Cabinet: ✅ Search input ref registered (may not be visible yet)')
-      }
-    }
-  } else {
-    console.warn('⚠️ Cabinet: Search input ref is null/undefined')
+  if (isDesktop && desktopSearchInputRef.value) {
+    const actualElement = desktopSearchInputRef.value.$el || desktopSearchInputRef.value
+    registerSearchInput(actualElement)
+    console.log('⌨️ Cabinet: Desktop search input registered')
+  } else if (!isDesktop && mobileSearchInputRef.value) {
+    const actualElement = mobileSearchInputRef.value.$el || mobileSearchInputRef.value
+    registerSearchInput(actualElement)
+    console.log('⌨️ Cabinet: Mobile search input registered')
+  } else if (desktopSearchInputRef.value) {
+    // Fallback to desktop if mobile not available
+    const actualElement = desktopSearchInputRef.value.$el || desktopSearchInputRef.value
+    registerSearchInput(actualElement)
+    console.log('⌨️ Cabinet: Desktop search input registered (fallback)')
+  } else if (mobileSearchInputRef.value) {
+    // Fallback to mobile if desktop not available
+    const actualElement = mobileSearchInputRef.value.$el || mobileSearchInputRef.value
+    registerSearchInput(actualElement)
+    console.log('⌨️ Cabinet: Mobile search input registered (fallback)')
   }
 }
-
-// Watch for search input ref to become available and register it
-// Only register when on default route (where search input is actually rendered)
-watch([searchInputRef, currentSubRoute], async ([newRef, subRoute]) => {
-  await registerSearchInputIfAvailable()
-}, { immediate: true })
-
-// Also watch route changes to re-register when navigating to /closet
-watch(() => route.path, async (newPath) => {
-  if (newPath === '/closet' && currentSubRoute.value === 'default') {
-    // Small delay to ensure DOM is ready
-    await nextTick()
-    setTimeout(() => {
-      registerSearchInputIfAvailable()
-    }, 100)
-  }
-})
 
 const subRouteTitle = computed(() => {
   switch (currentSubRoute.value) {
@@ -994,7 +921,7 @@ const handleResize = () => {
     clearTimeout(resizeTimeout)
   }
   resizeTimeout = setTimeout(() => {
-    registerSearchInputIfAvailable()
+    registerVisibleSearchInput()
   }, 150)
 }
 
@@ -1005,8 +932,9 @@ onMounted(async () => {
   isMac.value = /Mac|iPhone|iPod|iPad/i.test(navigator.platform)
   
   // Register search input for keyboard shortcuts after DOM is rendered
-  // Use the helper function which handles all the logic
-  await registerSearchInputIfAvailable()
+  // Simple approach like Outfits.vue and Friends.vue
+  await nextTick()
+  registerVisibleSearchInput()
   
   // Add resize listener to re-register when switching between desktop/mobile
   window.addEventListener('resize', handleResize)

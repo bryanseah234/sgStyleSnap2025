@@ -11,7 +11,7 @@
           <div
             v-if="isOpen"
             :class="`liquid-modal-card relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col my-4 md:my-0 max-h-[calc(100vh-1rem)] md:max-h-[95vh] min-h-[400px]`"
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-y-auto flex flex-col my-4 md:my-0 max-h-[calc(100vh-1rem)] md:max-h-[95vh] min-h-[400px]`"
             @click.stop
           >
           <!-- Close Button with Liquid Press -->
@@ -32,14 +32,14 @@
             </button>
           </div>
 
-      <div class="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden min-h-0">
+      <div class="flex flex-col md:flex-row flex-1 min-h-0">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
+        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] relative bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
             :alt="item.name"
-            class="w-full h-full object-contain"
+            class="w-full h-auto object-contain"
           />
           <div
             v-else
