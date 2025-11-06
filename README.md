@@ -55,12 +55,15 @@ StyleSnap targets three primary user groups:
 |:--|:--|:--|
 | Digital Closet | Upload and organize clothing items with photos | Keep all clothing information in one place, accessible from any device |
 | Interactive Outfit Creator | Drag-and-drop canvas to create outfit combinations | Visualize outfits before wearing them, discover new combinations |
-| AI-Powered Suggestions | Get automated outfit recommendations | Save time planning outfits, discover unexpected combinations |
+| AI-Powered Suggestions | Get automated outfit recommendations using Google Gemini | Save time planning outfits, discover unexpected combinations |
+| Virtual Try-On | See outfits on AI-generated models using Hugging Face IDM-VTON | Visualize how outfits look before wearing them |
+| Catalog Browsing | Browse pre-seeded catalog of clothing items | Quick-add items without manual upload |
 | Friend Connections | Add friends and view their closets | Get style inspiration from people you know and trust |
 | Outfit Suggestions | Create and share outfit ideas with friends | Receive personalized style advice and recommendations |
-| Weather-Based Recommendations | Get outfit suggestions based on weather | Dress appropriately for any weather condition |
 | Real-time Notifications | Get notified of friend activities and suggestions | Stay engaged with the community, never miss important updates |
-| Search & Filter | Find items by name, brand, category, or color | Quickly locate specific items from large wardrobes |
+| Search & Filter | Find items by name, brand, category, color, or privacy | Quickly locate specific items from large wardrobes |
+| Email Notifications | Configure email preferences for notifications | Stay updated via email |
+| AI Description Generation | Auto-generate detailed item descriptions using Llama-4-Scout | Automatic item metadata extraction |
 
 ---
 
@@ -85,7 +88,16 @@ StyleSnap targets three primary user groups:
 - **Motion** - Animation library for liquid glass effects
 - **Row-Level Security (RLS)** - Database-level security policies
 - **Supabase Realtime** - Real-time data synchronization
-- **Vercel** - Deployment platform (optional)
+- **@google/genai** - Google Generative AI integration for outfit suggestions
+- **@huggingface/inference** - Hugging Face Inference API for virtual try-on
+- **Three.js** - 3D graphics library for avatar carousel
+- **@studio-freight/lenis** - Smooth scroll library
+- **@vueuse/core** - Vue composition utilities
+- **modern-rembg** - Background removal for images
+- **onnxruntime-web** - ONNX runtime for AI model inference
+- **@getbrevo/brevo** - Email notification service
+- **class-variance-authority** - Component variant utility
+- **tailwind-merge** - Tailwind CSS class merging utility
 
 ---
 
@@ -96,37 +108,101 @@ sgStyleSnap2025/
 ├── src/
 │   ├── components/           # Reusable Vue components
 │   │   ├── cabinet/         # Closet-related components
-│   │   ├── dashboard/       # Dashboard components
+│   │   │   ├── AddItemForm.vue
+│   │   │   ├── CatalogueBrowser.vue
+│   │   │   ├── CategoryFilter.vue
+│   │   │   ├── ClothingItemCard.vue
+│   │   │   ├── ItemDetailsModal.vue
+│   │   │   ├── ManualUploadForm.vue
+│   │   │   └── UploadItemModal.vue
+│   │   ├── dashboard/       # Outfit canvas components
+│   │   │   ├── ItemSelector.vue
+│   │   │   ├── OutfitCanvas.vue
+│   │   │   ├── OutfitCanvasMiniature.vue
+│   │   │   ├── SaveOutfitDialog.vue
+│   │   │   ├── ShareOutfitDialog.vue
+│   │   │   └── VirtualTryOnModal.vue
 │   │   ├── friends/         # Social features components
-│   │   └── ui/              # Base UI components
+│   │   │   ├── AddFriendDialog.vue
+│   │   │   ├── FriendCard.vue
+│   │   │   └── FriendRequestCard.vue
+│   │   ├── outfits/         # Outfit-related components
+│   │   │   └── FriendSuggestionCard.vue
+│   │   ├── ui/              # Base UI components
+│   │   │   ├── Button.vue
+│   │   │   ├── Dialog.vue
+│   │   │   ├── Input.vue
+│   │   │   ├── Select.vue
+│   │   │   └── ...
+│   │   ├── Avatar3DCarousel.vue  # 3D avatar carousel
+│   │   ├── ThemeToggle.vue
+│   │   ├── StyleSnapLogo.vue
+│   │   └── StyleSnapBrand.vue
 │   ├── composables/         # Vue composables for reusable logic
 │   │   ├── useAuth.js       # Authentication composable
 │   │   ├── useTheme.js      # Theme management
 │   │   ├── useLiquidGlass.js # Animation effects
-│   │   └── usePopup.js      # Modal/popup management
+│   │   ├── usePopup.js      # Modal/popup management
+│   │   ├── useKeyboardShortcuts.js # Keyboard shortcuts
+│   │   ├── usePerformanceMonitor.js # Performance tracking
+│   │   ├── useSmoothScroll.ts # Smooth scrolling
+│   │   └── ...
 │   ├── pages/               # Route components
 │   │   ├── Home.vue         # Dashboard/home page
+│   │   ├── Landing.vue      # Landing page
+│   │   ├── Login.vue        # Login page
 │   │   ├── Cabinet.vue      # Closet management
-│   │   ├── Outfits.vue      # Outfit creation/management
+│   │   ├── OutfitCreator.vue # Outfit creation canvas
+│   │   ├── Outfits.vue      # Outfit gallery
 │   │   ├── Friends.vue      # Social features
-│   │   └── Profile.vue      # User profile
+│   │   ├── FriendCabinet.vue # View friend's closet
+│   │   ├── FriendProfile.vue # View friend's profile
+│   │   ├── Profile.vue      # User profile settings
+│   │   ├── Logout.vue       # Logout handler
+│   │   ├── OAuthCallback.vue # OAuth callback handler
+│   │   └── NotFound.vue     # 404 page
 │   ├── services/            # API service layers
 │   │   ├── authService.js   # Authentication API
 │   │   ├── clothesService.js # Wardrobe management API
 │   │   ├── outfitsService.js # Outfit management API
 │   │   ├── friendsService.js # Social features API
-│   │   └── notificationsService.js # Notifications API
+│   │   ├── notificationsService.js # Notifications API
+│   │   ├── catalogService.js # Catalog browsing API
+│   │   ├── virtualTryOnService.js # Virtual try-on API
+│   │   ├── recommendation-service.js # AI recommendations
+│   │   ├── weatherService.js # Weather integration
+│   │   ├── analyticsService.js # Analytics tracking
+│   │   └── ...
 │   ├── stores/              # Pinia state management
 │   │   ├── auth-store.js    # Authentication state
 │   │   └── theme-store.js   # Theme state
+│   ├── lib/                 # Library configurations
+│   │   ├── supabase.js      # Supabase client
+│   │   ├── cloudinary.js    # Cloudinary client
+│   │   └── utils.js         # Utility functions
+│   ├── utils/               # Utility functions
+│   │   ├── color-detector.js # Color detection
+│   │   ├── clothing-constants.js # Clothing constants
+│   │   ├── sanitize.js      # Input sanitization
+│   │   └── ...
+│   ├── types/               # TypeScript type definitions
+│   │   ├── index.ts
+│   │   └── supabase.ts
 │   ├── assets/              # Static assets
 │   │   ├── css/             # Global styles
-│   │   └── images/          # Image assets
-│   └── router/              # Vue Router configuration
+│   │   └── masks/           # SVG masks
+│   └── main.js              # Application entry point
 ├── database/
-│   └── migrations/          # Database migration files
+│   └── migrations/          # Database migration files (001-048)
+├── api/                     # API proxy endpoints
+│   ├── proxy-gemini.js      # Google Gemini proxy
+│   ├── proxy-image.js       # Image processing proxy
+│   └── proxy-transformer.js # AI transformer proxy
+├── supabase/
+│   └── functions/           # Supabase Edge Functions
 ├── public/                  # Public static files
-└── docs/                    # Documentation files
+├── docs/                    # Documentation files
+└── scripts/                 # Utility scripts
 ```
 
 ---
@@ -224,6 +300,12 @@ VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 VITE_CLOUDINARY_API_KEY=your_cloudinary_api_key
 VITE_CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset_name
+
+# Optional: Hugging Face API (for Virtual Try-On feature)
+VITE_HUGGINGFACE_API_TOKEN=your_huggingface_api_token
+
+# Optional: Google Generative AI (for AI outfit suggestions)
+VITE_GOOGLE_GENAI_API_KEY=your_google_genai_api_key
 ```
 
 > **Important:** Never commit the `.env` file to your repository.  
@@ -267,20 +349,35 @@ VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset_name
    - API Secret → `VITE_CLOUDINARY_API_SECRET`
 
 #### Database Migrations
-Run migrations in the correct order:
+Run migrations in the correct sequential order:
 
+**Option 1: Using Supabase SQL Editor (Recommended)**
+1. Go to Supabase Dashboard → SQL Editor
+2. Run migrations in order: `001_initial_schema.sql`, `002_rls_policies.sql`, `003_indexes_functions.sql`, etc.
+3. Continue through all numbered migrations (001-048)
+
+**Option 2: Using Migration Script**
+```bash
+# Use the provided migration runner script
+node scripts/run-migrations.js
+```
+
+**Option 3: Using psql Command Line**
 ```bash
 # Navigate to database/migrations folder
 cd database/migrations
 
 # Apply each migration in order
-# Use Supabase SQL Editor or psql command:
 psql -h your-db-host -U your-username -d your-database -f 001_initial_schema.sql
-psql -h your-db-host -U your-username -d your-database -f 002_auth_setup.sql
-# ... continue with all migration files
+psql -h your-db-host -U your-username -d your-database -f 002_rls_policies.sql
+psql -h your-db-host -U your-username -d your-database -f 003_indexes_functions.sql
+# ... continue with all migration files up to 048
 ```
 
-> **Note:** Migration files are numbered sequentially. Run them in order (001, 002, 003, etc.)
+> **Important:** 
+> - Migration files are numbered sequentially (001-048). Run them in exact order.
+> - Migration `000_reset_database.sql` is optional and only for development (deletes all data).
+> - See `database/migrations/README.md` for detailed migration information and dependencies.
 
 #### Database Schema Overview
 
@@ -290,10 +387,12 @@ The application uses PostgreSQL with the following core tables:
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT UNIQUE NOT NULL,
-  username TEXT UNIQUE NOT NULL,
-  name TEXT,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  username VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
   avatar_url TEXT,
+  google_id VARCHAR(255) UNIQUE,
+  removed_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -303,13 +402,20 @@ CREATE TABLE users (
 ```sql
 CREATE TABLE clothes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  brand TEXT,
+  owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(50) CHECK (category IN ('top', 'bottom', 'outerwear', 'shoes', 'accessory')),
+  image_url TEXT NOT NULL,
+  thumbnail_url TEXT,
+  style_tags TEXT[],
+  privacy VARCHAR(20) DEFAULT 'friends' CHECK (privacy IN ('private', 'friends')),
+  size VARCHAR(20),
+  brand VARCHAR(100),
   color TEXT,
-  category TEXT NOT NULL,
-  image_url TEXT,
-  is_favorite BOOLEAN DEFAULT FALSE,
+  clothing_type VARCHAR(50),
+  ai_description JSONB,
+  is_favorite BOOLEAN DEFAULT false,
+  removed_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -319,13 +425,29 @@ CREATE TABLE clothes (
 ```sql
 CREATE TABLE outfits (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
   outfit_name TEXT NOT NULL,
   description TEXT,
-  items JSONB NOT NULL,
+  privacy VARCHAR(20) DEFAULT 'friends' CHECK (privacy IN ('private', 'friends')),
   is_favorite BOOLEAN DEFAULT FALSE,
+  removed_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+**Outfit Items Table (Junction Table):**
+```sql
+CREATE TABLE outfit_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  outfit_id UUID REFERENCES outfits(id) ON DELETE CASCADE,
+  clothing_item_id UUID REFERENCES clothes(id) ON DELETE CASCADE,
+  position_x INTEGER,
+  position_y INTEGER,
+  rotation INTEGER DEFAULT 0,
+  scale DECIMAL DEFAULT 1.0,
+  z_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
 
@@ -333,11 +455,13 @@ CREATE TABLE outfits (
 ```sql
 CREATE TABLE friends (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  friend_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'pending',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, friend_id)
+  requester_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  receiver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL CHECK (status IN ('pending', 'accepted', 'rejected')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(requester_id, receiver_id),
+  CHECK (requester_id < receiver_id)
 );
 ```
 
@@ -362,13 +486,32 @@ CREATE TABLE notifications (
 );
 ```
 
+**Catalog Table:**
+```sql
+CREATE TABLE catalog_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(50),
+  clothing_type VARCHAR(50),
+  brand VARCHAR(100),
+  color TEXT,
+  image_url TEXT NOT NULL,
+  thumbnail_url TEXT,
+  style_tags TEXT[],
+  privacy VARCHAR(20) DEFAULT 'public',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
 **Row-Level Security (RLS):**
 All tables implement RLS policies to ensure data security:
 - **Users**: Can only access their own profile data
-- **Clothes**: Users can only access their own clothing items
-- **Outfits**: Users can only access their own outfits
+- **Clothes**: Users can only access their own clothing items and friends' public items
+- **Outfits**: Users can only access their own outfits and friends' public outfits
 - **Friends**: Users can only access their own friend relationships
 - **Notifications**: Users can only access notifications sent to them
+- **Catalog Items**: Public read access, authenticated users can contribute
+- **Outfit Items**: Access controlled through parent outfit RLS policies
 
 ---
 
@@ -603,32 +746,56 @@ psql -h production-db-host -U production-user -d production-db -f database/migra
 The application uses service-based architecture with the following main services:
 
 **Authentication Service (`authService.js`):**
-- `signUp()`: Creates new user account
-- `signIn()`: Authenticates user
-- `signOut()`: Signs out current user
+- `login()`: Authenticates user via Google OAuth
+- `logout()`: Signs out current user
 - `getCurrentUser()`: Returns current authenticated user
+- `getSession()`: Gets current session
+- `refreshSession()`: Refreshes authentication session
 
 **Clothes Service (`clothesService.js`):**
-- `getClothes()`: Returns user's clothing items
-- `addClothingItem()`: Adds new clothing item
-- `updateClothingItem()`: Updates existing clothing item
-- `deleteClothingItem()`: Removes clothing item
+- `getClothes(filters)`: Returns user's clothing items with filtering
+- `addClothingItem(itemData)`: Adds new clothing item with image upload
+- `updateClothingItem(id, updates)`: Updates existing clothing item
+- `deleteClothingItem(id)`: Soft-deletes clothing item
+- `toggleFavorite(id)`: Toggles favorite status
+- `addFromCatalog(catalogItemId)`: Adds item from catalog to user's closet
 
 **Outfits Service (`outfitsService.js`):**
-- `getOutfits()`: Returns user's outfits
-- `createOutfit()`: Creates new outfit
-- `updateOutfit()`: Updates existing outfit
-- `deleteOutfit()`: Removes outfit
+- `getOutfits(filters)`: Returns user's outfits
+- `getFriendsOutfits(friendId)`: Gets friend's public outfits
+- `createOutfit(outfitData)`: Creates new outfit with items
+- `updateOutfit(id, updates)`: Updates existing outfit
+- `deleteOutfit(id)`: Soft-deletes outfit
+- `shareOutfit(id, friendId)`: Shares outfit with friend
 
 **Friends Service (`friendsService.js`):**
-- Friend request management
-- Friend list retrieval
-- Friend acceptance/rejection
+- `getFriends()`: Returns list of accepted friends
+- `getFriendRequests()`: Returns pending friend requests
+- `sendFriendRequest(email)`: Sends friend request by email
+- `acceptFriendRequest(requestId)`: Accepts friend request
+- `rejectFriendRequest(requestId)`: Rejects friend request
+- `removeFriend(friendId)`: Removes friend relationship
 
 **Notifications Service (`notificationsService.js`):**
 - `getNotifications()`: Retrieves user notifications
-- `subscribe()`: Sets up realtime subscription for notifications
-- `markAsRead()`: Marks notifications as read
+- `subscribe(callback)`: Sets up realtime subscription for notifications
+- `markAsRead(id)`: Marks notification as read
+- `markAllAsRead()`: Marks all notifications as read
+- `deleteNotification(id)`: Deletes notification
+
+**Catalog Service (`catalogService.js`):**
+- `getCatalogItems(filters)`: Retrieves catalog items
+- `searchCatalog(query)`: Searches catalog items
+
+**Virtual Try-On Service (`virtualTryOnService.js`):**
+- `generateTryOn(modelImage, outfitImages)`: Generates virtual try-on image using Hugging Face IDM-VTON
+
+**Recommendation Service (`recommendation-service.js`):**
+- `getOutfitRecommendations()`: Gets AI-powered outfit suggestions
+- `getWeatherBasedRecommendations(location)`: Gets weather-based outfit recommendations
+
+**Weather Service (`weatherService.js`):**
+- `getWeather(location)`: Gets current weather for location
 
 All services interact with Supabase backend and respect Row-Level Security policies.
 
