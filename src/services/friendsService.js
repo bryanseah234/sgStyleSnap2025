@@ -696,7 +696,7 @@ export class FriendsService {
       return { success: true }
     } catch (error) {
       handleSupabaseError(error, 'reject friend request')
-      throw // Re-throw to ensure error propagates
+      throw error // Re-throw to ensure error propagates
     }
   }
 
