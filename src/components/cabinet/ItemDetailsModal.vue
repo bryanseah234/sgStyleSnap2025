@@ -32,12 +32,12 @@
 
           <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0">
             <!-- Left: Image with Liquid Scale -->
-            <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[500px] md:max-h-[70vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+            <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-full md:max-h-full relative overflow-auto bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
               <img
                 v-if="item?.image_url"
                 :src="item.image_url"
                 :alt="item.name"
-                class="max-w-full max-h-full w-auto h-auto object-contain"
+                class="w-full h-auto object-contain"
               />
               <div
                 v-else
