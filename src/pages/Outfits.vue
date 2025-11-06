@@ -394,6 +394,15 @@
             <Heart :class="`w-5 h-5 ${selectedOutfit.is_favorite ? 'fill-current text-white' : ''}`" />
           </button>
           <button
+            @click="deleteOutfit(selectedOutfit)"
+            @touchstart.prevent="deleteOutfit(selectedOutfit)"
+            class="p-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+            title="Delete Outfit"
+            style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
+          >
+            <Trash2 class="w-5 h-5" />
+          </button>
+          <button
             @click="editOutfit(selectedOutfit)"
             :class="`px-6 py-3 rounded-xl font-medium transition-all bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200`"
           >
