@@ -70,8 +70,8 @@ StyleSnap targets three primary user groups:
 |:--:|:--|:--|
 | <img src="https://vuejs.org/images/logo.png" width="40"> | **Vue.js 3** | Component-based frontend framework using Composition API |
 | <img src="https://vitejs.dev/logo.svg" width="40"> | **Vite** | Fast development server and production build tool |
-| <img src="https://github.com/tailwindlabs/tailwindcss/raw/main/.github/readme-logo.svg" width="40"> | **Tailwind CSS** | Utility-first CSS framework for responsive design |
-| <img src="https://supabase.com/favicon/favicon-192x192.png" width="40"> | **Supabase** | Backend-as-a-Service for PostgreSQL, Auth, and Realtime |
+| <img src="https://tailwindcss.com/favicon-32x32.png" width="40"> | **Tailwind CSS** | Utility-first CSS framework for responsive design |
+| <img src="https://supabase.com/favicon.ico" width="40"> | **Supabase** | Backend-as-a-Service for PostgreSQL, Auth, and Realtime |
 | <img src="https://raw.githubusercontent.com/github/explore/main/topics/postgresql/postgresql.png" width="40"> | **PostgreSQL** | Relational database with Row-Level Security |
 | <img src="https://cloudinary.com/favicon.ico" width="40"> | **Cloudinary** | Image storage, optimization, and CDN |
 | <img src="https://raw.githubusercontent.com/github/explore/main/topics/typescript/typescript.png" width="40"> | **TypeScript** | Type-safe JavaScript for better development experience |
