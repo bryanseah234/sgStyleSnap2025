@@ -8,13 +8,21 @@ This directory contains all utility scripts for StyleSnap organized by category.
 Scripts for managing the clothing catalog system.
 
 - **`populate-catalog.js`** - Populate catalog with items from CSV
-- **`seed-catalog-from-csv.js`** - Seed catalog from CSV file
+- **`seed-catalog-from-csv.js`** - Seed catalog from CSV file with Cloudinary upload
+- **`process-images.py`** - Process images with background removal and AI detection (Python)
 - **`catalog-items-template.csv`** - Template CSV for catalog items
 
 **Usage:**
 ```bash
-npm run populate-catalog
-npm run seed-catalog-csv
+# Python: Process images with background removal and AI detection
+python scripts/catalog/process-images.py <input_dir> [--output-dir <output_dir>]
+
+# Node.js: Upload processed CSV and images to catalog
+node scripts/catalog/seed-catalog-from-csv.js <csv_file> <images_directory>
+
+# Example workflow:
+python scripts/catalog/process-images.py my-images --output-dir catalog-output
+node scripts/catalog/seed-catalog-from-csv.js catalog-output/catalog-items.csv catalog-output/images
 ```
 
 ### `/cleanup/`
@@ -115,19 +123,22 @@ cp .env.example .env
 # Install dependencies
 npm install
 
-# Install Python dependencies (for scraping)
-pip install -r requirements.txt
+# Install Python dependencies (for scraping and catalog processing)
+pip install -r scripts/scraping/requirements.txt
 ```
 
 ### Common Operations
 
 #### Catalog Management
 ```bash
-# Populate catalog from CSV
-npm run populate-catalog
+# Process images with background removal and AI detection (Python)
+python scripts/catalog/process-images.py my-images --output-dir catalog-output
 
-# Seed catalog with sample data
-npm run seed-catalog-csv
+# Upload processed CSV and images to catalog (Node.js)
+node scripts/catalog/seed-catalog-from-csv.js catalog-output/catalog-items.csv catalog-output/images
+
+# Populate catalog from CSV (legacy)
+npm run populate-catalog
 ```
 
 #### Database Maintenance
@@ -185,6 +196,7 @@ Many scripts support command-line options:
 ## 📚 Documentation
 
 For detailed documentation on specific scripts, see:
+- [Complete Catalog Upload Guide](../docs/guides/CATALOG_UPLOAD_COMPLETE.md) - Full workflow with background removal and AI detection
 - [Catalog Seeding Guide](../docs/scripts/CATALOG_SEEDING_QUICKSTART.md)
 - [Scripts Documentation](../docs/scripts/scripts-readme.md)
 - [Database Guide](../docs/guides/DATABASE_GUIDE.md)

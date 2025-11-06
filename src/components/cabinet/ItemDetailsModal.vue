@@ -11,7 +11,7 @@
           <div
             v-if="isOpen"
             :class="`liquid-modal-card relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200
-          dark:bg-zinc-900 dark:border-zinc-800 flex flex-col my-4 md:my-0`"
+          dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col my-4 md:my-0 max-h-[calc(100vh-2rem)] md:max-h-[90vh] min-h-[400px]`"
             @click.stop
           >
           <!-- Close Button with Liquid Press -->
@@ -32,14 +32,14 @@
             </button>
           </div>
 
-      <div class="flex flex-col md:flex-row min-h-[400px]">
+      <div class="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
         <!-- Left: Image with Liquid Scale -->
-        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-[500px] relative bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center p-4">
+        <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0">
           <img
             v-if="item?.image_url"
             :src="item.image_url"
             :alt="item.name"
-            class="max-w-full max-h-full w-auto h-auto object-contain"
+            class="w-full h-full object-contain"
           />
           <div
             v-else
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Right: Details with Liquid Reveal -->
-        <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 pb-6 sm:pb-8 space-y-4 sm:space-y-6 flex flex-col">
+        <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
           <!-- Loading/Fallback State -->
           <div v-if="!item" class="flex flex-col items-center justify-center py-8">
             <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
@@ -60,7 +60,7 @@
           <!-- Item Content -->
           <template v-else>
             <!-- Item Name & Category -->
-            <div class="flex-shrink-0">
+            <div>
               <h2 class="text-2xl font-bold mb-3 text-black dark:text-white break-words">
                 {{ item.name || 'Untitled Item' }}
               </h2>
@@ -135,7 +135,7 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="space-y-3 pt-4 flex-shrink-0">
+            <div class="space-y-3 pt-4">
               <button
                 @click="updateItem"
                 :disabled="isUpdating || !hasChanges"
