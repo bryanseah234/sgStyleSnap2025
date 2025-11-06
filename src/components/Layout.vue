@@ -734,7 +734,7 @@ onUnmounted(() => {
   filter: invert(1) !important;
 }
 
-.dark :deep(.collapsed-sidebar-logo.stylesnap-logo) {
+html.dark :deep(.collapsed-sidebar-logo.stylesnap-logo) {
   filter: none !important;
 }
 </style>  
