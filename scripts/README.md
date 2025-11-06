@@ -39,13 +39,40 @@ Scripts for database management and migrations.
 - **`fix-user-insert-policy.js`** - Fix user insert policies
 - **`validate-migrations.js`** - Validate database migrations
 - **`setup-database.sh`** - Setup database environment
-- **`disable-auto-contribution.sql`** - Disable auto-contribution feature
 
 **Usage:**
 ```bash
 node scripts/database/validate-migrations.js
 bash scripts/database/setup-database.sh
 ```
+
+### Migration Runner
+- **`run-migrations.js`** - 🎯 **Primary migration runner** - Runs all database migrations in correct order
+
+**Usage:**
+```bash
+node scripts/run-migrations.js
+```
+
+**Note:** Individual migration runner scripts have been removed. Use `run-migrations.js` to run all migrations, or run migrations manually via Supabase Dashboard → SQL Editor.
+
+### Test Scripts
+Helper scripts for testing and debugging specific functionality:
+
+- **`test-routing.js`** - Tests router guard logic and route configuration
+- **`test-router-guard.js`** - Tests router guard implementation (static file analysis)
+- **`test-profile-sync.js`** - Tests Google profile synchronization functions (requires DB connection)
+- **`test-logout.js`** - Tests logout functionality and spinner behavior
+- **`test-logout-timeout.js`** - Tests logout timeout fixes
+
+**Usage:**
+```bash
+node scripts/test-routing.js
+node scripts/test-logout.js
+# etc.
+```
+
+**Note:** These are debugging/validation scripts that analyze code patterns and test database functions. They don't modify code - they verify implementations.
 
 ### `/scraping/`
 Scripts for web scraping and data collection.
@@ -105,14 +132,17 @@ npm run seed-catalog-csv
 
 #### Database Maintenance
 ```bash
+# Run all migrations (primary method)
+node scripts/run-migrations.js
+
+# Validate migrations
+node scripts/database/validate-migrations.js
+
 # Clean up expired notifications
 npm run cleanup-notifications
 
 # Clean up old items
 npm run purge-old-items
-
-# Validate migrations
-node scripts/database/validate-migrations.js
 ```
 
 #### Data Scraping
@@ -128,9 +158,11 @@ python scripts/scraping/03processor.py
 
 | Category | Purpose | Frequency |
 |----------|---------|-----------|
+| **Migration Runner** | Run database migrations | Initial setup / updates |
 | **Catalog** | Manage clothing catalog | As needed |
 | **Cleanup** | Database maintenance | Daily/Weekly |
 | **Database** | Schema management | As needed |
+| **Test Scripts** | Debug/validate functionality | As needed |
 | **Scraping** | Data collection | Periodic |
 | **Utilities** | General tools | As needed |
 

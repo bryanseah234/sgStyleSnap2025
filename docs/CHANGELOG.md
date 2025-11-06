@@ -288,7 +288,8 @@ This release represents a significant milestone with the introduction of a compr
    ```bash
    # Run new migration
    npm run migrate
-   # Or manually apply: database/migrations/027_friend_notifications.sql
+   # Or manually apply: database/migrations/029_friend_notifications.sql
+   # Or run all migrations: node scripts/run-migrations.js
    ```
 
 2. **Code Updates**

@@ -485,7 +485,7 @@ export class FriendsService {
       })
 
       // The notification will be created automatically by the database trigger
-      // defined in the 027_friend_notifications.sql migration
+      // defined in the 029_friend_notifications.sql migration
       // No need to manually insert notification here
       console.log('📧 FriendsService: Notification will be created automatically by database trigger')
 
@@ -670,7 +670,7 @@ export class FriendsService {
       })
 
       // The notification will be created automatically by the database trigger
-      // defined in the 027_friend_notifications.sql migration
+      // defined in the 029_friend_notifications.sql migration
       // No need to manually insert notification here
       console.log('📧 FriendsService: Notification will be created automatically by database trigger')
 

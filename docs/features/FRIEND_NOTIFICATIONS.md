@@ -418,14 +418,14 @@ sharedOutfits.forEach(share => {
 To enable these features, run the migration:
 
 ```bash
-# Option 1: Using Node.js script
-node scripts/run-friend-notifications-migration.js
+# Option 1: Using main migration runner (recommended - runs all migrations)
+node scripts/run-migrations.js
 
-# Option 2: Using psql
-psql -h <host> -U postgres -d postgres -f database/migrations/027_friend_notifications.sql
+# Option 2: Using psql (run specific migration)
+psql -h <host> -U postgres -d postgres -f database/migrations/029_friend_notifications.sql
 
 # Option 3: Using Supabase Dashboard
-# Copy contents of 027_friend_notifications.sql and run in SQL Editor
+# Copy contents of 029_friend_notifications.sql and run in SQL Editor
 ```
 
 ---
