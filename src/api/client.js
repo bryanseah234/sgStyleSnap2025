@@ -431,7 +431,7 @@ export const api = {
      * @param {string} requestId - Friend request ID
      * @returns {Promise<void>}
      */
-    declineFriendRequest: (requestId) => friendsService.declineFriendRequest(requestId),
+    // Standardized: use rejectFriendRequest only
     
     /**
      * Search users

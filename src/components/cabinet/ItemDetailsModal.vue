@@ -2,15 +2,16 @@
   <!-- Modal Backdrop with Liquid Glass -->
   <Transition name="modal-backdrop">
     <div
-      v-if="isOpen"
-      class="fixed inset-0 z-[1200] flex items-center justify-center p-4 overflow-y-auto bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+      v-if="props.isOpen"
+      class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto"
       @click.self="closeModal"
+      @touchstart.self="handleBackdropTouch"
     >
-      <!-- Modal Card with Fluid Expansion -->
+      <!-- Modal Card -->
       <Transition name="modal" appear>
         <div
-          v-if="isOpen"
-          class="liquid-modal-card relative w-[90%] h-[90vh] md:w-[60%] md:h-auto md:max-h-[90vh] max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 overflow-hidden flex flex-col"
+          v-if="props.isOpen"
+          class="relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-0 md:min-h-[600px]"
           @click.stop
         >
           <!-- Close Button with Liquid Press -->
@@ -30,14 +31,21 @@
             </button>
           </div>
 
-          <div class="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden min-h-0">
-            <!-- Left: Image with Liquid Scale -->
-            <div class="liquid-modal-image w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[400px] md:max-h-[50vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+          <!-- Content wrapper for proper flex layout -->
+          <div class="flex flex-col md:flex-row flex-1 min-h-0 md:min-h-[600px] overflow-hidden">
+            <!-- Image Section (Left - 1/2 width) -->
+            <div class="w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-[600px] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+            <!-- Loading/Fallback State -->
+            <div v-if="!item" class="flex flex-col items-center justify-center py-8">
+              <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
+              <p class="text-stone-600 dark:text-zinc-400">Loading item details...</p>
+            </div>
+            <template v-else>
               <img
                 v-if="item?.image_url"
                 :src="item.image_url"
                 :alt="item.name"
-                class="max-w-full max-h-full w-auto h-auto object-contain"
+                class="w-full h-full object-contain"
               />
               <div
                 v-else
@@ -45,116 +53,100 @@
               >
                 <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600" />
               </div>
+            </template>
             </div>
 
-            <!-- Right: Details with Liquid Reveal -->
-            <div class="liquid-modal-content w-full md:w-1/2 p-4 sm:p-6 pb-4 sm:pb-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 flex flex-col min-h-0">
-              <!-- Loading/Fallback State -->
-              <div v-if="!item" class="flex flex-col items-center justify-center py-8">
-                <Shirt class="w-16 h-16 text-stone-400 dark:text-zinc-600 mb-4" />
-                <p class="text-stone-600 dark:text-zinc-400">Loading item details...</p>
+            <!-- Details Section (Right - 1/2 width) -->
+            <div class="w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 md:min-h-0">
+            <template v-if="item">
+              <!-- Item Name & Category -->
+              <div>
+                <h2 class="text-2xl font-bold mb-2 text-foreground">
+                  {{ item.name || 'Untitled Item' }}
+                </h2>
+                <span v-if="item.category" class="inline-block px-3 py-1 text-base rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
+                  {{ item.category.charAt(0).toUpperCase() + item.category.slice(1) }}
+                </span>
               </div>
 
-              <!-- Item Content -->
-              <template v-else>
-                <!-- Item Name & Category -->
-                <div>
-                  <h2 class="text-2xl font-bold mb-3 text-black dark:text-white break-words">
-                    {{ item.name || 'Untitled Item' }}
-                  </h2>
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="inline-block px-3 py-1 text-base rounded-full bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
-                      {{ item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Uncategorized' }}
-                    </span>
-                    <span 
-                      v-if="item.primary_color || item.color"
-                      class="inline-block px-3 py-1 text-base rounded-full font-medium shadow-sm"
-                      :style="{ 
-                        backgroundColor: getColorHex(item.primary_color || item.color),
-                        color: getTextColor(item.primary_color || item.color)
-                      }"
-                    >
-                      {{ formatColorName(item.primary_color || item.color) }}
-                    </span>
-                  </div>
+              <!-- Item Details -->
+              <div class="space-y-3">
+                <div v-if="item.brand">
+                  <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Brand</p>
+                  <p class="text-base text-foreground">{{ item.brand }}</p>
                 </div>
 
-                <!-- Item Details -->
-                <div class="space-y-3">
-                  <div v-if="item.brand">
-                    <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Brand</p>
-                    <p class="text-base text-foreground">{{ item.brand }}</p>
-                  </div>
-
-                  <div v-if="item.size">
-                    <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Size</p>
-                    <p class="text-base text-foreground">{{ item.size }}</p>
-                  </div>
-
-                  <div v-if="item.season">
-                    <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Season</p>
-                    <p class="text-base text-foreground">{{ item.season.charAt(0).toUpperCase() + item.season.slice(1) }}</p>
-                  </div>
-
-                  <!-- Show message if no details available -->
-                  <div v-if="!item.brand && !item.size && !item.season" class="text-sm text-stone-500 dark:text-zinc-500 italic">
-                    No additional details available
-                  </div>
+                <div v-if="item.primary_color || item.color">
+                  <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Color</p>
+                  <p class="text-base text-foreground capitalize">{{ item.primary_color || item.color }}</p>
                 </div>
 
-                <!-- Meta Info (Moved above Privacy) -->
-                <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800 flex-shrink-0">
-                  <div class="text-sm text-stone-600 dark:text-zinc-400">
-                    Added {{ formatDate(item.created_at) }}
-                  </div>
-                  <button
-                    @click="toggleFavorite"
-                    class="liquid-favorite-btn p-2 rounded-full transition-all duration-200 flex-shrink-0"
-                    :class="item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'"
-                    title="Favorite"
-                  >
-                    <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
-                  </button>
+                <div v-if="item.size">
+                  <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Size</p>
+                  <p class="text-base text-foreground">{{ item.size }}</p>
                 </div>
 
-                <!-- Privacy Setting -->
-                <div class="flex-shrink-0">
-                  <label class="block text-base font-medium mb-2 text-stone-700 dark:text-zinc-300">
-                    Privacy
-                  </label>
-                  <select
-                    v-model="localPrivacy"
-                    @change="handlePrivacyChange"
-                    class="w-full px-4 py-2 text-base rounded-lg border transition-colors bg-white border-stone-300 text-black dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
-                  >
-                    <option value="private">Private (Only Me)</option>
-                    <option value="friends">Friends</option>
-                    <option value="public">Public</option>
-                  </select>
+                <div v-if="item.season">
+                  <p class="text-base font-medium text-stone-700 dark:text-zinc-300">Season</p>
+                  <p class="text-base text-foreground">{{ item.season.charAt(0).toUpperCase() + item.season.slice(1) }}</p>
                 </div>
+              </div>
 
-                <!-- Action Buttons -->
-                <div class="space-y-3 pt-4 pb-2 md:pb-0 mt-auto flex-shrink-0">
-                  <button
-                    @click="updateItem"
-                    :disabled="isUpdating || !hasChanges"
-                    class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Save class="w-5 h-5" />
-                    <span v-if="isUpdating" class="ellipsis-animated">Updating</span>
-                    <span v-else>Update Item</span>
-                  </button>
-                  <button
-                    @click="removeItem"
-                    :disabled="isRemoving"
-                    class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Trash2 class="w-5 h-5" />
-                    <span v-if="isRemoving" class="ellipsis-animated">Removing</span>
-                    <span v-else>Remove Item</span>
-                  </button>
+              <!-- Meta Info -->
+              <div class="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800">
+                <div class="text-sm text-stone-600 dark:text-zinc-400">
+                  Added {{ formatDateShort(item.created_at) }}
                 </div>
-              </template>
+                <button
+                  v-if="item"
+                  @click="toggleFavorite"
+                  @touchstart.prevent="toggleFavorite"
+                  :class="`p-2 rounded-full transition-all duration-200 ${item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'}`"
+                  title="Favorite"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
+                >
+                  <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
+                </button>
+              </div>
+
+              <!-- Privacy Setting -->
+              <div class="mb-4 flex-shrink-0">
+                <label class="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
+                  Privacy
+                </label>
+                <select
+                  v-model="localPrivacy"
+                  @change="handlePrivacyChange"
+                  class="w-full px-4 py-2 text-base rounded-lg border transition-colors bg-white border-stone-300 text-black dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+                >
+                  <option value="private">Private (Only Me)</option>
+                  <option value="friends">Friends</option>
+                  <option value="public">Public</option>
+                </select>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="space-y-2 flex-shrink-0">
+                <button
+                  @click="updateItem"
+                  :disabled="isUpdating || !hasChanges"
+                  class="hidden w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save class="w-5 h-5" />
+                  <span v-if="isUpdating" class="ellipsis-animated">Updating</span>
+                  <span v-else>Update Item</span>
+                </button>
+                <button
+                  @click="removeItem"
+                  :disabled="isRemoving"
+                  class="w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trash2 class="w-5 h-5" />
+                  <span v-if="isRemoving" class="ellipsis-animated">Removing</span>
+                  <span v-else>Remove Item</span>
+                </button>
+              </div>
+            </template>
             </div>
           </div>
         </div>
@@ -192,8 +184,22 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'item-removed', 'item-updated'])
 
+// Computed property for template reactivity - ensures proper reactivity
+const item = computed(() => props.item)
+
 const localPrivacy = ref(props.item?.privacy || 'friends')
 const originalPrivacy = ref(props.item?.privacy || 'friends')
+
+// Watch for item changes to update local privacy when item changes
+watch(() => props.item, (newItem) => {
+  if (newItem) {
+    localPrivacy.value = newItem.privacy || 'friends'
+    originalPrivacy.value = newItem.privacy || 'friends'
+  } else {
+    localPrivacy.value = 'friends'
+    originalPrivacy.value = 'friends'
+  }
+}, { immediate: true })
 const isRemoving = ref(false)
 const isUpdating = ref(false)
 const isDesktop = ref(false)
@@ -230,13 +236,6 @@ watch(() => props.isOpen, (newValue) => {
   }
 })
 
-// Watch for item changes to update local privacy
-watch(() => props.item, (newItem) => {
-  if (newItem) {
-    localPrivacy.value = newItem.privacy || 'friends'
-    originalPrivacy.value = newItem.privacy || 'friends'
-  }
-}, { immediate: true })
 
 // Check if there are changes to save
 const hasChanges = computed(() => {
@@ -251,6 +250,13 @@ const handlePrivacyChange = async () => {
 
 const closeModal = () => {
   emit('close')
+}
+
+const handleBackdropTouch = (event) => {
+  // Close modal on backdrop touch (mobile)
+  if (event.target === event.currentTarget) {
+    closeModal()
+  }
 }
 
 const updateItem = async () => {
@@ -319,6 +325,16 @@ const formatDate = (dateString) => {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
   if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`
   
+  const day = date.getDate()
+  const month = date.toLocaleDateString('en-US', { month: 'short' })
+  const year = date.getFullYear()
+  return `${day} ${month} ${year}`
+}
+
+const formatDateShort = (dateString) => {
+  if (!dateString) return 'Unknown'
+  
+  const date = new Date(dateString)
   const day = date.getDate()
   const month = date.toLocaleDateString('en-US', { month: 'short' })
   const year = date.getFullYear()

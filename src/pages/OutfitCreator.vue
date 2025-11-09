@@ -253,13 +253,14 @@
             
             <!-- Show Outfit on Model button -->
             <button
-              @click="showVirtualTryOn"
+              @click.stop="showVirtualTryOn"
               :disabled="!canShowVirtualTryOn"
               :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 gradient-button-shimmer ${
                 canShowVirtualTryOn
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
                   : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
               }`"
+              style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
               :title="virtualTryOnMatchesCanvas && virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
             >
               <Eye v-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl" class="w-4 h-4" />
@@ -274,13 +275,14 @@
             <!-- Generate AI button (only in AI mode) -->
             <button
               v-if="currentSubRoute === 'suggested'"
-              @click="getAIRecommendations"
+              @click.stop="getAIRecommendations"
               :disabled="recommendingOutfits || wardrobeItems.length < 2"
               :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
                 !recommendingOutfits && wardrobeItems.length >= 2
                   ? 'bg-purple-500 text-white hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500'
                   : 'opacity-50 cursor-not-allowed'
               }`"
+              style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
               title="Generate AI Outfit Based on Score"
             >
               <Sparkles class="w-4 h-4" />
@@ -293,13 +295,14 @@
             <!-- Weather Recommended button (only in AI mode) -->
             <button
               v-if="currentSubRoute === 'suggested'"
-              @click="generateWeatherBasedOutfit"
+              @click.stop="generateWeatherBasedOutfit"
               :disabled="generatingWeatherOutfit || wardrobeItems.length < 2"
               :class="`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 ${
                 !generatingWeatherOutfit && wardrobeItems.length >= 2
                   ? 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500'
                   : 'opacity-50 cursor-not-allowed'
               }`"
+              style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
               title="Generate Weather-Based Outfit Recommendations"
             >
               <CloudSun class="w-4 h-4" />
@@ -743,18 +746,20 @@
               <!-- Top Center Buttons - Regenerate (suggested only) and Show on Model (personal, suggested & edit) -->
               <div
                 v-if="currentSubRoute === 'personal' || currentSubRoute === 'suggested' || currentSubRoute === 'edit'"
-                class="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-none"
+                class="absolute top-4 left-1/2 -translate-x-1/2 z-[40] flex items-center gap-2 pointer-events-none"
               >
                 <!-- Regenerate Button - Only for suggested route -->
                 <button
                   v-if="currentSubRoute === 'suggested'"
-                  @click="generateAISuggestion"
+                  @click.stop="generateAISuggestion"
+                  @touchstart.stop.prevent="generateAISuggestion"
                   :disabled="wardrobeItems.length === 0"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto cursor-pointer ${
                     wardrobeItems.length > 0
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 41;"
                   title="Regenerate AI Outfit Suggestion"
                 >
                   <Sparkles class="w-5 h-5" />
@@ -764,13 +769,15 @@
                 <!-- Weather Button - Only for suggested route -->
                 <button
                   v-if="currentSubRoute === 'suggested'"
-                  @click="generateWeatherBasedOutfit"
+                  @click.stop="generateWeatherBasedOutfit"
+                  @touchstart.stop.prevent="generateWeatherBasedOutfit"
                   :disabled="generatingWeatherOutfit || wardrobeItems.length < 2"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto cursor-pointer ${
                     !generatingWeatherOutfit && wardrobeItems.length >= 2
                       ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 41;"
                   title="Generate Weather-Based Outfit"
                 >
                   <CloudSun class="w-5 h-5" />
@@ -782,13 +789,15 @@
                 
                 <!-- Model Button -->
                 <button
-                  @click="showVirtualTryOn"
+                  @click.stop="showVirtualTryOn"
+                  @touchstart.stop.prevent="showVirtualTryOn"
                   :disabled="!canShowVirtualTryOn"
-                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto ${
+                  :class="`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 gradient-button-shimmer pointer-events-auto cursor-pointer ${
                     canShowVirtualTryOn
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg'
                       : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'
                   }`"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 41;"
                   :title="virtualTryOnMatchesCanvas && virtualTryOnImageUrl ? 'View Virtual Try-On Result' : 'Show Outfit on AI Model Person'"
                 >
                   <Eye v-if="virtualTryOnMatchesCanvas && virtualTryOnImageUrl" class="w-5 h-5" />
@@ -802,43 +811,53 @@
               </div>
 
               <!-- Bottom-Center Canvas Toolbar -->
-              <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700">
+              <div class="absolute left-1/2 -translate-x-1/2 bottom-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 border border-stone-200 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:border-zinc-700 pointer-events-auto">
                 <button
-                  @click="undoAction"
+                  @click.stop="undoAction"
+                  @touchstart.stop.prevent="undoAction"
                   :disabled="!canUndo"
                   :class="`p-2 rounded-lg transition-all ${canUndo ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
                   title="Undo"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Undo class="w-4 h-4" />
                 </button>
                 <button
-                  @click="redoAction"
+                  @click.stop="redoAction"
+                  @touchstart.stop.prevent="redoAction"
                   :disabled="!canRedo"
                   :class="`p-2 rounded-lg transition-all ${canRedo ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
                   title="Redo"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Redo class="w-4 h-4" />
                 </button>
                 <button
-                  @click="toggleGrid"
+                  @click.stop="toggleGrid"
+                  @touchstart.stop.prevent="toggleGrid"
                   :class="`p-2 rounded-lg transition-all ${showGrid ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'}`"
                   title="Toggle Grid"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Grid3X3 class="w-4 h-4" />
                 </button>
                 <button
-                  @click="clearCanvas"
+                  @click.stop="clearCanvas"
+                  @touchstart.stop.prevent="clearCanvas"
                   :disabled="canvasItems.length === 0"
                   :class="`p-2 rounded-lg transition-all flex items-center gap-1 ${canvasItems.length > 0 ? 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' : 'opacity-50 cursor-not-allowed'}`"
                   title="Clear Canvas"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Trash2 class="w-4 h-4" />
                 </button>
                 <button
-                  @click="saveOutfit"
+                  @click.stop="saveOutfit"
+                  @touchstart.stop.prevent="saveOutfit"
                   :disabled="canvasItems.length < 2 || savingOutfit"
                   :class="`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${canvasItems.length >= 2 && !savingOutfit ? 'bg-black text-white dark:bg-white dark:text-black' : 'opacity-50 cursor-not-allowed bg-stone-300 dark:bg-zinc-700'}`"
                   :title="currentSubRoute === 'friend' ? 'Share Outfit' : 'Save Outfit'"
+                  style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                 >
                   <Share2 v-if="currentSubRoute === 'friend'" class="w-4 h-4" />
                   <Save v-else class="w-4 h-4" />
@@ -880,7 +899,7 @@
     <!-- Recommendations Modal -->
     <div
       v-if="showRecommendationsModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       @click.self="showRecommendationsModal = false"
     >
       <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
@@ -987,7 +1006,7 @@
     <!-- Weather Recommendations Modal -->
     <div
       v-if="showWeatherRecommendationsModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       @click.self="showWeatherRecommendationsModal = false"
     >
       <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">

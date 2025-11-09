@@ -352,11 +352,12 @@
           v-for="(item, index) in filteredItems"
           :key="item.id"
           :data-item-id="item.id"
-          @click="openItemDetails(item)"
+          @click="handleCardClick(item, $event)"
           tabindex="0"
           @keydown.enter.prevent="openItemDetails(item)"
           @keydown.space.prevent="openItemDetails(item)"
           class="group cursor-pointer transition-all duration-300 hover:scale-105 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+          style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
           v-memo="[item.id, item.name, item.image_url, item.is_favorite, selectedCategory, selectedColor, selectedBrand, searchTerm]"
         >
           <div class="aspect-square relative overflow-hidden">
@@ -394,15 +395,14 @@
               </div>
               <button
                 @click.stop="toggleFavorite(item)"
+                @touchstart.stop.prevent="toggleFavorite(item)"
                 @mousedown="handleFavoritePress($event, item)"
                 @mouseup="handleFavoriteRelease($event, item)"
                 @mouseleave="handleFavoriteRelease($event, item)"
-                @touchstart.prevent="handleFavoritePress($event, item)"
-                @touchend.prevent="handleFavoriteRelease($event, item)"
-                @touchcancel.prevent="handleFavoriteRelease($event, item)"
                 class="liquid-favorite-btn flex-shrink-0 p-2 rounded-full transition-all duration-200"
                 :class="item.is_favorite ? 'text-red-500 dark:text-red-400' : 'text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400'"
                 title="Favorite"
+                style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
               >
                 <Heart :class="`w-5 h-5 ${item.is_favorite ? 'fill-current text-red-500 dark:text-red-400' : ''}`" />
               </button>
@@ -421,14 +421,11 @@
 
     <!-- Item Details Modal -->
     <ItemDetailsModal
-      :is-open="showItemDetails"
+      :isOpen="showItemDetails"
       :item="selectedItem"
-      :items="filteredItems"
-      :current-index="selectedItemIndex"
       @close="closeItemDetails"
       @item-removed="handleItemRemoved"
       @item-updated="handleItemUpdated"
-      @navigate-to="handleNavigateToItem"
     />
   </div>
 </template>
@@ -1022,6 +1019,15 @@ const handleSearchFocus = (event) => {
 
 const handleSearchBlur = (event) => {
   event.target.classList.remove('search-input-focus')
+}
+
+// Handle card clicks - prevents favorite button clicks from opening modal
+const handleCardClick = (item, event) => {
+  // Don't open modal if clicking on favorite button
+  const favoriteButton = event.target.closest('.liquid-favorite-btn')
+  if (!favoriteButton) {
+    openItemDetails(item)
+  }
 }
 
   // Format item created/added date for card display

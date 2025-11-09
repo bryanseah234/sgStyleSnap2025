@@ -1,6 +1,6 @@
 <template>
   <!-- Confirmation Popup -->
-  <div v-if="show" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-[1200] p-4 backdrop-blur-sm" @click="handleBackdropClick">
+  <div v-if="show" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-[1200] p-4" @click="handleBackdropClick">
     <div class="relative w-full max-w-md rounded-xl p-6 shadow-2xl border bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800" @click.stop>
       <!-- Close Button -->
       <div class="absolute top-4 right-4 z-50 flex items-center gap-2">

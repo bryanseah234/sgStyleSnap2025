@@ -258,6 +258,21 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   z-index: 2;
 }
 
+/* Mobile touch optimization for gradient buttons */
+@media (max-width: 768px) {
+  .gradient-button-shimmer {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  
+  .gradient-button-shimmer::before {
+    pointer-events: none;
+    touch-action: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gradient-button-shimmer::before {
     display: none !important;
@@ -1455,6 +1470,7 @@ button[class*="bg-primary"]:not(.no-enhance):hover {
   backdrop-filter: none;
   background: rgba(255, 255, 255, 0.98);
   contain: layout style paint size;
+  height: -webkit-fill-available;
 }
 
 .liquid-modal-card:hover {

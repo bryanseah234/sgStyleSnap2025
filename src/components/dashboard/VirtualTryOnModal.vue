@@ -1,11 +1,11 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1200] p-4 backdrop-blur-sm overflow-y-auto overflow-x-hidden"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1200] p-4 overflow-y-auto overflow-x-hidden"
     @click="$emit('close')"
   >
     <div
-      class="w-full max-w-4xl rounded-2xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-2xl md:max-h-[90vh] max-h-[calc(100vh-9rem)] mb-20 md:mb-4 overflow-hidden flex flex-col"
+      class="w-full max-w-3xl rounded-2xl p-6 relative bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-2xl md:max-h-[90vh] max-h-[calc(100vh-9rem)] mb-20 md:mb-4 overflow-hidden flex flex-col"
       @click.stop
       style="overflow-x: hidden; max-width: 100%;"
     >
@@ -72,9 +72,9 @@
       </div>
 
       <!-- Success State - Show Generated Image -->
-      <div v-else-if="generatedImageUrl" class="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden min-h-0 max-w-full">
+      <div v-else-if="generatedImageUrl" class="flex-1 flex flex-col md:flex-row gap-3 overflow-hidden min-h-0 max-w-full">
         <!-- Left: Image -->
-        <div class="flex-[1.2] md:flex-[1.2] flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 min-w-0 max-w-full">
+        <div class="flex-1 md:flex-1 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 min-w-0 max-w-full">
           <img
             :src="generatedImageUrl"
             alt="Virtual try-on result"

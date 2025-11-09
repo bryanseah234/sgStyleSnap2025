@@ -281,8 +281,8 @@
         </div>
 
         <!-- Friend Item Details Modal -->
-        <div v-if="showItemDetails" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm overflow-y-auto" @click="closeItemDetails">
-          <div class="w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-[500px] md:min-h-[600px]" @click.stop>
+        <div v-if="showItemDetails" class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto" @click="closeItemDetails">
+          <div class="relative w-full max-w-2xl min-w-[320px] rounded-2xl shadow-2xl bg-white border border-stone-200 dark:bg-zinc-900 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh] min-h-0 md:min-h-[600px]" @click.stop>
             <!-- Close Button with ESC Hint -->
             <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
               <!-- ESC Key Hint (Desktop only) -->
@@ -299,7 +299,7 @@
             </div>
 
             <!-- Content: Image on left, Details on right -->
-            <div class="flex flex-col md:flex-row flex-1 min-h-[500px] md:min-h-[600px] overflow-hidden">
+            <div class="flex flex-col md:flex-row flex-1 min-h-0 md:min-h-[600px] overflow-hidden">
               <!-- Left: Image -->
               <div class="w-full md:w-1/2 h-[200px] sm:h-[250px] md:h-auto md:min-h-[600px] md:max-h-[60vh] relative overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 flex items-center justify-center">
                 <img
@@ -317,7 +317,7 @@
               </div>
 
               <!-- Right: Details -->
-              <div class="w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-[500px] md:min-h-0">
+              <div class="w-full md:w-1/2 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 md:min-h-0">
                 <!-- Item Name & Category -->
                 <div>
                   <h2 class="text-2xl font-bold mb-2 text-foreground">
@@ -373,13 +373,20 @@
         <!-- Friend Outfit Details Modal -->
         <div v-if="showOutfitDetails" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="closeOutfitDetails">
           <div class="w-full max-w-2xl rounded-xl p-6 relative bg-white dark:bg-zinc-900" @click.stop>
-            <!-- Close Button -->
-            <button
-              @click="closeOutfitDetails"
-              class="absolute top-4 right-4 p-2 rounded-lg transition-all hover:bg-stone-100 text-stone-500 hover:text-black dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white"
-            >
-              <X class="w-5 h-5" />
-            </button>
+            <!-- Close Button with ESC Hint -->
+            <div class="absolute top-4 right-4 z-50 flex items-center gap-2">
+              <!-- ESC Key Hint (Desktop only) -->
+              <div v-if="isDesktop" class="keyboard-hint-modal">
+                <span class="keyboard-hint-key">ESC</span>
+              </div>
+              <button
+                @click="closeOutfitDetails"
+                class="p-2 rounded-lg transition-all bg-white/90 shadow-lg hover:bg-stone-100 text-stone-700 hover:text-black dark:bg-zinc-800/90 dark:hover:bg-zinc-700 dark:text-zinc-300 dark:hover:text-white"
+                aria-label="Close dialog"
+              >
+                <X class="w-5 h-5" />
+              </button>
+            </div>
 
             <div class="pr-8">
               <h3 class="text-xl font-bold mb-1 text-black dark:text-white">

@@ -216,14 +216,16 @@
               <!-- Action Buttons -->
               <div class="flex gap-2">
                 <button
-                  @click="acceptFriendRequest(request.id)"
+                  @click.stop="acceptFriendRequest(request.id)"
+                  @touchstart.stop.prevent="acceptFriendRequest(request.id)"
                   class="p-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all duration-200 flex items-center justify-center"
                   title="Accept"
                 >
                   <Check class="w-5 h-5" />
                 </button>
                 <button
-                  @click="declineFriendRequest(request.id)"
+                  @click.stop="declineFriendRequest(request.id)"
+                  @touchstart.stop.prevent="declineFriendRequest(request.id)"
                   class="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200 flex items-center justify-center"
                   title="Decline"
                 >
@@ -411,24 +413,6 @@
                 </button>
               </div>
             </div>
-          </div>
-          
-          <div class="flex gap-3 mt-6">
-            <button
-              @click="showAddFriendModal = false"
-              class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-            >
-              Cancel
-            </button>
-            <button
-              @click="searchAndAddFriend"
-              :disabled="!addFriendSearch || addFriendSearch.trim().length < 4"
-              :class="!addFriendSearch || addFriendSearch.trim().length < 4
-                ? 'flex-1 px-4 py-2 rounded-lg font-medium bg-zinc-600 text-zinc-300 cursor-not-allowed'
-                : 'flex-1 px-4 py-2 rounded-lg font-medium bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'"
-            >
-              Search
-            </button>
           </div>
         </div>
       </div>
@@ -686,10 +670,11 @@ const declineFriendRequest = async (requestId) => {
     // Optimistic: remove from incoming list immediately
     const prev = [...friendRequests.value]
     friendRequests.value = friendRequests.value.filter(r => r.id !== requestId)
-    const res = await friendsService.declineFriendRequest(requestId)
+    const res = await friendsService.rejectFriendRequest(requestId)
     if (!res || !res.success) throw new Error('Failed to decline request')
     showToast('Friend request declined', 'success')
   } catch (error) {
+    console.error('Error declining friend request:', error)
     await loadFriendsData()
     showToast(error.message || 'Failed to decline friend request', 'error')
   }

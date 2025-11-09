@@ -473,6 +473,50 @@ The fix has been implemented in `src/composables/useLiquidGlass.js`. Ensure:
 
 ---
 
+### Issue: Hugging Face Inference API Quota Exceeded (402 Error)
+
+**Symptoms:**
+- Console error: `❌ LlamaDescriptionService: Error generating description: Object`
+- Error message: `Failed to perform inference: You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.`
+- HTTP 402 status code in network requests
+- AI-generated clothing descriptions fail to generate
+- Virtual try-on feature may still work (descriptions are optional)
+
+**Root Cause:**
+- Free tier Hugging Face Inference API has monthly included credits
+- Credits have been exhausted for the current billing period
+- The `LlamaDescriptionService` uses Hugging Face Inference API for generating AI descriptions of clothing items
+
+**Solution:**
+
+#### Option 1: Wait for Quota Reset (Free Tier)
+- Monthly credits reset at the start of each billing cycle
+- Virtual try-on feature will continue to work without AI descriptions
+- The app gracefully handles this error and continues functioning
+
+#### Option 2: Upgrade to Hugging Face PRO Plan
+- Upgrade your Hugging Face account to PRO plan
+- PRO plan provides 20x more monthly included credits
+- Visit: https://huggingface.co/pricing
+
+#### Option 3: Use Alternative Description Service (For Developers)
+- Implement fallback to manual descriptions or other AI services
+- The error is caught and logged, but doesn't break the app
+- Descriptions are optional for the virtual try-on feature
+
+**Current Behavior:**
+- The error is caught gracefully in `OutfitCreator.vue`
+- Virtual try-on generation continues even if descriptions fail
+- User sees a warning in console but functionality continues
+
+**Prevention:**
+- Monitor Hugging Face API usage in your account dashboard
+- Set up usage alerts if available
+- Consider implementing fallback description methods
+- Cache descriptions when possible to reduce API calls
+
+---
+
 ### Issue: Routing Issues on Vercel
 
 **Symptoms:**

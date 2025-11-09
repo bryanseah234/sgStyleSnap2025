@@ -185,20 +185,33 @@ Return ONLY a valid JSON object with these exact keys. Do not include any explan
     } catch (error) {
       safeError('❌ LlamaDescriptionService: Error generating description:', error)
       
+      // Extract error message and status code
+      const errorMessage = error.message || ''
+      const errorStatus = error.status || error.statusCode || error.response?.status
+      
+      // Handle 402 Payment Required - exceeded monthly credits
+      if (errorStatus === 402 || 
+          errorMessage.includes('402') || 
+          errorMessage.includes('exceeded') && errorMessage.includes('credits') ||
+          errorMessage.includes('monthly included credits') ||
+          errorMessage.includes('Subscribe to PRO')) {
+        throw new Error('Hugging Face Inference API quota exceeded. You have exceeded your monthly included credits for Inference Providers. Please upgrade to PRO plan or wait for the quota to reset. The virtual try-on feature will continue to work without AI descriptions.')
+      }
+      
       // Provide helpful error messages
-      if (error.message.includes('token') || error.message.includes('401') || error.message.includes('403')) {
+      if (errorMessage.includes('token') || errorStatus === 401 || errorStatus === 403 || errorMessage.includes('401') || errorMessage.includes('403')) {
         throw new Error('Invalid or expired Hugging Face API token. Please check your VITE_HUGGINGFACE_API_TOKEN.')
       }
       
-      if (error.message.includes('503') || error.message.includes('loading')) {
+      if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('loading')) {
         throw new Error('Model is currently loading. Please wait a moment and try again.')
       }
 
-      if (error.message.includes('rate limit') || error.message.includes('429')) {
+      if (errorMessage.includes('rate limit') || errorStatus === 429 || errorMessage.includes('429')) {
         throw new Error('Rate limit exceeded. Please wait a moment and try again.')
       }
       
-      throw new Error(error.message || 'Failed to generate clothing description')
+      throw new Error(errorMessage || 'Failed to generate clothing description')
     }
   }
 
