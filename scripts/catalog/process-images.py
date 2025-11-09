@@ -445,7 +445,7 @@ class ImageProcessor:
                 'secondary_colors': secondary_colors,
                 'style_tags': '',
                 'weather_tags': '',
-                'season': 'all',
+                'season': 'all-season',
                 'description': f'AI-detected {clothing_type} processed on {datetime.now().strftime("%Y-%m-%d")}',
                 'image_filename': final_image_path.name,
                 'privacy': 'public'
