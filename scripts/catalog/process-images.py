@@ -79,7 +79,7 @@ COLOR_NAMES = {
     'teal': (0, 128, 128), 'cyan': (0, 255, 255), 'magenta': (255, 0, 255),
 }
 
-MIN_CLASSIFICATION_CONFIDENCE = 0.65
+MIN_CLASSIFICATION_CONFIDENCE = 0.9
 REJECTED_CATEGORIES = {'Not sure', 'Other', 'Skip'}
 
 # Supported image extensions
