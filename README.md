@@ -819,7 +819,7 @@ Each member should contribute 2–3 sentences on their learning and project expe
 
 - **Alan:** Integrated Cloudinary for image optimization and worked on AI model integration. Learned about image compression, CDN optimization, and preparing the infrastructure for AI-powered features.
 
-**As a team, we reflected on:**
+> **Team Reflections:""
 
 - **Key Takeaways:** Working with Supabase taught us how to leverage Backend-as-a-Service platforms to accelerate development. We learned the importance of proper database design with RLS policies for security, and how Component-Based Architecture in Vue.js makes code more maintainable and scalable.
 
@@ -827,3 +827,24 @@ Each member should contribute 2–3 sentences on their learning and project expe
 
 - **Insights on Teamwork:** We found that clear role assignments based on each member's strengths led to efficient development. Regular standup meetings and using Git branches for feature development prevented merge conflicts. The combination of frontend specialists and backend developers allowed us to build a truly full-stack application.
 
+---
+
+## Use of AI / LLMs
+
+- **Information search:** No
+
+- **Generating website concepts, layouts, or themes:** Yes
+
+- **Exploring UI / UX design inspirations:** No
+
+- **Explaining coding errors / debugging hints:** Assisted with LLM
+
+- **Boilerplate code generation (starter code, small code snippets):** Yes
+
+- **Generating unit tests, sample inputs, or mock data:** Assisted with LLM
+
+- **Core implementation tasks:** Assisted with LLM
+
+- **Major business logic, backend endpoints, or critical frontend interactivity:** Assisted with LLM
+
+- **Solving significant implementation issues:** No
