@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "cron": [
+  "crons": [
     {
       "path": "/api/ping-supabase",
       "schedule": "0 * * * *"
