@@ -1,0 +1,20 @@
+export default async function handler(req, res) {
+  try {
+    const url = "https://nztqjmknblelnzpeatyx.supabase.co/rest/v1/";
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        apikey: process.env.SUPABASE_ANON_KEY,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Supabase responded with ${response.status}`);
+    }
+
+    res.status(200).json({ ok: true, pinged: true });
+  } catch (err) {
+    res.status(500).json({ error: err.toString() });
+  }
+}
