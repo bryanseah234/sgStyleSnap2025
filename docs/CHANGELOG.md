@@ -399,6 +399,6 @@ For questions or issues, please:
 
 ---
 
-**Last Updated**: October 22, 2025  
+**Last Updated**: January 2026  
 **Current Version**: 3.0.0  
 **Next Release**: v3.1.0 (Planned Q1 2026)
