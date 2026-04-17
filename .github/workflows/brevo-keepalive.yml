@@ -1,0 +1,57 @@
+name: Keep Brevo Alive
+
+on:
+  schedule:
+    # Runs every 5 days at 09:00 UTC — keeps the account active without spamming
+    - cron: "0 9 */5 * *"
+  workflow_dispatch: # Manual trigger for testing
+
+jobs:
+  send-keepalive-email:
+    name: Send Brevo Keepalive Email
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Send test email via Brevo API
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          echo "📧 Sending Brevo keepalive email..."
+
+          HTTP_STATUS=$(curl -s -o /tmp/brevo_response.json -w "%{http_code}" \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            -X POST "https://api.brevo.com/v3/smtp/email" \
+            -H "accept: application/json" \
+            -H "api-key: $BREVO_API_KEY" \
+            -H "content-type: application/json" \
+            -d '{
+              "sender": {
+                "name": "SG Style Snap",
+                "email": "noreply-sgstylesnap@hong-yi.me"
+              },
+              "to": [{ "email": "hello@hong-yi.me" }],
+              "subject": "[StyleSnap] Brevo keepalive ping",
+              "htmlContent": "<p>This is an automated keepalive email to prevent the Brevo account from deactivating due to inactivity.</p><p>Sent at: '"$(date -u)"'</p>"
+            }')
+
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response body:"
+          cat /tmp/brevo_response.json
+
+          if [[ "$HTTP_STATUS" == "201" ]]; then
+            echo "✅ Brevo keepalive email sent successfully"
+          elif [[ "$HTTP_STATUS" == "401" || "$HTTP_STATUS" == "403" ]]; then
+            echo "❌ Brevo auth failed (HTTP $HTTP_STATUS) — check BREVO_API_KEY secret"
+            exit 1
+          else
+            echo "❌ Brevo API error (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "::error::Brevo keepalive failed. Check that BREVO_API_KEY is set correctly in GitHub secrets and that the Brevo account is active."

@@ -1,46 +1,50 @@
 name: Keep Supabase Alive
+
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs daily
-  workflow_dispatch: # Allows manual testing
+    # Runs every 3 days at 08:00 UTC — well within Supabase's 7-day pause window
+    - cron: "0 8 */3 * *"
+  workflow_dispatch: # Manual trigger for testing
 
 jobs:
   ping:
+    name: Ping Supabase DB
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Dependencies
-        run: npm install @supabase/supabase-js
-
-      - name: Ping DB
+      - name: Ping Supabase REST API
         env:
-          # 👇 UPDATED to match your actual secret names
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          node -e "
-          const { createClient } = require('@supabase/supabase-js');
-          const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-          
-          async function ping() {
-            // 'users' is a common table name. 
-            // If your table is named 'profiles' or 'items', change it below.
-            const { data, error } = await supabase.from('users').select('id').limit(1);
-            
-            if (error) {
-              // Even if we get a 'table not found' error, the DB is actually ALIVE.
-              // So we just log it and don't fail the build unless it's a connection error.
-              console.log('DB Responded (Activity confirmed):', error.message);
-            } else {
-              console.log('Success:', data);
-            }
-          }
-          ping();
-          "
+          echo "Pinging Supabase at: $SUPABASE_URL"
+
+          HTTP_STATUS=$(curl -s -o /tmp/supabase_response.json -w "%{http_code}" \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            --retry-connrefused \
+            "$SUPABASE_URL/rest/v1/users?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response body:"
+          cat /tmp/supabase_response.json
+
+          # 200 = success, 406 = acceptable (PostgREST "not acceptable" still means DB is alive)
+          if [[ "$HTTP_STATUS" == "200" || "$HTTP_STATUS" == "406" ]]; then
+            echo "✅ Supabase is alive (HTTP $HTTP_STATUS)"
+          elif [[ "$HTTP_STATUS" == "401" || "$HTTP_STATUS" == "403" ]]; then
+            echo "⚠️  Auth error (HTTP $HTTP_STATUS) — DB is alive but check your secrets"
+            exit 1
+          else
+            echo "❌ Supabase ping failed (HTTP $HTTP_STATUS) — DB may be paused or unreachable"
+            exit 1
+          fi
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "::error::Supabase keepalive ping failed. Check that VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY secrets are set correctly, and that the database is not paused."

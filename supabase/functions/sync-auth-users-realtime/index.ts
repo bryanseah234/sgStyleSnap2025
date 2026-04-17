@@ -244,27 +244,24 @@ async function verifyWebhookSignature(
   req: Request,
   body: string
 ): Promise<boolean> {
-  // If no secret configured, skip verification (for testing)
+  // If no secret configured, skip verification (dev/testing mode only)
   if (!WEBHOOK_SECRET) {
-    console.log('⚠️ WEBHOOK_SECRET not set, skipping signature verification')
+    console.log('⚠️ WEBHOOK_SECRET not set — skipping signature verification (dev mode)')
     return true
   }
 
+  // Secret IS configured — require svix headers; reject if absent
+  const svixId = req.headers.get('svix-id')
+  const svixTimestamp = req.headers.get('svix-timestamp')
+  const svixSignature = req.headers.get('svix-signature')
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    console.error('❌ WEBHOOK_SECRET is set but svix headers are missing — rejecting request')
+    return false
+  }
+
   try {
-    // Get signature headers (Supabase uses svix headers)
-    const svixId = req.headers.get('svix-id')
-    const svixTimestamp = req.headers.get('svix-timestamp')
-    const svixSignature = req.headers.get('svix-signature')
-
-    if (!svixId || !svixTimestamp || !svixSignature) {
-      console.warn('⚠️ Missing svix headers, skipping verification')
-      return true // Allow if headers missing (for backwards compatibility)
-    }
-
-    // Extract secret from format: v1,whsec_xxxxx
     const secret = WEBHOOK_SECRET.replace(/^v1,whsec_/, '')
-    
-    // Verify signature using crypto
     const signedPayload = `${svixId}.${svixTimestamp}.${body}`
     const encoder = new TextEncoder()
     const key = await crypto.subtle.importKey(
@@ -279,12 +276,7 @@ async function verifyWebhookSignature(
     const signatureBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0))
     const dataBytes = encoder.encode(signedPayload)
 
-    const isValid = await crypto.subtle.verify(
-      'HMAC',
-      key,
-      signatureBytes,
-      dataBytes
-    )
+    const isValid = await crypto.subtle.verify('HMAC', key, signatureBytes, dataBytes)
 
     if (!isValid) {
       console.error('❌ Webhook signature verification failed')
@@ -295,9 +287,7 @@ async function verifyWebhookSignature(
     return true
   } catch (error) {
     console.error('❌ Error verifying webhook signature:', error)
-    // Allow request if verification fails (for backwards compatibility)
-    // In production, you might want to reject instead
-    return true
+    return false
   }
 }
 

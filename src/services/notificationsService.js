@@ -180,9 +180,9 @@ export class NotificationsService {
     }
   }
 
-  subscribe(callback) {
+  async subscribe(callback) {
     try {
-      const { data: { user }, error: userError } = supabase.auth.getUser()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) return null
 
       const subscription = supabase
@@ -361,52 +361,21 @@ export class NotificationsService {
 
   // Outfit sharing
   async shareOutfitWithFriends(outfitId, recipientIds, message = null) {
-    try {
-      const { data, error } = await supabase.rpc('share_outfit_with_friends', {
-        p_outfit_id: outfitId,
-        p_recipient_ids: recipientIds,
-        p_message: message
-      })
-
-      if (error) throw error
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'share outfit')
-      return { success: false, error }
-    }
+    // TODO: outfit_shares table and RPCs not yet implemented in database
+    console.warn('NotificationsService: shareOutfitWithFriends is not yet implemented')
+    return { success: false, error: 'Outfit sharing feature is not yet implemented' }
   }
 
   async getSharedOutfits(limit = 20, offset = 0) {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) throw new Error('Not authenticated')
-
-      const { data, error } = await supabase.rpc('get_shared_outfits', {
-        p_user_id: user.id,
-        p_limit: limit,
-        p_offset: offset
-      })
-
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      handleSupabaseError(error, 'get shared outfits')
-      return []
-    }
+    // TODO: outfit_shares table and get_shared_outfits RPC not yet implemented in database
+    console.warn('NotificationsService: getSharedOutfits is not yet implemented')
+    return []
   }
 
   async markOutfitShareViewed(shareId) {
-    try {
-      const { data, error } = await supabase.rpc('mark_outfit_share_viewed', {
-        p_share_id: shareId
-      })
-
-      if (error) throw error
-      return { success: true, data }
-    } catch (error) {
-      handleSupabaseError(error, 'mark outfit share viewed')
-      return { success: false, error }
-    }
+    // TODO: outfit_shares table and mark_outfit_share_viewed RPC not yet implemented in database
+    console.warn('NotificationsService: markOutfitShareViewed is not yet implemented')
+    return { success: false, error: 'Outfit sharing feature is not yet implemented' }
   }
 
   // Create friend outfit suggestion

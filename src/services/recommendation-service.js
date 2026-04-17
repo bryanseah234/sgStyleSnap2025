@@ -99,6 +99,16 @@ function areCategoriesCompatible(item1, item2, item3 = null) {
  */
 function generateOutfitCombinations(items, maxCombinations = 50) {
   const combinations = []
+  const seen = new Set()
+
+  const addCombo = (combo) => {
+    if (combinations.length >= maxCombinations) return
+    const key = combo.map(i => i.id).sort().join('|')
+    if (!seen.has(key)) {
+      seen.add(key)
+      combinations.push(combo)
+    }
+  }
   
   // Filter items by category
   const tops = items.filter(i => ['top', 'blouse', 'shirt', 't-shirt', 'longsleeve', 'polo', 'hoodie', 'blazer', 'body'].includes(i.category))
@@ -112,49 +122,44 @@ function generateOutfitCombinations(items, maxCombinations = 50) {
     for (const bottom of bottoms) {
       if (combinations.length >= maxCombinations) break
       if (areCategoriesCompatible(top, bottom)) {
-        combinations.push([top, bottom])
+        addCombo([top, bottom])
       }
     }
   }
   
-  // Generate 3-item combinations (top + bottom + outerwear OR accessories OR shoes)
+  // Generate 3-item combinations (top + bottom + outerwear OR shoes)
   for (const top of tops) {
     for (const bottom of bottoms) {
       if (combinations.length >= maxCombinations) break
       
-      // Add outerwear
-      for (const o of outerwear.slice(0, 3)) { // Limit to first 3 to reduce combinations
+      for (const o of outerwear.slice(0, 3)) {
         if (areCategoriesCompatible(top, bottom, o)) {
-          combinations.push([top, bottom, o])
+          addCombo([top, bottom, o])
         }
       }
       
-      // Add shoes
       for (const shoe of shoes.slice(0, 3)) {
         if (areCategoriesCompatible(top, bottom, shoe)) {
-          combinations.push([top, bottom, shoe])
+          addCombo([top, bottom, shoe])
         }
       }
     }
   }
   
-  // Generate dress combinations (dress + outerwear OR shoes OR accessories)
+  // Generate dress combinations
   for (const dress of dresses) {
     if (combinations.length >= maxCombinations) break
     
-    // Dress alone
-    combinations.push([dress])
+    addCombo([dress])
     
-    // Dress + outerwear
     for (const o of outerwear.slice(0, 2)) {
       if (combinations.length >= maxCombinations) break
-      combinations.push([dress, o])
+      addCombo([dress, o])
     }
     
-    // Dress + shoes
     for (const shoe of shoes.slice(0, 2)) {
       if (combinations.length >= maxCombinations) break
-      combinations.push([dress, shoe])
+      addCombo([dress, shoe])
     }
   }
   

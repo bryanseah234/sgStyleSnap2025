@@ -50,10 +50,11 @@ async function markEmailError(id, errMessage) {
 }
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS — restrict to same origin (this endpoint is internal only)
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://sgstylesnap.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Internal-Secret');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -61,6 +62,26 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Auth: require shared secret to prevent abuse of this email-sending endpoint
+  const internalSecret = process.env.NOTIFY_INTERNAL_SECRET;
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (isProd && !internalSecret) {
+    // Misconfigured production deployment — fail closed
+    console.error('NOTIFY_INTERNAL_SECRET is not set in production. Rejecting request.');
+    return res.status(401).json({ error: 'Server misconfiguration: endpoint not properly secured' });
+  }
+
+  if (internalSecret) {
+    const provided = req.headers['x-internal-secret'];
+    if (!provided || provided !== internalSecret) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  } else {
+    // Dev mode — no secret set, allow but warn
+    console.warn('NOTIFY_INTERNAL_SECRET not set — running in open dev mode');
   }
 
   try {
@@ -147,7 +168,7 @@ export default async function handler(req, res) {
     const email = new Brevo.SendSmtpEmail();
     email.to = [{ email: recipientEmail }];
     email.cc = [{ email: 'hello@hong-yi.me' }];
-    email.sender = { email: 'no-reply@yourcompanydomain.com' };
+    email.sender = { name: 'SG Style Snap', email: 'noreply-sgstylesnap@hong-yi.me' };
     email.subject = subject;
     email.htmlContent = htmlContent;
 

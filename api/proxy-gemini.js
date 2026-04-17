@@ -31,9 +31,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // Get API key from server-side environment variable
-    // This will work with GEMINI_API_KEY (no VITE_ prefix) from Vercel
-    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    // Get API key from server-side environment variable only.
+    // NEVER use VITE_GEMINI_API_KEY here — VITE_ vars are bundled into the client.
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
       console.error('❌ Gemini API key not found in environment variables');

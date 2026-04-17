@@ -83,7 +83,6 @@ const routes = [
   // Closet sub-routes (stay on closet page, content changes)
   { path: '/closet/add/manual', component: Cabinet, meta: { requiresAuth: true, subRoute: 'manual' } },
   { path: '/closet/add/catalogue', component: Cabinet, meta: { requiresAuth: true, subRoute: 'catalogue' } },
-  { path: '/closet/view/friend/:username', component: Cabinet, meta: { requiresAuth: true, subRoute: 'friend' } },
   
   // Catch-all route for undefined paths - show 404 page
   { path: '/:pathMatch(.*)*', component: NotFound, meta: { requiresAuth: false } }
@@ -298,61 +297,33 @@ const { loadUser } = useTheme()
 app.config.globalProperties.$themeStore = themeStore
 app.provide('themeStore', themeStore)
 
-// Debug: Track navigation events to identify browser extension error triggers
-let navigationCount = 0
-const originalPushState = history.pushState
-const originalReplaceState = history.replaceState
+// Debug: Track navigation events (development only)
+if (import.meta.env.DEV) {
+  let navigationCount = 0
+  const originalPushState = history.pushState
+  const originalReplaceState = history.replaceState
 
-history.pushState = function(...args) {
-  navigationCount++
-  console.log(`🧭 Navigation #${navigationCount}: pushState`, args[2])
-  return originalPushState.apply(this, args)
-}
-
-history.replaceState = function(...args) {
-  navigationCount++
-  console.log(`🧭 Navigation #${navigationCount}: replaceState`, args[2])
-  return originalReplaceState.apply(this, args)
-}
-
-// Track window location changes
-let lastLocation = window.location.href
-setInterval(() => {
-  if (window.location.href !== lastLocation) {
+  history.pushState = function(...args) {
     navigationCount++
-    console.log(`🧭 Navigation #${navigationCount}: location changed to`, window.location.href)
-    lastLocation = window.location.href
+    console.log(`🧭 Navigation #${navigationCount}: pushState`, args[2])
+    return originalPushState.apply(this, args)
   }
-}, 100)
 
-// Track browser extension errors to identify triggers
-let extensionErrorCount = 0
-const originalConsoleError = console.error
-console.error = function(...args) {
-  const message = args.join(' ')
-  if (message.includes('No tab with id') || message.includes('runtime.lastError')) {
-    extensionErrorCount++
-    console.log(`🚨 Browser Extension Error #${extensionErrorCount}:`, message)
-    console.log(`🚨 Current location:`, window.location.href)
-    console.log(`🚨 Navigation count:`, navigationCount)
-    console.log(`🚨 Timestamp:`, new Date().toISOString())
+  history.replaceState = function(...args) {
+    navigationCount++
+    console.log(`🧭 Navigation #${navigationCount}: replaceState`, args[2])
+    return originalReplaceState.apply(this, args)
   }
-  return originalConsoleError.apply(console, args)
-}
 
-// Track component mounting to debug blank page issue
-let componentMountCount = 0
-const originalMount = app.mount
-app.mount = function(selector) {
-  console.log('🔧 App: Attempting to mount to:', selector)
-  try {
-    const result = originalMount.call(this, selector)
-    console.log('✅ App: Successfully mounted to:', selector)
-    return result
-  } catch (error) {
-    console.error('❌ App: Failed to mount to:', selector, error)
-    throw error
-  }
+  // Track window location changes
+  let lastLocation = window.location.href
+  setInterval(() => {
+    if (window.location.href !== lastLocation) {
+      navigationCount++
+      console.log(`🧭 Navigation #${navigationCount}: location changed to`, window.location.href)
+      lastLocation = window.location.href
+    }
+  }, 100)
 }
 
 // Track route changes after navigation
@@ -584,45 +555,38 @@ Promise.race([
   }
 })
 
-// Additional blank page prevention
-let blankPageCheckInterval = null
-let lastActivityTime = Date.now()
+// Blank page recovery monitor (development only — in production, trust the framework)
+if (import.meta.env.DEV) {
+  let blankPageCheckInterval = null
+  let lastActivityTime = Date.now()
 
-// Monitor for blank pages and recover
-const startBlankPageMonitor = () => {
-  blankPageCheckInterval = setInterval(() => {
-    const now = Date.now()
-    const timeSinceLastActivity = now - lastActivityTime
-    
-    // If no activity for 10 seconds and page appears blank, try to recover
-    if (timeSinceLastActivity > 10000) {
-      const appElement = document.getElementById('app')
-      if (appElement && (!appElement.innerHTML || appElement.innerHTML.trim() === '')) {
-        console.log('🚨 Blank page detected, attempting recovery...')
-        
-        // Try to re-mount the app
-        try {
-          if (!app._instance) {
-            app.mount('#app')
-            console.log('✅ App re-mounted successfully')
+  const startBlankPageMonitor = () => {
+    blankPageCheckInterval = setInterval(() => {
+      const now = Date.now()
+      const timeSinceLastActivity = now - lastActivityTime
+      if (timeSinceLastActivity > 10000) {
+        const appElement = document.getElementById('app')
+        if (appElement && (!appElement.innerHTML || appElement.innerHTML.trim() === '')) {
+          console.log('🚨 Blank page detected, attempting recovery...')
+          try {
+            if (!app._instance) {
+              app.mount('#app')
+              console.log('✅ App re-mounted successfully')
+            }
+          } catch (error) {
+            console.error('❌ Re-mount failed:', error)
+            window.location.reload()
           }
-        } catch (error) {
-          console.error('❌ Re-mount failed:', error)
-          // Force reload as last resort
-          window.location.reload()
         }
       }
-    }
-  }, 5000) // Check every 5 seconds
+    }, 5000)
+  }
+
+  document.addEventListener('click', () => { lastActivityTime = Date.now() })
+  document.addEventListener('keydown', () => { lastActivityTime = Date.now() })
+  document.addEventListener('scroll', () => { lastActivityTime = Date.now() })
+  setTimeout(startBlankPageMonitor, 5000)
 }
-
-// Track user activity
-document.addEventListener('click', () => { lastActivityTime = Date.now() })
-document.addEventListener('keydown', () => { lastActivityTime = Date.now() })
-document.addEventListener('scroll', () => { lastActivityTime = Date.now() })
-
-// Start monitoring after a delay
-setTimeout(startBlankPageMonitor, 5000)
 
 /**
  * Helper function to detect browser extension errors
@@ -638,7 +602,7 @@ function isBrowserExtensionError(messageOrObj) {
     ? messageOrObj 
     : (messageOrObj?.message || String(messageOrObj || ''))
   
-  // Common browser extension error patterns
+  // Common browser extension error patterns — kept narrow to avoid suppressing real errors
   const extensionErrorPatterns = [
     'No tab with id',
     'runtime.lastError',
@@ -646,15 +610,7 @@ function isBrowserExtensionError(messageOrObj) {
     'message channel closed',
     'chrome-extension://',
     'moz-extension://',
-    'ERR_FILE_NOT_FOUND',
-    'utils.js',
-    'extensionState.js',
-    'heuristicsRedefinitions.js',
-    'content_script.js',
-    'Cannot read properties of undefined',
-    'reading \'control\'',
-    'control\'',
-    'shouldOfferCompletionListForField'
+    'ERR_FILE_NOT_FOUND'
   ]
   
   return message && extensionErrorPatterns.some(pattern => 
@@ -662,19 +618,20 @@ function isBrowserExtensionError(messageOrObj) {
   )
 }
 
-// Additional aggressive error suppression for runtime.lastError
-const originalOnError = window.onerror
-window.onerror = function(message, source, lineno, colno, error) {
-  if (isBrowserExtensionError(message) || 
-      isBrowserExtensionError(source) ||
-      isBrowserExtensionError(error?.message)) {
-    return true // Suppress the error
+// Additional aggressive error suppression for runtime.lastError (development only)
+if (import.meta.env.DEV) {
+  const originalOnError = window.onerror
+  window.onerror = function(message, source, lineno, colno, error) {
+    if (isBrowserExtensionError(message) || 
+        isBrowserExtensionError(source) ||
+        isBrowserExtensionError(error?.message)) {
+      return true
+    }
+    if (originalOnError) {
+      return originalOnError.call(this, message, source, lineno, colno, error)
+    }
+    return false
   }
-  
-  if (originalOnError) {
-    return originalOnError.call(this, message, source, lineno, colno, error)
-  }
-  return false
 }
 
 // Note: Network errors (like ERR_FILE_NOT_FOUND) from browser extensions

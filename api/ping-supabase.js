@@ -1,6 +1,12 @@
 export default async function handler(req, res) {
   try {
-    const url = "https://nztqjmknblelnzpeatyx.supabase.co/rest/v1/";
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+
+    if (!supabaseUrl) {
+      return res.status(500).json({ error: "SUPABASE_URL env var not set" });
+    }
+
+    const url = `${supabaseUrl}/rest/v1/`;
 
     const response = await fetch(url, {
       method: "GET",

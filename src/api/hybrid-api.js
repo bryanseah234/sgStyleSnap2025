@@ -224,111 +224,68 @@ class EntityService {
   // Use real API if Supabase is configured, otherwise use mock
   async list(sortBy = '-created_date', limit = null) {
     if (isSupabaseConfigured) {
-      try {
-        // Use real Supabase API
-        const { data, error } = await supabase
-          .from(this.entityName.replace('-', '_'))
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(limit || 1000)
-
-        if (error) throw error
-        return data || []
-      } catch (error) {
-        console.warn(`Failed to fetch from Supabase, using mock data:`, error)
-        // Fallback to mock data
-      }
+      const { data, error } = await supabase
+        .from(this.entityName.replace('-', '_'))
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit || 1000)
+      if (error) throw error
+      return data || []
     }
 
-    // Mock implementation
+    // Mock implementation (offline/dev mode only)
     await new Promise(resolve => setTimeout(resolve, 200))
     let result = [...this.data]
-    
     if (sortBy.startsWith('-')) {
       const field = sortBy.substring(1)
       result.sort((a, b) => new Date(b[field]) - new Date(a[field]))
     } else {
       result.sort((a, b) => new Date(a[sortBy]) - new Date(b[sortBy]))
     }
-    
-    if (limit) {
-      result = result.slice(0, limit)
-    }
-    
+    if (limit) result = result.slice(0, limit)
     return result
   }
 
   async filter(filters, sortBy = '-created_date', limit = null) {
     if (isSupabaseConfigured) {
-      try {
-        // Use real Supabase API
-        let query = supabase.from(this.entityName.replace('-', '_')).select('*')
-        
-        // Apply filters
-        Object.keys(filters).forEach(key => {
-          query = query.eq(key, filters[key])
-        })
-        
-        query = query.order('created_at', { ascending: false })
-        
-        if (limit) {
-          query = query.limit(limit)
-        }
-
-        const { data, error } = await query
-        if (error) throw error
-        return data || []
-      } catch (error) {
-        console.warn(`Failed to filter from Supabase, using mock data:`, error)
-        // Fallback to mock data
-      }
+      let query = supabase.from(this.entityName.replace('-', '_')).select('*')
+      Object.keys(filters).forEach(key => { query = query.eq(key, filters[key]) })
+      query = query.order('created_at', { ascending: false })
+      if (limit) query = query.limit(limit)
+      const { data, error } = await query
+      if (error) throw error
+      return data || []
     }
 
-    // Mock implementation
+    // Mock implementation (offline/dev mode only)
     await new Promise(resolve => setTimeout(resolve, 200))
-    let result = this.data.filter(item => {
-      return Object.keys(filters).every(key => item[key] === filters[key])
-    })
-    
+    let result = this.data.filter(item =>
+      Object.keys(filters).every(key => item[key] === filters[key])
+    )
     if (sortBy.startsWith('-')) {
       const field = sortBy.substring(1)
       result.sort((a, b) => new Date(b[field]) - new Date(a[field]))
     } else {
       result.sort((a, b) => new Date(a[sortBy]) - new Date(b[sortBy]))
     }
-    
-    if (limit) {
-      result = result.slice(0, limit)
-    }
-    
+    if (limit) result = result.slice(0, limit)
     return result
   }
 
   async create(data) {
     if (isSupabaseConfigured) {
-      try {
-        // Use real Supabase API
-        const { data: result, error } = await supabase
-          .from(this.entityName.replace('-', '_'))
-          .insert(data)
-          .select()
-          .single()
-
-        if (error) throw error
-        return result
-      } catch (error) {
-        console.warn(`Failed to create in Supabase, using mock data:`, error)
-        // Fallback to mock data
-      }
+      const { data: result, error } = await supabase
+        .from(this.entityName.replace('-', '_'))
+        .insert(data)
+        .select()
+        .single()
+      if (error) throw error
+      return result
     }
 
-    // Mock implementation
+    // Mock implementation (offline/dev mode only)
     await new Promise(resolve => setTimeout(resolve, 300))
-    const newItem = {
-      id: Date.now().toString(),
-      ...data,
-      created_date: new Date().toISOString()
-    }
+    const newItem = { id: Date.now().toString(), ...data, created_date: new Date().toISOString() }
     this.data.push(newItem)
     this.saveData()
     return newItem
@@ -336,24 +293,17 @@ class EntityService {
 
   async update(id, updates) {
     if (isSupabaseConfigured) {
-      try {
-        // Use real Supabase API
-        const { data: result, error } = await supabase
-          .from(this.entityName.replace('-', '_'))
-          .update(updates)
-          .eq('id', id)
-          .select()
-          .single()
-
-        if (error) throw error
-        return result
-      } catch (error) {
-        console.warn(`Failed to update in Supabase, using mock data:`, error)
-        // Fallback to mock data
-      }
+      const { data: result, error } = await supabase
+        .from(this.entityName.replace('-', '_'))
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return result
     }
 
-    // Mock implementation
+    // Mock implementation (offline/dev mode only)
     await new Promise(resolve => setTimeout(resolve, 200))
     const index = this.data.findIndex(item => item.id === id)
     if (index !== -1) {
@@ -366,22 +316,15 @@ class EntityService {
 
   async delete(id) {
     if (isSupabaseConfigured) {
-      try {
-        // Use real Supabase API
-        const { error } = await supabase
-          .from(this.entityName.replace('-', '_'))
-          .delete()
-          .eq('id', id)
-
-        if (error) throw error
-        return true
-      } catch (error) {
-        console.warn(`Failed to delete from Supabase, using mock data:`, error)
-        // Fallback to mock data
-      }
+      const { error } = await supabase
+        .from(this.entityName.replace('-', '_'))
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      return true
     }
 
-    // Mock implementation
+    // Mock implementation (offline/dev mode only)
     await new Promise(resolve => setTimeout(resolve, 200))
     const index = this.data.findIndex(item => item.id === id)
     if (index !== -1) {
