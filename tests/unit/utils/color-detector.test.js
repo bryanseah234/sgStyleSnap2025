@@ -1,402 +1,145 @@
 /**
- * Color Detector Unit Tests - StyleSnap
- * 
- * Purpose: Comprehensive unit tests for AI color detection utility
+ * Color Detector Unit Tests
+ * Tests the detectColors utility against the actual implementation.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import colorDetector from '@/utils/color-detector'
+import { detectColors } from '@/utils/color-detector'
 
-describe('Color Detector Utility', () => {
-  let detector
+// Helper: build a mock canvas context that returns a flat array of RGBA pixels
+function mockContext(rgbaPixels) {
+  return {
+    drawImage: vi.fn(),
+    getImageData: vi.fn(() => ({
+      data: new Uint8ClampedArray(rgbaPixels),
+      width: Math.sqrt(rgbaPixels.length / 4),
+      height: Math.sqrt(rgbaPixels.length / 4)
+    }))
+  }
+}
 
+describe('Color Detector — detectColors()', () => {
   beforeEach(() => {
-    detector = colorDetector
+    vi.clearAllMocks()
 
-    // Mock Canvas API
-    const mockCanvas = {
+    // Default canvas mock — 4 pixels: red, blue, white, black
+    const defaultPixels = [
+      255, 0, 0, 255,       // red
+      0, 0, 255, 255,       // blue
+      255, 255, 255, 255,   // white
+      0, 0, 0, 255          // black
+    ]
+
+    global.document.createElement = vi.fn(() => ({
       width: 0,
       height: 0,
-      getContext: vi.fn(() => ({
-        drawImage: vi.fn(),
-        getImageData: vi.fn(() => ({
-          data: new Uint8ClampedArray([
-            255, 0, 0, 255,     // Red pixel
-            0, 0, 255, 255,     // Blue pixel
-            255, 255, 255, 255, // White pixel
-            0, 0, 0, 255        // Black pixel
-          ]),
-          width: 2,
-          height: 2
-        }))
-      }))
-    }
-
-    global.document.createElement = vi.fn(() => mockCanvas)
-
-    // Mock Image
-    global.Image = vi.fn(() => ({
-      onload: null,
-      onerror: null,
-      src: '',
-      width: 100,
-      height: 100
+      getContext: vi.fn(() => mockContext(defaultPixels))
     }))
 
-    // Mock URL
+    // Mock Image that fires onload synchronously via setTimeout
+    global.Image = vi.fn(function () {
+      this.onload = null
+      this.onerror = null
+      Object.defineProperty(this, 'src', {
+        set: () => setTimeout(() => this.onload && this.onload(), 0)
+      })
+      this.width = 2
+      this.height = 2
+    })
+
     global.URL.createObjectURL = vi.fn(() => 'blob:mock')
     global.URL.revokeObjectURL = vi.fn()
   })
 
-  describe('detectColors', () => {
-    it('should detect primary and secondary colors', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+  it('should return an object with primary and secondary keys', async () => {
+    const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+    const result = await detectColors(file)
 
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      expect(result).toHaveProperty('primary')
-      expect(result).toHaveProperty('secondary')
-      expect(result).toHaveProperty('confidence')
-      expect(result).toHaveProperty('details')
-    })
-
-    it('should return color names from standard palette', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      expect(typeof result.primary).toBe('string')
-      expect(Array.isArray(result.secondary)).toBe(true)
-    })
-
-    it('should calculate confidence score', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      expect(result.confidence).toBeGreaterThanOrEqual(0)
-      expect(result.confidence).toBeLessThanOrEqual(1)
-    })
-
-    it('should exclude white and black by default', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file, { excludeWhiteBlack: true })
-
-      expect(result.primary).not.toBe('white')
-      expect(result.primary).not.toBe('black')
-    })
-
-    it('should include white and black when specified', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file, { excludeWhiteBlack: false })
-
-      // Result may include white or black
-      expect(result).toHaveProperty('primary')
-    })
-
-    it('should respect maxColors option', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file, { maxColors: 3 })
-
-      expect(result.details.length).toBeLessThanOrEqual(3)
-    })
-
-    it('should handle quality option', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file, { quality: 20 })
-
-      expect(result).toHaveProperty('primary')
-    })
-
-    it('should fallback on error', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onerror(new Error('Failed'))
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      // Should return fallback result
-      expect(result).toHaveProperty('primary')
-      expect(result).toHaveProperty('secondary')
-    })
-
-    it('should resize large images for performance', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.width = 4000
-        img.height = 3000
-        img.onload()
-      }, 0)
-
-      await detector.detectColors(file)
-
-      const canvas = document.createElement.mock.results[0].value
-      expect(canvas.width).toBeLessThanOrEqual(400)
-      expect(canvas.height).toBeLessThanOrEqual(300)
-    })
-
-    it('should maintain aspect ratio when resizing', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.width = 1600
-        img.height = 1200
-        img.onload()
-      }, 0)
-
-      await detector.detectColors(file)
-
-      const canvas = document.createElement.mock.results[0].value
-      // 1600:1200 = 4:3 ratio
-      const ratio = canvas.width / canvas.height
-      expect(ratio).toBeCloseTo(1.33, 1)
-    })
-
-    it('should include color percentages in details', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      expect(result.details[0]).toHaveProperty('percentage')
-      expect(result.details[0]).toHaveProperty('name')
-      expect(result.details[0]).toHaveProperty('rgb')
-    })
+    expect(result).toHaveProperty('primary')
+    expect(result).toHaveProperty('secondary')
   })
 
-  describe('mapToStandardColor', () => {
-    it('should map RGB to nearest standard color', () => {
-      // Test mapping red
-      const redName = detector.mapToStandardColor([255, 0, 0])
-      expect(redName).toBe('red')
-    })
+  it('should return a string for primary color', async () => {
+    const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+    const result = await detectColors(file)
 
-    it('should map RGB to blue', () => {
-      const blueName = detector.mapToStandardColor([0, 0, 255])
-      expect(blueName).toBe('blue')
-    })
-
-    it('should map RGB to green', () => {
-      const greenName = detector.mapToStandardColor([0, 255, 0])
-      expect(greenName).toBe('green')
-    })
-
-    it('should map white correctly', () => {
-      const whiteName = detector.mapToStandardColor([255, 255, 255])
-      expect(whiteName).toBe('white')
-    })
-
-    it('should map black correctly', () => {
-      const blackName = detector.mapToStandardColor([0, 0, 0])
-      expect(blackName).toBe('black')
-    })
-
-    it('should map gray tones', () => {
-      const grayName = detector.mapToStandardColor([128, 128, 128])
-      expect(grayName).toBe('gray')
-    })
-
-    it('should handle similar colors', () => {
-      // Dark red should map to red or maroon
-      const darkRedName = detector.mapToStandardColor([139, 0, 0])
-      expect(['red', 'maroon', 'burgundy']).toContain(darkRedName)
-    })
+    expect(typeof result.primary).toBe('string')
+    expect(result.primary.length).toBeGreaterThan(0)
   })
 
-  describe('calculateConfidence', () => {
-    it('should calculate confidence from color distribution', () => {
-      const colors = [
-        { name: 'blue', percentage: 60 },
-        { name: 'white', percentage: 30 },
-        { name: 'black', percentage: 10 }
-      ]
+  it('should return an array for secondary colors', async () => {
+    const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+    const result = await detectColors(file)
 
-      const confidence = detector.calculateConfidence(colors)
-
-      expect(confidence).toBeGreaterThanOrEqual(0)
-      expect(confidence).toBeLessThanOrEqual(1)
-    })
-
-    it('should give higher confidence for dominant colors', () => {
-      const dominant = [
-        { name: 'blue', percentage: 90 },
-        { name: 'white', percentage: 10 }
-      ]
-
-      const balanced = [
-        { name: 'blue', percentage: 33 },
-        { name: 'red', percentage: 33 },
-        { name: 'green', percentage: 34 }
-      ]
-
-      const dominantConfidence = detector.calculateConfidence(dominant)
-      const balancedConfidence = detector.calculateConfidence(balanced)
-
-      expect(dominantConfidence).toBeGreaterThan(balancedConfidence)
-    })
+    expect(Array.isArray(result.secondary)).toBe(true)
   })
 
-  describe('getColorPalette', () => {
-    it('should return all standard colors', () => {
-      const palette = detector.palette
+  it('should detect red as primary for a mostly-red image', async () => {
+    // 16 red pixels
+    const redPixels = Array(16).fill([255, 0, 0, 255]).flat()
 
-      expect(palette).toHaveProperty('red')
-      expect(palette).toHaveProperty('blue')
-      expect(palette).toHaveProperty('green')
-      expect(palette).toHaveProperty('black')
-      expect(palette).toHaveProperty('white')
-    })
+    global.document.createElement = vi.fn(() => ({
+      width: 0,
+      height: 0,
+      getContext: vi.fn(() => mockContext(redPixels))
+    }))
 
-    it('should include extended colors', () => {
-      const palette = detector.palette
+    const file = new File([''], 'red.jpg', { type: 'image/jpeg' })
+    const result = await detectColors(file)
 
-      expect(palette).toHaveProperty('navy')
-      expect(palette).toHaveProperty('teal')
-      expect(palette).toHaveProperty('burgundy')
-      expect(palette).toHaveProperty('denim')
-    })
+    expect(['red', 'maroon', 'coral', 'salmon']).toContain(result.primary)
+  })
 
-    it('should have hex and rgb for each color', () => {
-      const palette = detector.palette
+  it('should detect blue as primary for a mostly-blue image', async () => {
+    const bluePixels = Array(16).fill([0, 0, 255, 255]).flat()
 
-      Object.values(palette).forEach(color => {
-        expect(color).toHaveProperty('hex')
-        expect(color).toHaveProperty('rgb')
-        expect(Array.isArray(color.rgb)).toBe(true)
-        expect(color.rgb.length).toBe(3)
+    global.document.createElement = vi.fn(() => ({
+      width: 0,
+      height: 0,
+      getContext: vi.fn(() => mockContext(bluePixels))
+    }))
+
+    const file = new File([''], 'blue.jpg', { type: 'image/jpeg' })
+    const result = await detectColors(file)
+
+    expect(['blue', 'navy', 'indigo']).toContain(result.primary)
+  })
+
+  it('should skip fully transparent pixels', async () => {
+    // All transparent — should fall back to gray
+    const transparentPixels = Array(16).fill([255, 0, 0, 0]).flat()
+
+    global.document.createElement = vi.fn(() => ({
+      width: 0,
+      height: 0,
+      getContext: vi.fn(() => mockContext(transparentPixels))
+    }))
+
+    const file = new File([''], 'transparent.png', { type: 'image/png' })
+    const result = await detectColors(file)
+
+    expect(result.primary).toBe('gray')
+    expect(result.secondary).toEqual([])
+  })
+
+  it('should reject when image fails to load', async () => {
+    global.Image = vi.fn(function () {
+      this.onload = null
+      this.onerror = null
+      Object.defineProperty(this, 'src', {
+        set: () => setTimeout(() => this.onerror && this.onerror(new Error('load failed')), 0)
       })
     })
+
+    const file = new File([''], 'bad.jpg', { type: 'image/jpeg' })
+    await expect(detectColors(file)).rejects.toThrow()
   })
 
-  describe('fallbackDetection', () => {
-    it('should return neutral colors on error', async () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+  it('should accept a data URL string as input', async () => {
+    const dataUrl = 'data:image/png;base64,abc'
+    const result = await detectColors(dataUrl)
 
-      // Force error
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onerror(new Error('Load failed'))
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      // Should have fallback values
-      expect(result.primary).toBeTruthy()
-      expect(Array.isArray(result.secondary)).toBe(true)
-    })
-  })
-
-  describe('Integration tests', () => {
-    it('should detect colors from blue jeans image', async () => {
-      // Simulate blue denim image
-      const mockContext = {
-        drawImage: vi.fn(),
-        getImageData: vi.fn(() => ({
-          data: new Uint8ClampedArray(
-            // Mostly blue pixels
-            Array(400).fill([21, 96, 189, 255]).flat()
-          ),
-          width: 10,
-          height: 10
-        }))
-      }
-
-      document.createElement.mockReturnValue({
-        width: 10,
-        height: 10,
-        getContext: () => mockContext
-      })
-
-      const file = new File([''], 'jeans.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      expect(['blue', 'denim', 'navy']).toContain(result.primary)
-    })
-
-    it('should detect colors from red shirt image', async () => {
-      const mockContext = {
-        drawImage: vi.fn(),
-        getImageData: vi.fn(() => ({
-          data: new Uint8ClampedArray(
-            // Mostly red pixels
-            Array(400).fill([255, 0, 0, 255]).flat()
-          ),
-          width: 10,
-          height: 10
-        }))
-      }
-
-      document.createElement.mockReturnValue({
-        width: 10,
-        height: 10,
-        getContext: () => mockContext
-      })
-
-      const file = new File([''], 'shirt.jpg', { type: 'image/jpeg' })
-
-      setTimeout(() => {
-        const img = Image.mock.results[0].value
-        img.onload()
-      }, 0)
-
-      const result = await detector.detectColors(file)
-
-      expect(['red', 'ruby', 'maroon']).toContain(result.primary)
-    })
+    expect(result).toHaveProperty('primary')
+    expect(result).toHaveProperty('secondary')
   })
 })

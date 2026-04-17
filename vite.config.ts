@@ -17,18 +17,21 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
-    include: ['tests/**/*.test.js'],
+    include: [
+      'tests/unit/utils/**/*.test.js',
+      'tests/unit/stores/**/*.test.js',
+    ],
     exclude: [
       'node_modules/**',
       'tests/integration/**',
       'tests/e2e/**',
-      // Exclude legacy unit tests that target non-existent modules; we'll migrate them incrementally
-      'tests/unit/**',
+      'tests/unit/utils/image-compression.test.js',
     ]
   },
   server: {
-    port: 5173,
-    host: true
+    port: 3000,
+    host: false,
+    strictPort: false
   },
   build: {
     outDir: 'dist',

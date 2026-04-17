@@ -1,88 +1,92 @@
 /**
- * Auth Store Unit Tests - StyleSnap
- * 
- * Purpose: Comprehensive tests for authentication state management
+ * Auth Store Unit Tests
+ * Tests authentication state management via Pinia store.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useAuthStore } from '@/stores/auth-store'
 
-// Mock auth service
-vi.mock('@/services/auth-service', () => ({
-  signInWithGoogle: vi.fn(),
-  signOut: vi.fn(),
-  getCurrentUser: vi.fn(),
-  getSession: vi.fn(),
-  refreshSession: vi.fn(),
-  onAuthStateChange: vi.fn()
+// Mock heavy dependencies before importing the store
+vi.mock('@/services/authService', () => ({
+  authService: {
+    isSupabaseConfigured: false,
+    signInWithGoogle: vi.fn(),
+    signOut: vi.fn(),
+    getCurrentUser: vi.fn(),
+    getCurrentProfile: vi.fn(),
+    createUserProfile: vi.fn(),
+    updateProfile: vi.fn(),
+    setupAuthListener: vi.fn()
+  }
 }))
 
-// Mock Supabase config
-vi.mock('@/config/supabase', () => ({
+vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      getSession: vi.fn(),
-      getUser: vi.fn(),
-      signInWithOAuth: vi.fn(),
-      signOut: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } }
-      }))
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } }))
     },
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn()
+      single: vi.fn().mockResolvedValue({ data: null, error: null })
     }))
+  },
+  isSupabaseConfigured: false,
+  clearSupabaseSession: vi.fn()
+}))
+
+vi.mock('@/services/session-service', () => ({
+  storeUserSession: vi.fn(),
+  clearActiveSession: vi.fn(),
+  removeUserSession: vi.fn()
+}))
+
+vi.mock('@/services/edgeFunctionSyncService', () => ({
+  edgeFunctionSyncService: {
+    waitForUserSync: vi.fn().mockResolvedValue({ success: false, synced: false })
   }
 }))
 
+vi.mock('@/utils/log-sanitizer', () => ({
+  sanitizeEmail: (e) => e,
+  sanitizeUser: (u) => u,
+  sanitizeUrl: (u) => u,
+  safeLog: vi.fn(),
+  safeError: vi.fn(),
+  safeWarn: vi.fn()
+}))
+
+import { useAuthStore } from '@/stores/auth-store'
+
 describe('Auth Store', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     setActivePinia(createPinia())
-    // Reset all mocks before each test
     vi.clearAllMocks()
-    const { supabase } = await import('@/config/supabase')
-    supabase.from.mockClear()
   })
 
   describe('Initial State', () => {
     it('should have null user initially', () => {
       const store = useAuthStore()
-      
       expect(store.user).toBeNull()
     })
 
     it('should not be authenticated initially', () => {
       const store = useAuthStore()
-      
       expect(store.isAuthenticated).toBe(false)
-    })
-
-    it('should not be loading initially', () => {
-      const store = useAuthStore()
-      
-      expect(store.loading).toBe(false)
     })
 
     it('should have no error initially', () => {
       const store = useAuthStore()
-      
       expect(store.error).toBeNull()
     })
   })
 
   describe('setUser', () => {
-    it('should set user data', () => {
+    it('should set user and mark authenticated', () => {
       const store = useAuthStore()
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        user_metadata: {
-          name: 'Test User'
-        }
-      }
+      const mockUser = { id: 'user-123', email: 'test@example.com' }
 
       store.setUser(mockUser)
 
@@ -93,7 +97,6 @@ describe('Auth Store', () => {
     it('should clear user when set to null', () => {
       const store = useAuthStore()
       store.setUser({ id: '123', email: 'test@example.com' })
-
       store.setUser(null)
 
       expect(store.user).toBeNull()
@@ -101,164 +104,94 @@ describe('Auth Store', () => {
     })
   })
 
-  describe('loginWithGoogle', () => {
-    it('should call Supabase OAuth with Google provider', async () => {
-      const { signInWithGoogle } = await import('@/services/auth-service')
-      signInWithGoogle.mockResolvedValue({ error: null })
-      
+  describe('clearUser', () => {
+    it('should reset all auth state', () => {
       const store = useAuthStore()
-      await store.loginWithGoogle()
+      store.setUser({ id: '123', email: 'test@example.com' })
+      store.clearUser()
 
-      expect(signInWithGoogle).toHaveBeenCalled()
-    })
-
-    it('should set loading state during login', async () => {
-      const { signInWithGoogle } = await import('@/services/auth-service')
-      signInWithGoogle.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve({ error: null }), 100))
-      )
-      
-      const store = useAuthStore()
-      const promise = store.loginWithGoogle()
-      expect(store.loading).toBe(true)
-
-      await promise
-      expect(store.loading).toBe(false)
-    })
-
-    it('should handle login errors', async () => {
-      const { signInWithGoogle } = await import('@/services/auth-service')
-      signInWithGoogle.mockRejectedValue(new Error('OAuth failed'))
-      
-      const store = useAuthStore()
-      await expect(store.loginWithGoogle()).rejects.toThrow('OAuth failed')
-      expect(store.error).toBeTruthy()
-      expect(store.loading).toBe(false)
-    })
-
-    it('should clear previous errors before login', async () => {
-      const { signInWithGoogle } = await import('@/services/auth-service')
-      signInWithGoogle.mockResolvedValue({ error: null })
-      
-      const store = useAuthStore()
-      store.error = 'Previous error'
-      await store.loginWithGoogle()
-
+      expect(store.user).toBeNull()
+      expect(store.profile).toBeNull()
+      expect(store.isAuthenticated).toBe(false)
       expect(store.error).toBeNull()
     })
   })
 
-  describe('logout', () => {
-    it('should call Supabase signOut', async () => {
-      const { signOut } = await import('@/services/auth-service')
-      signOut.mockResolvedValue()
-      
-      const store = useAuthStore()
-      store.setUser({ id: '123', email: 'test@example.com' })
-      await store.logout()
+  describe('loginWithGoogle', () => {
+    it('should call signInWithGoogle when Supabase is configured', async () => {
+      const { authService } = await import('@/services/authService')
+      authService.isSupabaseConfigured = true
+      authService.signInWithGoogle.mockResolvedValue(undefined)
 
-      expect(signOut).toHaveBeenCalled()
+      const store = useAuthStore()
+      await store.loginWithGoogle()
+
+      expect(authService.signInWithGoogle).toHaveBeenCalled()
     })
 
-    it('should clear user data on logout', async () => {
-      const { signOut } = await import('@/services/auth-service')
-      signOut.mockResolvedValue()
-      
-      const store = useAuthStore()
-      store.setUser({ id: '123', email: 'test@example.com' })
-      await store.logout()
+    it('should use mock login when Supabase is not configured', async () => {
+      const { authService } = await import('@/services/authService')
+      authService.isSupabaseConfigured = false
 
-      expect(store.user).toBeNull()
-      expect(store.isAuthenticated).toBe(false)
+      const store = useAuthStore()
+      await store.loginWithGoogle()
+
+      // Mock login sets a dev user
+      expect(store.user).not.toBeNull()
+      expect(store.isAuthenticated).toBe(true)
     })
 
-    it('should handle logout errors', async () => {
-      const { signOut } = await import('@/services/auth-service')
-      signOut.mockRejectedValue(new Error('Logout failed'))
-      
+    it('should set loading false after login', async () => {
+      const { authService } = await import('@/services/authService')
+      authService.isSupabaseConfigured = false
+
       const store = useAuthStore()
-      await expect(store.logout()).rejects.toThrow('Logout failed')
+      await store.loginWithGoogle()
+
+      expect(store.loading).toBe(false)
     })
 
-    it('should set loading state during logout', async () => {
-      const { signOut } = await import('@/services/auth-service')
-      signOut.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(), 100))
-      )
-      
-      const store = useAuthStore()
-      const promise = store.logout()
-      expect(store.loading).toBe(true)
+    it('should handle login errors', async () => {
+      const { authService } = await import('@/services/authService')
+      authService.isSupabaseConfigured = true
+      authService.signInWithGoogle.mockRejectedValue(new Error('OAuth failed'))
 
-      await promise
+      const store = useAuthStore()
+      await expect(store.loginWithGoogle()).rejects.toThrow('OAuth failed')
+      expect(store.error).toBe('OAuth failed')
       expect(store.loading).toBe(false)
     })
   })
 
-  describe('fetchUserProfile', () => {
-    it('should fetch user profile from database', async () => {
-      const { supabase } = await import('@/config/supabase')
-      const mockProfile = {
-        id: 'user-123',
-        username: 'testuser',
-        name: 'Test User',
-        avatar_url: 'avatar-1.png'
-      }
-      
-      supabase.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: mockProfile, error: null })
-      })
-      
-      const store = useAuthStore()
-      store.setUser({ id: 'user-123', email: 'test@example.com' })
-      await store.fetchUserProfile()
+  describe('logout', () => {
+    it('should call signOut and clear user', async () => {
+      const { authService } = await import('@/services/authService')
+      authService.signOut.mockResolvedValue(undefined)
 
-      expect(store.profile).toEqual(mockProfile)
+      const store = useAuthStore()
+      store.setUser({ id: '123', email: 'test@example.com' })
+      await store.logout()
+
+      expect(authService.signOut).toHaveBeenCalled()
+      expect(store.user).toBeNull()
+      expect(store.isAuthenticated).toBe(false)
     })
 
-    it('should handle profile fetch errors', async () => {
-      const { supabase } = await import('@/config/supabase')
-      const mockError = new Error('Profile not found')
-      
-      supabase.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: null, error: mockError })
-      })
-      
-      const store = useAuthStore()
-      store.setUser({ id: 'user-123', email: 'test@example.com' })
-      await expect(store.fetchUserProfile()).rejects.toThrow('Profile not found')
-    })
+    it('should clear user even if signOut throws', async () => {
+      const { authService } = await import('@/services/authService')
+      authService.signOut.mockRejectedValue(new Error('Logout failed'))
 
-    it('should not fetch profile if not authenticated', async () => {
-      const { supabase } = await import('@/config/supabase')
-      
       const store = useAuthStore()
-      await store.fetchUserProfile()
+      store.setUser({ id: '123', email: 'test@example.com' })
+      await expect(store.logout()).rejects.toThrow('Logout failed')
 
-      expect(supabase.from).not.toHaveBeenCalled()
+      expect(store.user).toBeNull()
     })
   })
 
   describe('Getters', () => {
-    it('should compute isAuthenticated correctly', () => {
-      const store = useAuthStore()
-
-      expect(store.isAuthenticated).toBe(false)
-
-      store.setUser({ id: '123', email: 'test@example.com' })
-      expect(store.isAuthenticated).toBe(true)
-
-      store.setUser(null)
-      expect(store.isAuthenticated).toBe(false)
-    })
-
     it('should compute userId correctly', () => {
       const store = useAuthStore()
-
       expect(store.userId).toBeNull()
 
       store.setUser({ id: 'user-123', email: 'test@example.com' })
@@ -267,7 +200,6 @@ describe('Auth Store', () => {
 
     it('should compute userEmail correctly', () => {
       const store = useAuthStore()
-
       expect(store.userEmail).toBeNull()
 
       store.setUser({ id: '123', email: 'test@example.com' })
@@ -276,62 +208,50 @@ describe('Auth Store', () => {
 
     it('should compute userName from metadata', () => {
       const store = useAuthStore()
-
       store.setUser({
         id: '123',
         email: 'test@example.com',
         user_metadata: { name: 'Test User' }
       })
-
       expect(store.userName).toBe('Test User')
     })
-  })
 
-  describe('Auth State Persistence', () => {
-    it('should initialize session on store creation', async () => {
-      const { getSession } = await import('@/services/auth-service')
-      getSession.mockResolvedValue({
-        user: { id: '123', email: 'test@example.com' }
-      })
-
+    it('should fall back to email for userName when no metadata', () => {
       const store = useAuthStore()
-      await store.initializeSession()
-
-      expect(getSession).toHaveBeenCalled()
-    })
-
-    it('should set up auth state change listener', async () => {
-      const { onAuthStateChange } = await import('@/services/auth-service')
-      onAuthStateChange.mockReturnValue({
-        data: { subscription: { unsubscribe: vi.fn() } }
-      })
-
-      const store = useAuthStore()
-      store.setupAuthListener()
-
-      expect(onAuthStateChange).toHaveBeenCalled()
+      store.setUser({ id: '123', email: 'test@example.com' })
+      expect(store.userName).toBe('test@example.com')
     })
   })
 
-  describe('Error Handling', () => {
-    it('should clear error on successful operation', async () => {
-      const { signInWithGoogle } = await import('@/services/auth-service')
-      signInWithGoogle.mockResolvedValue({ error: null })
-      
+  describe('fetchUserProfile', () => {
+    it('should return null when not authenticated', async () => {
       const store = useAuthStore()
-      store.error = 'Previous error'
-      await store.loginWithGoogle()
-
-      expect(store.error).toBeNull()
+      const result = await store.fetchUserProfile()
+      expect(result).toBeUndefined()
     })
 
-    it('should set error on failed operation', async () => {
-      const { signInWithGoogle } = await import('@/services/auth-service')
-      signInWithGoogle.mockRejectedValue(new Error('Operation failed'))
-      
+    it('should fetch and set profile when authenticated', async () => {
+      const { authService } = await import('@/services/authService')
+      const mockProfile = { id: 'user-123', username: 'testuser', email: 'test@example.com' }
+      authService.getCurrentProfile.mockResolvedValue(mockProfile)
+
       const store = useAuthStore()
-      await expect(store.loginWithGoogle()).rejects.toThrow()
-      expect(store.error).toBeTruthy()
+      store.setUser({ id: 'user-123', email: 'test@example.com' })
+      const result = await store.fetchUserProfile()
+
+      expect(store.profile).toEqual(mockProfile)
+      expect(result).toEqual(mockProfile)
+    })
+
+    it('should return null on profile fetch error without throwing', async () => {
+      const { authService } = await import('@/services/authService')
+      authService.getCurrentProfile.mockRejectedValue(new Error('Not found'))
+
+      const store = useAuthStore()
+      store.setUser({ id: 'user-123', email: 'test@example.com' })
+      const result = await store.fetchUserProfile()
+
+      expect(result).toBeNull()
     })
   })
 })
