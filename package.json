@@ -18,7 +18,7 @@
     "cloudinary-cleanup": "echo 'Cloudinary cleanup script not implemented yet' && exit 0"
   },
   "dependencies": {
-    "@getbrevo/brevo": "^3.0.1",
+    "@getbrevo/brevo": "^5.0.4",
     "@google/genai": "^1.28.0",
     "@huggingface/inference": "^4.13.0",
     "@studio-freight/lenis": "^1.0.42",
