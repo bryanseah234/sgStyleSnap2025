@@ -35,7 +35,7 @@
     "tailwind-merge": "^3.5.0",
     "three": "^0.183.2",
     "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
+    "vue-router": "^5.0.6"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
