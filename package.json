@@ -41,7 +41,7 @@
     "@playwright/test": "^1.40.0",
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.1",
-    "@vue/test-utils": "^2.4.6",
+    "@vue/test-utils": "^2.4.9",
     "@vue/tsconfig": "^0.9.1",
     "autoprefixer": "^10.4.16",
     "eslint": "^10.1.0",
