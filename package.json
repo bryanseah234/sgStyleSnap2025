@@ -27,7 +27,7 @@
     "@vueuse/core": "^14.2.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "lucide-vue-next": "^0.294.0",
+    "lucide-vue-next": "^1.0.0",
     "modern-rembg": "^0.1.2",
     "motion": "^12.23.24",
     "onnxruntime-web": "^1.18.0",
