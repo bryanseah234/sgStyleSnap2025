@@ -22,7 +22,7 @@
     "@google/genai": "^1.28.0",
     "@huggingface/inference": "^4.13.0",
     "@studio-freight/lenis": "^1.0.42",
-    "@supabase/supabase-js": "^2.105.0",
+    "@supabase/supabase-js": "^2.105.1",
     "@tailwindcss/postcss": "^4.2.4",
     "@vueuse/core": "^14.2.1",
     "class-variance-authority": "^0.7.0",
