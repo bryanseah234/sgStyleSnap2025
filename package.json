@@ -33,7 +33,7 @@
     "onnxruntime-web": "^1.18.0",
     "pinia": "^2.1.7",
     "tailwind-merge": "^3.5.0",
-    "three": "^0.183.2",
+    "three": "^0.184.0",
     "vue": "^3.4.0",
     "vue-router": "^5.0.6"
   },
