@@ -42,12 +42,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Manual chunk splitting for better caching
-        manualChunks: {
-          // Vendor chunks
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          'three-vendor': ['three'],
-          'ui-vendor': ['lucide-vue-next', '@vueuse/core'],
-          'utils-vendor': ['clsx', 'tailwind-merge', 'class-variance-authority']
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (['vue', 'vue-router', 'pinia'].some(p => id.includes(`/node_modules/${p}/`))) return 'vue-vendor'
+            if (id.includes('/node_modules/three/')) return 'three-vendor'
+            if (['lucide-vue-next', '@vueuse/core'].some(p => id.includes(`/node_modules/${p}/`))) return 'ui-vendor'
+            if (['clsx', 'tailwind-merge', 'class-variance-authority'].some(p => id.includes(`/node_modules/${p}/`))) return 'utils-vendor'
+          }
         },
         // Optimize chunk file names
         chunkFileNames: 'js/[name]-[hash].js',
