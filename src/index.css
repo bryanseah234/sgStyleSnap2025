@@ -1,9 +1,8 @@
 /* Import animation tokens */
 @import './tokens/animations.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {

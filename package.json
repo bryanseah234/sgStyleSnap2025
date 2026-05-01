@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
+    "@tailwindcss/postcss": "^4.2.4",
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/test-utils": "^2.4.9",
