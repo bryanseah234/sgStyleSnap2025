@@ -58,14 +58,14 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground transition-colors duration-200;
+    background-color: hsl(var(--background)); color: hsl(var(--foreground)); transition-property: color, background-color, border-color; transition-duration: 200ms;
     overflow-x: hidden; /* Prevent horizontal scrolling that could shift nav bar */
   }
   html {
-    @apply bg-background;
+    background-color: hsl(var(--background));
     overflow-x: hidden; /* Prevent horizontal scrolling that could shift nav bar */
   }
   
@@ -87,11 +87,11 @@
   
   /* Ensure all text elements use semantic colors */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-foreground;
+    color: hsl(var(--foreground));
   }
   
   p {
-    @apply text-foreground;
+    color: hsl(var(--foreground));
   }
 }
 
