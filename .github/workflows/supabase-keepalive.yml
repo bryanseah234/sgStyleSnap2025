@@ -6,45 +6,49 @@ on:
   workflow_dispatch:
 
 jobs:
-  ping:
-    name: Ping Supabase DB
+  keepalive:
+    name: DB transaction keepalive
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Ping Supabase REST API
+      - name: INSERT + DELETE to keepalive_logs
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           if [[ -z "$SUPABASE_URL" ]]; then
-            echo "::error::VITE_SUPABASE_URL secret is not set. Add it in repo Settings → Secrets → Actions."
+            echo "::error::VITE_SUPABASE_URL secret is not set."
             exit 1
           fi
 
-          echo "Pinging Supabase at: $SUPABASE_URL"
+          echo "Writing keepalive row to $SUPABASE_URL ..."
 
-          HTTP_STATUS=$(curl -s -o /tmp/supabase_response.json -w "%{http_code}" \
+          HTTP_INSERT=$(curl -s -o /tmp/insert.json -w "%{http_code}" \
+            -X POST \
             --max-time 30 \
-            --retry 3 \
-            --retry-delay 5 \
-            "$SUPABASE_URL/rest/v1/" \
-            -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+            "$SUPABASE_URL/rest/v1/keepalive_logs" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{"source":"github-actions"}')
 
-          echo "HTTP Status: $HTTP_STATUS"
-          cat /tmp/supabase_response.json
+          echo "INSERT HTTP: $HTTP_INSERT"
+          cat /tmp/insert.json
 
-          # 200 = service_role key (full access)
-          # 401 = anon key rejected by this endpoint but Supabase IS alive and responding
-          # Anything else = paused, unreachable, or wrong URL
-          if [[ "$HTTP_STATUS" == "200" || "$HTTP_STATUS" == "401" ]]; then
-            echo "✅ Supabase is alive (HTTP $HTTP_STATUS)"
-          else
-            echo "❌ Supabase ping failed (HTTP $HTTP_STATUS) — DB may be paused or URL is wrong"
+          if [[ "$HTTP_INSERT" != "201" ]]; then
+            echo "::error::INSERT failed (HTTP $HTTP_INSERT) — run supabase/migrations/001_keepalive.sql in Supabase SQL editor first."
             exit 1
           fi
 
-      - name: Report failure
-        if: failure()
-        run: |
-          echo "::error::Supabase keepalive ping failed. Check that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY secrets are set correctly."
+          # Delete rows older than 7 days to keep the table from growing
+          CUTOFF=$(date -u -d '7 days ago' '+%Y-%m-%dT%H:%M:%SZ')
+          curl -s -o /dev/null \
+            -X DELETE \
+            --max-time 30 \
+            "$SUPABASE_URL/rest/v1/keepalive_logs?pinged_at=lt.$CUTOFF" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Prefer: return=minimal"
+
+          echo "✅ Supabase keepalive complete"
