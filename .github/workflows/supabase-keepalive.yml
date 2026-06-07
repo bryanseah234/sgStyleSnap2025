@@ -2,16 +2,14 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Runs every 3 days at 08:00 UTC — well within Supabase's 7-day pause window
-    - cron: "0 8 */3 * *"
-  workflow_dispatch: # Manual trigger for testing
+    - cron: "0 8 */3 * *" # Every 3 days at 08:00 UTC — within 7-day pause window
+  workflow_dispatch:
 
 jobs:
   ping:
     name: Ping Supabase DB
     runs-on: ubuntu-latest
     timeout-minutes: 5
-
     steps:
       - name: Ping Supabase REST API
         env:
@@ -25,26 +23,21 @@ jobs:
             --retry 3 \
             --retry-delay 5 \
             --retry-connrefused \
-            "$SUPABASE_URL/rest/v1/users?select=id&limit=1" \
+            "$SUPABASE_URL/rest/v1/" \
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY")
 
           echo "HTTP Status: $HTTP_STATUS"
-          echo "Response body:"
           cat /tmp/supabase_response.json
 
-          # 200 = success, 406 = acceptable (PostgREST "not acceptable" still means DB is alive)
-          if [[ "$HTTP_STATUS" == "200" || "$HTTP_STATUS" == "406" ]]; then
+          if [[ "$HTTP_STATUS" == "200" ]]; then
             echo "✅ Supabase is alive (HTTP $HTTP_STATUS)"
-          elif [[ "$HTTP_STATUS" == "401" || "$HTTP_STATUS" == "403" ]]; then
-            echo "⚠️  Auth error (HTTP $HTTP_STATUS) — DB is alive but check your secrets"
-            exit 1
           else
-            echo "❌ Supabase ping failed (HTTP $HTTP_STATUS) — DB may be paused or unreachable"
+            echo "❌ Supabase ping failed (HTTP $HTTP_STATUS) — DB may be paused or secrets are wrong"
             exit 1
           fi
 
       - name: Report failure
         if: failure()
         run: |
-          echo "::error::Supabase keepalive ping failed. Check that VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY secrets are set correctly, and that the database is not paused."
+          echo "::error::Supabase keepalive ping failed. Check that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY secrets are set correctly."
