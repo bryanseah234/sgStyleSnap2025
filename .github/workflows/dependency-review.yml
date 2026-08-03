@@ -13,9 +13,17 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Skip unsupported private repositories
+        if: github.event.repository.private
+        run: |
+          echo "Dependency Review requires dependency graph/GHAS support on private repositories."
+          echo "Skipping instead of failing this Dependabot PR."
+
+      - uses: actions/checkout@v7
+        if: ${{ !github.event.repository.private }}
 
       - name: Dependency Review
+        if: ${{ !github.event.repository.private }}
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
