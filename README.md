@@ -36,7 +36,7 @@ StyleSnap is a full-stack web application designed for fashion enthusiasts who w
 
 ```bash
 # Clone the repository
-git clone https://github.com/bryanseah234/sgStyleSnap2025.git
+git clone https://github.com/hongyime/sgStyleSnap2025.git
 
 # Navigate to project directory
 cd sgStyleSnap2025
@@ -116,4 +116,4 @@ MIT License
 
 ---
 
-**Author:** <a href="https://github.com/bryanseah234">bryanseah234</a>
+**Author:** <a href="https://github.com/hongyime">hongyime</a>
