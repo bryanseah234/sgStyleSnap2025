@@ -328,3 +328,6 @@ scripts/scrape-urls.txt
 !.env.sample
 !.sourcery.yml
 !.deepsource.toml
+.env.*
+.next/
+.pytest_cache/
