@@ -304,6 +304,7 @@ scripts/scrape-urls.txt
 !postcss.config.js
 
 
+
 # AI / editor dot directories (managed via sourcerepo)
 .*
 !.github/
